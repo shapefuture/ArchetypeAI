@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "ArchetypeAI",
+  "project_id": "ce0b7594-9ef0-4aa8-b361-3dee9f6794fc"
+}

@@ -3,12 +3,22 @@ import { translations } from '../i18n/translations';
 
 export type Language = 'en' | 'ru';
 
+const LANG_KEY = 'APP_LANG';
+
 @Injectable({ providedIn: 'root' })
 export class TranslationService {
-  private currentLang = signal<Language>('en');
+  private currentLang = signal<Language>(this.restoreLang());
+
+  private restoreLang(): Language {
+    try {
+      const saved = localStorage.getItem(LANG_KEY);
+      return saved === 'ru' || saved === 'en' ? saved : 'en';
+    } catch { return 'en'; }
+  }
 
   setLanguage(lang: Language) {
     this.currentLang.set(lang);
+    try { localStorage.setItem(LANG_KEY, lang); } catch { /* storage unavailable */ }
   }
 
   getLanguage() {

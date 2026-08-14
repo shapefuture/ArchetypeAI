@@ -1,0 +1,76 @@
+<div class="checkin-overlay" (click)="close()">
+  <div class="checkin-card" (click)="$event.stopPropagation()">
+    <header class="checkin-head">
+      <span class="checkin-kicker">{{ ui().title }}</span>
+      <button class="checkin-x" (click)="close()" aria-label="Close">✕</button>
+    </header>
+
+    <!-- Resurfacing sealed verdict takes precedence (§3C.1) -->
+    @if (resurfacing(); as v) {
+      <p class="verdict-old">“{{ v.text }}”</p>
+      <p class="verdict-q">{{ ui().resurfaceTitle }}</p>
+      <div class="verdict-ratings">
+        @for (r of ui().ratings; track r) {
+          <button class="chip" (click)="rateByLabel(r)">{{ r }}</button>
+        }
+      </div>
+    } @else {
+      @switch (stage()) {
+        @case ('arousal') {
+          <h2 class="checkin-q">{{ ui().where }}</h2>
+          <div class="arousal-scale">
+            @for (label of ui().arousal; track $index) {
+              <button class="arousal-btn" [class.mid]="$index === 2"
+                      (click)="chooseArousal(arousalForIndex($index))">
+                {{ label }}
+              </button>
+            }
+          </div>
+        }
+        @case ('event') {
+          <h2 class="checkin-q">{{ ui().eventQ }}</h2>
+          <div class="event-grid">
+            @for (e of ui().events; track $index) {
+              <button class="chip" (click)="chooseEvent(eventForIndex($index))">{{ e }}</button>
+            }
+          </div>
+          <button class="ghost" (click)="chooseEvent(null)">{{ ui().skip }}</button>
+        }
+        @case ('confirm') {
+          @if (predicted(); as p) {
+            <h2 class="checkin-q">{{ ui().didIt(partName(p)) }}</h2>
+            <div class="confirm-column">
+              <button class="primary" (click)="confirmPart('confirm')">{{ ui().yes }}</button>
+              <button class="ghost" (click)="confirmPart('noticed')">{{ ui().no }}</button>
+              @if (!correcting()) {
+                <button class="ghost" (click)="confirmPart('correct')">{{ ui().correct }}</button>
+              }
+            </div>
+            @if (correcting()) {
+              <div class="part-pick">
+                @for (part of partsByT(); track part) {
+                  <button class="chip" (click)="pickPart(part)">{{ partName(part) }}</button>
+                }
+              </div>
+            }
+          }
+        }
+        @case ('done') {
+          <p class="done-text">{{ ui().done }}</p>
+          @for (u of unburdened(); track u) {
+            <p class="unburdening">{{ ui().unburdening(partName(u)) }}</p>
+          }
+          @if (lockActive()) {
+            <div class="verdict-box">
+              <p class="verdict-lock">{{ ui().verdictLock }}</p>
+              <textarea class="verdict-input" rows="3"
+                        [value]="verdictDraft()"
+                        (input)="verdictDraft.set($any($event.target).value)"></textarea>
+              <button class="primary" (click)="sealCurrentVerdict()">{{ ui().seal }}</button>
+            </div>
+          }
+        }
+      }
+    }
+  </div>
+</div>

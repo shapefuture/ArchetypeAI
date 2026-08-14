@@ -9,6 +9,10 @@ import { scoreProfile } from '../../core/data/scoring-v2';
  * Like the other templateUrl components in this repo, the descent panel is
  * tested at the class level (via runInInjectionContext) plus template-file
  * assertions — vitest does not resolve external templates.
+ *
+ * Flow contract: entry lands on the ethics gate, then the FULL battery runs
+ * (three sittings, 147 items). The Quick Scan is NOT part of the flow — it is
+ * reserved as a standalone lead magnet (engine tests live in scoring-v2.spec).
  */
 const DIR = resolve(__dirname);
 const templateHtml = readFileSync(resolve(DIR, 'descent-panel.component.html'), 'utf-8');
@@ -25,41 +29,26 @@ describe('DescentPanelComponent — flow', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  it('starts at the Quick Scan offer with the 147-item schedule', () => {
+  it('starts at the ethics gate with the 147-item battery (no quick-scan detour)', () => {
     const c = make();
-    expect(c.stage()).toBe('offer');
+    expect(c.stage()).toBe('ethics');
     expect(c.sequence.length).toBe(147);
     expect(c.descents.map(d => d.length)).toEqual([49, 49, 49]);
-  });
-
-  it('quick scan: 14 answers resolve a family teaser (§1.13)', () => {
-    const c = make();
-    c.startScan();
-    for (let i = 0; i < 13; i++) c.answerScan(3);
-    c.answerScan(5);
-    expect(c.stage()).toBe('scan-result');
-    expect(c.scanFamily()?.kind).toBe('family');
-    expect(c.scanFamily()?.family).toBe(c.quickScanParts[13]);
-  });
-
-  it('quick scan: nothing ≥ 4 → Self teaser', () => {
-    const c = make();
-    c.startScan();
-    for (let i = 0; i < 14; i++) c.answerScan(3);
-    expect(c.scanFamily()?.kind).toBe('self');
-  });
-
-  it('ethics gate precedes the first item (§3 mandatory onboarding)', () => {
-    const c = make();
-    c.proceedToEthics();
-    expect(c.stage()).toBe('ethics');
     c.acceptEthics();
     expect(c.stage()).toBe('item');
+    expect(c.currentRef().kind).toBe('shadow'); // item 0 = taskmaster q1
+  });
+
+  it('shows the recalibration notice on the gate when legacy 64-item data exists', () => {
+    localStorage.setItem('ARCHETYPE_ASSESSMENT_RESPONSES', JSON.stringify(new Array(64).fill(3)));
+    const c = make();
+    expect(c.recalibrated()).toBe(true);
+    localStorage.removeItem('ARCHETYPE_ASSESSMENT_RESPONSES');
+    expect(make().recalibrated()).toBe(false);
   });
 
   it('fires a somatic follow-up exactly per §1.12 and stores the zone locally', () => {
     const c = make();
-    c.proceedToEthics();
     c.acceptEthics();
     // Item 0 is taskmaster q1 (index 0 → mod 5 == 0); a 4 triggers the body map.
     if (c.currentRef().kind === 'shadow') expect(c.currentRef().index).toBe(0);
@@ -72,7 +61,6 @@ describe('DescentPanelComponent — flow', () => {
 
   it('walks all three descents and emits a scoreable AssessmentInput', () => {
     const c = make();
-    c.proceedToEthics();
     c.acceptEthics();
     let emitted = false;
     c.completed.subscribe(input => {
@@ -97,14 +85,13 @@ describe('DescentPanelComponent — flow', () => {
 
   it('persists progress and restores mid-descent after reload', () => {
     const c = make();
-    c.proceedToEthics();
     c.acceptEthics();
     c.answer(4);
     if (c.pendingSomaticPart()) c.skipZone();
     vi.advanceTimersByTime(200);
     expect(localStorage.getItem('INNERVERSE_DESCENT_V1')).toBeTruthy();
     const c2 = make();
-    expect(c2.stage()).toBe('item');
+    expect(c2.stage()).toBe('item'); // restored straight into the battery
     expect(c2.answers()[0]).toBe(4);
   });
 });
@@ -115,12 +102,21 @@ describe('DescentPanelComponent — template structure', () => {
     expect(templateHtml).toMatch(/likert\[lang\(\)\]/);
     expect((templateHtml.match(/class="likert-btn"/g) ?? []).length).toBeGreaterThanOrEqual(1);
   });
-  it('contains the mandatory ethics card and break screens', () => {
+  it('contains the mandatory ethics gate and break screens', () => {
     expect(templateHtml).toMatch(/stage\(\) === 'ethics'/);
     expect(templateHtml).toMatch(/stage\(\) === 'break'/);
+  });
+  it('Quick Scan is NOT in the flow (reserved as lead magnet)', () => {
+    expect(templateHtml).not.toMatch(/stage\(\) === 'scan/);
+    expect(templateHtml).not.toMatch(/scan-result/);
+    expect(templateHtml).not.toMatch(/startScan|answerScan/);
   });
   it('somatic body-map is skippable with one tap', () => {
     expect(templateHtml).toMatch(/skipZone\(\)/);
     expect(templateHtml).toMatch(/chooseZone\(zone\)/);
+  });
+  it('recalibration notice renders on the ethics gate', () => {
+    expect(templateHtml.search(/recalibrated\(\)/))
+      .toBeGreaterThan(templateHtml.search(/stage\(\) === 'ethics'/));
   });
 });

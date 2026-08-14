@@ -255,3 +255,10 @@
   box-shadow: 0 0 34px rgba(242, 231, 201, 0.35);
 }
 .innerverse-pill-star { font-size: 12px; }
+.innerverse-pill--checkin {
+  right: 18px;
+  bottom: 74px;
+  color: rgba(236, 234, 246, 0.9);
+  border-color: rgba(236, 234, 246, 0.35);
+  box-shadow: 0 0 18px rgba(109, 123, 208, 0.25);
+}

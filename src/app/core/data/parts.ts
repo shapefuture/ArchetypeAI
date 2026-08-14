@@ -19,6 +19,8 @@ export type ResourceId = 'sage' | 'warrior' | 'caregiver' | 'explorer';
 export type PartId = ShadowPartId | ResourceId;
 
 export type PartClass = 'manager' | 'firefighter' | 'exile' | 'resource';
+/** §1.10 check-in event types. */
+export type EventType = 'relational' | 'achievement' | 'loss' | 'boundary' | 'change' | 'calm';
 export type Need =
   | 'safety' | 'love' | 'worth' | 'autonomy' | 'belonging' | 'meaning' | 'joy';
 

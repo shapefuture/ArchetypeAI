@@ -201,3 +201,17 @@
   .item-text { animation: none; }
   .likert-btn, .primary-btn, .secondary-btn { transition: none; }
 }
+
+.recalibrated {
+  font-size: 13px;
+  line-height: 1.55;
+  max-width: 44ch;
+  color: #ecc8bc;
+  border: 1px solid rgba(217, 138, 116, 0.45);
+  background: rgba(217, 138, 116, 0.07);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.ethics-sub {
+  color: #f2e7c9;
+}

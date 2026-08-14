@@ -22,61 +22,22 @@
     }
   </header>
 
-  <!-- Quick Scan offer -->
-  @if (stage() === 'offer') {
-    <main class="descent-main">
-      @if (recalibrated()) {
-        <aside class="recalibrated">{{ ui().recalibrated }}</aside>
-      }
-      <h1 class="headline">{{ ui().offer }}</h1>
-      <p class="sub">{{ ui().offerSub }}</p>
-      <div class="cta-column">
-        <button class="primary-btn" (click)="startScan()">{{ ui().offer }}</button>
-        <button class="secondary-btn" (click)="proceedToEthics()">{{ ui().skipScan }}</button>
-      </div>
-    </main>
-  }
-
-  <!-- Quick Scan items -->
-  @if (stage() === 'scan') {
-    <main class="descent-main">
-      <p class="scan-count">{{ ui().itemOf(scanIndex() + 1, 14) }}</p>
-      <h2 class="item-text">{{ scanItemText() }}</h2>
-      <div class="likert">
-        @for (label of likert[lang()]; track $index) {
-          <button class="likert-btn" (click)="answerScan($index + 1)">{{ label }}</button>
-        }
-      </div>
-    </main>
-  }
-
-  <!-- Quick Scan result (§1.13: provisional, never stored) -->
-  @if (stage() === 'scan-result') {
-    <main class="descent-main">
-      @if (scanFamily(); as qs) {
-        @if (qs.kind === 'family') {
-          <h1 class="headline">{{ ui().scanResultFamily(qs.subtypeName) }}</h1>
-        } @else {
-          <h1 class="headline">{{ ui().scanResultSelf }}</h1>
-        }
-        <div class="cta-column">
-          <button class="primary-btn" (click)="proceedToEthics()">{{ ui().scanCta }}</button>
-        </div>
-      }
-    </main>
-  }
-
-  <!-- Ethics card (§3, mandatory before descending) -->
+  <!-- Ethics card (§3, mandatory onboarding — the single entry gate) -->
   @if (stage() === 'ethics') {
     <main class="descent-main">
       <h1 class="headline">{{ ui().ethicsTitle }}</h1>
+      @if (recalibrated()) {
+        <aside class="recalibrated">{{ ui().recalibrated }}</aside>
+      }
       <div class="ethics-card">
+        <p class="ethics-sub">{{ ui().ethicsSub }}</p>
         <p>{{ ui().ethics1 }}</p>
         <p>{{ ui().ethics2 }}</p>
       </div>
       <div class="cta-column">
         <button class="primary-btn" (click)="acceptEthics()">{{ ui().ethicsGo }}</button>
       </div>
+      <p class="tiny">{{ ui().retakeNote }}</p>
     </main>
   }
 
@@ -105,7 +66,7 @@
     </main>
   }
 
-  <!-- Break between sittings -->
+  <!-- Break between sittings (continue immediately, or resume later) -->
   @if (stage() === 'break') {
     <main class="descent-main">
       <h1 class="headline">{{ ui().breakTitle(descentIndex()) }}</h1>

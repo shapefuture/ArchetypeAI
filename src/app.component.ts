@@ -14,6 +14,7 @@ import { HelpModalComponent, HelpItem } from './app/shared/components/help-modal
 import { AssessmentPanelComponent } from './app/features/assessment-panel/assessment-panel.component';
 import { DescentPanelComponent } from './app/features/descent-panel/descent-panel.component';
 import { InnerverseReportComponent } from './app/features/innerverse-report/innerverse-report.component';
+import { CheckInPanelComponent } from './app/features/checkin-panel/checkin-panel.component';
 import { scoreProfile, type AssessmentInput, type ScoredProfile } from './app/core/data/scoring-v2';
 import { ResultsPanelComponent, AssessmentResults } from './app/features/results-panel/results-panel.component';
 import { UniverseControlsComponent } from './app/features/universe-controls/universe-controls.component';
@@ -47,6 +48,7 @@ const AUTH_REDIRECT_PENDING_KEY = 'ARCHETYPE_AUTH_REDIRECT_PENDING';
   imports: [
     DescentPanelComponent,
     InnerverseReportComponent,
+    CheckInPanelComponent,
     CommonModule,
     BlobCharacterComponent,
     ArchetypeDetailCardComponent,
@@ -708,6 +710,10 @@ export class AppComponent implements OnDestroy {
   openInnerverse(): void {
     if (this.innerverseProfile()) this.appState.set('innerverse');
   }
+
+  readonly checkinOpen = signal(false);
+  openCheckin(): void { this.checkinOpen.set(true); }
+  closeCheckin(): void { this.checkinOpen.set(false); }
 
   toggleLanguage(): void {
     const newLang = this.translationService.getLanguage() === 'en' ? 'ru' : 'en';

@@ -1,10 +1,11 @@
 /**
- * INNERVERSE — The Descents (REVAMP_PLAN.md §3.2, §1.13, §1.12).
+ * INNERVERSE — The Descents (REVAMP_PLAN.md §3.2, §1.12).
  *
- * Quick Scan offer → 3 sittings of 49 items, one item per screen,
- * thumb-reach Likert, <200ms transitions, optional somatic body-map
- * follow-ups, resume-safe persistence. All scoring is downstream and
- * deterministic; nothing is computed here.
+ * Entry → ethics card → the full 147-item battery in three sittings of 49,
+ * one item per screen, thumb-reach Likert, <200ms transitions, optional
+ * somatic body-map follow-ups, resume-safe persistence. The Quick Scan
+ * (§1.13) is NOT part of this flow — it is reserved as a standalone lead
+ * magnet (engine: quickScan() in scoring-v2).
  */
 import {
   ChangeDetectionStrategy, Component, computed, inject, output, signal,
@@ -13,11 +14,11 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import {
-  ITEM_BANK, LIKERT, buildDescents, buildItemSequence, itemText, isReverseKeyed,
+  LIKERT, buildDescents, buildItemSequence, itemText, isReverseKeyed,
   type ItemRef,
 } from '../../../i18n/items';
-import { SHADOW_PARTS, type ShadowPartId } from '../../core/data/parts';
-import { quickScan, type AssessmentInput } from '../../core/data/scoring-v2';
+import type { ShadowPartId } from '../../core/data/parts';
+import type { AssessmentInput } from '../../core/data/scoring-v2';
 import {
   toAssessmentInput, somaticFollowUpFires, SOMATIC_ZONES, type SomaticZone,
 } from '../../core/data/assessment-adapter';
@@ -25,7 +26,7 @@ import {
 const STORE_KEY = 'INNERVERSE_DESCENT_V1';
 const LEGACY_KEY = 'ARCHETYPE_ASSESSMENT_RESPONSES'; // 64-item engine, unsalvageable (§4 step 9)
 
-type Stage = 'offer' | 'scan' | 'scan-result' | 'ethics' | 'item' | 'break' | 'complete';
+type Stage = 'ethics' | 'item' | 'break' | 'complete';
 
 interface Persisted {
   answers: number[];
@@ -35,52 +36,36 @@ interface Persisted {
 
 const UI = {
   en: {
-    offer: 'Meet one part in 90 seconds',
-    offerSub: 'Fourteen statements. One part of you steps forward. No result is kept — it only opens the door.',
-    skipScan: 'Begin Descent I directly',
     exit: 'Exit',
-    back: 'Back',
-    next: 'Continue',
-    beginDescent: n => `Begin Descent ${'I'.repeat(0) || ''}${['I', 'II', 'III'][n]}`,
-    descent: n => `Descent ${['I', 'II', 'III'][n]}`,
-    scanResultFamily: part => `${part} stepped forward.`,
-    scanResultSelf: 'No part claimed the floor — your Self is near the surface. The Descents will still find the quieter ones.',
-    scanCta: 'Begin Descent I to meet the rest',
     ethicsTitle: 'Before you descend',
+    ethicsSub: 'The full battery: three sittings of 49 statements, one at a time. You can pause at any sitting — progress is kept on this device.',
     ethics1: 'This is a self-reflection tool grounded in the Internal Family Systems model, not a diagnosis or therapy.',
     ethics2: 'Every part of you is welcome here. Nothing aims to delete or fix away any of you. You can stop at any time; anything can wait.',
-    ethicsGo: 'I understand — descend',
+    ethicsGo: 'I understand — begin Descent I',
+    descent: n => `Descent ${['I', 'II', 'III'][n]}`,
     itemOf: (i, n) => `${i} / ${n}`,
     somaticQ: 'Where do you feel this?',
     somaticSkip: 'Skip',
     breakTitle: n => `Descent ${['I', 'II', 'III'][n]} complete`,
-    breakSub: 'The stars you lit are held safely. Return when you are ready — nothing is lost.',
-    breakResume: n => (n < 2 ? `Begin Descent ${['II', 'III'][n]}` : 'Behold your constellation'),
+    breakSub: 'The stars you lit are held safely. Continue now, or return when you are ready — nothing is lost.',
+    breakResume: n => (n < 2 ? `Continue — Descent ${['II', 'III'][n]}` : 'Behold your constellation'),
     retakeNote: 'Your answers stay on this device.',
     recalibrated: 'The stars have been recalibrated. The old map cannot be translated — descend again to be measured anew.',
   },
   ru: {
-    offer: 'Встретьте одну часть за 90 секунд',
-    offerSub: 'Четырнадцать утверждений. Одна часть вас выходит вперёд. Ничего не сохраняется — это только дверь.',
-    skipScan: 'Начать Нисхождение I сразу',
     exit: 'Выйти',
-    back: 'Назад',
-    next: 'Дальше',
-    beginDescent: n => `Начать Нисхождение ${['I', 'II', 'III'][n]}`,
-    descent: n => `Нисхождение ${['I', 'II', 'III'][n]}`,
-    scanResultFamily: part => `Вперёд вышла часть «${part}».`,
-    scanResultSelf: 'Ни одна часть не заняла сцену — ваш Self близко к поверхности. Нисхождения всё равно найдут более тихие.',
-    scanCta: 'Начать Нисхождение I, чтобы встретить остальных',
     ethicsTitle: 'Перед нисхождением',
+    ethicsSub: 'Полная батарея: три сидения по 49 утверждений, по одному за экран. Можно остановиться на любом сидении — прогресс хранится на этом устройстве.',
     ethics1: 'Это инструмент саморефлексии на основе модели «Внутренние семейные системы», а не диагностика и не терапия.',
     ethics2: 'Каждая ваша часть здесь желанна. Ничто здесь не стремится удалить или «починить» вас. Вы можете остановиться в любой момент.',
-    ethicsGo: 'Понимаю — нисхожу',
+    ethicsGo: 'Понимаю — начать Нисхождение I',
+    descent: n => `Нисхождение ${['I', 'II', 'III'][n]}`,
     itemOf: (i, n) => `${i} / ${n}`,
     somaticQ: 'Где вы это чувствуете?',
     somaticSkip: 'Пропустить',
     breakTitle: n => `Нисхождение ${['I', 'II', 'III'][n]} завершено`,
-    breakSub: 'Зажжённые звёзды сохранены. Возвращайтесь, когда будете готовы — ничего не потеряно.',
-    breakResume: n => (n < 2 ? `Начать Нисхождение ${['II', 'III'][n]}` : 'Взгляните на своё созвездие'),
+    breakSub: 'Зажжённые звёзды сохранены. Продолжайте сейчас или возвращайтесь, когда будете готовы — ничего не потеряно.',
+    breakResume: n => (n < 2 ? `Продолжить — Нисхождение ${['II', 'III'][n]}` : 'Взгляните на своё созвездие'),
     retakeNote: 'Ответы остаются на этом устройстве.',
     recalibrated: 'Звёзды перенастроены. Старую карту нельзя перевести — нисходите заново, чтобы вас измерили по-новому.',
   },
@@ -104,21 +89,16 @@ export class DescentPanelComponent implements OnDestroy {
   readonly sequence = buildItemSequence();
   readonly likert = LIKERT;
   readonly zones = SOMATIC_ZONES;
-  readonly quickScanParts = SHADOW_PARTS;
 
-  readonly stage = signal<Stage>('offer');
+  readonly stage = signal<Stage>('ethics');
   readonly itemIndex = signal(0); // 0..146 across all three descents
   readonly answers = signal<number[]>(new Array(147).fill(0));
   readonly somatic = signal<Partial<Record<ShadowPartId, string[]>>>({});
   readonly pendingSomaticPart = signal<ShadowPartId | null>(null);
-  readonly scanIndex = signal(0);
-  readonly scanAnswers = signal<number[]>(new Array(14).fill(0));
-  readonly scanFamily = signal<ReturnType<typeof quickScan> | null>(null);
   readonly transitioning = signal(false);
 
   readonly lang = computed(() => this.translationService.getLanguage());
   readonly ui = computed(() => UI[this.lang()] as typeof UI.en);
-  readonly itemBank = computed(() => ITEM_BANK[this.lang()]);
 
   readonly currentRef = computed<ItemRef>(() => this.sequence[this.itemIndex()]);
   readonly currentText = computed(() => itemText(this.currentRef(), this.lang()));
@@ -130,18 +110,8 @@ export class DescentPanelComponent implements OnDestroy {
     return this.answers().slice(start, start + 49).filter(a => a > 0).length;
   });
   readonly litStars = computed(() => this.answers().filter(a => a > 0).length);
-  readonly isDescentBoundary = computed(() =>
-    this.indexInDescent() === 48 && this.itemIndex() < 146);
-  readonly scanItemText = computed(() =>
-    this.itemBank().items[this.quickScanParts[this.scanIndex()]][0]);
 
   private transitionTimer: ReturnType<typeof setTimeout> | null = null;
-  private restored = false;
-
-  constructor() {
-    this.detectLegacy();
-    this.restore();
-  }
 
   /** §4 step 9: old 64-item profiles prompt a retake — no mapping is attempted. */
   readonly recalibrated = signal(false);
@@ -151,6 +121,11 @@ export class DescentPanelComponent implements OnDestroy {
       const legacy = localStorage.getItem(LEGACY_KEY);
       this.recalibrated.set(!!legacy && JSON.parse(legacy).length > 0);
     } catch { /* no legacy data */ }
+  }
+
+  constructor() {
+    this.detectLegacy();
+    this.restore();
   }
 
   private restore(): void {
@@ -164,7 +139,6 @@ export class DescentPanelComponent implements OnDestroy {
         this.somatic.set(saved.somatic ?? {});
         const firstUnanswered = saved.answers.findIndex(a => a === 0);
         if (firstUnanswered > 0) this.itemIndex.set(Math.min(firstUnanswered, 146));
-        this.restored = true;
         this.stage.set(this.itemIndex() >= 146 && this.answers()[146] > 0 ? 'break' : 'item');
       }
     } catch { /* fresh start */ }
@@ -181,27 +155,6 @@ export class DescentPanelComponent implements OnDestroy {
   ngOnDestroy(): void {
     if (this.transitionTimer) clearTimeout(this.transitionTimer);
   }
-
-  // --- Quick Scan (§1.13) ---
-
-  startScan(): void { this.stage.set('scan'); this.scanIndex.set(0); }
-
-  answerScan(rating: number): void {
-    this.scanAnswers.update(a => { a[this.scanIndex()] = rating; return [...a]; });
-    if (this.scanIndex() < 13) {
-      this.scanIndex.update(i => i + 1);
-    } else {
-      const map = {} as Partial<Record<ShadowPartId, number>>;
-      SHADOW_PARTS.forEach((p, i) => { map[p] = this.scanAnswers()[i]; });
-      this.scanFamily.set(quickScan(map));
-      this.stage.set('scan-result');
-    }
-  }
-
-  // --- Ethics + main flow ---
-
-  /** From Quick Scan result or "skip" — always pass the gate first (§3 ethics card). */
-  proceedToEthics(): void { this.stage.set('ethics'); }
 
   acceptEthics(): void { this.stage.set('item'); }
 
@@ -247,7 +200,7 @@ export class DescentPanelComponent implements OnDestroy {
         localStorage.removeItem(STORE_KEY);
         return;
       }
-      // End of a sitting → break screen
+      // End of a sitting → break screen (continue immediately, or come back later)
       if (this.indexInDescent() === 48 && this.itemIndex() < 146) {
         this.persist();
         this.stage.set('break');

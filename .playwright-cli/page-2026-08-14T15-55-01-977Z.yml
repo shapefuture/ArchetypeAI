@@ -1,0 +1,10 @@
+- generic [ref=e948]:
+  - banner [ref=e949]:
+    - button "Exit" [ref=e950] [cursor=pointer]
+    - generic [ref=e954]: Innerverse
+  - main [ref=e961]:
+    - heading "Before you descend" [level=1] [ref=e962]
+    - generic [ref=e963]:
+      - paragraph [ref=e964]: This is a self-reflection tool grounded in the Internal Family Systems model, not a diagnosis or therapy.
+      - paragraph [ref=e965]: Every part of you is welcome here. Nothing aims to delete or fix away any of you. You can stop at any time; anything can wait.
+    - button "I understand — descend" [ref=e967] [cursor=pointer]

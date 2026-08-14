@@ -1,0 +1,12 @@
+- generic [ref=e948]:
+  - banner [ref=e949]:
+    - button "Exit" [ref=e950] [cursor=pointer]
+    - generic [ref=e968]: Descent I · 1 / 49
+  - main [ref=e1019]:
+    - heading "When someone else is praised for their work, I feel an urge to do more myself" [level=2] [ref=e1020]
+    - generic [ref=e1021]:
+      - button "Never true of me" [ref=e1022] [cursor=pointer]
+      - button "Rarely true of me" [ref=e1023] [cursor=pointer]
+      - button "Sometimes true of me" [ref=e1024] [cursor=pointer]
+      - button "Very often true of me" [ref=e1025] [cursor=pointer]
+      - button "Almost always true of me" [ref=e1026] [cursor=pointer]

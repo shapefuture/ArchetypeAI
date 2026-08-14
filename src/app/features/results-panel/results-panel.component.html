@@ -1,0 +1,636 @@
+<!-- Fixed top bar -->
+<div class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 py-3 md:px-6 md:py-4"
+     [ngClass]="isCalculating() || (!results() && !error()) ? 'bg-ink text-white' : 'bg-paper/90 backdrop-blur-md border-b-[3px] border-ink'">
+  <div class="flex items-center gap-3">
+    @if (isSpecialistView()) {
+      <span class="px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] rounded-full border-2"
+            [ngClass]="isCalculating() || (!results() && !error()) ? 'border-white/30 text-white/70' : 'border-ink bg-ink text-white'">
+        👁 {{ translationService.t('specialistViewBadge', 'assessment.results', 'Viewing as specialist (read-only)') }}
+        @if (specialistClientLabel()) {
+          · {{ translationService.t('specialistViewClient', 'assessment.results', 'Client:') }} {{ specialistClientLabel() }}
+        } @else {
+          · {{ translationService.t('specialistViewNoClient', 'assessment.results', 'Anonymous client') }}
+        }
+      </span>
+    } @else {
+      <span class="text-[9px] font-black uppercase tracking-[0.2em]"
+            [ngClass]="isCalculating() || (!results() && !error()) ? 'text-white/50' : 'text-ink-l'">
+        {{ translationService.t('eyebrow', 'assessment.results') }}
+      </span>
+    }
+  </div>
+  <div class="flex items-center gap-2">
+    @if (results() && isAnonymous() && !isSpecialistView()) {
+      <button class="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.08em] border-2 rounded-full transition-colors"
+              [ngClass]="isCalculating() ? 'border-white/30 text-white/60' : 'border-amber-deep text-amber-deep bg-amber/10 hover:bg-amber/20'"
+              (click)="signInRequested.emit()"
+              [title]="translationService.t('anonymousSaveBanner', 'universe')">
+        💾 {{ translationService.t('anonymousSaveCta', 'universe') }}
+      </button>
+    }
+    @if (results()) {
+      <button class="w-9 h-9 flex items-center justify-center border-2 rounded-full transition-colors"
+              [ngClass]="isCalculating() ? 'border-white/30 text-white/60' : 'border-ink text-ink hover:bg-ink hover:text-white'"
+              (click)="downloadFallbackData()" [title]="translationService.t('downloadBackup', 'assessment.results')">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+        </svg>
+      </button>
+      <button class="scoring-toggle-neo px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.08em] border-2 rounded-full transition-colors"
+              [ngClass]="isCalculating() ? 'border-white/30 text-white/60' : 'border-ink text-ink-l hover:bg-ink hover:text-white'"
+              (click)="toggleScoringMethod()"
+              [title]="scoringMethod() === 'deterministic'
+                ? translationService.t('scoringDeterministicTooltip', 'assessment.results')
+                : translationService.t('scoringFallbackTooltip', 'assessment.results')">
+        {{ scoringMethod() === 'deterministic' ? translationService.t('scoringDeterministic', 'assessment.results') : translationService.t('scoringFallback', 'assessment.results') }}
+      </button>
+    }
+    <button class="w-9 h-9 flex items-center justify-center border-2 rounded-full transition-colors"
+            [ngClass]="isCalculating() || (!results() && !error()) ? 'border-white/30 text-white/60 hover:bg-white/10' : 'border-ink text-ink hover:bg-ink hover:text-white'"
+            (click)="goBack.emit()">
+      <span class="text-sm font-bold">&larr;</span>
+    </button>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+@if (isCalculating() || (!results() && !error())) {
+  <div class="fixed inset-0 bg-ink flex flex-col items-center justify-center">
+    <app-blob-character mood="thinking" color="rgba(255,255,255,0.4)" size="lg" [animate]="true"></app-blob-character>
+    <p class="text-white/90 font-black text-lg tracking-wide mt-8">{{ translationService.t('loadingMessage', 'assessment.results') }}</p>
+    <div class="loading-dots mt-4">
+      <span></span><span></span><span></span>
+    </div>
+    <p class="text-white/40 text-[10px] font-bold uppercase tracking-[0.15em] mt-6 max-w-xs text-center px-4 leading-relaxed">
+      {{ translationService.t('loadingHint', 'assessment.results', 'This usually takes 10–30s. You can cancel and use the local analysis.') }}
+    </p>
+    @if (isCalculating()) {
+      <button (click)="cancelCalculate()"
+              class="mt-6 px-5 py-2 rounded-full border-2 border-white/30 text-white/80 text-[10px] font-black uppercase tracking-[0.12em] hover:border-white hover:text-white transition-colors">
+        ✕ {{ translationService.t('cancelAnalysis', 'assessment.results', 'Cancel & use local analysis') }}
+      </button>
+    }
+  </div>
+}
+
+<!-- ERROR STATE (cancelled, or hard failure of local engine) -->
+@if (error()) {
+  <div class="fixed inset-0 pt-16 pb-20 overflow-y-auto bg-paper neo-scroll">
+    <div class="max-w-lg mx-auto px-4 py-16 text-center">
+      <div class="bg-white border-[3px] border-ink rounded-2xl p-8 shadow-[6px_6px_0_#1C1917]">
+        <span class="text-5xl block mb-4">⚠️</span>
+        <h4 class="text-xl font-black neo-serif text-ink mb-3">{{ translationService.t('errorTitle', 'assessment.results') }}</h4>
+        <p class="text-sm text-ink-l leading-relaxed mb-6">{{ error() }}</p>
+        <div class="flex flex-col gap-3">
+          <button (click)="retryCalculate()"
+                  class="bg-ink text-white border-2 border-ink rounded-xl px-6 py-3 text-xs font-black uppercase tracking-[0.1em] hover:bg-ink/90 transition-colors">
+            🔄 {{ translationService.t('retake', 'assessment.results') || 'Retry Analysis' }}
+          </button>
+          <button (click)="downloadFallbackData()"
+                  class="bg-white text-ink border-2 border-ink rounded-xl px-6 py-2.5 text-xs font-bold uppercase tracking-[0.08em] hover:bg-ink/5 transition-colors">
+            📁 {{ translationService.t('downloadBackup', 'assessment.results') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- RESULTS STATE -->
+@if (results(); as res) {
+  <div class="results-scroll fixed inset-0 pt-14 pb-32 lg:pb-20 overflow-y-auto neo-scroll"
+       [ngClass]="isCalculating() ? 'opacity-0' : 'bg-paper'">
+
+    <!-- Desktop side nav -->
+    <nav class="hidden lg:flex fixed left-4 top-1/2 -translate-y-1/2 z-40 flex-col gap-2">
+      @for (id of SECTIONS; track id) {
+        <button class="group flex items-center gap-2" (click)="scrollToSection(id)">
+          <span class="w-2.5 h-2.5 rounded-full border-2 transition-all"
+                [ngClass]="activeSection() === id ? 'bg-ink border-ink scale-125' : 'bg-transparent border-ink/30 group-hover:border-ink/60'">
+          </span>
+          <span class="text-[8px] font-black uppercase tracking-[0.1em] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                [ngClass]="activeSection() === id ? 'text-ink' : 'text-ink-l'">
+            {{ getSectionLabel(id) }}
+          </span>
+        </button>
+      }
+    </nav>
+
+    <!-- Mobile bottom nav -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-paper border-t-[3px] border-ink px-2 py-2 flex gap-1 overflow-x-auto hide-scrollbar">
+      @for (id of SECTIONS; track id) {
+        <button class="shrink-0 px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.08em] rounded-full border-2 transition-all"
+                [ngClass]="activeSection() === id ? 'bg-ink text-white border-ink' : 'bg-white text-ink border-ink/20'"
+                (click)="scrollToSection(id)">
+          {{ getSectionLabel(id) }}
+        </button>
+      }
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 md:px-6 lg:ml-24 lg:mr-auto">
+
+      <!-- SECTION 1: DIMENSIONAL PROFILE TABLE -->
+      <!-- Custom render for the AI report's Section 1 (dimensional profile).
+           Renders the 4 axes as a clear table BEFORE the AI's narrative prose
+           so the user gets a structured visual overview of their dimensional
+           profile. The bar fills use the same colorblind-safe Wong palette
+           as the rest of the panel. -->
+      <section id="profile" class="py-8 md:py-10">
+        <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-4">{{ getSectionLabel('profile') }}</h4>
+
+        <div class="bg-white border-2 border-ink rounded-xl overflow-hidden shadow-[4px_4px_0_#1C1917]">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-ink/5 text-[8px] font-black uppercase tracking-[0.08em] text-ink-l">
+                <th class="text-left px-3 py-2 w-1/4">{{ translationService.t('axisHeader', 'assessment.results', 'Axis') }}</th>
+                <th class="text-center px-3 py-2 w-1/4">{{ translationService.t('poleHeader', 'assessment.results', 'Pole') }}</th>
+                <th class="text-center px-3 py-2">{{ translationService.t('intensityHeader', 'assessment.results', 'Intensity') }}</th>
+                <th class="text-right px-3 py-2 w-16">{{ translationService.t('valueHeader', 'assessment.results', 'Value') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (dim of ['AGENCY', 'TEMPERATURE', 'FOCUS', 'ATTACHMENT']; track dim) {
+                <tr class="border-t border-ink/10">
+                  <td class="px-3 py-3 align-middle">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2.5 h-2.5 rounded-full shrink-0"
+                            [style.background-color]="dimensionColors[dim]"></span>
+                      <span class="text-xs font-black uppercase tracking-[0.04em] text-ink">
+                        {{ translationService.t(dim.toLowerCase(), 'universe.dimensions') || dim }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3 align-middle text-center">
+                    <span class="text-[10px] font-black uppercase tracking-[0.06em] text-ink">
+                      {{ getPoleLabelForDimension(dim) }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 align-middle">
+                    <div class="h-2.5 bg-paper border border-ink/10 rounded-full overflow-hidden relative">
+                      <div class="absolute top-0 left-1/2 w-px h-full bg-ink/15 -translate-x-1/2"></div>
+                      <div class="absolute top-0 h-full rounded-full transition-all duration-1000"
+                           [style.background-color]="dimensionColors[dim]"
+                           [style.left.%]="canonicalDimensionalExpressions()[dim] < 0 ? 50 - Math.abs(canonicalDimensionalExpressions()[dim]) * 50 : 50"
+                           [style.width.%]="Math.abs(canonicalDimensionalExpressions()[dim]) * 50"></div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3 align-middle text-right">
+                    @if (Math.abs(canonicalDimensionalExpressions()[dim]) < 0.05) {
+                      <span class="text-[10px] font-black uppercase text-ink-l">—</span>
+                    } @else {
+                      <span class="text-xs font-black text-ink">
+                        {{ getDimensionPct(dim) }}
+                        <span class="text-ink-l ml-0.5">{{ canonicalDimensionalExpressions()[dim] > 0 ? '→' : '←' }}</span>
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION: HERO -->
+      <section id="hero" class="py-8 md:py-12">
+        <div class="text-center bg-white border-[3px] border-ink rounded-2xl p-6 md:p-8 shadow-[6px_6px_0_#1C1917]">
+          <div class="flex justify-center mb-4">
+            <div class="relative">
+              <app-blob-character
+                [color]="res.pantheon[0].color || getClusterColor(res.pantheon[0].cluster) || 'var(--accent-teal)'"
+                [mood]="getArchetypeMood(res.pantheon[0].cluster)"
+                size="lg"
+                [animate]="true">
+              </app-blob-character>
+              <div class="absolute -inset-5 rounded-full opacity-30 blur-2xl"
+                   [style.background-color]="res.pantheon[0].color || getClusterColor(res.pantheon[0].cluster)"></div>
+            </div>
+          </div>
+          <h3 class="text-2xl md:text-3xl font-black neo-serif text-ink">{{ res.pantheon[0].name }}</h3>
+          <span class="inline-block mt-2 text-[9px] font-bold uppercase tracking-[0.1em] px-3 py-1 rounded-full border"
+                [style.color]="getClusterColor(res.pantheon[0].cluster)"
+                [style.border-color]="getClusterColor(res.pantheon[0].cluster) + '40'"
+                [style.background-color]="getClusterColor(res.pantheon[0].cluster) + '15'">
+            {{ translationService.t(res.pantheon[0].cluster, 'universe.clusterNames') }}
+          </span>
+        </div>
+
+        <!-- AI Narrative -->
+        @if (narrativeDegraded()) {
+          <div class="mt-6 rounded-2xl border-2 border-amber bg-amber/10 p-4 flex items-start gap-3" role="status" aria-live="polite">
+            <span class="text-2xl shrink-0">⚠️</span>
+            <div class="min-w-0 flex-1">
+              <div class="text-[11px] font-black uppercase tracking-[0.12em] text-amber-deep">
+                {{ translationService.t('degradedBannerTitle', 'assessment.results', 'AI enrichment unavailable') }}
+              </div>
+              <p class="text-sm text-ink mt-1 leading-relaxed">
+                {{ translationService.t('degradedBannerBody', 'assessment.results', 'The full AI-written narrative is temporarily unavailable. Your archetype pantheon, dimensional signature, and clinical indicators below are still accurate — only the prose narrative is the local fallback. You can retry to get the full version.') }}
+              </p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button (click)="retryCalculate()"
+                        class="bg-ink text-white border-2 border-ink rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.1em] hover:bg-ink/90 transition-colors">
+                  🔄 {{ translationService.t('retryNarrative', 'assessment.results', 'Retry full narrative') }}
+                </button>
+                <button (click)="downloadFallbackData()"
+                        class="bg-white text-ink border-2 border-ink rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] hover:bg-ink/5 transition-colors">
+                  📁 {{ translationService.t('downloadBackup', 'assessment.results') }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+        <div class="prose prose-sm max-w-none text-ink mt-6" [innerHTML]="parseMarkdown(res.analysis)"></div>
+      </section>
+
+      <!-- SECTION: DIMENSIONAL SIGNATURE -->
+      <section id="signature" class="py-8 border-t-[3px] border-ink/10">
+        <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('signatureLabel', 'assessment.results') }}</h4>
+
+        @if (isBalancedProfile()) {
+          <div class="flex items-center gap-3 bg-sage/10 border border-sage/30 rounded-xl p-3 mb-4">
+            <span class="text-xl">⚖️</span>
+            <span class="text-xs font-bold text-ink">{{ translationService.t('balancedProfile', 'assessment.results') }}</span>
+          </div>
+        }
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          @for(dimension of ['AGENCY', 'TEMPERATURE', 'FOCUS', 'ATTACHMENT']; track dimension) {
+            <div class="bg-white border-2 border-ink rounded-xl p-3">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[9px] font-black uppercase tracking-[0.05em] text-ink-l">{{ translationService.t(dimension.toLowerCase(), 'universe.dimensions') || dimension }}</span>
+                <span class="text-xs font-black text-ink">
+                  @if (Math.abs(dimensionalExpressions()[dimension]) < 0.05) {
+                    {{ translationService.t('balanced', 'assessment.results') }}
+                  } @else {
+                    {{ (Math.abs(dimensionalExpressions()[dimension]) * 100).toFixed(0) }}%
+                    {{ dimensionalExpressions()[dimension] > 0 ? '→' : '←' }}
+                  }
+                </span>
+              </div>
+              <div class="h-3 bg-paper border-2 border-ink rounded-full overflow-hidden relative">
+                <div class="absolute top-0 left-1/2 w-px h-full bg-ink/25 -translate-x-1/2"></div>
+                <div class="absolute top-0 h-full rounded-full transition-all duration-1000 score-fill-animated"
+                     [style.background-color]="dimensionColors[dimension]"
+                     [style.left.%]="dimensionalExpressions()[dimension] < 0 ? 50 - Math.abs(dimensionalExpressions()[dimension]) * 50 : 50"
+                     [style.width.%]="Math.abs(dimensionalExpressions()[dimension]) * 50"></div>
+                <div class="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink bg-paper shadow-sm transition-all duration-1000"
+                     [style.left.%]="(dimensionalExpressions()[dimension] + 1) * 50"
+                     [style.background-color]="dimensionColors[dimension]"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- SECTION: POLE SCORES / SPECTRUM -->
+      @if (poleScores(); as ps) {
+        <section id="spectrum" class="py-8 border-t-[3px] border-ink/10">
+          <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('poleScoresTitle', 'assessment.results') }}</h4>
+
+          <div class="space-y-3">
+            <!-- Agency -->
+            <div class="bg-white border-2 border-ink rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-[9px] font-bold uppercase text-ink-l">{{ translationService.t('agencyActive', 'assessment.results') }}</span>
+                <div class="flex-1 h-2 bg-paper border border-ink/10 rounded-full relative">
+                  <div class="absolute top-0 left-1/2 w-px h-full bg-ink/15"></div>
+                  <div class="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-orange border-2 border-white shadow-sm transition-all duration-700"
+                       [style.left.%]="(ps.center[0] + 1) / 2 * 100"
+                       style="transform: translate(-50%, -50%)"></div>
+                </div>
+                <span class="text-[9px] font-bold uppercase text-ink-l">{{ translationService.t('agencyReceptive', 'assessment.results') }}</span>
+              </div>
+            </div>
+            <!-- Temperature -->
+            <div class="bg-white border-2 border-ink rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-[9px] font-bold uppercase text-ink-l">{{ translationService.t('tempCool', 'assessment.results') }}</span>
+                <div class="flex-1 h-2 bg-paper border border-ink/10 rounded-full relative">
+                  <div class="absolute top-0 left-1/2 w-px h-full bg-ink/15"></div>
+                  <div class="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-rose border-2 border-white shadow-sm transition-all duration-700"
+                       [style.left.%]="(ps.center[1] + 1) / 2 * 100"
+                       style="transform: translate(-50%, -50%)"></div>
+                </div>
+                <span class="text-[9px] font-bold uppercase text-ink-l">{{ translationService.t('tempHot', 'assessment.results') }}</span>
+              </div>
+            </div>
+            <!-- Focus -->
+            <div class="bg-white border-2 border-ink rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-[9px] font-bold uppercase text-ink-l">{{ translationService.t('focusSelf', 'assessment.results') }}</span>
+                <div class="flex-1 h-2 bg-paper border border-ink/10 rounded-full relative">
+                  <div class="absolute top-0 left-1/2 w-px h-full bg-ink/15"></div>
+                  <div class="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-teal-400 border-2 border-white shadow-sm transition-all duration-700"
+                       [style.left.%]="(ps.center[2] + 1) / 2 * 100"
+                       style="transform: translate(-50%, -50%)"></div>
+                </div>
+                <span class="text-[9px] font-bold uppercase text-ink-l">{{ translationService.t('focusOther', 'assessment.results') }}</span>
+              </div>
+            </div>
+            <!-- Attachment -->
+            <div class="bg-white border-2 border-ink rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-[9px] font-bold uppercase text-ink-l">{{ translationService.t('attAvoidant', 'assessment.results') }}</span>
+                <div class="flex-1 h-2 bg-paper border border-ink/10 rounded-full relative">
+                  <div class="absolute top-0 left-1/2 w-px h-full bg-ink/15"></div>
+                  <div class="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-lavender border-2 border-white shadow-sm transition-all duration-700"
+                       [style.left.%]="(ps.center[3] + 1) / 2 * 100"
+                       style="transform: translate(-50%, -50%)"></div>
+                </div>
+                <span class="text-[9px] font-bold uppercase text-ink-l">{{ translationService.t('attAnxious', 'assessment.results') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Health + disorganized badges -->
+          <div class="flex flex-wrap gap-1.5 mt-4">
+            <span class="text-[8px] font-bold uppercase px-2 py-0.5 rounded-full bg-sage/10 border border-sage/30 text-ink">
+              {{ translationService.t('healthScore', 'assessment.results') }}: {{ (ps.healthScore * 100).toFixed(0) }}%
+            </span>
+            @if (ps.disorganizedAttachment) {
+              <span class="text-[8px] font-bold uppercase px-2 py-0.5 rounded-full bg-rose/10 border border-rose/30 text-ink">
+                {{ translationService.t('disorganizedFlag', 'assessment.results') }}
+              </span>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- SECTION: PANTHEON -->
+      <section id="pantheon" class="py-8 border-t-[3px] border-ink/10">
+        <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-2">{{ translationService.t('pantheonTitle', 'assessment.results') }}</h4>
+        <p class="text-xs text-ink-l mb-6">{{ translationService.t('pantheonSubtitle', 'assessment.results') }}</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          @for (archetype of res.pantheon; track archetype.name; let first = $first) {
+            <div class="bg-white border-2 border-ink rounded-xl p-4"
+                 [ngClass]="first ? 'shadow-[4px_4px_0_#1C1917]' : ''">
+              <div class="flex items-start gap-3">
+                <div class="shrink-0 w-10 h-10 flex items-center justify-center">
+                  <app-blob-character [color]="archetype.color || getClusterColor(archetype.cluster)" [mood]="getArchetypeMood(archetype.cluster)" size="sm"></app-blob-character>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap gap-1.5 mb-1.5">
+                    <span class="text-[8px] font-bold px-2 py-0.5 rounded-full border"
+                          [style.color]="getClusterColor(archetype.cluster)"
+                          [style.border-color]="getClusterColor(archetype.cluster) + '40'"
+                          [style.background-color]="getClusterColor(archetype.cluster) + '15'">
+                      {{ translationService.t(archetype.cluster, 'universe.clusterNames') }}
+                    </span>
+                    @if (archetype.partType) {
+                      <span class="text-[8px] font-bold uppercase px-2 py-0.5 rounded-full"
+                            [ngClass]="archetype.partType">
+                        {{ getPartTypeLabel(archetype.partType) }}
+                      </span>
+                    }
+                  </div>
+                  <h4 class="text-sm font-black text-ink leading-tight">{{ archetype.name }}</h4>
+                  <p class="text-xs text-ink-l leading-relaxed mt-1 line-clamp-3">{{ archetype.description || archetype.wound || '' }}</p>
+                  @if (archetype.developmentalOrigin) {
+                    <span class="text-[7px] font-bold uppercase tracking-[0.06em] px-1.5 py-0.5 rounded bg-lavender/10 text-ink mt-2 inline-block">
+                      {{ getOriginLabel(archetype.developmentalOrigin) }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- SECTION: SYSTEM DYNAMICS -->
+      @if (res.dynamics?.length) {
+        <section id="dynamics" class="py-8 border-t-[3px] border-ink/10">
+          <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('dynamicsLabel', 'assessment.results') }}</h4>
+
+          <div class="bg-white border-2 border-ink rounded-xl p-4">
+            <div class="space-y-2">
+              @for (dynamic of res.dynamics!; track dynamic.description) {
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-sky/10 text-ink">{{ dynamic.protector }}</span>
+                  <span class="text-[8px] font-bold text-ink-l">{{ dynamic.mechanism === 'manages' ? '🛡️' : '🔥' }}</span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-orange/10 text-ink">{{ dynamic.protects }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- SECTION: COMPLEXES -->
+      @if (complexes().length > 0) {
+        <section id="complexes" class="py-8 border-t-[3px] border-ink/10">
+          <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('complexesTitle', 'assessment.results') }}</h4>
+
+          <div class="space-y-3">
+            @for (cx of complexes(); track cx.name) {
+              <div class="bg-white border-2 border-ink rounded-xl p-4 border-l-4 border-l-rose">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-black text-ink">{{ translationService.getLanguage() === 'ru' ? cx.nameRu : cx.name }}</span>
+                  <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-rose/10 border border-rose/30 text-ink">{{ Math.round(cx.severity * 100) }}%</span>
+                </div>
+                <p class="text-xs text-ink leading-relaxed mb-2">{{ translationService.getLanguage() === 'ru' ? cx.coreWoundRu : cx.coreWound }}</p>
+                <div class="flex flex-wrap gap-1.5 mb-2">
+                  @for (name of cx.contributingArchetypes; track name) {
+                    <span class="text-[8px] font-bold px-2 py-0.5 rounded bg-ink/5 text-ink">{{ name }}</span>
+                  }
+                </div>
+                <p class="text-[11px] text-ink-l leading-relaxed">{{ translationService.getLanguage() === 'ru' ? cx.defensePatternRu : cx.defensePattern }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- SECTION: DEFENSE HIERARCHY -->
+      @if (defenseHierarchy(); as dh) {
+        @if (dh.layers.length > 0) {
+          <section id="defense" class="py-8 border-t-[3px] border-ink/10">
+            <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('defenseTitle', 'assessment.results') }}</h4>
+
+            <div class="space-y-2">
+              @for (layer of dh.layers; track layer.level) {
+                <div class="bg-white border border-ink/15 rounded-lg p-3 border-l-4"
+                     [ngClass]="[
+                       layer.level === 1 ? 'border-l-sky' : '',
+                       layer.level === 2 ? 'border-l-orange' : '',
+                       layer.level === 3 ? 'border-l-lavender' : ''
+                     ]">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="w-6 h-6 flex items-center justify-center rounded-full bg-ink text-white text-[9px] font-black">L{{ layer.level }}</span>
+                    <span class="text-[10px] font-black uppercase tracking-[0.06em] text-ink">{{ translationService.getLanguage() === 'ru' ? layer.labelRu : layer.label }}</span>
+                  </div>
+                  <div class="flex flex-wrap gap-1.5 mb-1">
+                    @for (part of layer.parts; track part) {
+                      <span class="text-[8px] font-bold px-2 py-0.5 rounded bg-ink/5 text-ink">{{ part }}</span>
+                    }
+                  </div>
+                  <p class="text-[11px] text-ink-l leading-relaxed">{{ translationService.getLanguage() === 'ru' ? layer.descriptionRu : layer.description }}</p>
+                </div>
+              }
+            </div>
+
+            @if (dh.escalationPaths.length > 0) {
+              <div class="mt-4">
+                <h5 class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l mb-3">{{ translationService.t('escalationLabel', 'assessment.results') }}</h5>
+                @for (path of dh.escalationPaths; track path.from + path.to) {
+                  <div class="bg-ink/[0.03] rounded-lg p-3 mb-2">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-ink/5 text-ink">{{ path.from }}</span>
+                      <span class="text-orange font-bold text-xs">&rarr;</span>
+                      <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-ink/5 text-ink">{{ path.to }}</span>
+                    </div>
+                    <p class="text-[11px] text-ink-l leading-relaxed">{{ translationService.getLanguage() === 'ru' ? path.triggerRu : path.trigger }}</p>
+                  </div>
+                }
+              </div>
+            }
+          </section>
+        }
+      }
+
+      <!-- SECTION: TRIGGER MAP -->
+      @if (triggerMap().length > 0) {
+        <section id="triggers" class="py-8 border-t-[3px] border-ink/10">
+          <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('triggerMapTitle', 'assessment.results') }}</h4>
+
+          <div class="space-y-2">
+            @for (trig of triggerMap(); track trig.partName) {
+              <div class="bg-white border-2 border-ink rounded-xl p-4 shadow-[4px_4px_0_#1C1917]">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-sm font-black text-ink">{{ trig.partName }}</span>
+                  <span class="text-[8px] font-bold uppercase px-2 py-0.5 rounded-full"
+                        [ngClass]="trig.partType === 'manager' ? 'bg-sky/10 border border-sky/30 text-ink' : trig.partType === 'firefighter' ? 'bg-orange/10 border border-orange/30 text-ink' : trig.partType === 'exile' ? 'bg-mustard/10 border border-mustard/30 text-ink' : 'bg-sage/10 border border-sage/30 text-ink'">
+                    {{ getPartTypeLabel(trig.partType) }}
+                  </span>
+                </div>
+                <div class="flex flex-col gap-1 mb-2">
+                  @for (sit of (translationService.getLanguage() === 'ru' ? trig.triggerSituationsRu : trig.triggerSituations); track $index) {
+                    <span class="text-xs text-ink leading-relaxed">• {{ sit }}</span>
+                  }
+                </div>
+                <p class="text-xs text-ink leading-relaxed bg-ink/[0.03] rounded p-2 mb-1">{{ translationService.getLanguage() === 'ru' ? trig.reactionPatternRu : trig.reactionPattern }}</p>
+                <p class="text-[11px] text-ink-l italic">{{ translationService.getLanguage() === 'ru' ? (trig.underlyingWoundRu || trig.underlyingWound) : trig.underlyingWound }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- SECTION: INTEGRATION PATHWAY -->
+      @if (integrationPathway().length > 0) {
+        <section id="pathway" class="py-8 border-t-[3px] border-ink/10">
+          <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('pathwayTitle', 'assessment.results') }}</h4>
+
+          <div class="space-y-3">
+            @for (step of integrationPathway(); track step.stage) {
+              <div class="flex gap-3 bg-white border border-ink/15 rounded-lg p-3">
+                <span class="w-7 h-7 flex items-center justify-center rounded-full bg-ink text-white text-xs font-black shrink-0">{{ step.stage }}</span>
+                <div class="min-w-0">
+                  <span class="text-xs font-black text-ink block">{{ translationService.getLanguage() === 'ru' ? step.stageNameRu : step.stageName }}</span>
+                  <p class="text-[11px] text-ink-l mt-0.5 leading-relaxed">{{ translationService.getLanguage() === 'ru' ? step.actionRu : step.action }}</p>
+                  <div class="flex flex-wrap gap-1.5 mt-1.5">
+                    @for (part of step.targetParts; track part) {
+                      <span class="text-[8px] font-bold px-2 py-0.5 rounded bg-ink/5 text-ink">{{ part }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- SECTION: DIAGNOSTICS -->
+      @if (dissociation() || regulation() || boundaryStyle() || coherence()) {
+        <section id="diagnostics" class="py-8 border-t-[3px] border-ink/10 pb-24 md:pb-8">
+          <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('diagnosticsTitle', 'assessment.results') }}</h4>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            @if (dissociation(); as dis) {
+              <div class="bg-white border-2 border-ink rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[9px] font-black uppercase tracking-[0.06em] text-ink">{{ translationService.t('dissociationLabel', 'assessment.results') }}</span>
+                  <span class="text-[8px] font-black uppercase tracking-[0.05em] px-2 py-0.5 rounded" [ngClass]="dis.level">{{ translationService.getLanguage() === 'ru' ? dis.levelRu : dis.level }}</span>
+                </div>
+                <div class="h-2 bg-paper border border-ink/10 rounded-full overflow-hidden mb-2">
+                  <div class="h-full rounded-full bg-ink/30 transition-all duration-1000 score-fill-animated" [style.width.%]="dis.score * 100"></div>
+                </div>
+                <p class="text-xs text-ink-l leading-relaxed">{{ translationService.getLanguage() === 'ru' ? dis.descriptionRu : dis.description }}</p>
+              </div>
+            }
+            @if (regulation(); as reg) {
+              <div class="bg-white border-2 border-ink rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[9px] font-black uppercase tracking-[0.06em] text-ink">{{ translationService.t('regulationLabel', 'assessment.results') }}</span>
+                  <span class="text-[8px] font-black uppercase tracking-[0.05em] px-2 py-0.5 rounded" [ngClass]="reg.dysregulationPattern">{{ translationService.getLanguage() === 'ru' ? reg.dysregulationPatternRu : reg.dysregulationPattern }}</span>
+                </div>
+                <div class="h-2 bg-paper border border-ink/10 rounded-full overflow-hidden mb-2">
+                  <div class="h-full rounded-full bg-sage transition-all duration-1000 score-fill-animated" [style.width.%]="reg.windowOfTolerance * 100"></div>
+                </div>
+                <p class="text-xs text-ink-l leading-relaxed">{{ translationService.getLanguage() === 'ru' ? reg.descriptionRu : reg.description }}</p>
+              </div>
+            }
+            @if (boundaryStyle(); as bnd) {
+              <div class="bg-white border-2 border-ink rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[9px] font-black uppercase tracking-[0.06em] text-ink">{{ translationService.t('boundaryLabel', 'assessment.results') }}</span>
+                  <span class="text-[8px] font-black uppercase tracking-[0.05em] px-2 py-0.5 rounded" [ngClass]="bnd.style">{{ translationService.getLanguage() === 'ru' ? bnd.styleRu : bnd.style }}</span>
+                </div>
+                <div class="h-2 bg-paper border border-ink/10 rounded-full overflow-hidden mb-2">
+                  <div class="h-full rounded-full bg-lavender transition-all duration-1000 score-fill-animated" [style.width.%]="bnd.score * 100"></div>
+                </div>
+                <p class="text-xs text-ink-l leading-relaxed">{{ translationService.getLanguage() === 'ru' ? bnd.descriptionRu : bnd.description }}</p>
+              </div>
+            }
+            @if (coherence(); as coh) {
+              <div class="bg-white border-2 border-ink rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[9px] font-black uppercase tracking-[0.06em] text-ink">{{ translationService.t('coherenceLabel', 'assessment.results') }}</span>
+                  <span class="text-[8px] font-black uppercase tracking-[0.05em] px-2 py-0.5 rounded" [ngClass]="coh.level">{{ translationService.getLanguage() === 'ru' ? coh.levelRu : coh.level }}</span>
+                </div>
+                <div class="h-2 bg-paper border border-ink/10 rounded-full overflow-hidden mb-2">
+                  <div class="h-full rounded-full bg-mint transition-all duration-1000 score-fill-animated" [style.width.%]="coh.score * 100"></div>
+                </div>
+                <p class="text-xs text-ink-l leading-relaxed">{{ translationService.getLanguage() === 'ru' ? coh.descriptionRu : coh.description }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Bottom spacer for mobile nav -->
+      <div class="h-4"></div>
+    </div>
+  </div>
+
+  <!-- Fixed bottom action bar (above mobile section nav) -->
+  <div class="fixed bottom-[52px] lg:bottom-0 left-0 right-0 z-40 bg-paper border-t-[3px] border-ink">
+    <div class="max-w-4xl mx-auto px-4 md:px-6 lg:ml-24 lg:mr-auto py-3 flex flex-col lg:flex-row items-center gap-3 lg:gap-4">
+      @if (!isSpecialistView()) {
+        <button (click)="onViewUniverse()"
+                class="w-full lg:w-auto bg-ink text-white border-2 border-ink rounded-xl px-6 py-3 text-xs font-black uppercase tracking-[0.1em] hover:bg-ink/90 transition-colors">
+          {{ translationService.t('enterUniverse', 'assessment.results') }}
+        </button>
+      }
+      <div class="flex items-center gap-3 flex-wrap justify-center">
+        <button (click)="downloadFallbackData()" class="text-[10px] font-bold text-ink-l hover:text-ink transition-colors flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          {{ translationService.t('downloadBackup', 'assessment.results') }}
+        </button>
+        @if (!isSpecialistView()) {
+          <span class="text-ink/20">·</span>
+          <button (click)="retakeAssessment.emit()" class="text-[10px] font-bold text-ink-l hover:text-ink transition-colors">{{ translationService.t('retake', 'assessment.results') }}</button>
+        }
+        <span class="text-ink/20">·</span>
+        <button (click)="goBack.emit()" class="text-[10px] font-bold text-ink-l hover:text-ink transition-colors">
+          @if (isSpecialistView()) {
+            {{ translationService.t('backToCabinet', 'cabinet', 'Back to cabinet') }}
+          } @else {
+            {{ translationService.t('backToIntro', 'assessment.results') }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

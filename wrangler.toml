@@ -1,0 +1,17 @@
+name = "archetypeai-worker"
+main = "worker.ts"
+compatibility_date = "2026-04-13"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[vars]
+# Do NOT commit real API keys. API keys (GOOGLE_API_KEY, OPENROUTER_API_KEY,
+# NVIDIA_API_KEY, OLLAMA_API_KEY) live in Cloudflare's encrypted secret store
+# and are set via `wrangler secret put <KEY_NAME>`. They cannot also be listed
+# here — wrangler rejects a secret whose name collides with a var.
+OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free"
+AI_PROVIDER_DEFAULT = "ollama"

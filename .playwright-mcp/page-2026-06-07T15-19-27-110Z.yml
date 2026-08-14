@@ -1,0 +1,116 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e949]:
+    - generic [ref=e950]:
+      - generic [ref=e951]:
+        - generic [ref=e952]: Personal cabinet
+        - heading "Your Space" [level=1] [ref=e953]
+        - paragraph [ref=e954]: Tasks, progress, retests, and your saved synastries — all in one place.
+      - button "Back" [ref=e955] [cursor=pointer]
+    - generic [ref=e956]:
+      - generic [ref=e957]:
+        - generic [ref=e958]: Quick actions
+        - generic [ref=e959]:
+          - button "See Universe" [ref=e960] [cursor=pointer]
+          - button "Retake test" [ref=e961] [cursor=pointer]
+        - generic [ref=e962]:
+          - generic [ref=e963]: Assigned tasks
+          - generic [ref=e964]: Coming soon — your specialist will be able to assign structured tasks here.
+      - generic [ref=e965]:
+        - generic [ref=e967]:
+          - generic [ref=e968]: Progress
+          - generic [ref=e969]: Assessment history
+        - generic [ref=e970]:
+          - generic [ref=e971]:
+            - generic [ref=e972]: Pick a version
+            - combobox "Pick a saved assessment version" [ref=e973] [cursor=pointer]:
+              - option "07.06.2026, 18:16:39 — deterministic" [selected]
+              - option "07.06.2026, 18:16:38 — deterministic"
+              - option "07.06.2026, 18:16:17 — deterministic"
+              - option "07.06.2026, 18:16:07 — deterministic"
+              - option "07.06.2026, 18:07:31 — deterministic"
+              - option "07.06.2026, 18:07:31 — deterministic"
+              - option "07.06.2026, 18:07:26 — deterministic"
+              - option "07.06.2026, 18:07:17 — deterministic"
+              - option "07.06.2026, 18:03:47 — deterministic"
+              - option "07.06.2026, 17:51:46 — deterministic"
+              - option "07.06.2026, 17:51:46 — deterministic"
+              - option "07.06.2026, 17:51:28 — deterministic"
+              - option "07.06.2026, 17:51:13 — deterministic"
+              - option "07.06.2026, 17:51:13 — deterministic"
+              - option "07.06.2026, 17:51:03 — deterministic"
+              - option "07.06.2026, 17:50:31 — deterministic"
+              - option "07.06.2026, 17:50:31 — deterministic"
+              - option "07.06.2026, 17:50:26 — deterministic"
+              - option "07.06.2026, 17:49:46 — deterministic"
+              - option "07.06.2026, 17:49:46 — deterministic"
+          - generic [ref=e974]:
+            - generic [ref=e975]: Selected
+            - generic [ref=e976]: 07.06.2026, 18:16:39
+            - generic [ref=e977]: deterministic
+      - generic [ref=e978]:
+        - generic [ref=e979]: Account
+        - generic [ref=e980]: Share with your specialist
+        - paragraph [ref=e981]: Copy your User ID (UID) or email and share it with the specialist.
+        - generic [ref=e982]:
+          - generic [ref=e983]:
+            - generic [ref=e984]: Email
+            - generic [ref=e985]:
+              - generic [ref=e986]: wmobilas@gmail.com
+              - button "Copy" [ref=e987] [cursor=pointer]
+          - generic [ref=e988]:
+            - generic [ref=e989]: User ID (UID)
+            - generic [ref=e990]:
+              - generic [ref=e991]: lrX9P6pwbuQg5wOoQ6rqfT7mtyF3
+              - button "Copy" [ref=e992] [cursor=pointer]
+          - button "Copy account JSON" [ref=e993] [cursor=pointer]
+      - generic [ref=e994]:
+        - generic [ref=e995]: Past synastries
+        - generic [ref=e996]: Saved reports
+        - generic [ref=e997]: No saved synastry reports yet. When you run synastry, the report will show up here.
+      - generic [ref=e998]:
+        - generic [ref=e999]: Admin
+        - generic [ref=e1000]: Share admin access
+        - paragraph [ref=e1001]: Add another admin by email. (Convenience only — enforce security with Firebase rules + custom claims later.)
+        - generic [ref=e1002]:
+          - textbox "Admin email" [ref=e1003]
+          - button "Add admin" [disabled] [ref=e1004]
+      - generic [ref=e1005]:
+        - generic [ref=e1007]:
+          - generic [ref=e1008]: Admin
+          - generic [ref=e1009]: My clients
+          - paragraph [ref=e1010]: Clients who shared their User ID (UID) with you. View their latest assessment and keep private notes.
+        - generic [ref=e1011]:
+          - generic [ref=e1012]: Add client by User ID
+          - paragraph [ref=e1013]: Paste the client's User ID (UID) below. You can also add their email so it's easier to identify them later.
+          - generic [ref=e1014]:
+            - generic [ref=e1015]:
+              - generic [ref=e1016]: Client User ID (UID)
+              - textbox "Client User ID (UID)" [ref=e1017]:
+                - /placeholder: e.g. aBcD1234XyZ
+            - generic [ref=e1018]:
+              - generic [ref=e1019]: Client email (optional)
+              - textbox "Client email (optional)" [ref=e1020]:
+                - /placeholder: client@example.com
+          - button "Add client" [disabled] [ref=e1021]
+        - generic [ref=e1023]:
+          - generic [ref=e1024]:
+            - generic [ref=e1025]:
+              - generic [ref=e1026]: Email
+              - generic [ref=e1027]: None
+              - generic [ref=e1028]: Client User ID (UID)
+              - generic [ref=e1029]: ouWwLKKpoceANorRdLY7sTQf7Or2
+              - generic [ref=e1030]: "Last assessment:"
+              - generic [ref=e1031]: 07.06.2026, 17:45:44
+            - generic [ref=e1032]:
+              - generic [ref=e1033]: Notes
+              - textbox "Notes" [ref=e1034]:
+                - /placeholder: Internal notes (only you can see these)…
+                - text: Viktor
+              - button "Save notes" [disabled] [ref=e1036]
+          - generic [ref=e1037]:
+            - button "Download this client’s assessment answers as a .txt file" [ref=e1038] [cursor=pointer]: Download report
+            - button "View matrix (universe visualisation) for this client" [ref=e1039] [cursor=pointer]: View matrix
+            - button "View the AI-generated narrative report for this client" [ref=e1040] [cursor=pointer]: View AI report
+            - button "Remove" [ref=e1041] [cursor=pointer]
+  - iframe [ref=e1042]:
+    

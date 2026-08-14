@@ -1,0 +1,33 @@
+# Cross-Origin-Opener-Policy
+# ---------------------------
+# We use Firebase Auth's `signInWithPopup` for "Sign in with Google",
+# which opens an `accounts.google.com` popup. The Firebase SDK then
+# polls `popup.closed` to detect when the user closes the auth window.
+# Modern Chrome defaults to `Cross-Origin-Opener-Policy: same-origin`
+# (or applies it implicitly), which isolates the popup into a different
+# browsing context group and BLOCKS the `closed` read. The browser
+# logs `Cross-Origin-Opener-Policy policy would block the window.closed
+# call.` and (in some Chrome versions) the SDK thinks the popup closed
+# prematurely, breaking the auth flow.
+#
+# The fix: set COOP to `same-origin-allow-popups`, which keeps the
+# popup partially observable (closed is readable) without breaking
+# cross-origin isolation entirely.
+#
+# Cross-Origin-Resource-Policy
+# ----------------------------
+# Default CORP is `same-origin`, which blocks other origins (testing
+# tools, embedded widgets) from loading our assets. `cross-origin`
+# allows them while still respecting the `Access-Control-Allow-Origin`
+# contract for cross-origin fetches.
+#
+# (Note: the `Permissions-Policy` warnings the user sees in DevTools —
+# "Unrecognized feature: 'browsing-topics'", "run-ad-auction",
+# "private-state-token-*", "attribution-reporting", etc. — come from
+# the *Google sign-in iframe* at `accounts.google.com`, NOT from our
+# domain. We can't suppress those without controlling Google's
+# response headers, and they're warnings rather than errors — the
+# sign-in flow still works once the COOP block is removed here.)
+/*
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Cross-Origin-Resource-Policy: cross-origin

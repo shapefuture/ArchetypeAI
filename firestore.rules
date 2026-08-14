@@ -1,0 +1,161 @@
+rules_version = '2';
+
+// ============================================================================
+// ArchetypeAI — Firestore Security Rules
+// ----------------------------------------------------------------------------
+// These rules enforce: "each user can read/write ONLY their own data tree"
+// under /users/{uid}/... . Admin allowlist and share codes have narrow
+// additional rules. Real admin security (custom claims) is a follow-up.
+//
+// IMPORTANT: deploy with `firebase deploy --only firestore:rules` from the
+// project that owns archetype-ai-3e43b, OR paste this into the Firebase
+// Console → Firestore → Rules editor.
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    // Does the requester appear in the admin allowlist?
+    // We allow self-bootstrap on first admin create (see adminAllowlist rule).
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/adminAllowlist/$(request.auth.token.email));
+    }
+
+    // ---------- user-owned data ----------
+    // Owner-only read/write on the entire /users/{uid} subtree. This covers
+    // assessment, history, connections, synastry, and any future per-user
+    // collections the app adds.
+    //
+    // The /assessment/ subcollection has ONE extra read path: a specialist
+    // (admin) who has been linked to this client via an `adminClients`
+    // document may read the client's latest assessment + history. This is
+    // what powers the "My clients" specialist dashboard — without this
+    // allowlist, the cross-user read fails with "Missing or insufficient
+    // permissions". Writes remain owner-only.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /assessment/{docId} {
+        allow read: if isOwner(userId)
+          || exists(/databases/$(database)/documents/adminClients/$(request.auth.uid + '_' + userId));
+        allow write: if isOwner(userId);
+      }
+      match /history/{docId} {
+        allow read: if isOwner(userId)
+          || exists(/databases/$(database)/documents/adminClients/$(request.auth.uid + '_' + userId));
+        allow write: if isOwner(userId);
+      }
+      match /connections/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /synastry/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // ---------- share codes ----------
+    // Reading a share code is allowed for any signed-in user (so a partner can
+    // look up an owner's uid by code). The actual assessment read for the
+    // shared user still requires the partner to hold a valid code — but
+    // Firestore rules can't easily do multi-step validation, so we keep the
+    // owner-only restriction on the assessment doc and treat share-code reads
+    // as best-effort (the owner can also embed the data in the share doc
+    // later if needed).
+    match /shareCodes/{code} {
+      allow read: if isSignedIn();
+      // Only the code owner can create/update/delete a code that points at
+      // their own uid.
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ---------- admin allowlist ----------
+    // Read: any signed-in user (used by AdminAccessService.isAdmin to check
+    //   whether the CURRENT user is an admin by looking up their own email).
+    // Create: any signed-in user — this is the bootstrap path. The first
+    //   admin is the bootstrap email hard-coded in AdminAccessService
+    //   (BOOTSTRAP_ADMIN_EMAILS). Anyone could theoretically create a new
+    //   admin entry; this is acceptable per the in-code comment that calls
+    //   client-side allowlisting a "convenience feature, not a security
+    //   boundary". Real hardening should use Firebase custom claims.
+    // Update / Delete: only an existing admin can change the allowlist.
+    match /adminAllowlist/{email} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- specialist client links (admin → client relationships) ----------
+    // Each doc carries an explicit `adminUid` field. The docId is
+    // `{adminUid}_{clientUid}` — the join key. Only the admin whose UID
+    // matches the doc's `adminUid` field can read/write it.
+    //
+    // We intentionally filter on the FIELD (not the docId prefix) because
+    // Firestore `list` queries without a `where` clause can't evaluate
+    // a rule that depends on `docId` — there is no specific document
+    // to check the rule against. The companion `listMyClients` query
+    // uses `where('adminUid', '==', adminUid)`, which is the idiomatic
+    // pattern for "give me only my own docs".
+    //
+    // Write operations are split because Firestore distinguishes:
+    //   - create: `resource.data` is null (no existing doc); use
+    //     `request.resource.data` to check the doc being written.
+    //   - update / delete: `resource.data` is the existing doc; use
+    //     `resource.data` to verify the requester owns it.
+    // A blanket `allow write: if resource.data.adminUid == ...` would
+    // fail on create (resource is null), which is exactly the bug that
+    // produced "Missing or insufficient permissions" when an admin
+    // tried to add a client.
+    match /adminClients/{docId} {
+      // Read (get or list) — requester must own the doc(s).
+      allow read: if isSignedIn() && resource.data.adminUid == request.auth.uid;
+      // Create — requester must set adminUid to their own UID.
+      allow create: if isSignedIn() && request.resource.data.adminUid == request.auth.uid;
+      // Update — requester must own the existing doc AND keep adminUid
+      // pointing at themselves (prevents an admin from reassigning a
+      // link to a different admin via update).
+      allow update: if isSignedIn()
+        && resource.data.adminUid == request.auth.uid
+        && request.resource.data.adminUid == request.auth.uid;
+      // Delete — requester must own the doc.
+      allow delete: if isSignedIn() && resource.data.adminUid == request.auth.uid;
+    }
+
+    // ---------- public user directory ----------
+    // Bidirectional UID<->email lookup so the admin's "Add client" form
+    // can auto-fill the other side. Each non-anonymous user writes their
+    // own doc on sign-in via UserDirectoryService.
+    //
+    // The docId is the user's UID (single-doc read by UID is indexless).
+    // The `emailLower` field is the lowercased email; the companion
+    // lookupByEmail() uses `where('emailLower', '==', email)` which
+    // requires the index declared in `firestore.indexes.json`.
+    //
+    // Privacy: the doc is readable by ANY signed-in user. It contains
+    // only the email + displayName (no assessment data, no PII), and
+    // is the same information a user implicitly shares when an admin
+    // types their email into the "Add client" form. Real hardening
+    // would gate reads on a Firebase custom claim (admin == true),
+    // which requires the Admin SDK on a server we don't have yet.
+    match /publicProfiles/{userId} {
+      // Read: any signed-in user. The `where('emailLower', '==', ...)`
+      // query works because the read rule does NOT depend on `docId`,
+      // so the SDK can evaluate it per-document in a list.
+      allow read: if isSignedIn();
+      // Write: only the user themselves can create/update/delete their
+      // own profile. A malicious user can't overwrite someone else's
+      // profile or impersonate them in the directory.
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+  }
+}

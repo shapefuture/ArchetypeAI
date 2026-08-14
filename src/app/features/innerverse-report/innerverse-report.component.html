@@ -1,0 +1,183 @@
+<article class="report">
+@if (profile(); as p) {
+  <!-- 1 · Constellation headline -->
+  <header class="report-header">
+    <button class="ghost-btn" (click)="back.emit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>{{ ui().back }}</span>
+    </button>
+    <p class="kicker">{{ ui().constellationOf }}</p>
+    <h1 class="constellation-name">{{ p.headline.name }}</h1>
+    <p class="constellation-pair">
+      {{ p.subtypes[p.headline.protector].name }}
+      {{ ui().and }}
+      {{ p.subtypes[p.headline.exile].name }}
+    </p>
+  </header>
+
+  @if (p.crisis) {
+    <aside class="crisis">{{ ui().crisis }}</aside>
+  }
+
+  <!-- 2 · Strength FIRST (§1.1 non-negotiable) -->
+  <section class="strength-hero">
+    <h2>{{ ui().strongestResource }}</h2>
+    <p class="strength-name">{{ p.strongestResource.id }}</p>
+    <p class="strength-sub">{{ ui().strongestResourceSub(p.strongestResource.id) }}</p>
+  </section>
+
+  <!-- 3 · Self energy + radar -->
+  <section class="panel">
+    <div class="row-between">
+      <h2>{{ ui().selfEnergy }}</h2>
+      <span class="big-number">{{ p.selfEnergy }}<small>/100</small></span>
+    </div>
+    <div class="burden-row">
+      <span class="gauge-label">{{ ui().burden }}</span>
+      <div class="gauge"><div class="gauge-fill" [style.width.%]="p.burden"></div></div>
+      <span class="gauge-value">{{ p.burden | number:'1.0-0' }}</span>
+    </div>
+    <p class="panel-sub">{{ ui().radar }}</p>
+    <div class="radar-grid">
+      @for (q of qualities; track q) {
+        <div class="radar-row">
+          <span class="radar-label">{{ q }}</span>
+          <div class="radar-track">
+            <div class="radar-fill" [style.width.%]="((p.selfRadar[q] - 20) / 60) * 100"></div>
+          </div>
+          <span class="radar-value">{{ p.selfRadar[q] }}</span>
+        </div>
+      }
+    </div>
+    <div class="attachment-line">
+      <span>{{ ui().attachment }}:</span>
+      <strong>{{ ui().attStyle[attachmentStyle()] }}</strong>
+    </div>
+  </section>
+
+  <!-- 4 · Parts by tier, flippable 4-layer cards -->
+  <section class="panel">
+    <h2>{{ ui().partsByTier }}</h2>
+    <p class="panel-sub">{{ ui().flipHint }}</p>
+    <div class="part-grid">
+      @for (id of sortedParts(); track id) {
+        <button class="part-card" [class.dominant]="p.parts[id].tier === 'dominant'"
+                [class.prominent]="p.parts[id].tier === 'prominent'"
+                (click)="cycleLayer(id)">
+          <div class="part-top">
+            <span class="part-name">{{ p.subtypes[id].name }}</span>
+            <span class="part-tier">{{ ui().tierNames[p.parts[id].tier] }}</span>
+          </div>
+          <span class="layer-label">{{ layerLabel(layerFor(id)) }}</span>
+          <p class="layer-text">{{ copyFor(id, layerFor(id)) }}</p>
+          <div class="t-bar"><div class="t-fill" [style.width.%]="((p.parts[id].T - 20) / 60) * 100"></div></div>
+          <span class="t-value">T {{ p.parts[id].T | number:'1.0-0' }}</span>
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- 5 · Polarizations -->
+  @if (p.polarizations.length > 0) {
+    <section class="panel">
+      <h2>{{ ui().polarizations }}</h2>
+      <p class="panel-sub">{{ ui().polarizationSub }}</p>
+      @for (pol of p.polarizations; track pol.name) {
+        <div class="polarization">
+          <div class="pol-nodes">
+            <span class="pol-node left">{{ p.subtypes[pol.pair[0]].name }}</span>
+            <span class="pol-arc" aria-hidden="true"></span>
+            <span class="pol-node right">{{ p.subtypes[pol.pair[1]].name }}</span>
+          </div>
+          <span class="pol-name">{{ pol.name }}</span>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- 6 · Complexes -->
+  <section class="panel">
+    <h2>{{ ui().complexes }}</h2>
+    @if (activeComplexDefs().length === 0) {
+      <p class="panel-sub">{{ ui().noComplexes }}</p>
+    }
+    @for (c of activeComplexDefs(); track c.id) {
+      <div class="complex" [class.gripping]="c.tier === 'gripping'">
+        <div class="complex-head">
+          <span class="complex-name">{{ c.def.name }}</span>
+          <span class="complex-tier">{{ c.tier }} · {{ c.activation | number:'1.0-0' }}</span>
+        </div>
+        <p class="complex-belief">
+          <em>{{ ui().complexBelief }}:</em> “{{ c.def.belief }}”
+        </p>
+        <p class="complex-experiment">
+          <em>{{ ui().complexExperiment }}:</em> {{ c.def.experiment }}
+        </p>
+      </div>
+    }
+  </section>
+
+  <!-- 7 · Coping stack -->
+  <section class="panel">
+    <h2>{{ ui().copingStack }}</h2>
+    <ol class="stack">
+      <li class="stack-level">
+        <span class="stack-name">{{ p.subtypes[p.copingStack.l1].name }}</span>
+      </li>
+      @if (p.copingStack.l2; as l2) {
+        <li class="stack-fails">{{ ui().whenFails }}</li>
+        <li class="stack-level">
+          <span class="stack-name">{{ p.subtypes[l2].name }}</span>
+        </li>
+      }
+      @if (p.copingStack.l3; as l3) {
+        <li class="stack-fails">{{ ui().whenFails }}</li>
+        <li class="stack-level">
+          <span class="stack-name">{{ p.subtypes[l3].name }}</span>
+        </li>
+      }
+      <li class="stack-fails">{{ ui().whenFails }}</li>
+      <li class="stack-level floor">
+        <span class="stack-name">{{ p.subtypes[p.copingStack.floor].name }}</span>
+        <span class="stack-belief">“{{ exileBelief(p.copingStack.floor) }}”</span>
+        <span class="stack-floor-label">{{ ui().floorLabel }}</span>
+      </li>
+    </ol>
+  </section>
+
+  <!-- 8 · Need hunger -->
+  @if (p.topHunger; as hunger) {
+    <section class="panel">
+      <h2>{{ ui().needs }}</h2>
+      <p class="panel-sub">{{ ui().needsSub }}</p>
+      <div class="need-card">
+        <span class="need-name">{{ hunger.need }}</span>
+        <p class="need-practice">{{ needPractice()[hunger.need] }}</p>
+      </div>
+    </section>
+  }
+
+  <!-- 9 · Resource bands -->
+  <section class="panel">
+    <h2>{{ ui().resources }}</h2>
+    <div class="resource-list">
+      @for (r of RESOURCES; track r) {
+        @let band = resourceBand(r);
+        <div class="resource-row">
+          <span class="resource-name">{{ r }}</span>
+          <div class="t-bar"><div class="t-fill gold" [style.width.%]="((p.resources[r].T - 20) / 60) * 100"></div></div>
+          <span class="resource-band" [class.hyper]="p.resources[r].band === 'hyper'"
+                [class.hypo]="p.resources[r].band === 'hypo'">{{ band.band }}</span>
+          @if (band.leak; as leak) {
+            <span class="resource-leak">{{ leak }}</span>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <footer class="report-footer">{{ ui().ethics }}</footer>
+}
+</article>

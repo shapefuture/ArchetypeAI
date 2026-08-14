@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* Cozy custom scrollbars for open notebook sections */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d9ccb9;
+  border-radius: 99px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #bfb09c;
+}
+
+/* Custom animation classes */
+.animate-floatUp {
+  animation: floatUp 3s ease-out infinite;
+}
+
+.animate-progressBar {
+  animation: progressBar 3s linear forwards;
+}
+
+.animate-fade {
+  animation: fade 0.8s ease-out forwards;
+}
+
+/* Keyframe definitions */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-200px) scale(0.2) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes progressBar {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Add a lovely hand-drawn wobble effect to stickers when hovered */
+.hover-wobble:hover {
+  animation: wobble 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes wobble {
+  0% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: rotate(2deg);
+  }
+}

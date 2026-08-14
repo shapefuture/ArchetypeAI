@@ -37,6 +37,7 @@ import { STORAGE_PORT, AssessmentData } from './app/core/ports/storage.port';
 
 
 const LOCAL_STORAGE_KEY = 'ARCHETYPE_ASSESSMENT_RESPONSES';
+const PROFILE_KEY = 'INNERVERSE_PROFILE_V1';
 const ASSESSMENT_INDEX_KEY = 'ARCHETYPE_ASSESSMENT_INDEX';
 const AUTH_REDIRECT_PENDING_KEY = 'ARCHETYPE_AUTH_REDIRECT_PENDING';
 
@@ -384,6 +385,7 @@ export class AppComponent implements OnDestroy {
     cancelAnimationFrame(this.loadingAnimFrame);
 
     if (!screen) {
+      this.restoreInnerverseProfile();
       this.appState.set('intro');
       return;
     }
@@ -394,7 +396,7 @@ export class AppComponent implements OnDestroy {
       filter: 'blur(10px)',
       duration: 0.55,
       ease: 'power3.inOut',
-      onComplete: () => this.appState.set('intro')
+      onComplete: () => { this.restoreInnerverseProfile(); this.appState.set('intro'); }
     });
   }
 
@@ -686,11 +688,25 @@ export class AppComponent implements OnDestroy {
 
   onDescentCompleted(input: AssessmentInput): void {
     this.innerverseProfile.set(scoreProfile(input));
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(input)); } catch { /* storage unavailable */ }
     this.appState.set('innerverse');
+  }
+
+  /** Restore the last completed descent so a reload never loses the report. */
+  restoreInnerverseProfile(): void {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      if (!raw) return;
+      this.innerverseProfile.set(scoreProfile(JSON.parse(raw) as AssessmentInput));
+    } catch { localStorage.removeItem(PROFILE_KEY); }
   }
 
   onInnerverseBack(): void {
     this.goToIntro();
+  }
+
+  openInnerverse(): void {
+    if (this.innerverseProfile()) this.appState.set('innerverse');
   }
 
   toggleLanguage(): void {

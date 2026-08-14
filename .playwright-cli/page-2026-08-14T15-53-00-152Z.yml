@@ -1,0 +1,10 @@
+- generic [ref=e948]:
+  - banner [ref=e949]:
+    - button "Exit" [ref=e950] [cursor=pointer]
+    - generic [ref=e954]: Innerverse
+  - main [ref=e955]:
+    - heading "Meet one part in 90 seconds" [level=1] [ref=e956]
+    - paragraph [ref=e957]: Fourteen statements. One part of you steps forward. No result is kept — it only opens the door.
+    - generic [ref=e958]:
+      - button "Meet one part in 90 seconds" [ref=e959] [cursor=pointer]
+      - button "Begin Descent I directly" [ref=e960] [cursor=pointer]

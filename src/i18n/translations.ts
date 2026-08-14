@@ -185,11 +185,11 @@ export const translations = {
       navDashboard: 'Dashboard', navLogout: 'Logout', navLogin: 'Login',
       startTest: 'Start Test \u2726',
       // Hero
-      liveBadge: 'Live', heroBadge: '64 Questions \u00B7 4 Axes \u00B7 AI-Powered',
-      heroTitleLine1: 'Map the', heroTitleEmphasis: 'chaos', heroTitleLine2: 'of connection.',
-      heroSubtitle: 'Stop guessing why your relationships stall. Answer 64 questions. Let AI decode your psychological archetypes into an interactive map.',
+      liveBadge: 'Live', heroBadge: '147 Statements \u00B7 18 Inner Parts \u00B7 IFS-Grounded',
+      heroTitleLine1: 'Meet the', heroTitleEmphasis: 'constellation', heroTitleLine2: 'inside you.',
+      heroSubtitle: 'Answer 147 statements across three sittings. Your inner parts become a living constellation \u2014 measured, not guessed. Grounded in Internal Family Systems: self-reflection, not diagnosis.',
       beginTest: '\u2726 Begin the Test', exploreMatrix: 'Explore Matrix',
-      statArchetypes: 'Archetype Clusters', statAxes: 'Relational Axes', statTime: '~10m', statTimeLabel: 'To Your Map',
+      statArchetypes: '18 Inner Parts', statAxes: '147 Statements', statTime: '~25m', statTimeLabel: 'To Your Map',
       // Marquee
       marqueeWord1: 'Uncover Patterns', marqueeWord2: 'Break the Loop', marqueeWord3: 'Know Thyself', marqueeWord4: 'Map the Chaos', marqueeWord5: 'Relational Geometry',
       // Problem
@@ -236,7 +236,7 @@ export const translations = {
       footerSubtitle: 'Take the test in 10 minutes and receive a personal map of your relational dynamics. Free and confidential.',
       uploadBackup: 'Upload Backup',
       downloadNoticeTitle: 'Important Note',
-      downloadNoticeDesc: 'After completing the 64 questions, make sure to download your clinical and relational results using the "Download Backup" button. This allows you to securely save your answers locally and restore them anytime.',
+      downloadNoticeDesc: 'Your answers stay on this device. The full battery is three sittings of 49 statements \u2014 pause after any sitting and your progress is kept. A backup can be downloaded from the dashboard at any time.',
       restoreBackup: 'Restore Last Assessment',
       resumeInProgress: 'Resume test in progress',
       resumeInProgressXofY: '{{count}} of {{total}} answered',
@@ -1086,11 +1086,11 @@ export const translations = {
       navDashboard: 'Кабинет', navLogout: 'Выйти', navLogin: 'Войти',
       startTest: 'Начать тест \u2726',
       // Hero
-      liveBadge: 'Live', heroBadge: '64 вопроса \u00B7 4 оси \u00B7 AI-анализ',
-      heroTitleLine1: 'Нанесите на карту', heroTitleEmphasis: 'хаос', heroTitleLine2: 'связей.',
-      heroSubtitle: 'Хватит гадать, почему ваши отношения заходят в тупик. Ответьте на 64 вопроса. Позвольте ИИ расшифровать ваши психологические архетипы в интерактивную карту.',
+      liveBadge: 'Live', heroBadge: '147 утверждений \u00B7 18 внутренних частей \u00B7 метод IFS',
+      heroTitleLine1: 'Внутри вас —', heroTitleEmphasis: 'созвездие', heroTitleLine2: 'познакомьтесь с ним.',
+      heroSubtitle: 'Ответьте на 147 утверждений в трёх частях — и ваши внутренние части станут живым созвездием: измеренным, а не выдуманным. В основе — метод «Внутренние семейные системы»: это самопознание, а не диагностика.',
       beginTest: '\u2726 Начать тест', exploreMatrix: 'Исследовать матрицу',
-      statArchetypes: 'Кластеров архетипов', statAxes: 'Ось отношений', statTime: '~10м', statTimeLabel: 'До вашей карты',
+      statArchetypes: '18 внутренних частей', statAxes: '147 утверждений', statTime: '~25 мин', statTimeLabel: 'До вашей карты',
       // Marquee
       marqueeWord1: 'Раскройте паттерны', marqueeWord2: 'Разорвите цикл', marqueeWord3: 'Познайте себя', marqueeWord4: 'Нанесите хаос на карту', marqueeWord5: 'Геометрия отношений',
       // Problem
@@ -1136,8 +1136,8 @@ export const translations = {
       footerTitle: 'Откройте свою', footerTitleEmphasis: 'вселенную.',
       footerSubtitle: 'Пройдите тест за 10 минут и получите личную карту ваших реляционных динамик. Бесплатно и конфиденциально.',
       uploadBackup: 'Загрузить бэкап',
-      downloadNoticeTitle: 'Важное примечание',
-      downloadNoticeDesc: 'После завершения ответов на 64 вопроса обязательно скачайте ваши клинические и реляционные результаты с помощью кнопки «Скачать копию». Это позволит вам сохранить ваши ответы локально и восстановить их в любое время.',
+      downloadNoticeTitle: 'Важно',
+      downloadNoticeDesc: 'Ответы остаются на вашем устройстве. Полный тест — три части по 49 утверждений: можно остановиться после любой части, и прогресс сохранится. Резервную копию в любой момент можно скачать из кабинета.',
       restoreBackup: 'Восстановить прошлый тест',
       resumeInProgress: 'Продолжить тест',
       resumeInProgressXofY: 'Отвечено {{count}} из {{total}}',

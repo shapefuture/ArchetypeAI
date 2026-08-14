@@ -14,6 +14,9 @@ describe('GeminiService', () => {
   beforeEach(() => {
     fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('network unavailable'));
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // TranslationService now restores the persisted language; reset to the
+    // English default so tests that don't set a language see EN fallbacks.
+    localStorage.removeItem('APP_LANG');
 
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), GeminiService, TranslationService],

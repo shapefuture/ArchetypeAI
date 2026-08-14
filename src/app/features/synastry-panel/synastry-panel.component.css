@@ -1,0 +1,101 @@
+/* ============================================
+   SYNASTRY PANEL — Full-Screen Scrollable Layout
+   Neo-Brutalist Design System
+   ============================================ */
+
+/* Neo-serif font for headings */
+:host {
+  --font-serif: 'DM Serif Display', Georgia, serif;
+}
+
+/* Scroll container */
+.synastry-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Section entry animation */
+.synastry-scroll section {
+  animation: sectionFadeIn 0.6s ease-out both;
+}
+.synastry-scroll section:nth-child(2) { animation-delay: 0.05s; }
+.synastry-scroll section:nth-child(3) { animation-delay: 0.1s; }
+.synastry-scroll section:nth-child(4) { animation-delay: 0.15s; }
+.synastry-scroll section:nth-child(5) { animation-delay: 0.2s; }
+.synastry-scroll section:nth-child(6) { animation-delay: 0.25s; }
+.synastry-scroll section:nth-child(7) { animation-delay: 0.3s; }
+.synastry-scroll section:nth-child(8) { animation-delay: 0.35s; }
+
+@keyframes sectionFadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Neo-serif utility */
+.neo-serif { font-family: var(--font-serif); }
+
+/* Score bar animation */
+.synastry-scroll .score-fill-animated {
+  animation: scoreGrow 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes scoreGrow {
+  from { width: 0 !important; }
+}
+
+/* ===== DIAGNOSTIC BADGES ===== */
+/* Regulation patterns */
+.stable { background: rgba(56, 176, 0, 0.1); color: #2e8f00; }
+.flooding { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
+.shutdown { background: rgba(139, 92, 246, 0.12); color: #7c4ddb; }
+
+/* Boundary styles */
+.rigid { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
+.porous { background: rgba(139, 92, 246, 0.12); color: #7c4ddb; }
+.flexible { background: rgba(56, 176, 0, 0.1); color: #2e8f00; }
+
+/* Dissociation levels */
+.high { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
+.low { background: rgba(139, 92, 246, 0.12); color: #7c4ddb; }
+.minimal { background: rgba(56, 176, 0, 0.1); color: #2e8f00; }
+
+/* Coherence levels */
+.oscillating { background: rgba(157, 2, 8, 0.1); color: #9d0208; }
+.moderate { background: rgba(139, 92, 246, 0.12); color: #7c4ddb; }
+.significant { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
+.fragmented { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
+
+/* ===== PROSE (Markdown Narrative) ===== */
+.synastry-scroll .prose {
+  font-family: var(--font-serif);
+  line-height: 1.8;
+}
+.synastry-scroll .prose :first-child { margin-top: 0; }
+.synastry-scroll .prose :last-child { margin-bottom: 0; }
+.synastry-scroll .prose h1,
+.synastry-scroll .prose h2,
+.synastry-scroll .prose h3 {
+  font-family: var(--font-serif);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+.synastry-scroll .prose h1 { font-size: 1.5rem; }
+.synastry-scroll .prose h2 { font-size: 1.25rem; }
+.synastry-scroll .prose h3 { font-size: 1.1rem; }
+.synastry-scroll .prose p { margin-bottom: 1em; }
+.synastry-scroll .prose ul,
+.synastry-scroll .prose ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+.synastry-scroll .prose li { margin-bottom: 0.4em; }
+.synastry-scroll .prose blockquote {
+  border-left: 3px solid var(--color-coral);
+  padding-left: 1em;
+  margin-left: 0;
+  font-style: italic;
+  opacity: 0.85;
+}
+.synastry-scroll .prose strong { font-weight: 900; }
+.synastry-scroll .prose em { font-style: italic; }

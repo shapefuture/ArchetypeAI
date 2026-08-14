@@ -1,0 +1,8 @@
+{
+  "/api/*": {
+    "target": "https://archetypeai-worker.wmobilas.workers.dev",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

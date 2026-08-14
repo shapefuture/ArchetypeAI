@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Archetypal Relational Universe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore the 4D map of relational dynamics through illustrated archetypes">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper-bg: #f6f3eb;
+      --ink-main: #4a3e35;
+      --accent-orange: #e69f00;
+    }
+    html, body {
+      width: 100%;
+      min-height: 100dvh;
+      margin: 0;
+      overflow: hidden;
+      background: #f5f1e8;
+    }
+    app-root {
+      display: block;
+      width: 100%;
+      min-height: 100dvh;
+    }
+    .loading-screen {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      min-height: 100dvh;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(28, 25, 23, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(28, 25, 23, 0.045) 1px, transparent 1px),
+        radial-gradient(circle at 50% 42%, rgba(240, 228, 66, 0.34), transparent 22rem),
+        linear-gradient(180deg, #fbf7ef 0%, #f5f1e8 58%, #ede8dd 100%);
+      background-size: 46px 46px, 46px 46px, auto, auto;
+      color: #1c1917;
+    }
+    .loading-constellation-canvas,
+    .loading-orbits {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .loading-orbits {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .loading-orbit {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 1;
+    }
+    .loading-orbit--1 { width: 200px; height: 200px; border: 2px solid rgba(28, 25, 23, 0.08); }
+    .loading-orbit--2 { width: 320px; height: 320px; border: 1px solid rgba(213, 94, 0, 0.16); }
+    .loading-orbit--3 { width: 460px; height: 460px; border: 1px solid rgba(28, 25, 23, 0.06); }
+    .loading-blob-container {
+      position: relative;
+      z-index: 10;
+      width: 160px;
+      height: 160px;
+      margin-bottom: 2rem;
+      filter: drop-shadow(8px 12px 0 rgba(28, 25, 23, 0.16));
+    }
+    .loading-blob-container app-blob-character {
+      display: block;
+      width: 160px;
+      height: 160px;
+    }
+    .loading-text-container,
+    .loading-progress-track,
+    .loading-dots,
+    .loading-tagline {
+      position: relative;
+      z-index: 10;
+    }
+    .loading-text {
+      max-width: min(560px, 85vw);
+      margin: 0;
+      color: #1c1917;
+      font: 600 clamp(1.3rem, 3vw, 1.8rem) 'Fraunces', Georgia, serif;
+      text-align: center;
+    }
+    .loading-progress-track {
+      width: 200px;
+      height: 3px;
+      margin-top: 1.8rem;
+      overflow: hidden;
+      border-radius: 3px;
+      border: 2px solid #1c1917;
+      background: rgba(28, 25, 23, 0.12);
+    }
+    .loading-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f0e442, #d55e00);
+    }
+    .loading-tagline {
+      margin-top: 1.4rem;
+      color: rgba(28, 25, 23, 0.42);
+      font: 900 9px system-ui, sans-serif;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body class="antialiased overflow-hidden">
+  <app-root></app-root>
+</body>
+</html>

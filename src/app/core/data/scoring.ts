@@ -951,7 +951,7 @@ export function generateArchetypes(responses: number[], lang: 'en' | 'ru' = 'en'
 
   if (profiles.length === 0) {
     // Edge case: all quiet dimensions — create one archetype at center
-    profiles.push({ poles: [], center: [...poles.center] as [number, number, number, number], rawScore: 0.1 });
+    profiles.push({ poles: [], center: [...poles.center] as [number, number, number, number], rawScore: 0.1, primaryStrength: 0.1 });
   }
 
   // Compute raw prominence from profile scores

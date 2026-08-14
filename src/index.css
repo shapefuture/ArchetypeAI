@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "./styles/design-system.css";
+@import "./styles/paper-texture.css";
+@import "./styles/intro-screen.css";
+@import "./styles/animations.css";
+@import "./styles/loading-screen.css";
+@import "./styles/neo-brutal.css";

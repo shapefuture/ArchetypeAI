@@ -1,0 +1,495 @@
+<!-- Fixed top bar -->
+<div class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 py-3 md:px-6 md:py-4"
+     [ngClass]="isLoading() ? 'bg-ink text-white' : 'bg-paper/90 backdrop-blur-md border-b-[3px] border-ink'">
+  <div class="flex items-center gap-3">
+    <span class="text-[9px] font-black uppercase tracking-[0.2em]"
+          [ngClass]="isLoading() ? 'text-white/50' : 'text-ink-l'">
+      {{ translationService.t('headerEyebrow', 'universe.synastry') }}
+    </span>
+  </div>
+  <div class="flex items-center gap-2">
+    @if (report()) {
+      <button class="w-9 h-9 flex items-center justify-center border-2 rounded-full transition-colors"
+              [ngClass]="isLoading() ? 'border-white/30 text-white/60 hover:bg-white/10' : 'border-ink text-ink hover:bg-ink hover:text-white'"
+              (click)="downloadClinicalReport()" [title]="translationService.t('clinicalExport', 'universe.synastry')">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+      </button>
+    }
+    <button class="w-9 h-9 flex items-center justify-center border-2 rounded-full transition-colors"
+            [ngClass]="isLoading() ? 'border-white/30 text-white/60 hover:bg-white/10' : 'border-ink text-ink hover:bg-ink hover:text-white'"
+            (click)="close.emit()">
+      <span class="text-sm font-bold">&times;</span>
+    </button>
+  </div>
+</div>
+
+<!-- LOADING STATE -->
+@if (isLoading()) {
+  <div class="fixed inset-0 bg-ink flex flex-col items-center justify-center loading-grid">
+    <canvas #loadingCanvas class="w-[300px] h-[300px] max-w-[80vw] max-h-[40vh]"></canvas>
+    <div class="mt-8 text-center">
+      <p class="text-white/90 font-black text-lg tracking-wide loading-cursor">{{ translationService.t('loadingText', 'universe.synastry') }}</p>
+      <p class="text-white/40 text-xs mt-3 font-bold uppercase tracking-[0.15em] transition-all duration-500">{{ getLoadingPhaseText() }}</p>
+      <div class="loading-dots mt-4">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- CONTENT STATE -->
+@if (report(); as r) {
+  <div class="synastry-scroll fixed inset-0 pt-14 pb-20 md:pb-6 overflow-y-auto neo-scroll"
+       [ngClass]="isLoading() ? 'opacity-0' : 'bg-paper'">
+
+    <!-- Desktop side nav -->
+    <nav class="hidden lg:flex fixed left-4 top-1/2 -translate-y-1/2 z-40 flex-col gap-2">
+      @for (id of SECTIONS; track id) {
+        <button class="group flex items-center gap-2" (click)="scrollToSection(id)">
+          <span class="w-2.5 h-2.5 rounded-full border-2 transition-all"
+                [ngClass]="activeSection() === id ? 'bg-ink border-ink scale-125' : 'bg-transparent border-ink/30 group-hover:border-ink/60'">
+          </span>
+          <span class="text-[8px] font-black uppercase tracking-[0.1em] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                [ngClass]="activeSection() === id ? 'text-ink' : 'text-ink-l'">
+            {{ getSectionLabel(id) }}
+          </span>
+        </button>
+      }
+    </nav>
+
+    <!-- Mobile bottom nav -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-paper border-t-[3px] border-ink px-2 py-2 flex gap-1 overflow-x-auto hide-scrollbar">
+      @for (id of SECTIONS; track id) {
+        <button class="shrink-0 px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.08em] rounded-full border-2 transition-all"
+                [ngClass]="activeSection() === id ? 'bg-ink text-white border-ink' : 'bg-white text-ink border-ink/20'"
+                (click)="scrollToSection(id)">
+          {{ getSectionLabel(id) }}
+        </button>
+      }
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 md:px-6 lg:ml-24 lg:mr-auto">
+
+      <!-- SECTION: HERO -->
+      <section id="hero" class="py-8 md:py-12">
+        <div class="flex flex-col md:flex-row items-stretch gap-4 md:gap-6">
+          <!-- Person 1 -->
+          <div class="flex-1 neo-card">
+            <div class="neo-card-shadow rounded-2xl"></div>
+            <div class="relative bg-white border-[3px] border-ink rounded-2xl p-5 md:p-6">
+              <span class="text-[8px] font-black uppercase tracking-[0.15em] text-coral">{{ translationService.t('person1Label', 'universe.synastry') }}</span>
+              @if (r.person1Summary.topArchetypes; as archetypes) {
+                <div class="flex items-center gap-3 mt-3">
+                  <span class="text-5xl leading-none">{{ archetypes[0].symbol }}</span>
+                  <div>
+                    <h3 class="text-xl font-black text-ink neo-serif">{{ archetypes[0].name }}</h3>
+                    <span class="text-[9px] font-bold uppercase tracking-[0.1em] text-ink-l">{{ getClusterLabel(archetypes[0].cluster) }}</span>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-1.5 mt-3">
+                  @for (a of archetypes; track a.name) {
+                    <span class="text-[8px] font-bold px-2 py-0.5 rounded-full bg-coral/10 text-ink border border-coral/20">
+                      {{ a.symbol }} {{ a.name }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Bridge -->
+          <div class="flex items-center justify-center md:flex-col">
+            <span class="text-3xl animate-pulse text-ink/40">⟷</span>
+          </div>
+
+          <!-- Person 2 -->
+          <div class="flex-1 neo-card">
+            <div class="neo-card-shadow rounded-2xl"></div>
+            <div class="relative bg-white border-[3px] border-ink rounded-2xl p-5 md:p-6">
+              <span class="text-[8px] font-black uppercase tracking-[0.15em] text-sky">{{ translationService.t('person2Label', 'universe.synastry') }}</span>
+              @if (r.person2Summary.topArchetypes; as archetypes) {
+                <div class="flex items-center gap-3 mt-3">
+                  <span class="text-5xl leading-none">{{ archetypes[0].symbol }}</span>
+                  <div>
+                    <h3 class="text-xl font-black text-ink neo-serif">{{ archetypes[0].name }}</h3>
+                    <span class="text-[9px] font-bold uppercase tracking-[0.1em] text-ink-l">{{ getClusterLabel(archetypes[0].cluster) }}</span>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-1.5 mt-3">
+                  @for (a of archetypes; track a.name) {
+                    <span class="text-[8px] font-bold px-2 py-0.5 rounded-full bg-sky/10 text-ink border border-sky/20">
+                      {{ a.symbol }} {{ a.name }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Relational Archetype -->
+        <div class="mt-6 text-center bg-white border-[3px] border-ink rounded-2xl p-6 shadow-[6px_6px_0_#1C1917]">
+          <span class="text-5xl block mb-2">{{ r.relationalArchetype.symbol }}</span>
+          <h3 class="text-2xl font-black neo-serif text-ink">{{ isLangRu() ? r.relationalArchetype.nameRu : r.relationalArchetype.nameEn }}</h3>
+          <p class="text-sm text-ink-l mt-2 leading-relaxed max-w-lg mx-auto">{{ isLangRu() ? r.relationalArchetype.descriptionRu : r.relationalArchetype.descriptionEn }}</p>
+        </div>
+      </section>
+
+      <!-- SECTION: SCORES -->
+      <section id="scores" class="py-8 border-t-[3px] border-ink/10">
+        <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('sectionScores', 'universe.synastry') }}</h4>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="flex items-center gap-3 bg-white border-2 border-ink rounded-xl p-3">
+            <span class="text-[9px] font-black uppercase tracking-[0.05em] text-ink-l w-28 shrink-0">{{ translationService.t('scoreResonanceDepth', 'universe.synastry') }}</span>
+            <div class="flex-1 h-3 bg-paper border-2 border-ink rounded-full overflow-hidden">
+              <div class="h-full bg-sky rounded-full transition-all duration-1000" [style.width.%]="r.resonanceDepth * 100"></div>
+            </div>
+            <span class="text-sm font-black text-ink w-10 text-right">{{ Math.round(r.resonanceDepth * 100) }}%</span>
+          </div>
+          <div class="flex items-center gap-3 bg-white border-2 border-ink rounded-xl p-3">
+            <span class="text-[9px] font-black uppercase tracking-[0.05em] text-ink-l w-28 shrink-0">{{ translationService.t('scoreGrowthPotential', 'universe.synastry') }}</span>
+            <div class="flex-1 h-3 bg-paper border-2 border-ink rounded-full overflow-hidden">
+              <div class="h-full bg-sage rounded-full transition-all duration-1000" [style.width.%]="r.growthPotential * 100"></div>
+            </div>
+            <span class="text-sm font-black text-ink w-10 text-right">{{ Math.round(r.growthPotential * 100) }}%</span>
+          </div>
+          <div class="flex items-center gap-3 bg-white border-2 border-ink rounded-xl p-3">
+            <span class="text-[9px] font-black uppercase tracking-[0.05em] text-ink-l w-28 shrink-0">{{ translationService.t('scoreChallengeLevel', 'universe.synastry') }}</span>
+            <div class="flex-1 h-3 bg-paper border-2 border-ink rounded-full overflow-hidden">
+              <div class="h-full bg-orange rounded-full transition-all duration-1000" [style.width.%]="r.challengeLevel * 100"></div>
+            </div>
+            <span class="text-sm font-black text-ink w-10 text-right">{{ Math.round(r.challengeLevel * 100) }}%</span>
+          </div>
+          <div class="flex items-center gap-3 bg-white border-2 border-ink rounded-xl p-3">
+            <span class="text-[9px] font-black uppercase tracking-[0.05em] text-ink-l w-28 shrink-0">{{ translationService.t('scoreSafetyIndex', 'universe.synastry') }}</span>
+            <div class="flex-1 h-3 bg-paper border-2 border-ink rounded-full overflow-hidden">
+              <div class="h-full bg-mint rounded-full transition-all duration-1000" [style.width.%]="r.safetyIndex * 100"></div>
+            </div>
+            <span class="text-sm font-black text-ink w-10 text-right">{{ Math.round(r.safetyIndex * 100) }}%</span>
+          </div>
+        </div>
+
+        <!-- Coordinates -->
+        <div class="mt-4 flex flex-col md:flex-row gap-3">
+          <div class="flex-1 bg-ink/5 rounded-xl p-3">
+            <span class="text-[7px] font-black uppercase tracking-[0.12em] text-coral block mb-2">{{ translationService.t('person1Label', 'universe.synastry') }}</span>
+            <div class="flex flex-wrap gap-1.5">
+              @for (dim of ['AGENCY', 'TEMPERATURE', 'FOCUS', 'ATTACHMENT']; track dim; let i = $index) {
+                <span class="text-[8px] font-bold px-2 py-0.5 rounded bg-white border border-ink/10 text-ink">
+                  {{ getDimensionLabel(dim) }} {{ r.person1Summary.center[i] >= 0 ? '+' : '' }}{{ r.person1Summary.center[i].toFixed(2) }}
+                </span>
+              }
+            </div>
+          </div>
+          <div class="flex-1 bg-ink/5 rounded-xl p-3">
+            <span class="text-[7px] font-black uppercase tracking-[0.12em] text-sky block mb-2">{{ translationService.t('person2Label', 'universe.synastry') }}</span>
+            <div class="flex flex-wrap gap-1.5">
+              @for (dim of ['AGENCY', 'TEMPERATURE', 'FOCUS', 'ATTACHMENT']; track dim; let i = $index) {
+                <span class="text-[8px] font-bold px-2 py-0.5 rounded bg-white border border-ink/10 text-ink">
+                  {{ getDimensionLabel(dim) }} {{ r.person2Summary.center[i] >= 0 ? '+' : '' }}{{ r.person2Summary.center[i].toFixed(2) }}
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: RESONANCE -->
+      <section id="resonance" class="py-8 border-t-[3px] border-ink/10">
+        <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('sectionResonance', 'universe.synastry') }}</h4>
+
+        <div class="space-y-3">
+          @for (dr of r.dimensionalResonance; track dr.dimension) {
+            <div class="bg-white border-2 border-ink rounded-xl p-4 shadow-[4px_4px_0_#1C1917]"
+                 [class.border-l-4]="true"
+                 [ngClass]="dr.pattern === 'harmonic' ? 'border-l-sage' : dr.pattern === 'complementary' ? 'border-l-sky' : dr.pattern === 'polarized' ? 'border-l-orange' : 'border-l-rose'">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-black uppercase tracking-[0.08em] text-ink">{{ getDimensionLabel(dr.dimension) }}</span>
+                <span class="text-[8px] font-black uppercase tracking-[0.1em] px-2 py-0.5 rounded-full border"
+                      [ngClass]="dr.pattern === 'harmonic' ? 'bg-sage/10 border-sage/30 text-ink' : dr.pattern === 'complementary' ? 'bg-sky/10 border-sky/30 text-ink' : dr.pattern === 'polarized' ? 'bg-orange/10 border-orange/30 text-ink' : 'bg-rose/10 border-rose/30 text-ink'">
+                  {{ getResonancePatternLabel(dr.pattern) }}
+                </span>
+              </div>
+              <div class="h-2 bg-paper border border-ink/10 rounded-full mb-2 overflow-hidden">
+                <div class="h-full rounded-full bg-ink/30 transition-all duration-1000" [style.width.%]="(Math.abs(dr.delta) / 2) * 100"></div>
+              </div>
+              <p class="text-xs text-ink-l leading-relaxed">{{ isLangRu() ? dr.descriptionRu : dr.descriptionEn }}</p>
+            </div>
+          }
+        </div>
+
+        @if (r.polarMap.length > 0) {
+          <div class="mt-6">
+            <h5 class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l mb-3">{{ translationService.t('polarMapTitle', 'universe.synastry') }}</h5>
+            @for (pol of r.polarMap; track pol.dimension) {
+              <div class="bg-white border border-ink/15 rounded-lg p-3 mb-2">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[10px] font-black uppercase text-ink">{{ getDimensionLabel(pol.dimension) }}</span>
+                  <div class="flex-1 h-1.5 bg-paper rounded-full overflow-hidden"><div class="h-full bg-orange rounded-full" [style.width.%]="pol.severity * 100"></div></div>
+                </div>
+                <p class="text-xs font-bold text-ink">{{ isLangRu() ? pol.directionRu : pol.direction }}</p>
+                <p class="text-[11px] text-ink-l mt-1">{{ isLangRu() ? pol.clinicalSignificanceRu : pol.clinicalSignificance }}</p>
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- SECTION: ATTACHMENT -->
+      <section id="attachment" class="py-8 border-t-[3px] border-ink/10">
+        <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('sectionAttachment', 'universe.synastry') }}</h4>
+
+        <div class="text-center bg-white border-[3px] border-ink rounded-2xl p-6 shadow-[6px_6px_0_#1C1917]">
+          <span class="text-5xl block mb-2">{{ getDanceIcon(r.attachmentDance.pattern) }}</span>
+          <h3 class="text-xl font-black neo-serif text-ink">{{ formatDancePattern(r.attachmentDance.pattern) }}</h3>
+          <p class="text-sm text-ink-l mt-2 leading-relaxed">{{ isLangRu() ? r.attachmentDance.descriptionRu : r.attachmentDance.descriptionEn }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+          <div class="bg-white border-2 border-ink rounded-xl p-4">
+            <span class="text-[8px] font-black uppercase tracking-[0.1em] text-ink-l block mb-2">{{ translationService.t('cycleLabel', 'universe.synastry') }}</span>
+            <p class="text-xs text-ink leading-relaxed">{{ isLangRu() ? r.attachmentDance.cycleRu : r.attachmentDance.cycleEn }}</p>
+          </div>
+          <div class="bg-white border-2 border-ink rounded-xl p-4 border-l-4 border-l-sage">
+            <span class="text-[8px] font-black uppercase tracking-[0.1em] text-ink-l block mb-2">{{ translationService.t('deactivationLabel', 'universe.synastry') }}</span>
+            <p class="text-xs text-ink leading-relaxed">{{ isLangRu() ? r.attachmentDance.deactivationRu : r.attachmentDance.deactivationEn }}</p>
+          </div>
+        </div>
+
+        <!-- Dyadic -->
+        <div class="mt-6">
+          <h5 class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l mb-3">{{ translationService.t('dyadicTitle', 'universe.synastry') }}</h5>
+          <div class="space-y-2">
+            <div class="bg-ink/[0.03] rounded-lg p-3">
+              <span class="text-[7px] font-black uppercase tracking-[0.1em] text-ink-l block mb-1">{{ translationService.t('emotionalLoad', 'universe.synastry') }}</span>
+              <p class="text-xs text-ink leading-relaxed">{{ isLangRu() ? r.dyadicAnalysis.emotionalLoadDescRu : r.dyadicAnalysis.emotionalLoadDesc }}</p>
+            </div>
+            <div class="bg-ink/[0.03] rounded-lg p-3">
+              <span class="text-[7px] font-black uppercase tracking-[0.1em] text-ink-l block mb-1">{{ translationService.t('initiationPattern', 'universe.synastry') }}</span>
+              <p class="text-xs text-ink leading-relaxed">{{ isLangRu() ? r.dyadicAnalysis.initiationDescRu : r.dyadicAnalysis.initiationDesc }}</p>
+            </div>
+            <div class="bg-ink/[0.03] rounded-lg p-3">
+              <span class="text-[7px] font-black uppercase tracking-[0.1em] text-ink-l block mb-1">{{ translationService.t('familyRecap', 'universe.synastry') }}</span>
+              <p class="text-xs text-ink leading-relaxed">{{ isLangRu() ? r.dyadicAnalysis.familyRecapitulationRu : r.dyadicAnalysis.familyRecapitulation }}</p>
+            </div>
+            <div class="bg-lavender/10 border border-lavender/30 rounded-lg p-3">
+              <span class="text-[7px] font-black uppercase tracking-[0.1em] text-ink-l block mb-1">{{ translationService.t('unconsciousContract', 'universe.synastry') }}</span>
+              <p class="text-xs text-ink leading-relaxed">{{ isLangRu() ? r.dyadicAnalysis.unconsciousContractRu : r.dyadicAnalysis.unconsciousContract }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: SHADOW -->
+      <section id="shadow" class="py-8 border-t-[3px] border-ink/10">
+        <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('sectionShadow', 'universe.synastry') }}</h4>
+
+        @if (r.shadowProjections.length > 0) {
+          <div class="space-y-3">
+            @for (sp of r.shadowProjections; track sp.fromCluster + sp.toCluster) {
+              <div class="bg-white border-2 border-ink rounded-xl p-4 shadow-[4px_4px_0_#1C1917]">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-coral/10 border border-coral/20">{{ getClusterLabel(sp.fromCluster) }}</span>
+                  <span class="text-ink/40 font-bold">&rarr;</span>
+                  <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-sky/10 border border-sky/20">{{ getClusterLabel(sp.toCluster) }}</span>
+                </div>
+                <p class="text-xs text-ink leading-relaxed mb-2">{{ isLangRu() ? sp.mechanismRu : sp.mechanismEn }}</p>
+                <div class="bg-sage/10 border border-sage/20 rounded-lg p-2.5">
+                  <strong class="text-[8px] uppercase tracking-[0.08em] text-ink-l">{{ translationService.t('healingLabel', 'universe.synastry') }}</strong>
+                  <span class="text-xs text-ink ml-1">{{ isLangRu() ? sp.healingRu : sp.healingEn }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="text-sm text-ink-l text-center py-8">{{ translationService.t('noProjections', 'universe.synastry') }}</p>
+        }
+
+        @if (r.crossPersonTriggers.length > 0) {
+          <div class="mt-6">
+            <h5 class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l mb-3">{{ translationService.t('crossTriggersTitle', 'universe.synastry') }}</h5>
+            @for (ct of r.crossPersonTriggers; track ct.person1Trigger + ct.person2Trigger) {
+              <div class="bg-white border border-ink/15 rounded-lg p-3 mb-2">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-coral/10">{{ ct.person1Trigger }}</span>
+                  <span class="text-orange font-bold text-xs">&harr;</span>
+                  <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-sky/10">{{ ct.person2Trigger }}</span>
+                </div>
+                <p class="text-[11px] text-ink-l leading-relaxed">{{ isLangRu() ? ct.interactionDescRu : ct.interactionDesc }}</p>
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- SECTION: SYSTEMS -->
+      <section id="systems" class="py-8 border-t-[3px] border-ink/10">
+        <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('sectionSystems', 'universe.synastry') }}</h4>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Person 1 Systems -->
+          <div class="bg-white border-2 border-ink rounded-xl p-4">
+            <span class="text-[8px] font-black uppercase tracking-[0.12em] text-coral block mb-3">{{ translationService.t('person1Label', 'universe.synastry') }}</span>
+            @if (r.person1Dynamics.length > 0) {
+              <div class="space-y-2">
+                @for (d of r.person1Dynamics; track d.protector + d.protects) {
+                  <div>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-ink/5">{{ d.protector }}</span>
+                      <span class="text-[8px] font-bold text-ink-l">{{ getDynamicMechanismLabel(d.mechanism) }}</span>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-ink/5">{{ d.protects }}</span>
+                    </div>
+                    <p class="text-[10px] text-ink-l mt-1 pl-2 border-l-2 border-ink/10">{{ d.description }}</p>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="text-xs text-ink-l italic py-4 text-center">{{ translationService.t('noDynamics', 'universe.synastry') }}</p>
+            }
+            <div class="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-ink/10">
+              <span class="text-[7px] font-bold uppercase px-1.5 py-0.5 rounded"
+                    [ngClass]="r.person1Regulation.dysregulationPattern">
+                {{ translationService.t('regulationLabel', 'universe.synastry') }}: {{ isLangRu() ? r.person1Regulation.dysregulationPatternRu : r.person1Regulation.dysregulationPattern }}
+              </span>
+              <span class="text-[7px] font-bold uppercase px-1.5 py-0.5 rounded"
+                    [ngClass]="r.person1Boundary.style">
+                {{ translationService.t('boundaryLabel', 'universe.synastry') }}: {{ isLangRu() ? r.person1Boundary.styleRu : r.person1Boundary.style }}
+              </span>
+              <span class="text-[7px] font-bold uppercase px-1.5 py-0.5 rounded"
+                    [ngClass]="r.person1Dissociation.level">
+                {{ translationService.t('dissociationLabel', 'universe.synastry') }}: {{ isLangRu() ? r.person1Dissociation.levelRu : r.person1Dissociation.level }}
+              </span>
+              <span class="text-[7px] font-bold uppercase px-1.5 py-0.5 rounded"
+                    [ngClass]="r.person1Coherence.level">
+                {{ translationService.t('coherenceLabel', 'universe.synastry') }}: {{ isLangRu() ? r.person1Coherence.levelRu : r.person1Coherence.level }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Person 2 Systems -->
+          <div class="bg-white border-2 border-ink rounded-xl p-4">
+            <span class="text-[8px] font-black uppercase tracking-[0.12em] text-sky block mb-3">{{ translationService.t('person2Label', 'universe.synastry') }}</span>
+            @if (r.person2Dynamics.length > 0) {
+              <div class="space-y-2">
+                @for (d of r.person2Dynamics; track d.protector + d.protects) {
+                  <div>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-ink/5">{{ d.protector }}</span>
+                      <span class="text-[8px] font-bold text-ink-l">{{ getDynamicMechanismLabel(d.mechanism) }}</span>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-ink/5">{{ d.protects }}</span>
+                    </div>
+                    <p class="text-[10px] text-ink-l mt-1 pl-2 border-l-2 border-ink/10">{{ d.description }}</p>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="text-xs text-ink-l italic py-4 text-center">{{ translationService.t('noDynamics', 'universe.synastry') }}</p>
+            }
+            <div class="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-ink/10">
+              <span class="text-[7px] font-bold uppercase px-1.5 py-0.5 rounded"
+                    [ngClass]="r.person2Regulation.dysregulationPattern">
+                {{ translationService.t('regulationLabel', 'universe.synastry') }}: {{ isLangRu() ? r.person2Regulation.dysregulationPatternRu : r.person2Regulation.dysregulationPattern }}
+              </span>
+              <span class="text-[7px] font-bold uppercase px-1.5 py-0.5 rounded"
+                    [ngClass]="r.person2Boundary.style">
+                {{ translationService.t('boundaryLabel', 'universe.synastry') }}: {{ isLangRu() ? r.person2Boundary.styleRu : r.person2Boundary.style }}
+              </span>
+              <span class="text-[7px] font-bold uppercase px-1.5 py-0.5 rounded"
+                    [ngClass]="r.person2Dissociation.level">
+                {{ translationService.t('dissociationLabel', 'universe.synastry') }}: {{ isLangRu() ? r.person2Dissociation.levelRu : r.person2Dissociation.level }}
+              </span>
+              <span class="text-[7px] font-bold uppercase px-1.5 py-0.5 rounded"
+                    [ngClass]="r.person2Coherence.level">
+                {{ translationService.t('coherenceLabel', 'universe.synastry') }}: {{ isLangRu() ? r.person2Coherence.levelRu : r.person2Coherence.level }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        @if (r.boundaryInteraction) {
+          <div class="mt-4 bg-lavender/10 border-2 border-lavender/30 rounded-xl p-4">
+            <span class="text-[8px] font-black uppercase tracking-[0.1em] text-ink-l block mb-1">{{ translationService.t('boundaryInteraction', 'universe.synastry') }}</span>
+            <p class="text-sm font-black text-ink">{{ isLangRu() ? r.boundaryInteraction.patternRu : r.boundaryInteraction.pattern }}</p>
+            <p class="text-xs text-ink-l mt-1">{{ isLangRu() ? r.boundaryInteraction.riskRu : r.boundaryInteraction.risk }}</p>
+          </div>
+        }
+      </section>
+
+      <!-- SECTION: GROWTH -->
+      <section id="growth" class="py-8 border-t-[3px] border-ink/10">
+        <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('sectionGrowth', 'universe.synastry') }}</h4>
+
+        <!-- Relational archetype details -->
+        <div class="bg-white border-2 border-ink rounded-xl p-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <span class="text-[8px] font-black uppercase tracking-[0.08em] text-sage block mb-1">{{ translationService.t('invitationLabel', 'universe.synastry') }}</span>
+              <p class="text-xs text-ink leading-relaxed">{{ isLangRu() ? r.relationalArchetype.invitationRu : r.relationalArchetype.invitationEn }}</p>
+            </div>
+            <div>
+              <span class="text-[8px] font-black uppercase tracking-[0.08em] text-rose block mb-1">{{ translationService.t('shadowLabel', 'universe.synastry') }}</span>
+              <p class="text-xs text-ink leading-relaxed">{{ isLangRu() ? r.relationalArchetype.shadowRu : r.relationalArchetype.shadowEn }}</p>
+            </div>
+          </div>
+        </div>
+
+        @if (r.growthSequence.length > 0) {
+          <div class="mb-6">
+            <h5 class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l mb-3">{{ translationService.t('growthSequenceTitle', 'universe.synastry') }}</h5>
+            @for (step of r.growthSequence; track step.phase + step.action) {
+              <div class="border-l-4 pl-4 py-2 mb-2"
+                   [ngClass]="step.phase === 'immediate' ? 'border-l-orange bg-orange/5' : step.phase === 'short_term' ? 'border-l-sky bg-sky/5' : 'border-l-sage bg-sage/5'">
+                <span class="text-[8px] font-black uppercase tracking-[0.08em] text-ink-l">{{ isLangRu() ? step.phaseLabelRu : step.phaseLabel }}</span>
+                <p class="text-xs text-ink leading-relaxed mt-1">{{ isLangRu() ? step.actionRu : step.action }}</p>
+                @if (step.precondition) {
+                  <p class="text-[10px] text-rose mt-1 bg-rose/10 rounded px-2 py-1">{{ isLangRu() ? step.preconditionRu : step.precondition }}</p>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (r.sharedComplexes.length > 0 || r.complementaryComplexes.length > 0) {
+          <div class="mb-6">
+            <h5 class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l mb-3">{{ translationService.t('sharedComplexesTitle', 'universe.synastry') }}</h5>
+            <div class="flex flex-wrap gap-2">
+              @for (name of r.sharedComplexes; track name) {
+                <span class="text-[10px] font-bold px-3 py-1 rounded-lg bg-rose/10 border border-rose/20 text-ink">{{ name }}</span>
+              }
+              @for (pair of r.complementaryComplexes; track pair) {
+                <span class="text-[10px] font-bold px-3 py-1 rounded-lg bg-lavender/10 border border-lavender/20 text-ink">{{ pair }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        @if (r.jointPathway.length > 0) {
+          <div>
+            <h5 class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l mb-3">{{ translationService.t('jointPathwayTitle', 'universe.synastry') }}</h5>
+            @for (step of r.jointPathway; track step.stage) {
+              <div class="flex gap-3 mb-3 bg-white border border-ink/15 rounded-lg p-3">
+                <span class="w-7 h-7 flex items-center justify-center rounded-full bg-ink text-white text-xs font-black shrink-0">{{ step.stage }}</span>
+                <div>
+                  <span class="text-xs font-black text-ink block">{{ isLangRu() ? step.labelRu : step.label }}</span>
+                  <p class="text-[11px] text-ink-l mt-0.5 leading-relaxed">{{ isLangRu() ? step.actionRu : step.action }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- SECTION: NARRATIVE -->
+      @if (narrative()) {
+        <section id="narrative" class="py-8 border-t-[3px] border-ink/10 pb-24 md:pb-8">
+          <h4 class="text-[9px] font-black uppercase tracking-[0.2em] text-ink-l mb-6">{{ translationService.t('sectionNarrative', 'universe.synastry') }}</h4>
+          <div class="prose prose-sm max-w-none text-ink" [innerHTML]="parseMarkdown(narrative())"></div>
+        </section>
+      }
+
+    </div>
+  </div>
+}

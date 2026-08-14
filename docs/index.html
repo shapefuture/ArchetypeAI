@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Archetype.ai — an interactive illustrated map of relational dynamics.">
+  <title>Archetype.ai — Relational Universe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="grain" aria-hidden="true"></canvas>
+
+  <!-- HEADER — Fixed pill navbar, uniform element sizing -->
+  <header class="top" id="top">
+    <a class="brand" href="#hero" aria-label="Home">
+      <!-- Enhanced logo: animated ring + inner pulse -->
+      <svg class="logo-mark" viewBox="0 0 36 36" width="36" height="36">
+        <circle cx="18" cy="18" r="15" fill="#FF6656" stroke="#1c1917" stroke-width="2.5"/>
+        <circle cx="18" cy="18" r="8" fill="none" stroke="#fff" stroke-width="1.5" opacity=".35" class="logo-ring"/>
+        <circle cx="18" cy="18" r="3.5" fill="#fff">
+          <animate attributeName="r" values="3;4.2;3" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="1;.6;1" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <path d="M10 26 Q18 30 26 26" fill="none" stroke="#1c1917" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Archetype.ai</span>
+    </a>
+    <nav id="nav">
+      <a href="#problem">Problem</a>
+      <a href="#matrix">Matrix</a>
+      <a href="#codex">Codex</a>
+      <a href="#engine">Engine</a>
+    </nav>
+    <div class="header-actions">
+      <button class="ghost" id="lang">EN</button>
+      <button class="ghost" id="uploadBtn" title="Upload backup" aria-label="Upload backup JSON">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </button>
+      <input type="file" id="backupInput" accept=".json" style="display:none"/>
+      <button class="cta small" data-test>Start Test</button>
+    </div>
+    <button class="hamb" id="hamb" aria-label="Menu"><i></i><i></i><i></i></button>
+  </header>
+
+  <main>
+    <!-- HERO — Fixed text overflow, readable on all sizes -->
+    <section id="hero" class="hero panel">
+      <div class="gridbg"></div>
+      <div class="orbs" aria-hidden="true"></div>
+      <article class="heroCopy">
+        <p class="pill"><i></i>64 questions · 4 axes · living map</p>
+        <h1>Map the<br><em>chaos</em> of<br>connection.</h1>
+        <p class="lead">Stop guessing why relationships loop. Decode your archetypal physics through a playful, interactive relational universe.</p>
+        <div class="actions">
+          <button class="cta" data-test>Begin the Test ✦</button>
+          <a class="link" href="#matrix">Explore Matrix ↓</a>
+        </div>
+        <div class="stats">
+          <b>8<span>Archetypes</span></b>
+          <b>4<span>Axes</span></b>
+          <b>~10m<span>To clarity</span></b>
+        </div>
+      </article>
+    </section>
+
+    <section class="ticker">
+      <div><span>Uncover patterns ✦ Break the loop ✦ Know thyself ✦ Relational geometry ✦ </span><span>Uncover patterns ✦ Break the loop ✦ Know thyself ✦ Relational geometry ✦ </span></div>
+    </section>
+
+    <section id="problem" class="panel pale">
+      <header class="sec">
+        <p>THE PROBLEM</p>
+        <h2>Why does the same story keep returning?</h2>
+        <span>The loop is not a curse. It is geometry you have not seen yet.</span>
+      </header>
+      <div class="cards problem"></div>
+    </section>
+
+    <!-- SYNERGY MATRIX — Fixed mobile, no whitespace, toggle deselect -->
+    <section id="matrix" class="panel dark">
+      <div class="aur a1"></div>
+      <div class="aur a2"></div>
+      <header class="sec left">
+        <p>THE TOOL</p>
+        <h2>The Synergy Matrix</h2>
+        <span>Select two archetypes. Watch the relational weather compute in real time.</span>
+      </header>
+      <div class="matrix">
+        <div id="pickers" class="pickers"></div>
+        <article class="readout">
+          <div id="orbitMini" class="orbitMini" aria-hidden="true"></div>
+          <div id="result" class="result">
+            <small>RESULT</small>
+            <h3>Awaiting input</h3>
+            <p>Choose two nodes to calculate resonance, friction and growth edge.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <header class="sec">
+        <p>CAPABILITIES</p>
+        <h2>Everything you need to decode connection.</h2>
+      </header>
+      <div class="bento">
+        <article><h3>Interactive universe</h3><p>Orbit, zoom and inspect a dynamic archetype constellation.</p></article>
+        <article><h3>Local insight engine</h3><p>Instant pattern summaries without API keys or backend dependencies.</p></article>
+        <article><h3>Four-axis profile</h3><p>Agency, Temperature, Focus and Attachment plotted as a personal vector.</p></article>
+        <article><h3>Shareable report</h3><p>Exportable JSON-style results for coaching, journaling and reflection.</p></article>
+      </div>
+    </section>
+
+    <section id="codex" class="panel dark codexSec">
+      <header class="sec left">
+        <p>THE CODEX</p>
+        <h2>Eight entities.<br>Infinite configurations.</h2>
+        <span>Tap cards to flip. Drag sideways on mobile.</span>
+      </header>
+      <div id="codexTrack" class="codex"></div>
+    </section>
+
+    <section id="engine" class="panel engine">
+      <header class="sec">
+        <p>THE ENGINE</p>
+        <h2>Your relational universe, made visible.</h2>
+        <span>Drag the stage. The constellation reacts with buttery orbital motion.</span>
+      </header>
+      <div class="stage">
+        <canvas id="scene"></canvas>
+        <div class="hud"><b>LIVE RENDER</b><span>drag to orbit</span></div>
+        <button id="pause" class="round" aria-label="Pause animation">Ⅱ</button>
+      </div>
+      <div id="legend" class="legend"></div>
+    </section>
+
+    <section class="panel pale method">
+      <header class="sec"><h2>Three steps to clarity.</h2></header>
+      <div>
+        <article><b>01</b><i>📝</i><h3>Take the test</h3><p>Answer calibrated prompts about relational instinct.</p></article>
+        <article><b>02</b><i>⚡</i><h3>Compute</h3><p>Your answers become a four-axis archetypal vector.</p></article>
+        <article><b>03</b><i>🗺</i><h3>Read the map</h3><p>See loops, allies, tensions and growth edges.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER — Award-winning cinematic -->
+  <footer class="foot">
+    <div class="foot-glow"></div>
+    <div class="foot-inner">
+      <div class="foot-brand">
+        <svg viewBox="0 0 36 36" width="28" height="28">
+          <circle cx="18" cy="18" r="15" fill="#FF6656" stroke="#f6f0df" stroke-width="2"/>
+          <circle cx="18" cy="18" r="3.5" fill="#f6f0df"/>
+        </svg>
+        <span>Archetype.ai</span>
+      </div>
+      <h2>Discover your<br><em>universe.</em></h2>
+      <p class="foot-desc">Free, confidential, visual and surprisingly fun.</p>
+      <div class="foot-cta-wrap">
+        <button class="cta foot-cta" data-test>Begin the Test ✦</button>
+      </div>
+      <div class="foot-divider">
+        <div class="foot-divider-line"></div>
+        <div class="foot-divider-dot"></div>
+        <div class="foot-divider-line"></div>
+      </div>
+      <div class="foot-bottom">
+        <small>&copy; 2026 Archetype.ai · Relational Engine</small>
+        <div class="foot-links">
+          <a href="#hero">Top</a>
+          <a href="#problem">Problem</a>
+          <a href="#matrix">Matrix</a>
+          <a href="#engine">Engine</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <dialog id="quiz">
+    <form method="dialog">
+      <button class="x" aria-label="Close">×</button>
+      <h2>Micro Test</h2>
+      <p>Demo engine: move each slider, then reveal your archetype.</p>
+      <label>Agency<input type="range" min="0" max="100" value="58"></label>
+      <label>Temperature<input type="range" min="0" max="100" value="62"></label>
+      <label>Focus<input type="range" min="0" max="100" value="54"></label>
+      <label>Attachment<input type="range" min="0" max="100" value="48"></label>
+      <output id="qout">Adjust sliders…</output>
+      <button class="cta" id="calc" type="button">Reveal</button>
+    </form>
+  </dialog>
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>

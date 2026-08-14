@@ -1,0 +1,631 @@
+<!-- NAVBAR -->
+<nav class="landing-nav fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+     [ngClass]="navScrolled() ? 'py-2' : 'py-4 md:py-5'">
+  <div class="max-w-7xl mx-auto px-4 md:px-6">
+    <div class="flex items-center justify-between px-4 md:px-6 py-2.5 md:py-3 rounded-full border-[3px] border-ink transition-all duration-500"
+         [ngClass]="navScrolled() ? 'bg-paper/95 backdrop-blur-xl py-1 shadow-[4px_4px_0_#1C1917]' : 'bg-paper/70 shadow-[4px_4px_0_#1C1917]'">
+      <!-- Brand -->
+      <div class="flex items-center gap-2.5 group cursor-pointer" (click)="exploreUniverse.emit()">
+        <div class="w-8 h-8 rounded-full bg-coral border-2 border-ink flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 ease-[cubic-bezier(.34,1.56,.64,1)]">
+          <div class="w-2.5 h-2.5 bg-white rounded-full animate-pulse-fast"></div>
+        </div>
+        <span class="font-black text-xl md:text-2xl tracking-tighter neo-serif">Archetype.ai</span>
+      </div>
+
+      <!-- Desktop Nav -->
+      <div class="hidden lg:flex items-center gap-1 bg-white/80 border-2 border-ink rounded-full p-1 shadow-[2px_2px_0_#1C1917]">
+        <a href="javascript:void(0)" (click)="hostEl.nativeElement.querySelector('#problem')?.scrollIntoView({behavior:'smooth'})" class="px-4 py-1.5 font-bold text-[11px] uppercase tracking-widest text-ink-l hover:bg-ink hover:text-[#f6f3eb] rounded-full transition-all duration-300">{{ t('navProblem') }}</a>
+        <a href="javascript:void(0)" (click)="hostEl.nativeElement.querySelector('#synergy')?.scrollIntoView({behavior:'smooth'})" class="px-4 py-1.5 font-bold text-[11px] uppercase tracking-widest text-ink-l hover:bg-ink hover:text-[#f6f3eb] rounded-full transition-all duration-300">{{ t('navMatrix') }}</a>
+        <a href="javascript:void(0)" (click)="hostEl.nativeElement.querySelector('#codex')?.scrollIntoView({behavior:'smooth'})" class="px-4 py-1.5 font-bold text-[11px] uppercase tracking-widest text-ink-l hover:bg-ink hover:text-[#f6f3eb] rounded-full transition-all duration-300">{{ t('navCodex') }}</a>
+        <a href="javascript:void(0)" (click)="hostEl.nativeElement.querySelector('#engine')?.scrollIntoView({behavior:'smooth'})" class="px-4 py-1.5 font-bold text-[11px] uppercase tracking-widest text-ink-l hover:bg-ink hover:text-[#f6f3eb] rounded-full transition-all duration-300">{{ t('navEngine') }}</a>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2">
+        <!-- Language Toggle — always visible, 2-letter -->
+        <button (click)="langToggle.emit()"
+                class="flex items-center gap-1 px-2.5 py-1.5 border-2 border-ink rounded-full text-[10px] font-black uppercase tracking-widest bg-white shadow-[2px_2px_0_#1C1917] hover:bg-mustard transition-colors">
+          {{ isEnglish() ? 'EN' : 'RU' }}
+        </button>
+        <!-- Upload backup — icon only -->
+        <button (click)="triggerBackupUpload()"
+                class="w-8 h-8 flex items-center justify-center border-2 border-ink rounded-full bg-white shadow-[2px_2px_0_#1C1917] hover:bg-sky transition-colors text-sm"
+                [title]="t('uploadBackup')">
+          &#128190;
+        </button>
+        <input type="file" #backupFileInput (change)="onBackupUpload($event)" accept=".json" style="display:none;" />
+
+        <!-- Login / Dashboard -->
+        @if (isLoggedIn()) {
+          <button class="hidden md:inline-flex px-4 py-2 rounded-xl border-2 border-ink bg-white shadow-[2px_2px_0_#1C1917] text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ink/5 transition-colors"
+                  (click)="dashboardRequested.emit()">
+            {{ t('navDashboard') }}
+          </button>
+          <button class="hidden md:inline-flex px-4 py-2 rounded-xl border-2 border-ink bg-coral text-ink shadow-[2px_2px_0_#1C1917] text-[10px] font-black uppercase tracking-[0.12em] hover:brightness-95 transition-colors"
+                  (click)="logoutRequested.emit()">
+            {{ t('navLogout') }}
+          </button>
+        } @else {
+          <button class="hidden md:inline-flex px-4 py-2 rounded-xl border-2 border-ink bg-ink text-white shadow-[2px_2px_0_#1C1917] text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ink/90 transition-colors"
+                  (click)="loginRequested.emit()">
+            {{ t('navLogin') }}
+          </button>
+        }
+
+        <!-- Start Test CTA -->
+        <button class="neo-btn hidden md:inline-flex px-5 py-2.5 text-xs text-[#f6f3eb] hover:translate-y-[-1px]" (click)="startTest.emit()">
+          <div class="neo-btn-shadow"></div>
+          <div class="neo-btn-body bg-ink"></div>
+          <span class="relative z-10">{{ t('startTest') }}</span>
+        </button>
+        <!-- Mobile hamburger -->
+        <button class="lg:hidden w-10 h-10 border-[3px] border-ink bg-mustard rounded-xl flex flex-col items-center justify-center gap-1 shadow-[2px_2px_0_#1C1917] hover:bg-coral transition-colors" (click)="toggleMobileMenu()">
+          <span class="w-[18px] h-[2px] bg-ink rounded-full"></span>
+          <span class="w-[18px] h-[2px] bg-ink rounded-full"></span>
+          <span class="w-[18px] h-[2px] bg-ink rounded-full"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+@if (mobileMenuOpen()) {
+  <div class="fixed inset-0 z-[100] bg-paper/95 backdrop-blur-xl flex flex-col items-center justify-center gap-8 transition-all duration-500">
+    <button class="absolute top-6 right-6 w-12 h-12 border-2 border-ink rounded-full flex items-center justify-center text-3xl bg-white shadow-[3px_3px_0_#1C1917] hover:bg-coral transition-colors" (click)="closeMobileMenu()">&times;</button>
+    <a href="javascript:void(0)" class="font-black text-4xl text-ink hover:text-coral transition-colors" (click)="closeMobileMenu(); hostEl.nativeElement.querySelector('#problem')?.scrollIntoView({behavior:'smooth'})">{{ t('navProblem') }}</a>
+    <a href="javascript:void(0)" class="font-black text-4xl text-ink hover:text-coral transition-colors" (click)="closeMobileMenu(); hostEl.nativeElement.querySelector('#synergy')?.scrollIntoView({behavior:'smooth'})">{{ t('navMatrix') }}</a>
+    <a href="javascript:void(0)" class="font-black text-4xl text-ink hover:text-coral transition-colors" (click)="closeMobileMenu(); hostEl.nativeElement.querySelector('#codex')?.scrollIntoView({behavior:'smooth'})">{{ t('navCodex') }}</a>
+    <a href="javascript:void(0)" class="font-black text-4xl text-ink hover:text-coral transition-colors" (click)="closeMobileMenu(); hostEl.nativeElement.querySelector('#engine')?.scrollIntoView({behavior:'smooth'})">{{ t('navEngine') }}</a>
+    <div class="flex items-center gap-4 mt-4">
+      <button (click)="langToggle.emit()" class="px-4 py-2 border-2 border-ink rounded-full font-black text-sm uppercase bg-white shadow-[2px_2px_0_#1C1917]">
+        {{ isEnglish() ? 'EN' : 'RU' }}
+      </button>
+    </div>
+
+    @if (isLoggedIn()) {
+      <button class="px-8 py-4 text-base font-black uppercase tracking-widest rounded-2xl border-[3px] border-ink bg-white shadow-[4px_4px_0_#1C1917] hover:bg-ink/5 transition-colors"
+              (click)="dashboardRequested.emit(); closeMobileMenu()">
+        {{ t('navDashboard') }}
+      </button>
+      <button class="px-8 py-4 text-base font-black uppercase tracking-widest rounded-2xl border-[3px] border-ink bg-coral text-ink shadow-[4px_4px_0_#1C1917] hover:brightness-95 transition-colors"
+              (click)="logoutRequested.emit(); closeMobileMenu()">
+        {{ t('navLogout') }}
+      </button>
+    } @else {
+      <button class="px-8 py-4 text-base font-black uppercase tracking-widest rounded-2xl border-[3px] border-ink bg-ink text-[#f6f3eb] shadow-[4px_4px_0_#1C1917] hover:bg-ink/90 transition-colors"
+              (click)="loginRequested.emit(); closeMobileMenu()">
+        {{ t('navLogin') }}
+      </button>
+    }
+
+    <button class="neo-btn px-8 py-4 text-base text-[#f6f3eb] mt-4" (click)="startTest.emit(); closeMobileMenu()">
+      <div class="neo-btn-shadow"></div>
+      <div class="neo-btn-body bg-ink"></div>
+      <span class="relative z-10">{{ t('beginTest') }}</span>
+    </button>
+  </div>
+}
+
+<!-- HERO -->
+<section class="hero-section relative min-h-[100svh] flex items-center justify-center pt-28 pb-16 overflow-hidden border-b-[3px] border-ink bg-paper">
+  <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: linear-gradient(#1C1917 2px, transparent 2px), linear-gradient(90deg, #1C1917 2px, transparent 2px); background-size: 64px 64px;"></div>
+
+  <!-- Parallax floating blobs -->
+  <div class="absolute inset-0 pointer-events-none z-0">
+    @for (arch of archetypes.slice(0, 6); track arch.id; let i = $index) {
+      <div class="hero-float-blob absolute hidden lg:block transition-all duration-700 cursor-pointer z-0"
+           [style.top]="['10%','15%','60%','50%','85%','85%'][i]"
+           [style.left]="['10%',undefined,'5%',undefined,'20%',undefined][i]"
+           [style.right]="[undefined,'12%',undefined,'8%',undefined,'25%'][i]"
+           [style.animation]="'float ' + (6 + i*0.8) + 's ease-in-out ' + (i*0.5) + 's infinite'"
+           [innerHTML]="getBlobHtml(arch.id, 120 + i*5)">
+      </div>
+    }
+  </div>
+
+  <!-- Atmospheric gradient blobs -->
+  <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-mustard/10 rounded-full blur-[100px] pointer-events-none animate-ambient-shift"></div>
+  <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-coral/8 rounded-full blur-[80px] pointer-events-none animate-ambient-shift" style="animation-delay:-4s"></div>
+
+  <div class="relative z-10 max-w-5xl mx-auto w-full text-center px-4">
+    <!-- Badges -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-8 hero-stagger">
+      <span class="inline-flex items-center gap-2 px-3 py-1 border-2 border-ink rounded-full text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0_#1C1917] bg-mint">
+        <div class="w-2 h-2 rounded-full bg-ink animate-pulse-fast shadow-[0_0_0_4px_rgba(28,25,23,0.08)]"></div> {{ t('liveBadge') }}
+      </span>
+      <span class="inline-flex items-center gap-2 px-3 py-1 border-2 border-ink rounded-full text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0_#1C1917] bg-lavender">
+        {{ t('heroBadge') }}
+      </span>
+    </div>
+
+    <!-- Hero Title with letter animation -->
+    <h1 class="hero-title-animated text-[clamp(3.5rem,8vw,8rem)] leading-[0.9] font-black text-ink mb-8 neo-serif title-shine">
+      {{ t('heroTitleLine1') }}<br>
+      <span class="relative inline-block text-coral italic pr-4">
+        {{ t('heroTitleEmphasis') }}
+        <svg viewBox="0 0 200 14" preserveAspectRatio="none" class="absolute -bottom-3 left-0 w-full h-4 overflow-visible">
+          <path d="M0 7 Q10 1 20 7 T40 7 T60 7 T80 7 T100 7 T120 7 T140 7 T160 7 T180 7 T200 7" fill="none" stroke="#FFD93D" stroke-width="4" stroke-linecap="round">
+            <animate attributeName="d" dur="3s" repeatCount="indefinite" values="M0 7 Q10 1 20 7 T40 7 T60 7 T80 7 T100 7 T120 7 T140 7 T160 7 T180 7 T200 7;M0 7 Q10 13 20 7 T40 7 T60 7 T80 7 T100 7 T120 7 T140 7 T160 7 T180 7 T200 7;M0 7 Q10 1 20 7 T40 7 T60 7 T80 7 T100 7 T120 7 T140 7 T160 7 T180 7 T200 7" />
+          </path>
+        </svg>
+      </span><br>
+      {{ t('heroTitleLine2') }}
+    </h1>
+
+    <!-- Pre-Assessment Download Info Card -->
+    <div class="hero-stagger max-w-2xl mx-auto mb-8 px-5 py-4 border-2 border-ink rounded-2xl bg-mustard/15 backdrop-blur-sm shadow-[4px_4px_0_#1C1917] text-left flex gap-3.5 items-start">
+      <div class="w-8 h-8 rounded-full bg-mustard border-2 border-ink flex items-center justify-center font-black text-sm shrink-0 shadow-[1.5px_1.5px_0_#1C1917] mt-0.5">
+        ℹ️
+      </div>
+      <div class="min-w-0 flex-1">
+        <h4 class="text-xs font-black uppercase tracking-[0.1em] text-ink mb-1">
+          {{ t('downloadNoticeTitle') }}
+        </h4>
+        <p class="text-xs font-medium text-ink-l leading-relaxed">
+          {{ t('downloadNoticeDesc') }}
+        </p>
+      </div>
+    </div>
+
+    <!-- CTAs -->
+    <div class="hero-stagger flex flex-wrap items-center justify-center gap-6">
+      <button class="neo-btn magentic-target px-10 py-4 text-base text-[#f6f3eb] shadow-[0_0_0_1px_rgba(245,241,232,0.35)] hover-lift" (click)="startTest.emit()">
+        <div class="neo-btn-shadow"></div>
+        <div class="neo-btn-body bg-ink"></div>
+        <span class="relative z-10">{{ t('beginTest') }}</span>
+      </button>
+
+      @if (hasCompletedBackup()) {
+        <button class="neo-btn magentic-target px-10 py-4 text-base text-ink hover-lift" (click)="restoreLocalBackup.emit()">
+          <div class="neo-btn-shadow"></div>
+          <div class="neo-btn-body bg-white border-2 border-ink"></div>
+          <span class="relative z-10 flex items-center gap-2">🔄 {{ t('restoreBackup') }}</span>
+        </button>
+      }
+
+      @if (hasInProgressBackup()) {
+        <button class="neo-btn magentic-target px-10 py-4 text-base text-ink hover-lift" (click)="startTest.emit()">
+          <div class="neo-btn-shadow"></div>
+          <div class="neo-btn-body bg-amber border-2 border-ink"></div>
+          <span class="relative z-10 flex items-center gap-2">▶️ {{ t('resumeInProgress') }} — {{ answeredCount() }}/{{ totalQuestions }}</span>
+        </button>
+      }
+
+      <a href="javascript:void(0)" (click)="exploreUniverse.emit()" class="magentic-target font-black text-sm uppercase tracking-widest text-ink underline decoration-wavy decoration-2 underline-offset-8 hover:text-coral transition-colors flex items-center gap-2 hover-lift">
+        {{ t('exploreMatrix') }}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+      </a>
+    </div>
+
+    <!-- Stats with counter animation -->
+    <div class="hero-stagger mt-16 pt-8 border-t-[3px] border-ink/10 flex gap-10 md:gap-16 flex-wrap justify-center">
+      <div>
+        <div class="stat-animate font-black text-3xl neo-serif">6</div>
+        <div class="text-[10px] font-black uppercase tracking-widest text-ink-l mt-1">{{ t('statArchetypes') }}</div>
+      </div>
+      <div>
+        <div class="stat-animate font-black text-3xl neo-serif">4</div>
+        <div class="text-[10px] font-black uppercase tracking-widest text-ink-l mt-1">{{ t('statAxes') }}</div>
+      </div>
+      <div>
+        <div class="stat-animate font-black text-3xl neo-serif">{{ t('statTime') }}</div>
+        <div class="text-[10px] font-black uppercase tracking-widest text-ink-l mt-1">{{ t('statTimeLabel') }}</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- MARQUEE -->
+<div class="w-full overflow-hidden bg-ink py-4 border-b-[3px] border-ink flex items-center">
+  <div class="flex items-center whitespace-nowrap animate-marquee">
+    @for (group of [0,1,2,3,4,5]; track group) {
+      <span class="text-[#f6f3eb] font-black text-sm md:text-xl uppercase tracking-[0.2em] mx-6 leading-none">{{ t('marqueeWord1') }}</span><span class="text-coral text-sm md:text-xl mx-2 leading-none">&#10022;</span>
+      <span class="text-[#f6f3eb] font-black text-sm md:text-xl uppercase tracking-[0.2em] mx-6 leading-none">{{ t('marqueeWord2') }}</span><span class="text-coral text-sm md:text-xl mx-2 leading-none">&#10022;</span>
+      <span class="text-[#f6f3eb] font-black text-sm md:text-xl uppercase tracking-[0.2em] mx-6 leading-none">{{ t('marqueeWord3') }}</span><span class="text-coral text-sm md:text-xl mx-2 leading-none">&#10022;</span>
+      <span class="text-[#f6f3eb] font-black text-sm md:text-xl uppercase tracking-[0.2em] mx-6 leading-none">{{ t('marqueeWord4') }}</span><span class="text-coral text-sm md:text-xl mx-2 leading-none">&#10022;</span>
+      <span class="text-[#f6f3eb] font-black text-sm md:text-xl uppercase tracking-[0.2em] mx-6 leading-none">{{ t('marqueeWord5') }}</span><span class="text-coral text-sm md:text-xl mx-2 leading-none">&#10022;</span>
+    }
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section id="problem" class="py-24 md:py-32 px-4 md:px-8 bg-paperDk border-b-[3px] border-ink">
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-16 md:mb-24 reveal-on-scroll flex flex-col items-center text-center w-full">
+      <div class="flex items-center gap-3 mb-4 text-ink font-black text-xs uppercase tracking-[0.2em]">
+        <div class="w-6 h-[3px] rounded-full bg-coral"></div>{{ t('problemLabel') }}
+      </div>
+      <h2 class="text-[clamp(2.5rem,5vw,4.5rem)] font-black leading-[1.05] text-ink max-w-4xl neo-serif">{{ t('problemTitle') }}</h2>
+      <p class="text-lg md:text-xl font-medium text-ink-l max-w-2xl mt-6 leading-relaxed">{{ t('problemSubtitle') }}</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      @for (point of painPoints; track point.titleKey; let i = $index) {
+        <div class="neo-card reveal-on-scroll">
+          <div class="neo-card-shadow"></div>
+          <div class="relative h-full border-[3px] border-ink rounded-3xl p-8 bg-white">
+            <div class="absolute top-4 right-5 font-black text-5xl text-ink/[0.04] neo-serif">0{{ i + 1 }}</div>
+            <div class="w-14 h-14 rounded-2xl border-[3px] border-ink flex items-center justify-center text-2xl shadow-[4px_4px_0_#1C1917] mb-6" [style.backgroundColor]="point.color">{{ point.icon }}</div>
+            <h3 class="text-xl font-black mb-3 neo-serif">{{ t(point.titleKey) }}</h3>
+            <p class="font-medium text-ink-l text-sm leading-relaxed">{{ t(point.textKey) }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- SYNERGY MATRIX -->
+<section id="synergy" class="premium-panel py-24 md:py-32 px-4 md:px-8 bg-ink text-white border-b-[3px] border-ink relative overflow-hidden">
+  <div class="section-orb animate-ambient-shift top-[-10rem] left-[-6rem] w-[22rem] h-[22rem] bg-coral/20"></div>
+  <div class="section-orb animate-ambient-shift bottom-[-12rem] right-[-4rem] w-[24rem] h-[24rem] bg-mustard/15" style="animation-delay:-4s"></div>
+  <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background-image: linear-gradient(rgba(246,243,235,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(246,243,235,0.7) 1px, transparent 1px); background-size: 44px 44px;"></div>
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-16 md:mb-24 reveal-on-scroll flex flex-col items-start w-full">
+      <div class="flex items-center gap-3 mb-4 text-[#f6f3eb] font-black text-xs uppercase tracking-[0.2em]">
+        <div class="w-6 h-[3px] rounded-full bg-mustard"></div>{{ t('synergyLabel') }}
+      </div>
+      <h2 class="text-[clamp(2.5rem,5vw,4.5rem)] font-black leading-[1.05] max-w-4xl neo-serif" style="color:#f6f3eb;">{{ t('synergyTitle') }}</h2>
+      <p class="text-lg md:text-xl font-medium max-w-2xl mt-6 leading-relaxed" style="color:rgba(246,243,235,0.78);">{{ t('synergySubtitle') }}</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 lg:gap-12 mt-16 reveal-on-scroll">
+      <!-- Roster -->
+      <div class="lg:col-span-5 flex flex-wrap gap-3 content-start">
+        @for (arch of archetypes; track arch.id) {
+          <button (click)="toggleSynergy(arch.id)"
+                  class="flex items-center gap-3 p-3 rounded-2xl border-[3px] transition-all duration-500 w-full sm:w-auto lg:w-full text-left hover-lift"
+                  [ngClass]="isSynActive(arch.id)
+                    ? 'bg-white border-ink shadow-[5px_5px_0_#FF6B5B] scale-[1.03] z-10'
+                    : 'bg-[rgba(246,243,235,0.08)] border-[rgba(246,243,235,0.14)] hover:border-[rgba(246,243,235,0.45)] hover:bg-[rgba(246,243,235,0.14)]'">
+            <div [innerHTML]="getBlobHtml(arch.id, 48, isSynActive(arch.id))"></div>
+            <div class="flex-1">
+              <div class="font-black text-xs" [ngClass]="isSynActive(arch.id) ? 'text-ink' : 'text-[#f6f3eb]'">{{ getArchName(arch) }}</div>
+              <div class="text-[10px] font-bold uppercase tracking-widest" [ngClass]="isSynActive(arch.id) ? 'text-ink-l' : 'text-[rgba(246,243,235,0.62)]'">{{ getArchType(arch) }}</div>
+            </div>
+            @if (isSynActive(arch.id)) {
+              <div class="w-5 h-5 rounded-full bg-coral border-2 border-ink flex items-center justify-center text-ink font-black text-xs">&#10003;</div>
+            }
+          </button>
+        }
+      </div>
+
+      <!-- Arena + Output -->
+      <div class="lg:col-span-7 bg-[linear-gradient(180deg,#fffdf8,#f6f3eb)] rounded-[32px] border-[3px] border-ink p-6 md:p-8 shadow-[12px_12px_0_#FFD93D] flex flex-col relative overflow-hidden hover-lift transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+           [ngClass]="synSelected().length === 0 ? 'max-h-[180px] opacity-80' : 'max-h-[700px]'">
+        <div class="absolute inset-0 bg-[radial-gradient(#1C1917_1.5px,transparent_1.5px)] [background-size:32px_32px] opacity-[0.05]"></div>
+
+        <div class="relative z-10 w-full flex items-center justify-center transition-all duration-500"
+             [ngClass]="synSelected().length === 0 ? 'py-4' : 'py-8 min-h-[280px] flex-1'">
+          <!-- Empty state — collapsed -->
+          @if (synSelected().length === 0) {
+            <div class="text-ink-l font-black text-sm uppercase tracking-widest opacity-40 text-center flex flex-col items-center gap-2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="opacity-60"><path d="M12 5v14M5 12h14"/></svg>
+              {{ t('synSelectTwo') }}
+            </div>
+          }
+          <!-- One selected -->
+          @if (synSelected().length === 1 && synOneSelected(); as arch) {
+            <div class="animate-float-1 z-20 text-center">
+              <div [innerHTML]="getBlobHtml(arch.id, 150, true)"></div>
+              <div class="mt-2 font-black text-[10px] uppercase tracking-widest text-ink">{{ getArchName(arch) }}</div>
+            </div>
+          }
+          <!-- Two selected -->
+          @if (synResult(); as result) {
+            @if (synSelected().length === 2) {
+              <div class="flex items-center justify-center gap-4 md:gap-10 w-full">
+                <div class="animate-float-1 z-20 text-center">
+                  <div [innerHTML]="getBlobHtml(synSelected()[0], 140, true)"></div>
+                  <div class="mt-2 font-black text-[10px] uppercase tracking-widest text-ink">{{ getSynArchName(0) }}</div>
+                </div>
+                <div class="flex-1 max-w-[180px] h-32 relative flex items-center justify-center">
+                  <svg class="absolute inset-0 w-full h-full overflow-visible">
+                    <path d="M 0 64 Q 90 -10 180 64" fill="none" stroke="#1C1917" stroke-width="3" stroke-dasharray="8 8" class="animate-dash" />
+                    <path d="M 0 64 Q 90 138 180 64" fill="none" stroke="#FF6B5B" stroke-width="3" stroke-dasharray="8 8" class="animate-dash-reverse" />
+                  </svg>
+                  <div class="bg-ink text-[#f6f3eb] font-black text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-full border-2 border-[rgba(246,243,235,0.2)] transform -rotate-3 z-10 animate-bob-soft">{{ t('synFriction') }} &#8599;</div>
+                </div>
+                <div class="animate-float-2 z-20 text-center">
+                  <div [innerHTML]="getBlobHtml(synSelected()[1], 140, true)"></div>
+                  <div class="mt-2 font-black text-[10px] uppercase tracking-widest text-ink">{{ getSynArchName(1) }}</div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Output Console -->
+        <div class="relative z-10 w-full bg-paper border-[3px] border-ink rounded-2xl p-6 mt-6 shadow-[4px_4px_0_#1C1917] transition-all"
+             [class.opacity-40]="synSelected().length === 0"
+             [class.opacity-70]="synSelected().length === 1"
+             [class.opacity-100]="synSelected().length === 2">
+          <div class="font-black text-xs uppercase tracking-widest text-ink-l mb-2 flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            {{ t('synResult') }}
+          </div>
+          @if (synResult(); as result) {
+            <h4 class="font-black text-2xl text-ink mb-2 neo-serif">{{ t(result.titleKey) }}</h4>
+            <p class="font-medium text-ink-l">{{ t(result.descKey) }}</p>
+          } @else if (synSelected().length === 1) {
+            <h4 class="font-black text-2xl text-ink mb-2 neo-serif">{{ t('synAwaitingSecond') }}</h4>
+            <p class="font-medium text-ink-l">{{ t('synAwaitingSecondDesc') }}</p>
+          } @else {
+            <h4 class="font-black text-2xl text-ink mb-2 neo-serif">{{ t('synAwaiting') }}</h4>
+            <p class="font-medium text-ink-l">{{ t('synAwaitingDesc') }}</p>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES BENTO -->
+<section class="py-24 md:py-32 px-4 md:px-8 bg-paper border-b-[3px] border-ink">
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-16 md:mb-24 reveal-on-scroll flex flex-col items-center text-center w-full">
+      <div class="flex items-center gap-3 mb-4 text-ink font-black text-xs uppercase tracking-[0.2em]">
+        <div class="w-6 h-[3px] rounded-full bg-coral"></div>{{ t('featuresLabel') }}
+      </div>
+      <h2 class="text-[clamp(2.5rem,5vw,4.5rem)] font-black leading-[1.05] text-ink max-w-4xl neo-serif">{{ t('featuresTitle') }}</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 md:gap-8 auto-rows-[280px]">
+      <!-- Feat 1: Interactive Map -->
+      <div class="neo-card md:col-span-6 lg:col-span-8 flex flex-col justify-between reveal-on-scroll overflow-hidden rounded-3xl">
+        <div class="neo-card-shadow"></div>
+        <div class="relative h-full border-[3px] border-ink rounded-3xl p-8 bg-lavender overflow-hidden hover-lift">
+          <div class="relative z-10 w-full md:w-2/3">
+            <h3 class="text-3xl font-black mb-4 neo-serif">{{ t('feat1Title') }}</h3>
+            <p class="font-medium text-ink-l text-sm" [innerHTML]="t('feat1Desc')"></p>
+          </div>
+          <div class="absolute right-0 bottom-0 w-64 h-64 translate-x-1/4 translate-y-1/4 bg-white rounded-full border-[3px] border-ink shadow-[inset_8px_8px_0_#1C1917] flex items-center justify-center">
+            <svg class="text-ink/20 animate-spin-slow" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          </div>
+        </div>
+      </div>
+      <!-- Feat 2: AI -->
+      <div class="neo-card md:col-span-3 lg:col-span-4 reveal-on-scroll overflow-hidden rounded-3xl">
+        <div class="neo-card-shadow"></div>
+        <div class="relative h-full border-[3px] border-ink rounded-3xl p-8 bg-mustard overflow-hidden hover-lift">
+          <div class="w-12 h-12 bg-white border-[3px] border-ink rounded-full flex items-center justify-center mb-6 shadow-[3px_3px_0_#1C1917]">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </div>
+          <h3 class="text-2xl font-black mb-3 neo-serif">{{ t('feat2Title') }}</h3>
+          <p class="font-medium text-ink-l text-sm">{{ t('feat2Desc') }}</p>
+        </div>
+      </div>
+      <!-- Feat 3: Four-Axis -->
+      <div class="neo-card md:col-span-3 lg:col-span-4 reveal-on-scroll overflow-hidden rounded-3xl">
+        <div class="neo-card-shadow"></div>
+        <div class="relative h-full border-[3px] border-ink rounded-3xl p-8 bg-white overflow-hidden hover-lift">
+          <div class="w-12 h-12 bg-coral border-[3px] border-ink rounded-full flex items-center justify-center mb-6 shadow-[3px_3px_0_#1C1917] text-[#f6f3eb]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <h3 class="text-2xl font-black mb-3 neo-serif">{{ t('feat3Title') }}</h3>
+          <p class="font-medium text-ink-l text-sm">{{ t('feat3Desc') }}</p>
+        </div>
+      </div>
+      <!-- Feat 4: Clinical Reports -->
+      <div class="neo-card md:col-span-6 lg:col-span-8 reveal-on-scroll overflow-hidden rounded-3xl">
+        <div class="neo-card-shadow"></div>
+        <div class="relative h-full border-[3px] border-ink rounded-3xl p-8 bg-sky overflow-hidden hover-lift">
+          <div class="w-12 h-12 bg-white border-[3px] border-ink rounded-full flex items-center justify-center mb-6 shadow-[3px_3px_0_#1C1917]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          </div>
+          <h3 class="text-2xl font-black mb-3 neo-serif">{{ t('feat4Title') }}</h3>
+          <p class="font-medium text-ink-l text-sm">{{ t('feat4Desc') }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TAROT CODEX -->
+<section id="codex" class="premium-panel py-24 md:py-32 bg-dark border-b-[3px] border-ink overflow-hidden relative">
+  <div class="section-orb animate-ambient-shift top-[5rem] left-[-8rem] w-[24rem] h-[24rem] bg-lavender/20"></div>
+  <div class="section-orb animate-ambient-shift bottom-[-8rem] right-[-5rem] w-[22rem] h-[22rem] bg-sky/16" style="animation-delay:-5s"></div>
+  <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background-image: radial-gradient(circle at 20% 20%, rgba(246,243,235,0.5) 0, transparent 2px), radial-gradient(circle at 80% 30%, rgba(246,243,235,0.45) 0, transparent 2px); background-size: 34px 34px, 42px 42px;"></div>
+  <div class="max-w-7xl mx-auto px-4 md:px-8 mb-16 reveal-on-scroll flex flex-col items-start w-full">
+    <div class="flex items-center gap-3 mb-4 text-[#f6f3eb] font-black text-xs uppercase tracking-[0.2em] select-text">
+      <div class="w-6 h-[3px] rounded-full bg-lavender"></div>{{ t('codexLabel') }}
+    </div>
+    <h2 class="text-[clamp(2.5rem,5vw,4.5rem)] font-black leading-[1.05] max-w-4xl neo-serif" style="color:#f6f3eb;"><span style="color:#f6f3eb;">{{ t('codexTitle') }}</span><br><span style="color:#f6f3eb;">{{ t('codexTitleLine2') }}</span></h2>
+    <p class="text-lg md:text-xl font-medium max-w-2xl mt-6" style="color:rgba(246,243,235,0.72);">{{ t('codexSubtitle') }}</p>
+  </div>
+
+  <div #codexContainer class="flex gap-6 md:gap-8 overflow-x-auto pb-16 px-4 md:px-8 snap-x snap-mandatory hide-scrollbar cursor-grab active:cursor-grabbing">
+    @for (arch of archetypes; track arch.id; let i = $index) {
+      <div class="min-w-[280px] md:min-w-[340px] h-[480px] snap-center perspective-1000 group shrink-0 reveal-on-scroll" (click)="toggleFlip(arch.id)">
+        <div class="relative w-full h-full transition-transform duration-700 preserve-3d cursor-pointer" [class.rotate-y-180]="isFlipped(arch.id)">
+          <!-- Front -->
+          <div class="absolute inset-0 backface-hidden bg-paper border-[4px] border-ink rounded-[28px] p-6 md:p-8 flex flex-col justify-between shadow-[8px_8px_0_#000]">
+            <div class="flex justify-between items-start font-black text-3xl neo-serif">
+              <span>{{ padIndex(i) }}</span>
+              <div class="w-6 h-6 rounded-full border-2 border-ink" [style.backgroundColor]="arch.color"></div>
+            </div>
+            <div class="flex-1 flex items-center justify-center" [innerHTML]="getBlobHtml(arch.id, 180)"></div>
+            <div class="border-t-[3px] border-ink pt-5 text-center">
+              <h3 class="font-black text-3xl mb-1 neo-serif">{{ getArchName(arch) }}</h3>
+              <span class="inline-flex items-center px-3 py-1 border-2 border-ink rounded-full text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0_#1C1917]" [style.backgroundColor]="arch.color">{{ getArchType(arch) }}</span>
+            </div>
+          </div>
+          <!-- Back -->
+          <div class="absolute inset-0 backface-hidden rotate-y-180 bg-white border-[4px] border-ink rounded-[28px] p-8 flex flex-col shadow-[8px_8px_0_#000]">
+            <h3 class="font-black text-3xl mb-3 neo-serif" [style.color]="arch.color">{{ getArchName(arch) }}</h3>
+            <p class="font-medium text-sm text-ink-l leading-relaxed flex-1">{{ getArchDesc(arch) }}</p>
+            <div class="space-y-4 mt-5">
+              @for (entry of archStats(arch); track entry[0]) {
+                <div>
+                  <div class="flex justify-between font-black text-[9px] uppercase tracking-widest mb-1">
+                    <span>{{ getStatLabel(entry[0]) }}</span><span>{{ entry[1] }}%</span>
+                  </div>
+                  <div class="h-2 bg-paper border-2 border-ink rounded-full overflow-hidden">
+                    <div class="h-full border-r-2 border-ink" [style.width]="entry[1] + '%'" [style.backgroundColor]="arch.color"></div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+  <div class="text-center font-black text-xs uppercase tracking-widest text-[rgba(246,243,235,0.52)] select-text reveal-on-scroll">{{ t('codexSwipe') }}</div>
+</section>
+
+<!-- 3D ENGINE — Redesigned -->
+<section id="engine" class="py-24 md:py-32 bg-paper border-b-[3px] border-ink">
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <div class="mb-16 md:mb-24 reveal-on-scroll flex flex-col items-center text-center w-full">
+      <div class="flex items-center gap-3 mb-4 text-ink font-black text-xs uppercase tracking-[0.2em]">
+        <div class="relative w-6 h-[3px] rounded-full bg-mint before:content-[''] before:absolute before:-inset-1 before:rounded-full before:bg-mint/40 before:animate-pulse-fast"></div>
+        <span class="inline-flex items-center gap-2 rounded-full border-2 border-ink bg-white px-3 py-1 shadow-[2px_2px_0_#1C1917]">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-coral animate-ping"></span>
+            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-coral shadow-[0_0_18px_rgba(213,94,0,0.95)]"></span>
+          </span>
+          {{ t('engineLabel') }}
+        </span>
+      </div>
+      <h2 class="text-[clamp(2.5rem,5vw,4.5rem)] font-black leading-[1.05] text-ink max-w-4xl neo-serif"><span>{{ t('engineTitle') }}</span><br><span class="text-coral italic">{{ t('engineTitleEmphasis') }}</span></h2>
+      <p class="text-lg md:text-xl font-medium text-ink-l max-w-2xl mt-6 leading-relaxed">{{ t('engineSubtitle') }}</p>
+    </div>
+
+    <!-- Full-width dark canvas -->
+    <div #engineWrapper class="relative w-full aspect-video bg-[#1C1917] border-[4px] border-ink rounded-[32px] overflow-hidden shadow-[12px_12px_0_#1C1917] reveal-on-scroll cursor-grab active:cursor-grabbing">
+      <canvas #engineCanvas class="absolute inset-0 w-full h-full touch-none"></canvas>
+
+      <!-- HUD overlay -->
+      <div class="absolute top-4 left-4 flex items-center gap-2">
+        <span class="relative flex h-3 w-3">
+          <span class="absolute inline-flex h-full w-full rounded-full bg-coral/50 animate-ping"></span>
+          <span class="relative inline-flex h-3 w-3 rounded-full bg-coral shadow-[0_0_14px_rgba(255,107,91,0.85)]"></span>
+        </span>
+        <span class="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[#f6f3eb] text-[9px] font-black uppercase tracking-[0.15em] shadow-[0_0_24px_rgba(213,94,0,0.18)]">{{ t('engineLive') }}</span>
+      </div>
+
+      <!-- Axis labels overlay -->
+      <div class="absolute bottom-4 left-4 flex flex-wrap gap-1.5">
+        @for (dim of ['statAgency', 'statTemperature', 'statFocus', 'statAttachment']; track dim; let i = $index) {
+          <span class="text-[8px] font-black uppercase tracking-[0.08em] px-2 py-0.5 rounded-full"
+                [ngClass]="['bg-orange/20 text-orange', 'bg-rose/20 text-rose', 'bg-teal-400/20 text-teal-400', 'bg-lavender/20 text-lavender'][i]">
+            {{ t(dim) }}
+          </span>
+        }
+      </div>
+
+      <!-- Controls -->
+      <div class="absolute bottom-4 right-4 flex gap-2">
+        <button (click)="toggleEnginePause()"
+                class="w-11 h-11 flex items-center justify-center rounded-full backdrop-blur-sm border-2 text-white hover:scale-110 active:scale-95 transition-all duration-300 relative group"
+                [ngClass]="enginePaused()
+                  ? 'bg-coral/30 border-coral/50 shadow-[0_0_20px_rgba(255,107,91,0.4)]'
+                  : 'bg-white/10 border-white/20 hover:bg-white/20'"
+                [title]="enginePaused() ? t('enginePlay') : t('enginePause')">
+          <!-- Animated ring when playing -->
+          @if (!enginePaused()) {
+            <span class="absolute inset-0 rounded-full border-2 border-white/30 animate-ping opacity-30"></span>
+          }
+          <!-- Glow pulse when paused -->
+          @if (enginePaused()) {
+            <span class="absolute inset-[-4px] rounded-full border border-coral/40 animate-pulse"></span>
+          }
+          @if (enginePaused()) {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="relative z-10 transition-transform duration-200 group-hover:scale-110"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="relative z-10 transition-transform duration-200 group-hover:scale-110"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+          }
+        </button>
+      </div>
+
+      <!-- Drag hint -->
+      <div class="absolute top-4 right-4 text-white/45 text-[9px] font-black uppercase tracking-[0.12em]">
+        {{ t('engineDrag') }}
+      </div>
+    </div>
+
+    <!-- Archetype legend below engine -->
+    <div class="mt-8 grid grid-cols-4 md:grid-cols-8 gap-4 reveal-on-scroll">
+      @for (arch of archetypes; track arch.id) {
+        <div class="flex flex-col items-center gap-2 text-center">
+          <div class="w-12 h-12" [innerHTML]="getBlobHtml(arch.id, 48)"></div>
+          <span class="text-[9px] font-black uppercase tracking-[0.05em] text-ink-l leading-tight">{{ getArchName(arch) }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- METHOD -->
+<section id="method" class="py-24 md:py-32 px-4 md:px-8 bg-paperDk border-b-[3px] border-ink">
+  <div class="max-w-6xl mx-auto">
+    <div class="mb-16 md:mb-24 reveal-on-scroll flex flex-col items-center text-center w-full">
+      <h2 class="text-[clamp(2.5rem,5vw,4.5rem)] font-black leading-[1.05] text-ink max-w-4xl neo-serif">{{ t('methodTitle') }}</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 md:gap-12 relative">
+      <div class="hidden md:block absolute top-[60px] left-[16%] right-[16%] h-1 border-t-[3px] border-dashed border-ink/20 z-0"></div>
+
+      <div class="relative z-10 text-center reveal-on-scroll">
+        <div class="w-24 h-24 mx-auto bg-white border-[3px] border-ink rounded-full flex items-center justify-center text-4xl shadow-[6px_6px_0_#1C1917] mb-8 relative transition-transform hover:-translate-y-2 hover:bg-mustard">
+          &#128221;
+          <div class="absolute -top-2 -right-2 bg-ink text-white font-black text-xs px-2 py-1 rounded-full border-2 border-white">01</div>
+        </div>
+        <h3 class="text-2xl font-black mb-4 neo-serif">{{ t('step1Title') }}</h3>
+        <p class="font-medium text-ink-l max-w-sm mx-auto">{{ t('step1Desc') }}</p>
+      </div>
+
+      <div class="relative z-10 text-center reveal-on-scroll">
+        <div class="w-24 h-24 mx-auto bg-white border-[3px] border-ink rounded-full flex items-center justify-center text-4xl shadow-[6px_6px_0_#1C1917] mb-8 relative transition-transform hover:-translate-y-2 hover:bg-coral">
+          &#9889;
+          <div class="absolute -top-2 -right-2 bg-ink text-white font-black text-xs px-2 py-1 rounded-full border-2 border-white">02</div>
+        </div>
+        <h3 class="text-2xl font-black mb-4 neo-serif">{{ t('step2Title') }}</h3>
+        <p class="font-medium text-ink-l max-w-sm mx-auto">{{ t('step2Desc') }}</p>
+      </div>
+
+      <div class="relative z-10 text-center reveal-on-scroll">
+        <div class="w-24 h-24 mx-auto bg-white border-[3px] border-ink rounded-full flex items-center justify-center text-4xl shadow-[6px_6px_0_#1C1917] mb-8 relative transition-transform hover:-translate-y-2 hover:bg-sky">
+          &#128506;
+          <div class="absolute -top-2 -right-2 bg-ink text-white font-black text-xs px-2 py-1 rounded-full border-2 border-white">03</div>
+        </div>
+        <h3 class="text-2xl font-black mb-4 neo-serif">{{ t('step3Title') }}</h3>
+        <p class="font-medium text-ink-l max-w-sm mx-auto">{{ t('step3Desc') }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="premium-panel bg-ink text-white pt-32 pb-12 px-4 md:px-8 relative overflow-hidden">
+  <div class="section-orb animate-ambient-shift top-[-10rem] right-[-6rem] w-[50rem] h-[50rem] bg-coral/22"></div>
+  <div class="section-orb animate-ambient-shift bottom-[-12rem] left-[-10rem] w-[36rem] h-[36rem] bg-mustard/12" style="animation-delay:-6s"></div>
+  <div class="absolute inset-0 opacity-[0.05] pointer-events-none" style="background-image: linear-gradient(rgba(246,243,235,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(246,243,235,0.9) 1px, transparent 1px); background-size: 56px 56px;"></div>
+
+  <div class="max-w-7xl mx-auto relative z-10 text-center reveal-on-scroll">
+    <h2 class="text-[clamp(3rem,8vw,8rem)] leading-[0.9] font-black mb-8 neo-serif" style="color:#f6f3eb;">
+      {{ t('footerTitle') }} <br><span class="text-mustard title-shine">{{ t('footerTitleEmphasis') }}</span>
+    </h2>
+    <p class="text-xl font-medium max-w-2xl mx-auto mb-12" style="color:rgba(246,243,235,0.78);">
+      {{ t('footerSubtitle') }}
+    </p>
+
+    <div class="flex flex-wrap justify-center gap-6 mb-16 reveal-on-scroll">
+      <button class="neo-btn px-12 py-5 text-lg text-[#f6f3eb] hover-lift" (click)="startTest.emit()">
+        <div class="neo-btn-shadow bg-ink"></div>
+        <div class="neo-btn-body bg-coral"></div>
+        <span class="relative z-10">{{ t('beginTest') }}</span>
+      </button>
+    </div>
+
+    <div class="border-t-[3px] border-[rgba(246,243,235,0.15)] pt-12 flex flex-col md:flex-row justify-between items-center gap-8 font-black text-xs uppercase tracking-widest text-[rgba(246,243,235,0.65)] select-text">
+      <div class="flex items-center gap-3 text-[#f6f3eb] text-xl neo-serif select-text">
+        <div class="w-4 h-4 bg-coral rounded-full border-2 border-white"></div> Archetype.ai
+      </div>
+      <div>&copy; 2026</div>
+    </div>
+  </div>
+</footer>

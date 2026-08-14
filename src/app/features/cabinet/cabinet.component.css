@@ -1,0 +1,14 @@
+/* The cabinet is a long page (account + tasks + history + past synastries +
+   admin), so it needs its own scroll context. The parent app shell pins the
+   body to overflow:hidden, and the outer <div #container> in app.component
+   uses min-h-[100dvh] (not a fixed height) — so without this, the cabinet's
+   content overflows both layers and the page is unscrollable.
+   Matches the pattern in landing.component.css / results-panel. */
+:host {
+  display: block;
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}

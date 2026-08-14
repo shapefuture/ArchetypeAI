@@ -59,7 +59,7 @@
       <h2 class="item-text">{{ ui().somaticQ }}</h2>
       <div class="zone-grid">
         @for (zone of zones; track zone) {
-          <button class="zone-btn" (click)="chooseZone(zone)">{{ zone }}</button>
+          <button class="zone-btn" (click)="chooseZone(zone)">{{ zoneLabel(zone) }}</button>
         }
       </div>
       <button class="secondary-btn" (click)="skipZone()">{{ ui().somaticSkip }}</button>

@@ -108,3 +108,33 @@ describe('InnerverseReportComponent — template structure (§3.3)', () => {
     expect(templateHtml).toMatch(/layerFor\(id\)/);
   });
 });
+
+describe('InnerverseReportComponent — §3C.3 attribution weather-vane', () => {
+  beforeEach(() => TestBed.configureTestingModule({}));
+
+  it('draws the vane from stored sealed-verdict texts', () => {
+    localStorage.removeItem('INNERVERSE_SEALED_VERDICTS_V1');
+    const empty = TestBed.runInInjectionContext(() => new InnerverseReportComponent()) as InnerverseReportComponent;
+    empty.profile.set(scoreProfile(all(3)));
+    expect(empty.vane()).toBeNull();
+    expect(empty.vanePosition()).toBe(50);
+
+    localStorage.setItem('INNERVERSE_SEALED_VERDICTS_V1', JSON.stringify([
+      { text: 'I always ruin everything. I am a failure my whole life.' },
+      { text: 'This time I stayed. In that moment I chose differently.' },
+    ]));
+    const seeded = TestBed.runInInjectionContext(() => new InnerverseReportComponent()) as InnerverseReportComponent;
+    seeded.profile.set(scoreProfile(all(3)));
+    const v = seeded.vane()!;
+    expect(v.globalizing).toBe(4); // always, everything, i am, my whole life
+    expect(v.localizing).toBe(2);  // this time, in that moment
+    expect(seeded.vanePosition()).toBeGreaterThan(50); // leaning essence-language
+    localStorage.removeItem('INNERVERSE_SEALED_VERDICTS_V1');
+  });
+
+  it('template renders the vane inside the Self panel', () => {
+    const html = readFileSync(resolve(DIR, 'innerverse-report.component.html'), 'utf-8');
+    expect(html).toMatch(/class="vane"/);
+    expect(html).toMatch(/vanePosition\(\)/);
+  });
+});

@@ -61,6 +61,29 @@
             <div class="jitai-card">
               <span class="jitai-title">{{ jitaiCopy(card.id).title }}</span>
               <p class="jitai-body">{{ jitaiCopy(card.id).body }}</p>
+              @if (card.id === 'dual_bound_charter') {
+                <!-- §3C.2 two sliders: blame vs license -->
+                <label class="slider-row">
+                  <span>{{ ui().blameQ }} · {{ blame() }}/10</span>
+                  <input type="range" min="0" max="10" [value]="blame()"
+                         (input)="blame.set(+$any($event.target).value)" />
+                </label>
+                <label class="slider-row">
+                  <span>{{ ui().licenseQ }} · {{ license() }}/10</span>
+                  <input type="range" min="0" max="10" [value]="license()"
+                         (input)="license.set(+$any($event.target).value)" />
+                </label>
+                <div class="charter-toggles">
+                  <label><input type="checkbox" #repair /> {{ ui().repairLogged }}</label>
+                  <label><input type="checkbox" #told /> {{ ui().toldHuman }}</label>
+                </div>
+                <button class="primary" (click)="recordCharter(repair.checked, told.checked)">
+                  {{ ui().next || 'OK' }}
+                </button>
+              }
+              @if (card.id === 'if_then_plan') {
+                <button class="primary" (click)="firedUnderLoad()">{{ ui().fired }}</button>
+              }
             </div>
           }
           @for (u of unburdened(); track u) {

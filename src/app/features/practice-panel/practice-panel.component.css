@@ -51,3 +51,15 @@
 .exercise-row span:first-child { font-size: 14px; }
 .exercise-row.done span:first-child { color: rgba(236, 234, 246, 0.5); text-decoration: line-through; }
 .exercise-body { padding: 4px 0 10px; border-bottom: 1px solid rgba(236, 234, 246, 0.08); }
+.ladder { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; border-top: 1px dashed rgba(236,234,246,0.15); padding-top: 8px; }
+.ladder-title { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(169,160,214,0.9); }
+.rung { display: flex; gap: 8px; align-items: center; font-size: 13px; color: rgba(236,234,246,0.55); }
+.rung.done { color: #eceaf6; }
+.rung.locked { opacity: 0.45; }
+.rung-dot { font-size: 9px; }
+.ifthen-input {
+  font: inherit; font-size: 13px; color: #eceaf6; padding: 8px;
+  background: rgba(236,234,246,0.05); border: 1px solid rgba(236,234,246,0.25); border-radius: 8px;
+}
+.rehearsal-timer { font-size: 18px; color: #f2e7c9; }
+.rung-note { font-size: 12px; font-style: italic; color: rgba(236,234,246,0.65); }

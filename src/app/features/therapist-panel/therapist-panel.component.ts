@@ -13,6 +13,7 @@ import {
   type TherapistClientSummary, type AssignmentFrequency,
 } from '../../core/data/therapist-link';
 import { EXERCISES, EXERCISE_TYPES } from '../../core/data/exercises';
+import { resistantMetrics, loadEvents } from '../../core/data/state-v2';
 
 const ATTEST_KEY = 'INNERVERSE_THERAPIST_ATTESTED_V1';
 
@@ -34,6 +35,9 @@ const UI = {
     assigned: 'Assigned.',
     redNote: 'RED exercises attach only here — and only after the client has built their Safe Place container.',
     consentTitle: 'What you see — and never see',
+    metricsTitle: 'Resistant outcomes (logged events only)',
+    metrics: ['Time to repair', 'Secrecy duration', 'If-then fire rate', 'Disclosure ratio'],
+    metricsRule: 'If self-report improves but these don’t, the work is being narrated, not generalized — shift from insight exercises to behavior/environment exercises.',
     fClient: 'Client', fExercise: 'Exercise', fFrequency: 'Frequency',
   },
   ru: {
@@ -53,6 +57,9 @@ const UI = {
     assigned: 'Назначено.',
     redNote: 'RED-практики доступны только здесь — и только после того, как клиент построил контейнер Безопасного Места.',
     consentTitle: 'Что вы видите — и чего не видите никогда',
+    metricsTitle: 'Устойчивые исходы (только из журнала событий)',
+    metrics: ['Время до исправления', 'Длительность умолчания', 'Доля сработавших «если–то»', 'Доля раскрытий'],
+    metricsRule: 'Если самоотчёт улучшается, а эти метрики нет — работа проговаривается, а не генерализуется: переведите фокус с инсайтов на поведенческие и средовые практики.',
     fClient: 'Клиент', fExercise: 'Практика', fFrequency: 'Частота',
   },
 };
@@ -144,6 +151,9 @@ export class TherapistPanelComponent {
   }
 
   readonly consentText = computed(() => CONSENT_TEXT[this.lang()]);
+
+  /** §3C.6: hard-to-fake metrics from this client device's event log. */
+  readonly metrics = computed(() => resistantMetrics(loadEvents()));
 
   exGate(exerciseId: string): string {
     const e = EXERCISES.find(x => x.id === exerciseId);

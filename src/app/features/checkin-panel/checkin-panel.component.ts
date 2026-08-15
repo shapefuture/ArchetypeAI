@@ -10,13 +10,16 @@ import { SHADOW_PARTS, SUBTYPES, type EventType, type PartId } from '../../core/
 import type { ScoredProfile } from '../../core/data/scoring-v2';
 import {
   predictFlare, weatherLayer, unburdeningMoments, verdictLockActive,
-  sealVerdict, readyToResurface, selectJitaiCard, type CheckIn, type Arousal,
-  type SealedVerdict, type JitaiCardId,
+  sealVerdict, readyToResurface, selectJitaiCard, storeEvent, loadEvents,
+  charterTrend, stricterCharter, type CheckIn, type Arousal,
+  type SealedVerdict, type JitaiCardId, type CharterDelivery,
 } from '../../core/data/state-v2';
+import { COMPLEXES } from '../../core/data/parts';
 
 const STORE_KEY = 'INNERVERSE_CHECKINS_V1';
 const VERDICT_KEY = 'INNERVERSE_SEALED_VERDICTS_V1';
 const JITAI_KEY = 'INNERVERSE_JITAI_V1';
+const CHARTER_KEY = 'INNERVERSE_CHARTER_V1';
 
 type Stage = 'arousal' | 'event' | 'confirm' | 'done';
 
@@ -130,6 +133,12 @@ export class CheckInPanelComponent {
     const p = this.profile();
     if (!p) { this.jitaiCard.set(null); return; }
     const now = new Date();
+    const lapseToday = this.history().some(c => {
+      const ff = c.confirmedPart === 'numb' || c.confirmedPart === 'rebel' || c.confirmedPart === 'charmer';
+      return ff && Math.abs(c.arousal) >= 1 &&
+        (now.getTime() - new Date(c.date).getTime()) / 86400000 <= 1;
+    });
+    if (lapseToday) storeEvent('lapse');
     const card = selectJitaiCard({
       history: this.history(),
       now,
@@ -137,11 +146,7 @@ export class CheckInPanelComponent {
       stackL1Flared: this.history().some(c =>
         c.confirmedPart === p.copingStack.l1 &&
         (now.getTime() - new Date(c.date).getTime()) / 86400000 <= 1),
-      lapseToday: this.history().some(c => {
-        const ff = c.confirmedPart === 'numb' || c.confirmedPart === 'rebel' || c.confirmedPart === 'charmer';
-        return ff && Math.abs(c.arousal) >= 1 &&
-          (now.getTime() - new Date(c.date).getTime()) / 86400000 <= 1;
-      }),
+      lapseToday,
     });
     if (card) {
       this.lastJitaiAt = now.toISOString();
@@ -151,8 +156,36 @@ export class CheckInPanelComponent {
   }
 
   jitaiCopy(id: JitaiCardId): { title: string; body: string } {
-    return JITAI_CARDS[this.lang()][id];
+    const copy = JITAI_CARDS[this.lang()][id];
+    // §3C.2: blame falling + license rising across ≥3 deliveries → stricter variant
+    if (id === 'dual_bound_charter' && charterTrend(this.charterDeliveries()) === 'watch') {
+      const top = this.profile()?.activeComplexes[0]?.id;
+      const experiment = top ? COMPLEXES[top].experiment : 'one small repair action';
+      return { ...copy, body: `${stricterCharter(experiment)}` };
+    }
+    return copy;
   }
+
+  readonly charterDeliveries = signal<CharterDelivery[]>(
+    (() => { try { return JSON.parse(localStorage.getItem(CHARTER_KEY) ?? '[]'); } catch { return []; } })(),
+  );
+  readonly blame = signal(5);
+  readonly license = signal(5);
+
+  recordCharter(repairLogged: boolean, told: boolean): void {
+    this.charterDeliveries.update(d => {
+      const next = [...d, { blame: this.blame(), license: this.license(), at: new Date().toISOString() }];
+      try { localStorage.setItem(CHARTER_KEY, JSON.stringify(next)); } catch { /* unavailable */ }
+      return next;
+    });
+    if (repairLogged) storeEvent('repair');
+    if (told) storeEvent('told');
+  }
+
+  firedUnderLoad(): void { storeEvent('ifthen_fired'); }
+
+  /** §3C.6 sources: lapse events ride along with the JITAI lapse detection. */
+  static readonly EVENTS = { loadEvents };
 
   constructor() {
     this.load();
@@ -171,7 +204,9 @@ export class CheckInPanelComponent {
     try { localStorage.setItem(STORE_KEY, JSON.stringify(this.history())); } catch { /* unavailable */ }
   }
 
-  arousalForIndex(i: number): Arousal { return (2 - i) as Arousal; }
+  // labels are [Shutdown, Low, Window, Activated, Hyper] (rendered bottom-up):
+// Shutdown = −2 … Hyper = +2, matching state-v2's shutdown === −2 convention.
+arousalForIndex(i: number): Arousal { return (i - 2) as Arousal; }
 
   eventForIndex(i: number): EventType {
     return (['relational', 'achievement', 'loss', 'boundary', 'change', 'calm'][i]) as EventType;

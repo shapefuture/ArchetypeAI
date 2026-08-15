@@ -4,7 +4,10 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  CRISIS_TRIGGERS, predictFlare, adjustTriggerWeights, weightOf, type CheckIn,
+  CRISIS_TRIGGERS, predictFlare, adjustTriggerWeights, weightOf,
+  charterTrend, stricterCharter, resistantMetrics, storeEvent, loadEvents,
+  type LoggedEvent,
+  type CheckIn,
   weatherLayer, unburdeningMoments, verdictLockActive, sealVerdict, readyToResurface,
   attributionRatio, attributionWorsening, selectJitaiCard, selfServeGate, shutdownStreak,
   GLOBALIZING_LEXICON, LOCALIZING_LEXICON,
@@ -186,5 +189,57 @@ describe('§3B.1 safety gating', () => {
       ci({ date: '2026-08-14T12:00:00', arousal: -2 }),
     ]);
     expect(s).toBe(3);
+  });
+});
+
+describe('§3C.2 charter trend + §3C.6 resistant metrics', () => {
+  it('charter trend: needs ≥3 deliveries; blame↓ + license↑ = watch', () => {
+    expect(charterTrend([
+      { blame: 8, license: 2, at: '2026-08-01T10:00:00' },
+      { blame: 6, license: 3, at: '2026-08-05T10:00:00' },
+    ])).toBe('ok'); // fewer than 3
+    expect(charterTrend([
+      { blame: 8, license: 2, at: '2026-08-01T10:00:00' },
+      { blame: 6, license: 3, at: '2026-08-05T10:00:00' },
+      { blame: 4, license: 6, at: '2026-08-09T10:00:00' },
+    ])).toBe('watch');
+    expect(charterTrend([
+      { blame: 8, license: 2, at: '2026-08-01T10:00:00' },
+      { blame: 6, license: 3, at: '2026-08-05T10:00:00' },
+      { blame: 3, license: 2, at: '2026-08-09T10:00:00' },
+    ])).toBe('ok');
+  });
+  it('stricter charter is verdict-free and names one repair action', () => {
+    expect(stricterCharter('Say no to one small request')).toContain('Say no to one small request');
+    expect(stricterCharter('x')).not.toMatch(/worthless|broken/i);
+  });
+  it('resistant metrics compute from logged events only', () => {
+    const events = [
+      { kind: 'lapse', at: '2026-08-10T10:00:00' },
+      { kind: 'repair', at: '2026-08-10T12:00:00' },   // 2h to repair
+      { kind: 'told', at: '2026-08-11T10:00:00' },     // 24h secrecy
+      { kind: 'ifthen_written', at: '2026-08-09T09:00:00' },
+      { kind: 'ifthen_written', at: '2026-08-09T10:00:00' },
+      { kind: 'ifthen_fired', at: '2026-08-10T18:00:00' },
+    ] as LoggedEvent[];
+    const m = resistantMetrics(events);
+    expect(m.timeToRepairH).toBe(2);
+    expect(m.secrecyH).toBe(24);
+    expect(m.ifThenFireRate).toBe(0.5);
+    expect(m.disclosureRatio).toBe(1);
+  });
+  it('metrics stay null without matching event pairs (never fabricated)', () => {
+    const m = resistantMetrics([{ kind: 'lapse', at: '2026-08-10T10:00:00' }]);
+    expect(m.timeToRepairH).toBeNull();
+    expect(m.secrecyH).toBeNull();
+    expect(m.ifThenFireRate).toBeNull();
+    expect(m.disclosureRatio).toBe(0);
+  });
+  it('events persist locally via storeEvent/loadEvents', () => {
+    localStorage.removeItem('INNERVERSE_EVENTS_V1');
+    storeEvent('ifthen_written', new Date('2026-08-10T10:00:00'));
+    expect(loadEvents().length).toBe(1);
+    expect(loadEvents()[0].kind).toBe('ifthen_written');
+    localStorage.removeItem('INNERVERSE_EVENTS_V1');
   });
 });

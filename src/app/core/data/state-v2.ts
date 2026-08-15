@@ -271,6 +271,83 @@ function consecutiveOutOfWindowEnding(history: CheckIn[], now: Date): number {
   return streak;
 }
 
+// --- §3C.2 Dual-Bound Charter trend ---
+
+export interface CharterDelivery { blame: number; license: number; at: string }
+
+/**
+ * Across ≥3 charter deliveries: blame FALLING while license RISING means the
+ * anti-shame bound is working but the anti-license bound is leaking — flag
+ * (therapist) or swap to the stricter per-complex variant (solo).
+ */
+export function charterTrend(d: CharterDelivery[]): 'ok' | 'watch' {
+  if (d.length < 3) return 'ok';
+  const last = d[d.length - 1], first = d[0];
+  const blameFalling = last.blame < first.blame;
+  const licenseRising = last.license > first.license;
+  return blameFalling && licenseRising ? 'watch' : 'ok';
+}
+
+/** Stricter charter variant (hardcoded shape per §3C.2): no verdicts, one repair. */
+export function stricterCharter(experiment: string): string {
+  return `No verdicts about who you are — non-negotiable. One repair action, this week: ${experiment}`;
+}
+
+// --- §3C.6 resistant outcomes (hard-to-fake metrics, logged events only) ---
+
+export type LoggedEventKind =
+  | 'lapse' | 'repair' | 'told' | 'ifthen_written' | 'ifthen_fired';
+export interface LoggedEvent { kind: LoggedEventKind; at: string }
+
+const EVENT_KEY = 'INNERVERSE_EVENTS_V1';
+
+export function storeEvent(kind: LoggedEventKind, at: Date = new Date()): void {
+  try {
+    const events: LoggedEvent[] = JSON.parse(localStorage.getItem(EVENT_KEY) ?? '[]');
+    events.push({ kind, at: at.toISOString() });
+    localStorage.setItem(EVENT_KEY, JSON.stringify(events));
+  } catch { /* unavailable */ }
+}
+
+export function loadEvents(): LoggedEvent[] {
+  try { return JSON.parse(localStorage.getItem(EVENT_KEY) ?? '[]') as LoggedEvent[]; }
+  catch { return []; }
+}
+
+export interface ResistantMetrics {
+  /** lapse → first repair action, hours (null without a pair). */
+  timeToRepairH: number | null;
+  /** lapse → first "told a human", hours. */
+  secrecyH: number | null;
+  /** if-then plans fired under load / plans written. */
+  ifThenFireRate: number | null;
+  /** told-a-human events / total lapse events (coarse). */
+  disclosureRatio: number | null;
+}
+
+export function resistantMetrics(events: LoggedEvent[]): ResistantMetrics {
+  const hours = (a: string, b: string) =>
+    Math.max(0, (new Date(b).getTime() - new Date(a).getTime()) / 3600000);
+  const lapses = events.filter(e => e.kind === 'lapse');
+  const firstRepairAfter = (kind: 'repair' | 'told'): number | null => {
+    for (const lapse of lapses) {
+      const hit = events.filter(e => e.kind === kind && new Date(e.at) >= new Date(lapse.at))
+        .sort((x, y) => x.at < y.at ? -1 : 1)[0];
+      if (hit) return Math.round(hours(lapse.at, hit.at) * 10) / 10;
+    }
+    return null;
+  };
+  const written = events.filter(e => e.kind === 'ifthen_written').length;
+  const fired = events.filter(e => e.kind === 'ifthen_fired').length;
+  const told = events.filter(e => e.kind === 'told').length;
+  return {
+    timeToRepairH: firstRepairAfter('repair'),
+    secrecyH: firstRepairAfter('told'),
+    ifThenFireRate: written > 0 ? Math.round((fired / written) * 100) / 100 : null,
+    disclosureRatio: lapses.length > 0 ? Math.round((told / lapses.length) * 100) / 100 : null,
+  };
+}
+
 // --- §3B.1/§3B.3 safety gating ---
 
 export type GateTier = 'green' | 'yellow' | 'red';

@@ -13,6 +13,7 @@ import {
 import { PART_COPY, LAYERS, type LayerKey } from '../../core/data/part-copy';
 import { InnerverseConstellationComponent } from '../constellation/innerverse-constellation.component';
 import type { ScoredProfile } from '../../core/data/scoring-v2';
+import { attributionRatio } from '../../core/data/state-v2';
 
 const TIER_ORDER: Record<Tier, number> = { dominant: 0, prominent: 1, present: 2, dormant: 3 };
 
@@ -42,6 +43,9 @@ const UI = {
     band: { hypo: 'blocked', healthy: 'healthy', hyper: 'overused' },
     leak: r => `tips into ${r} — the leak is drawn on your constellation`,
     burden: 'System burden',
+    vane: 'Language weather vane · essence ↔ behavior (indicative)',
+    vaneEssence: 'essence language', vaneBehavior: 'behavior language',
+    vaneEmpty: 'Your sealed verdicts will draw this vane over time.',
     attachment: 'Attachment pattern',
     attStyle: {
       secure: 'Secure leaning', anxious: 'Anxious leaning', avoidant: 'Avoidant leaning',
@@ -77,6 +81,9 @@ const UI = {
     band: { hypo: 'заблокирован', healthy: 'здоров', hyper: 'перегружен' },
     leak: r => `переливается в «${r}» — дуга перелива отражена на созвездии`,
     burden: 'Нагрузка системы',
+    vane: 'Флюгер языка · сущность ↔ поведение (ориентировочно)',
+    vaneEssence: 'язык сущности', vaneBehavior: 'язык поведения',
+    vaneEmpty: 'Со временем запечатанные выводы нарисуют этот флюгер.',
     attachment: 'Паттерн привязанности',
     attStyle: {
       secure: 'Скорее надёжная', anxious: 'Скорее тревожная', avoidant: 'Скорее избегающая',
@@ -144,6 +151,26 @@ export class InnerverseReportComponent {
     return a.disorganized ? 'disorganized'
       : a.anxious >= a.avoidant && a.anxious >= a.secure ? 'anxious'
       : a.avoidant >= a.secure ? 'avoidant' : 'secure';
+  });
+
+  /** §3C.3: rolling ratio of globalizing↔localizing tokens in stored free text. */
+  readonly vane = computed(() => {
+    try {
+      const verdicts: { text: string }[] =
+        JSON.parse(localStorage.getItem('INNERVERSE_SEALED_VERDICTS_V1') ?? '[]');
+      const texts = verdicts.map(v => v.text).filter(t => t && t.trim().length > 0);
+      if (texts.length === 0) return null;
+      const lang = this.translationService.getLanguage();
+      return attributionRatio(texts, lang);
+    } catch { return null; }
+  });
+
+  /** 0 = pure behavior-language, 100 = pure essence-language. */
+  readonly vanePosition = computed(() => {
+    const v = this.vane();
+    if (!v) return 50;
+    const ratio = v.ratio === Infinity ? 3 : v.ratio;
+    return Math.round(Math.min(100, Math.max(0, ratio / 3 * 100)));
   });
 
   readonly activeComplexDefs = computed(() =>

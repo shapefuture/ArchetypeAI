@@ -355,3 +355,30 @@ export function redAllowed(
 ): boolean {
   return therapistAssigned && containerReady(profile, s);
 }
+
+// --- §3C.5 Proceduralization Ladder ---
+// 1 name the principle · 2 write the if-then plan · 3 mental rehearsal ·
+// 4 live rep logged · 5 verified under load.
+// HARD RULE: only rung 5 marks a skill "integrated" — insight from
+// reading/reflection alone NEVER integrates (rungs 1–3 max without a live rep).
+
+export interface LadderState {
+  principleNamed?: boolean;
+  ifThen?: string;
+  rehearsed?: boolean;
+  liveRep?: boolean;       // rung 4 — therapist-toggled in linked mode
+  verifiedUnderLoad?: boolean; // rung 5 — therapist only
+}
+
+export function ladderRung(s: LadderState): 0 | 1 | 2 | 3 | 4 | 5 {
+  if (s.verifiedUnderLoad) return 5;
+  if (s.liveRep) return 4;
+  if (s.rehearsed) return 3;
+  if (s.ifThen && s.ifThen.trim().length > 5) return 2;
+  if (s.principleNamed) return 1;
+  return 0;
+}
+
+export function integrated(s: LadderState): boolean {
+  return ladderRung(s) === 5;
+}

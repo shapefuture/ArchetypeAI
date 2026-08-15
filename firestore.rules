@@ -69,6 +69,25 @@ service cloud.firestore {
     // owner-only restriction on the assessment doc and treat share-code reads
     // as best-effort (the owner can also embed the data in the share doc
     // later if needed).
+    // §4 step 10: anonymous telemetry — create-only, never readable by clients.
+    match /telemetryResponses/{docId} {
+      allow read: if false;
+      allow create: if request.resource.data.keys().hasOnly(['payload', 'at'])
+        && request.resource.data.payload is string;
+    }
+
+    // §3.8: registered push tokens for the daily reminder send.
+    match /pushTokens/{token} {
+      allow read: if false;
+      allow create: if request.resource.data.keys().hasOnly(['token', 'createdAt']);
+    }
+
+    // §1.3: remote norm refresh (public read, admin write via console).
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     match /shareCodes/{code} {
       allow read: if isSignedIn();
       // Only the code owner can create/update/delete a code that points at

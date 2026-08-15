@@ -76,3 +76,6 @@
 .slider-row { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: rgba(236,234,246,0.8); }
 .slider-row input[type="range"] { width: 100%; accent-color: #f2e7c9; }
 .charter-toggles { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: rgba(236,234,246,0.75); }
+.reminder-btn { align-self: center; }
+.reminder-on { align-self: center; font-size: 12px; color: #e8c987; }
+.reminder-unsupported { align-self: center; font-size: 11px; color: rgba(236,234,246,0.35); }

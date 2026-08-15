@@ -17,6 +17,12 @@ import { constellation, type ConstellationDef } from './constellations';
 // --- §1.2 item-bank contract: items q7, q8 (indexes 6,7) of every shadow part are reverse-keyed ---
 export const REVERSE_KEYED_INDEXES = [6, 7] as const;
 
+/** §1.3: provisional norms are replaced via remote config after ~5k users. */
+export interface NormOverride {
+  NORM_MEAN?: Record<ShadowPartId, number>;
+  NORM_SD?: Record<ShadowPartId, number>;
+}
+
 export interface AssessmentInput {
   /** 8 raw Likert responses (1..5) per shadow part, keyed order. */
   shadow: Record<ShadowPartId, number[]>;
@@ -84,12 +90,14 @@ function rawShadow(items: number[]): number {
   return sum;
 }
 
-export function scoreProfile(input: AssessmentInput): ScoredProfile {
+export function scoreProfile(input: AssessmentInput, norms: NormOverride = {}): ScoredProfile {
+  const MEAN = { ...NORM_MEAN, ...norms.NORM_MEAN };
+  const SD = { ...NORM_SD, ...norms.NORM_SD };
   // §1.3 part T-scores
   const parts = {} as Record<ShadowPartId, PartScore>;
   for (const id of SHADOW_PARTS) {
     const raw = rawShadow(input.shadow[id]);
-    const T = tScore(raw, NORM_MEAN[id], NORM_SD[id]);
+    const T = tScore(raw, MEAN[id], SD[id]);
     parts[id] = { id, raw, T, tier: tierOf(T) };
   }
 

@@ -2033,19 +2033,23 @@ export class VisualizationService {
         gsap.to(group.userData, { jiggle: 0, duration: 0.5, ease: "power2.out" });
       }
 
-      // Show label on hover/selection or when close to camera
+      // Show label on hover/selection or when close to camera.
+      // PERF: DOM writes only on visibility CHANGE (or a 10Hz refresh for
+      // the is-close case) — previously 4 style writes x ~30 labels x 60fps.
       if (label) {
         const labelEl = label.element as HTMLElement;
         const dist = this.camera.position.distanceTo(group.position);
         const isClose = dist < 12; // Show labels if camera is within 12 units
         const isVisible = group.userData.isHovered || isSelected || isFirstCompare || isClose;
-        
-        labelEl.style.opacity = isVisible ? '1' : '0';
-        labelEl.style.transform = isVisible ? 'translateY(0) scale(1)' : 'translateY(-10px) scale(0.9)';
-        labelEl.style.pointerEvents = isVisible ? 'auto' : 'none';
-        
-        // Dynamic Z-index to bring labels to front
-        labelEl.style.zIndex = isVisible ? '100' : '0';
+        const wasVisible = group.userData.labelVisible as boolean | undefined;
+        if (isVisible !== wasVisible || (isVisible && this.frameCount % 6 === 0)) {
+          group.userData.labelVisible = isVisible;
+          labelEl.style.opacity = isVisible ? '1' : '0';
+          labelEl.style.transform = isVisible ? 'translateY(0) scale(1)' : 'translateY(-10px) scale(0.9)';
+          labelEl.style.pointerEvents = isVisible ? 'auto' : 'none';
+          // Dynamic Z-index to bring labels to front
+          labelEl.style.zIndex = isVisible ? '100' : '0';
+        }
       }
 
       let highlightScore = 0;
@@ -2125,17 +2129,18 @@ export class VisualizationService {
       }
     });
 
-    // Update dust particles (twinkle)
+    // Update dust particles (twinkle).
+    // PERF: color-buffer rewrite throttled to every 15th frame (~4Hz) —
+    // the twinkle is a slow sine; per-frame rewrites burned CPU for nothing.
     if (this.dustParticles) {
-      const positions = this.dustParticles.geometry.attributes.position as THREE.BufferAttribute;
-      const colors = this.dustParticles.geometry.attributes.color as THREE.BufferAttribute;
-
-      for (let i = 0; i < positions.count; i++) {
-        const twinkle = Math.sin(elapsedTime * 2 + i * 0.1) * 0.3 + 0.7;
-        colors.setXYZ(i, twinkle, twinkle * 0.9, twinkle * 0.8);
+      if (this.frameCount % 15 === 0) {
+        const colors = this.dustParticles.geometry.attributes.color as THREE.BufferAttribute;
+        for (let i = 0; i < colors.count; i++) {
+          const twinkle = Math.sin(elapsedTime * 2 + i * 0.1) * 0.3 + 0.7;
+          colors.setXYZ(i, twinkle, twinkle * 0.9, twinkle * 0.8);
+        }
+        colors.needsUpdate = true;
       }
-      colors.needsUpdate = true;
-
       // Slow rotation of dust system
       this.dustParticles.rotation.y = elapsedTime * 0.01;
     }
@@ -2478,10 +2483,13 @@ export class VisualizationService {
             targetOpacity = 0.2 + visibilityFactor * 0.8;
         }
 
+        // PERF: lerp runs at 30Hz with a doubled factor — identical perceived
+        // smoothing, half the style writes of the former 60Hz loop.
+        if (this.frameCount % 2 !== 0) return;
         let currentOpacity = parseFloat(labelDiv.style.opacity);
         if (isNaN(currentOpacity)) currentOpacity = targetOpacity;
 
-        const newOpacity = THREE.MathUtils.lerp(currentOpacity, targetOpacity, 0.1);
+        const newOpacity = THREE.MathUtils.lerp(currentOpacity, targetOpacity, 0.2);
         labelDiv.style.opacity = newOpacity.toString();
         labelDiv.style.visibility = newOpacity > 0.01 ? 'visible' : 'hidden';
     }

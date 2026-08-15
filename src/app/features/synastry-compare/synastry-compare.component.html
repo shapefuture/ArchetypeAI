@@ -1,0 +1,98 @@
+<div class="sc-overlay" (click)="close()">
+  <div class="sc-card" (click)="$event.stopPropagation()">
+    <header class="sc-head">
+      <span class="sc-kicker">{{ ui().title }}</span>
+      <button class="sc-x" (click)="close()" aria-label="Close">✕</button>
+    </header>
+
+    @if (!myProfile()) {
+      <p class="sc-quiet">{{ ui().noProfile }}</p>
+    } @else {
+      <!-- Pairing: your code out, their code in -->
+      <section class="sc-pair">
+        <label class="sc-label">
+          <span>{{ ui().yourCode }}</span>
+          <div class="sc-code-row">
+            <textarea readonly rows="3" [value]="myCode()" class="sc-code"></textarea>
+            <button class="sc-copy" (click)="copyCode()">{{ copied() ? ui().copied : ui().copy }}</button>
+          </div>
+        </label>
+        <label class="sc-label">
+          <span>{{ ui().pasteLabel }}</span>
+          <textarea rows="3" class="sc-code"
+                    (input)="partnerCode.set($any($event.target).value)"></textarea>
+        </label>
+        <button class="sc-primary" (click)="compare()">{{ ui().compare }}</button>
+        @if (error()) { <p class="sc-error">{{ ui().badCode }}</p> }
+      </section>
+
+      @if (result(); as r) {
+        <!-- §2.2 the Loop: the relationship's signature -->
+        <section class="sc-section">
+          <h2>{{ ui().loopTitle }}</h2>
+          <div class="sc-loop">
+            <div class="sc-loop-nodes">
+              <span class="sc-node">{{ r.loop.aProtector }}</span>
+              <span class="sc-loop-arc" aria-hidden="true"></span>
+              <span class="sc-node exile">{{ r.loop.bExile }}</span>
+              <span class="sc-loop-arc" aria-hidden="true"></span>
+              <span class="sc-node">{{ r.loop.bGuardian }}</span>
+              <span class="sc-loop-arc" aria-hidden="true"></span>
+              <span class="sc-node exile">{{ r.loop.aExile }}</span>
+            </div>
+            <p class="sc-loop-name">{{ r.loop.name }}</p>
+          </div>
+        </section>
+
+        <!-- §2.3/§2.5 hexagon: six dynamics, never one number -->
+        <section class="sc-section">
+          <h2>{{ ui().hexagon }}</h2>
+          <div class="sc-hex-wrap">
+            <svg viewBox="0 0 220 200" class="sc-hex" role="img">
+              <polygon points="110,20 180,60 180,140 110,180 40,140 40,60"
+                       fill="rgba(236,234,246,0.04)" stroke="rgba(236,234,246,0.15)" />
+              <polygon [attr.points]="hexPoints()"
+                       fill="rgba(242,231,201,0.18)" stroke="#f2e7c9" stroke-width="1.5" />
+            </svg>
+            <div class="sc-axis-list">
+              @for (a of ui().axes; track $index) {
+                <div class="sc-axis-row">
+                  <span class="sc-axis-name">{{ a }}</span>
+                  <span class="sc-axis-val">{{ axisValue($index) | number:'1.0-0' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- §2.4 interlocks -->
+        <section class="sc-section">
+          <h2>{{ ui().interlocks }}</h2>
+          @if (r.interlocks.length === 0) {
+            <p class="sc-quiet">{{ ui().noInterlocks }}</p>
+          }
+          @for (i of r.interlocks; track i.name) {
+            <div class="sc-interlock">
+              <span class="sc-interlock-name">{{ i.name }}</span>
+              <div class="sc-strength"><div class="sc-strength-fill" [style.width.%]="i.strength"></div></div>
+            </div>
+          }
+        </section>
+
+        <!-- §2.6 dance + §2.5 nourish -->
+        <section class="sc-section sc-two">
+          <div>
+            <h2>{{ ui().dance }}</h2>
+            <p class="sc-dance">{{ r.dance }}</p>
+          </div>
+          <div>
+            <h2>{{ ui().nourish }}</h2>
+            @for (n of r.nourishHighlights; track n.need) {
+              <p class="sc-nourish">{{ n.giver }} → {{ n.need }}</p>
+            }
+          </div>
+        </section>
+      }
+    }
+  </div>
+</div>

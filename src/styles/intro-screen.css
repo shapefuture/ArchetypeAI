@@ -274,3 +274,15 @@
   border-color: rgba(169, 160, 214, 0.55);
   color: #cdc7ea;
 }
+.innerverse-pill--therapist {
+  right: 18px;
+  bottom: 186px;
+  color: rgba(236, 234, 246, 0.75);
+  border-color: rgba(236, 234, 246, 0.25);
+}
+.innerverse-pill--synastry {
+  right: 18px;
+  bottom: 242px;
+  color: rgba(236, 234, 246, 0.75);
+  border-color: rgba(169, 160, 214, 0.4);
+}

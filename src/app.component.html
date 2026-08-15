@@ -365,6 +365,26 @@
     </button>
   }
 
+  @if (appState() === 'intro') {
+    <button class="innerverse-pill innerverse-pill--therapist" (click)="openTherapist()">
+      <span class="innerverse-pill-star" aria-hidden="true">✚</span>
+      Therapist
+    </button>
+    @if (therapistOpen()) {
+      <app-therapist-panel (closed)="closeTherapist()"></app-therapist-panel>
+    }
+  }
+
+  @if (appState() === 'intro' && innerverseProfile()) {
+    <button class="innerverse-pill innerverse-pill--synastry" (click)="openSynastry()">
+      <span class="innerverse-pill-star" aria-hidden="true">∞</span>
+      Synastry
+    </button>
+    @if (synastryOpen()) {
+      <app-synastry-compare (closed)="closeSynastry()"></app-synastry-compare>
+    }
+  }
+
   @if (appState() === 'intro' && innerverseProfile()) {
     <button class="innerverse-pill innerverse-pill--practice" (click)="openPractice()">
       <span class="innerverse-pill-star" aria-hidden="true">◈</span>

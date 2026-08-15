@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   EXERCISES, EXERCISE_TYPES, suggestExercise, chapterUnlocked, unlockedTypes,
-  hasBehavioralHook, SELECTOR_PRIORITY, type ChapterState,
+  hasBehavioralHook, SELECTOR_PRIORITY, depthCap, allowedDepth, containerReady, redAllowed,
+  type ChapterState,
 } from './exercises';
 import { SHADOW_PARTS, RESOURCES } from './parts';
 import { scoreProfile, type AssessmentInput } from './scoring-v2';
@@ -112,5 +113,31 @@ describe('practice path chapters (§3D.3)', () => {
     expect(chapterUnlocked(3, { ...baseState, partDialogueCompleted: true })).toBe(true);
     expect(chapterUnlocked(4, { ...baseState, synastryRun: true })).toBe(true);
     expect(chapterUnlocked(4, { ...baseState, therapistLinked: true })).toBe(true);
+  });
+});
+
+describe('§3E.2 depth gate + RED container (step 14)', () => {
+  it('need-beat never exceeds the resource cap', () => {
+    const low = scoreProfile(all(1));   // self 25, resources 20 → cap 1
+    const mid = scoreProfile(all(3));   // self 50, resources 45.6 → cap 2
+    const high = scoreProfile(all(5));  // self 100, resources 72 → cap 3
+    expect(depthCap(low)).toBe(1);
+    expect(depthCap(mid)).toBe(2);
+    expect(depthCap(high)).toBe(3);
+    expect(allowedDepth(3, low)).toBe(1);
+    expect(allowedDepth(3, mid)).toBe(2);
+    expect(allowedDepth(1, high)).toBe(1);
+  });
+  it('RED requires Safe Place built AND a mobilized resource AND a therapist', () => {
+    const p = scoreProfile(all(4)); // resources ≥ 50 mobilized
+    const noContainer = { safePlaceBuilt: false, resourcesMobilized: true };
+    const noResource = { safePlaceBuilt: true, resourcesMobilized: false };
+    const weakProfile = scoreProfile(all(1)); // no resource ≥ 50
+    expect(containerReady(p, noContainer)).toBe(false);
+    expect(containerReady(weakProfile, { safePlaceBuilt: true, resourcesMobilized: false })).toBe(false);
+    expect(containerReady(p, { safePlaceBuilt: true, resourcesMobilized: true })).toBe(true);
+    // even with the container, RED still needs the therapist
+    expect(redAllowed(p, { safePlaceBuilt: true, resourcesMobilized: true }, false)).toBe(false);
+    expect(redAllowed(p, { safePlaceBuilt: true, resourcesMobilized: true }, true)).toBe(true);
   });
 });

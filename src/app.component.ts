@@ -16,7 +16,9 @@ import { DescentPanelComponent } from './app/features/descent-panel/descent-pane
 import { InnerverseReportComponent } from './app/features/innerverse-report/innerverse-report.component';
 import { CheckInPanelComponent } from './app/features/checkin-panel/checkin-panel.component';
 import { PracticePanelComponent } from './app/features/practice-panel/practice-panel.component';
+import { QuickScanPanelComponent } from './app/features/quickscan-panel/quickscan-panel.component';
 import { scoreProfile, type AssessmentInput, type ScoredProfile } from './app/core/data/scoring-v2';
+import { recordAndStore } from './app/core/data/telemetry';
 import { ResultsPanelComponent, AssessmentResults } from './app/features/results-panel/results-panel.component';
 import { UniverseControlsComponent } from './app/features/universe-controls/universe-controls.component';
 import { SynastryPanelComponent } from './app/features/synastry-panel/synastry-panel.component';
@@ -51,6 +53,7 @@ const AUTH_REDIRECT_PENDING_KEY = 'ARCHETYPE_AUTH_REDIRECT_PENDING';
     InnerverseReportComponent,
     CheckInPanelComponent,
     PracticePanelComponent,
+    QuickScanPanelComponent,
     CommonModule,
     BlobCharacterComponent,
     ArchetypeDetailCardComponent,
@@ -692,6 +695,7 @@ export class AppComponent implements OnDestroy {
 
   onDescentCompleted(input: AssessmentInput): void {
     this.innerverseProfile.set(scoreProfile(input));
+    recordAndStore(input); // §4 step 10: anonymized item distributions, local-only
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(input)); } catch { /* storage unavailable */ }
     this.appState.set('innerverse');
   }
@@ -720,6 +724,10 @@ export class AppComponent implements OnDestroy {
   readonly practiceOpen = signal(false);
   openPractice(): void { this.practiceOpen.set(true); }
   closePractice(): void { this.practiceOpen.set(false); }
+
+  readonly quickScanOpen = signal(false);
+  openQuickScan(): void { this.quickScanOpen.set(true); }
+  closeQuickScan(): void { this.quickScanOpen.set(false); }
 
   toggleLanguage(): void {
     const newLang = this.translationService.getLanguage() === 'en' ? 'ru' : 'en';

@@ -10,11 +10,13 @@ import { SHADOW_PARTS, SUBTYPES, type EventType, type PartId } from '../../core/
 import type { ScoredProfile } from '../../core/data/scoring-v2';
 import {
   predictFlare, weatherLayer, unburdeningMoments, verdictLockActive,
-  sealVerdict, readyToResurface, type CheckIn, type Arousal, type SealedVerdict,
+  sealVerdict, readyToResurface, selectJitaiCard, type CheckIn, type Arousal,
+  type SealedVerdict, type JitaiCardId,
 } from '../../core/data/state-v2';
 
 const STORE_KEY = 'INNERVERSE_CHECKINS_V1';
 const VERDICT_KEY = 'INNERVERSE_SEALED_VERDICTS_V1';
+const JITAI_KEY = 'INNERVERSE_JITAI_V1';
 
 type Stage = 'arousal' | 'event' | 'confirm' | 'done';
 
@@ -63,6 +65,23 @@ const UI = {
   },
 };
 
+const JITAI_CARDS: Record<'en' | 'ru', Record<JitaiCardId, { title: string; body: string }>> = {
+  en: {
+    body_anchor: { title: 'Body anchor', body: 'Feet on the floor. Three slow breaths. Name one controllable thing — and do it.' },
+    dual_bound_charter: { title: 'Dual-bound charter', body: 'This was one behavior in one context — not proof of a verdict. AND it still matters: one repair action, one next-time plan. Do both now.' },
+    witness_contact: { title: 'Contact your witness', body: 'Call the person you chose for moments like this — before deciding anything.' },
+    if_then_plan: { title: 'Your if-then plan', body: 'Say your if-then plan out loud, right now: “When ⟨trigger⟩, I will ⟨action⟩.”' },
+    sealed_verdict_offer: { title: 'Seal tonight’s verdict', body: 'Facts and feelings now; meaning in 48 hours. Write the conclusion that feels true — it returns sealed.' },
+  },
+  ru: {
+    body_anchor: { title: 'Якорь в теле', body: 'Стопы в пол. Три медленных вдоха. Назовите одну подвластную вам вещь — и сделайте её.' },
+    dual_bound_charter: { title: 'Двойная рамка', body: 'Это один поступок в одном контексте — не приговор. И это всё равно серьёзно: одно действие исправления и один план на следующий раз. Сделайте оба.' },
+    witness_contact: { title: 'Позвоните свидетелю', body: 'Позвоните человеку, которого выбрали на такой случай, — прежде чем что-либо решать.' },
+    if_then_plan: { title: 'Ваш план «если–то»', body: 'Скажите план вслух, прямо сейчас: «Когда ⟨триггер⟩, я сделаю ⟨действие⟩».' },
+    sealed_verdict_offer: { title: 'Запечатайте вывод', body: 'Сейчас — факты и чувства; смысл через 48 часов. Напишите вывод, который кажется правдой, — он вернётся запечатанным.' },
+  },
+};
+
 @Component({
   selector: 'app-checkin-panel',
   standalone: true,
@@ -100,6 +119,40 @@ export class CheckInPanelComponent {
     verdictLockActive(this.history(), new Date()));
 
   readonly weather = computed(() => weatherLayer(this.history(), new Date()));
+
+  /** §3C.4: the card chosen at record time — never recomputed reactively
+   * (persisting lastCardAt inside a computed would poison it). */
+  readonly jitaiCard = signal<{ id: JitaiCardId } | null>(null);
+  private lastJitaiAt: string | null =
+    (() => { try { return JSON.parse(localStorage.getItem(JITAI_KEY) ?? 'null'); } catch { return null; } })();
+
+  private chooseJitaiCard(): void {
+    const p = this.profile();
+    if (!p) { this.jitaiCard.set(null); return; }
+    const now = new Date();
+    const card = selectJitaiCard({
+      history: this.history(),
+      now,
+      lastCardAt: this.lastJitaiAt ? new Date(this.lastJitaiAt) : null,
+      stackL1Flared: this.history().some(c =>
+        c.confirmedPart === p.copingStack.l1 &&
+        (now.getTime() - new Date(c.date).getTime()) / 86400000 <= 1),
+      lapseToday: this.history().some(c => {
+        const ff = c.confirmedPart === 'numb' || c.confirmedPart === 'rebel' || c.confirmedPart === 'charmer';
+        return ff && Math.abs(c.arousal) >= 1 &&
+          (now.getTime() - new Date(c.date).getTime()) / 86400000 <= 1;
+      }),
+    });
+    if (card) {
+      this.lastJitaiAt = now.toISOString();
+      try { localStorage.setItem(JITAI_KEY, JSON.stringify(this.lastJitaiAt)); } catch { /* unavailable */ }
+    }
+    this.jitaiCard.set(card);
+  }
+
+  jitaiCopy(id: JitaiCardId): { title: string; body: string } {
+    return JITAI_CARDS[this.lang()][id];
+  }
 
   constructor() {
     this.load();
@@ -163,6 +216,7 @@ export class CheckInPanelComponent {
       confirmedPart: confirmed,
     }]);
     this.save();
+    this.chooseJitaiCard();
     this.stage.set('done');
   }
 

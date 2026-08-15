@@ -71,16 +71,37 @@ describe('DescentPanelComponent — flow', () => {
     });
     let guard = 0;
     let breaks = 0;
-    while (c.stage() === 'item' || c.stage() === 'break') {
+    while (c.stage() !== 'complete') {
       if (guard++ > 1200) throw new Error('descent did not terminate');
       if (c.stage() === 'break') { breaks++; c.resumeFromBreak(); continue; }
+      if (c.stage() === 'future-self') { c.skipFutureSelf(); continue; }
       if (c.pendingSomaticPart()) { c.skipZone(); vi.advanceTimersByTime(200); continue; }
       c.answer(4);
       vi.advanceTimersByTime(200);
     }
     expect(breaks).toBe(2); // one break between each sitting
     expect(emitted).toBe(true);
+  });
+
+  it('§3D.2 Future Self: min-2-sentence gate, saved before the reveal', () => {
+    const c = make();
+    c.acceptEthics();
+    expect(c.futureSelfValid()).toBe(false);
+    c.setFutureSelfAnswer(0, 'I am building a quiet studio of my own.');
+    expect(c.futureSelfValid()).toBe(false); // one answer, one sentence
+    c.setFutureSelfAnswer(1, 'They pause. They ask the part what it fears. They stay.');
+    expect(c.futureSelfValid()).toBe(true);
+    c.saveFutureSelf();
+    const saved = JSON.parse(localStorage.getItem('INNERVERSE_FUTURE_SELF_V1')!);
+    expect(saved[0]).toContain('quiet studio');
     expect(c.stage()).toBe('complete');
+  });
+
+  it('§3D.2 skipping leaves the dim placeholder (no stored star)', () => {
+    const c = make();
+    c.acceptEthics();
+    c.skipFutureSelf();
+    expect(localStorage.getItem('INNERVERSE_FUTURE_SELF_V1')).toBeNull();
   });
 
   it('persists progress and restores mid-descent after reload', () => {

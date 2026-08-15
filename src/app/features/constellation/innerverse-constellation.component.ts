@@ -162,6 +162,31 @@ export class InnerverseConstellationComponent implements AfterViewInit, OnDestro
       return this.reducedMotion ? 0.35 : 0.25 + 0.25 * Math.sin(t / 700);
     };
 
+    // North Star (§3D.2): distant, steady — the whole map faces it
+    const ns = L.northStar;
+    const nsR = ns.bright ? 5 : 3;
+    const nsAlpha = ns.bright ? 0.9 : 0.28;
+    const nsGlow = ctx.createRadialGradient(px(ns.x), px(ns.y), 0, px(ns.x), px(ns.y), nsR * 5);
+    nsGlow.addColorStop(0, `rgba(242,231,201,${nsAlpha})`);
+    nsGlow.addColorStop(1, 'rgba(242,231,201,0)');
+    ctx.fillStyle = nsGlow;
+    ctx.beginPath();
+    ctx.arc(px(ns.x), px(ns.y), nsR * 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = `rgba(242,231,201,${nsAlpha})`;
+    ctx.beginPath();
+    ctx.arc(px(ns.x), px(ns.y), nsR, 0, Math.PI * 2);
+    ctx.fill();
+    if (ns.bright) {
+      // faint guidance line: the Self faces its North Star
+      ctx.strokeStyle = 'rgba(242,231,201,0.12)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(px(0.5), px(0.5));
+      ctx.lineTo(px(ns.x), px(ns.y));
+      ctx.stroke();
+    }
+
     // stars
     L.stars.forEach((st, i) => {
       const phase = this.reducedMotion ? 1 : 0.85 + 0.15 * Math.sin(t / (700 + i * 37));

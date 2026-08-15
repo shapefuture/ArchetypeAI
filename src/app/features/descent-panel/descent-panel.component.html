@@ -81,6 +81,29 @@
     </main>
   }
 
+  <!-- Future Self — the North Star (§3D.2): asked once, at the end of Descent III -->
+  @if (stage() === 'future-self') {
+    <main class="descent-main future-self-main">
+      <h1 class="headline">{{ ui().fsTitle }}</h1>
+      <p class="sub">{{ ui().fsSub }}</p>
+      <div class="fs-form">
+        @for (q of ui().fsQ; track $index) {
+          <label class="fs-q">
+            <span>{{ q }}</span>
+            <textarea rows="2" [value]="futureSelf()[$index]"
+                      (input)="setFutureSelfAnswer($index, $any($event.target).value)"></textarea>
+          </label>
+        }
+      </div>
+      <div class="cta-column">
+        <button class="primary-btn" [disabled]="!futureSelfValid()" (click)="saveFutureSelf()">
+          {{ ui().fsSave }}
+        </button>
+        <button class="secondary-btn" (click)="skipFutureSelf()">{{ ui().fsSkip }}</button>
+      </div>
+    </main>
+  }
+
   @if (stage() === 'complete') {
     <main class="descent-main">
       <h1 class="headline">{{ ui().breakResume(2) }}</h1>

@@ -57,6 +57,12 @@
         }
         @case ('done') {
           <p class="done-text">{{ ui().done }}</p>
+          @if (jitaiCard(); as card) {
+            <div class="jitai-card">
+              <span class="jitai-title">{{ jitaiCopy(card.id).title }}</span>
+              <p class="jitai-body">{{ jitaiCopy(card.id).body }}</p>
+            </div>
+          }
           @for (u of unburdened(); track u) {
             <p class="unburdening">{{ ui().unburdening(partName(u)) }}</p>
           }

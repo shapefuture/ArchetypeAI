@@ -268,3 +268,9 @@
   color: rgba(236, 234, 246, 0.9);
   border-color: rgba(169, 160, 214, 0.5);
 }
+.innerverse-pill--quickscan {
+  right: 18px;
+  bottom: 18px;
+  border-color: rgba(169, 160, 214, 0.55);
+  color: #cdc7ea;
+}

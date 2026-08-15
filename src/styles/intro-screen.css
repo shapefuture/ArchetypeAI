@@ -286,3 +286,70 @@
   color: rgba(236, 234, 246, 0.75);
   border-color: rgba(169, 160, 214, 0.4);
 }
+
+
+/* ============================================
+   STORYBOOK ELEVATION — landing hero
+   Warm ink, Fraunces display, hand-drawn marks
+   ============================================ */
+
+/* The display voice (was an unstyled class falling back to system fonts) */
+.neo-serif {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-variation-settings: 'opsz' 144, 'SOFT' 50;
+}
+
+.hero-title-animated {
+  letter-spacing: -0.015em;
+  text-shadow: 3px 3px 0 rgba(200, 190, 180, 0.35);
+}
+
+/* Sketchy-radius panels on the hero (hand-drawn corners) */
+.hero-sketchy {
+  border-radius: var(--radius-sketch-primary) !important;
+  box-shadow: 4px 4px 0 rgba(200, 190, 180, 0.5), 8px 8px 0 rgba(180, 170, 160, 0.28) !important;
+}
+.hero-sketchy-alt {
+  border-radius: var(--radius-sketch-secondary) !important;
+  box-shadow: 3px 3px 0 rgba(200, 190, 180, 0.5), 6px 6px 0 rgba(180, 170, 160, 0.25) !important;
+}
+
+/* Hand-drawn marginalia (ink sparkles around the hero) */
+.marginalia {
+  position: absolute;
+  color: var(--color-ink);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: marginalia-float 7s ease-in-out infinite;
+}
+.marginalia--a { animation-delay: -2s; }
+.marginalia--b { animation-delay: -4.5s; transform: scale(0.8); }
+@keyframes marginalia-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(6deg); }
+}
+
+/* Part-constellation strip: ten pastel part-stars on a dashed ink path
+   (cartography marginalia inspired by the kawaii drafts' pastel parts) */
+.part-constellation {
+  display: block;
+  margin: 0 auto 20px;
+  max-width: 520px;
+  width: 86%;
+  opacity: 0.9;
+}
+.part-constellation .pc-star {
+  animation: pc-twinkle 3.4s ease-in-out infinite;
+}
+.part-constellation .pc-star:nth-child(2n) { animation-delay: -1.2s; }
+.part-constellation .pc-star:nth-child(3n) { animation-delay: -2.1s; }
+@keyframes pc-twinkle {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marginalia, .part-constellation .pc-star { animation: none; }
+  .hero-title-animated { text-shadow: none; }
+}

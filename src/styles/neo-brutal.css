@@ -4,10 +4,11 @@
    ============================================ */
 
 :root {
-  --color-paper: #F5F1E8;
-  --color-paper-dk: #EDE8DD;
-  --color-ink: #1C1917;
-  --color-ink-l: #57534E;
+  /* Storybook retune (style.txt "4D Storybook"): warm sepia ink on aged paper */
+  --color-paper: #f6f3eb;
+  --color-paper-dk: #eaddd0;
+  --color-ink: #4a3e35;
+  --color-ink-l: #8b7d72;
   /* Colorblind-safe palette (Wong 2011) — every pair differs in hue AND luminance */
   --color-coral: #D55E00;
   --color-mustard: #F0E442;
@@ -36,16 +37,16 @@
 .neo-btn .neo-btn-shadow {
   position: absolute;
   inset: 0;
-  border-radius: 9999px;
-  background-color: #1C1917;
-  transform: translate(5px, 5px);
+  border-radius: var(--radius-sketch-primary, 255px 15px 225px 15px / 15px 225px 15px 255px);
+  background-color: rgba(74, 62, 53, 0.82);
+  transform: translate(4px, 4px);
   transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .neo-btn .neo-btn-body {
   position: absolute;
   inset: 0;
-  border-radius: 9999px;
-  border: 3px solid #1C1917;
+  border-radius: var(--radius-sketch-primary, 255px 15px 225px 15px / 15px 225px 15px 255px);
+  border: 2px solid var(--color-ink);
   transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .neo-btn:hover .neo-btn-shadow { transform: translate(7px, 7px); }

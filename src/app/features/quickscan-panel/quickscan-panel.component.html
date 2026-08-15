@@ -1,0 +1,45 @@
+<div class="qs-overlay" (click)="close()">
+  <div class="qs-card" (click)="$event.stopPropagation()">
+    <header class="qs-head">
+      <span class="qs-kicker">{{ ui().title }}</span>
+      <button class="qs-x" (click)="close()" aria-label="Close">✕</button>
+    </header>
+
+    @if (!done()) {
+      <p class="qs-count">{{ idx() + 1 }} / 14</p>
+      <h2 class="qs-item">{{ itemText() }}</h2>
+      <div class="qs-likert">
+        @for (label of likert[lang()]; track $index) {
+          <button class="qs-btn" (click)="answer($index + 1)">{{ label }}</button>
+        }
+      </div>
+    } @else {
+      @if (result(); as r) {
+        @if (r.kind === 'family') {
+          <h2 class="qs-result">{{ ui().resultOf(resultName()!) }}</h2>
+          <div class="qs-card-face">
+            <span class="layer">Face</span>
+            <p>{{ faceOf(r.family) }}</p>
+            <span class="layer">Need</span>
+            <p>{{ needOf(r.family) }}</p>
+          </div>
+        } @else {
+          <h2 class="qs-result">{{ ui().selfTitle }}</h2>
+          <p class="qs-self-note">{{ ui().selfNote }}</p>
+        }
+      }
+      <!-- blurred constellation teaser: the shape of what's coming -->
+      <div class="qs-teaser" aria-hidden="true">
+        <span class="qs-teaser-star" style="--d:0s"></span>
+        <span class="qs-teaser-star" style="--d:.4s"></span>
+        <span class="qs-teaser-star" style="--d:.8s"></span>
+        <span class="qs-teaser-star" style="--d:1.2s"></span>
+        <span class="qs-teaser-core"></span>
+      </div>
+      <p class="qs-note">{{ ui().teaserNote }}</p>
+      <div class="qs-cta">
+        <button class="qs-primary" (click)="begin()">{{ ui().cta }}</button>
+      </div>
+    }
+  </div>
+</div>

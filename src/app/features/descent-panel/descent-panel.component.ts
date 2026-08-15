@@ -24,9 +24,10 @@ import {
 } from '../../core/data/assessment-adapter';
 
 const STORE_KEY = 'INNERVERSE_DESCENT_V1';
+export const FUTURE_SELF_KEY = 'INNERVERSE_FUTURE_SELF_V1';
 const LEGACY_KEY = 'ARCHETYPE_ASSESSMENT_RESPONSES'; // 64-item engine, unsalvageable (§4 step 9)
 
-type Stage = 'ethics' | 'item' | 'break' | 'complete';
+type Stage = 'ethics' | 'item' | 'break' | 'future-self' | 'complete';
 
 interface Persisted {
   answers: number[];
@@ -51,6 +52,15 @@ const UI = {
     breakResume: n => (n < 2 ? `Continue — Descent ${['II', 'III'][n]}` : 'Behold your constellation'),
     retakeNote: 'Your answers stay on this device.',
     recalibrated: 'The stars have been recalibrated. The old map cannot be translated — descend again to be measured anew.',
+    fsTitle: 'Your North Star',
+    fsSub: 'Not the version with fewer wounds — the one you are drawn toward. Answer two of the three (a sentence or two each). You can edit this anytime.',
+    fsQ: [
+      'One year from now, what are you moving toward?',
+      'The version of you who has met these parts — what do they do differently under load?',
+      'What do you love enough that it summons you?',
+    ],
+    fsSkip: 'Skip for now — a dim star will hold the place',
+    fsSave: 'Set my North Star',
   },
   ru: {
     exit: 'Выйти',
@@ -68,6 +78,15 @@ const UI = {
     breakResume: n => (n < 2 ? `Продолжить — Погружение ${['II', 'III'][n]}` : 'Пора увидеть ваше созвездие'),
     retakeNote: 'Ответы остаются на этом устройстве.',
     recalibrated: 'Звёзды перенастроены: прежнюю карту не перевести на новый лад. Пройдите все три погружения заново — вас измерят по-новой.',
+    fsTitle: 'Ваша Полярная звезда',
+    fsSub: 'Не версия «с меньшим числом ран», а та, к которой вас тянет. Ответьте на два из трёх (по предложению-два). Позже можно изменить.',
+    fsQ: [
+      'Через год — к чему вы движетесь?',
+      'Ваша версия, встретившая эти части, — что она делает иначе под нагрузкой?',
+      'Что вы любите настолько, что оно вас зовёт?',
+    ],
+    fsSkip: 'Пока пропустить — тусклая звезда подержит место',
+    fsSave: 'Задать Полярную звезду',
   },
 };
 
@@ -107,6 +126,7 @@ export class DescentPanelComponent implements OnDestroy {
   readonly somatic = signal<Partial<Record<ShadowPartId, string[]>>>({});
   readonly pendingSomaticPart = signal<ShadowPartId | null>(null);
   readonly transitioning = signal(false);
+  readonly futureSelf = signal<string[]>(['', '', '']);
 
   readonly lang = computed(() => this.translationService.getLanguage());
   readonly ui = computed(() => UI[this.lang()] as typeof UI.en);
@@ -206,9 +226,7 @@ export class DescentPanelComponent implements OnDestroy {
       this.transitioning.set(false);
       if (this.itemIndex() >= 146) {
         this.persist();
-        this.stage.set('complete');
-        this.completed.emit(toAssessmentInput(this.answers()));
-        localStorage.removeItem(STORE_KEY);
+        this.stage.set('future-self');
         return;
       }
       // End of a sitting → break screen (continue immediately, or come back later)
@@ -224,9 +242,8 @@ export class DescentPanelComponent implements OnDestroy {
 
   resumeFromBreak(): void {
     if (this.itemIndex() >= 146 && this.answers()[146] > 0) {
-      this.stage.set('complete');
-      this.completed.emit(toAssessmentInput(this.answers()));
-      localStorage.removeItem(STORE_KEY);
+      // §3D.2: Future Self prompt at the end of Descent III, before the reveal
+      this.stage.set('future-self');
       return;
     }
     this.itemIndex.update(i => Math.min(146, i + 1));
@@ -241,6 +258,37 @@ export class DescentPanelComponent implements OnDestroy {
       return;
     }
     this.cancelled.emit();
+  }
+
+  /** §3D.2: min 2 answers of ≥1 sentence each across the three prompts. */
+  readonly futureSelfValid = computed(() => {
+    const answers = this.futureSelf().filter(a => a.trim().length > 0);
+    const sentences = answers.join(' ').split(/[.!?…]+/).filter(x => x.trim().length > 3);
+    return answers.length >= 2 && sentences.length >= 2;
+  });
+
+  setFutureSelfAnswer(i: number, v: string): void {
+    this.futureSelf.update(a => { a[i] = v; return [...a]; });
+  }
+
+  saveFutureSelf(): void {
+    try {
+      localStorage.setItem(FUTURE_SELF_KEY, JSON.stringify(this.futureSelf()));
+    } catch { /* unavailable */ }
+    this.finish();
+  }
+
+  skipFutureSelf(): void {
+    try { localStorage.removeItem(FUTURE_SELF_KEY); } catch { /* unavailable */ }
+    this.finish();
+  }
+
+  private finish(): void {
+    this.stage.set('complete');
+    if (this.answers().every(a => a > 0)) {
+      this.completed.emit(toAssessmentInput(this.answers()));
+    }
+    localStorage.removeItem(STORE_KEY);
   }
 
   readonly isReverse = isReverseKeyed;

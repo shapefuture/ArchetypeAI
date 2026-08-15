@@ -92,6 +92,17 @@ describe('constellation layout (§3.1, §1.15)', () => {
     expect(L.complexGlows[0].name).toContain('Complex');
   });
 
+  it('§3D.2 North Star: dim placeholder without a Future Self, bright with one', () => {
+    localStorage.removeItem('INNERVERSE_FUTURE_SELF_V1');
+    const dim = buildLayout(scoreProfile(all(4)));
+    expect(dim.northStar.bright).toBe(false);
+    localStorage.setItem('INNERVERSE_FUTURE_SELF_V1', JSON.stringify(['A quiet studio of my own.', '', '']));
+    const bright = buildLayout(scoreProfile(all(4)));
+    expect(bright.northStar.bright).toBe(true);
+    expect(bright.northStar.x).toBeGreaterThan(0.7); // distant corner, not on a ring
+    localStorage.removeItem('INNERVERSE_FUTURE_SELF_V1');
+  });
+
   it('starAt throws for unknown ids instead of inventing positions', () => {
     expect(() => starAt(buildLayout(scoreProfile(all(4))), 'nope' as never)).toThrow();
   });

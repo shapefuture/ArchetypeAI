@@ -313,3 +313,45 @@ export function unlockedTypes(s: ChapterState): ExerciseTypeId[] {
 export function hasBehavioralHook(e: Exercise): boolean {
   return e.steps.en.length >= 3;
 }
+
+// --- §3E.2 depth gate: never deeper into a wound than the resource online ---
+
+/**
+ * Max wound-depth beat (1..3) an exercise may reach: capped by the weaker of
+ * Self energy and the strongest resource. Resource < need depth → the app
+ * inserts a resource beat or closes with grounding instead.
+ */
+export function depthCap(profile: ScoredProfile): 1 | 2 | 3 {
+  const strongestResource = Math.max(...Object.values(profile.resources).map(r => r.T));
+  const weakest = Math.min(profile.selfEnergy, strongestResource);
+  if (weakest < 40) return 1;
+  if (weakest < 60) return 2;
+  return 3;
+}
+
+/** A need-beat never exceeds the cap: the exercise stops at the allowed depth. */
+export function allowedDepth(requested: 1 | 2 | 3, profile: ScoredProfile): 1 | 2 | 3 {
+  return Math.min(requested, depthCap(profile)) as 1 | 2 | 3;
+}
+
+export interface ContainerState {
+  safePlaceBuilt: boolean;
+  /** ≥1 resource mobilized at T ≥ 50 (§3E.3). */
+  resourcesMobilized: boolean;
+}
+
+/**
+ * §3E.3 HARD PREREQUISITE: no exile contact (RED) without the container —
+ * Safe Place built AND ≥1 resource ≥ 50T mobilized.
+ */
+export function containerReady(profile: ScoredProfile, s: ContainerState): boolean {
+  const mobilized = Object.values(profile.resources).some(r => r.T >= 50);
+  return s.safePlaceBuilt && (s.resourcesMobilized || mobilized);
+}
+
+/** RED exercises require the container AND a therapist assignment (§3B.1). */
+export function redAllowed(
+  profile: ScoredProfile, s: ContainerState, therapistAssigned: boolean,
+): boolean {
+  return therapistAssigned && containerReady(profile, s);
+}

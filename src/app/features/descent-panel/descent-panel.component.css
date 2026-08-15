@@ -215,3 +215,13 @@
 .ethics-sub {
   color: #f2e7c9;
 }
+
+.future-self-main { gap: 14px; overflow-y: auto; }
+.fs-form { display: flex; flex-direction: column; gap: 10px; width: min(560px, 94vw); }
+.fs-q { display: flex; flex-direction: column; gap: 6px; text-align: left; font-size: 14px; color: rgba(236, 234, 246, 0.8); }
+.fs-q textarea {
+  font: inherit; font-size: 14px; color: #eceaf6; padding: 10px;
+  background: rgba(236, 234, 246, 0.05); border: 1px solid rgba(236, 234, 246, 0.2);
+  border-radius: 10px; resize: vertical;
+}
+.primary-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }

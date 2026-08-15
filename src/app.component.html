@@ -343,6 +343,20 @@
     }
   }
 
+  <!-- Lead magnet (§1.13): the 90-second teaser, only before a profile exists -->
+  @if (appState() === 'intro' && !innerverseProfile()) {
+    <button class="innerverse-pill innerverse-pill--quickscan" (click)="openQuickScan()">
+      <span class="innerverse-pill-star" aria-hidden="true">✦</span>
+      Meet one part in 90 seconds
+    </button>
+    @if (quickScanOpen()) {
+      <app-quickscan-panel
+        (closed)="closeQuickScan()"
+        (startDescent)="closeQuickScan(); startDescent()">
+      </app-quickscan-panel>
+    }
+  }
+
   <!-- Innerverse report shortcut (persistent after first descent) -->
   @if (appState() === 'intro' && innerverseProfile(); as p) {
     <button class="innerverse-pill" (click)="openInnerverse()">

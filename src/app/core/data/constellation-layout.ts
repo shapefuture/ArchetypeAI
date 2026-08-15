@@ -37,6 +37,12 @@ export interface GuardLine { from: ProtectorId; to: PartId; weight: number; }
 export interface LeakArc { from: ResourceId; to: ProtectorId; }
 export interface ComplexGlow { id: string; name: string; parts: PartId[] }
 
+export interface NorthStar {
+  x: number; y: number;
+  /** true when a Future Self is defined; false = dim placeholder. */
+  bright: boolean;
+}
+
 export interface ConstellationLayout {
   stars: Star[];
   self: SelfHub;
@@ -44,6 +50,8 @@ export interface ConstellationLayout {
   guardLines: GuardLine[];
   leakArcs: LeakArc[];
   complexGlows: ComplexGlow[];
+  /** §3D.2 Future Self anchor: a distant star the constellation faces. */
+  northStar: NorthStar;
 }
 
 // §3 identity: managers cool blues/teals, firefighters ambers/reds,
@@ -124,8 +132,16 @@ export function buildLayout(profile: ScoredProfile): ConstellationLayout {
     parts: Object.keys(COMPLEXES[c.id as ComplexId].weights) as PartId[],
   }));
 
+  let futureSelf: string[] | null = null;
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('INNERVERSE_FUTURE_SELF_V1') : null;
+    futureSelf = raw ? JSON.parse(raw) : null;
+  } catch { futureSelf = null; }
+  const bright = !!(futureSelf && futureSelf.some(a => a && a.trim().length > 0));
+
   return { stars, self: { x: 0.5, y: 0.5, radius: 0.06 + profile.selfEnergy / 100 * 0.06, spokes },
-    tensionArcs, guardLines, leakArcs, complexGlows };
+    tensionArcs, guardLines, leakArcs, complexGlows,
+    northStar: { x: 0.86, y: 0.13, bright } };
 }
 
 

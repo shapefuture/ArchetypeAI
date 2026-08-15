@@ -64,3 +64,12 @@
 .verdict-old { margin: 0; font-size: 15px; font-style: italic; color: rgba(236, 234, 246, 0.75); }
 .verdict-q { margin: 0; font-size: 17px; }
 .verdict-ratings { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.jitai-card {
+  border: 1px solid rgba(232, 201, 135, 0.45);
+  background: rgba(232, 201, 135, 0.06);
+  border-radius: 12px; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.jitai-title { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #e8c987; }
+.jitai-body { margin: 0; font-size: 14px; line-height: 1.55; }

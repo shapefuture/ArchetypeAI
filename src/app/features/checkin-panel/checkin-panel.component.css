@@ -73,3 +73,6 @@
 }
 .jitai-title { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #e8c987; }
 .jitai-body { margin: 0; font-size: 14px; line-height: 1.55; }
+.slider-row { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: rgba(236,234,246,0.8); }
+.slider-row input[type="range"] { width: 100%; accent-color: #f2e7c9; }
+.charter-toggles { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: rgba(236,234,246,0.75); }

@@ -3,14 +3,16 @@
  * 5-chapter path (Ch.5 therapist-only), and the safety-gated exercise
  * library. Completions are logged locally and feed chapter unlocks.
  */
-import { ChangeDetectionStrategy, Component, computed, inject, model, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, model, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import type { ScoredProfile } from '../../core/data/scoring-v2';
 import {
   EXERCISES, EXERCISE_TYPES, suggestExercise, chapterUnlocked,
+  ladderRung, type LadderState,
   type Exercise, type ExerciseTypeId, type Gate,
 } from '../../core/data/exercises';
+import { storeEvent } from '../../core/data/state-v2';
 
 const STORE_KEY = 'INNERVERSE_PRACTICE_V1';
 
@@ -20,6 +22,8 @@ interface PracticeState {
   daysOfCheckIns: number;
   synastryRun: boolean;
   therapistLinked: boolean;
+  /** §3C.5 per-exercise ladder progress. */
+  ladder: Record<string, LadderState>;
 }
 
 const UI = {
@@ -35,6 +39,10 @@ const UI = {
     done: 'Mark practiced',
     close: 'Close',
     ch2Hint: '7 days of check-ins', ch3Hint: 'after a part dialogue', ch4Hint: 'a synastry run', ch5Hint: 'therapist link only',
+    ladder: 'Proceduralization ladder', rungNames: ['Name the principle', 'Write the if-then plan', 'Mental rehearsal (90s)', 'Live rep', 'Verified under load'],
+    rungNamed: 'I can name it', rungIfThenPh: 'When ⟨trigger⟩, I will ⟨action⟩', rungSave: 'Save plan',
+    rungStart: 'Rehearse 90 seconds', rungDone: 'Rehearsal complete',
+    rungLocked: 'with a therapist', integrated: 'integrated',
   },
   ru: {
     title: 'Практика',
@@ -48,6 +56,10 @@ const UI = {
     done: 'Отметить выполненным',
     close: 'Закрыть',
     ch2Hint: '7 дней сверок', ch3Hint: 'после диалога с частью', ch4Hint: 'после синастрии', ch5Hint: 'только связь с терапевтом',
+    ladder: 'Лестница процедурализации', rungNames: ['Назвать принцип', 'Записать план «если–то»', 'Мысленная репетиция (90с)', 'Живая проба', 'Проверено под нагрузкой'],
+    rungNamed: 'Могу назвать', rungIfThenPh: 'Когда ⟨триггер⟩, я сделаю ⟨действие⟩', rungSave: 'Сохранить план',
+    rungStart: 'Репетировать 90 секунд', rungDone: 'Репетиция завершена',
+    rungLocked: 'с терапевтом', integrated: 'интегрировано',
   },
 };
 
@@ -59,7 +71,7 @@ const UI = {
   styleUrls: ['./practice-panel.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PracticePanelComponent {
+export class PracticePanelComponent implements OnDestroy {
   private readonly translationService = inject(TranslationService);
 
   readonly profile = model<ScoredProfile | null>(null);
@@ -71,7 +83,7 @@ export class PracticePanelComponent {
 
   readonly state = signal<PracticeState>({
     lastSuggestedAt: null, completed: [], daysOfCheckIns: 0,
-    synastryRun: false, therapistLinked: false,
+    synastryRun: false, therapistLinked: false, ladder: {},
   });
 
   constructor() {
@@ -111,6 +123,51 @@ export class PracticePanelComponent {
   }
 
   gateOf(e: Exercise): Gate { return EXERCISE_TYPES[e.type].gate; }
+
+  readonly rehearsalLeft = signal<number | null>(null);
+  private rehearsalTimer: ReturnType<typeof setInterval> | null = null;
+
+  ladderOf(id: string): LadderState { return this.state().ladder[id] ?? {}; }
+  rungOf(id: string): number { return ladderRung(this.ladderOf(id)); }
+
+  private setLadder(id: string, patch: LadderState): void {
+    this.state.update(s => ({
+      ...s,
+      ladder: { ...s.ladder, [id]: { ...s.ladder[id], ...patch } },
+    }));
+    this.save();
+  }
+
+  namePrinciple(id: string): void { this.setLadder(id, { principleNamed: true }); }
+
+  ifThenDraft = signal('');
+  saveIfThen(id: string): void {
+    const plan = this.ifThenDraft().trim();
+    if (plan.length <= 5) return;
+    this.setLadder(id, { ifThen: plan });
+    storeEvent('ifthen_written');
+  }
+
+  startRehearsal(id: string): void {
+    this.stopRehearsal();
+    this.rehearsalLeft.set(90);
+    this.rehearsalTimer = setInterval(() => {
+      const left = (this.rehearsalLeft() ?? 0) - 1;
+      if (left <= 0) {
+        this.stopRehearsal();
+        this.setLadder(id, { rehearsed: true });
+      } else {
+        this.rehearsalLeft.set(left);
+      }
+    }, 1000);
+  }
+  private stopRehearsal(): void {
+    if (this.rehearsalTimer) clearInterval(this.rehearsalTimer);
+    this.rehearsalTimer = null;
+    this.rehearsalLeft.set(null);
+  }
+
+  ngOnDestroy(): void { this.stopRehearsal(); }
 
   chapterOf(i: number): 1 | 2 | 3 | 4 | 5 { return (i + 1) as 1 | 2 | 3 | 4 | 5; }
 

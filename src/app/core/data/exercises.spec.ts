@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   EXERCISES, EXERCISE_TYPES, suggestExercise, chapterUnlocked, unlockedTypes,
   hasBehavioralHook, SELECTOR_PRIORITY, depthCap, allowedDepth, containerReady, redAllowed,
+  ladderRung, integrated,
   type ChapterState,
 } from './exercises';
 import { SHADOW_PARTS, RESOURCES } from './parts';
@@ -139,5 +140,24 @@ describe('§3E.2 depth gate + RED container (step 14)', () => {
     // even with the container, RED still needs the therapist
     expect(redAllowed(p, { safePlaceBuilt: true, resourcesMobilized: true }, false)).toBe(false);
     expect(redAllowed(p, { safePlaceBuilt: true, resourcesMobilized: true }, true)).toBe(true);
+  });
+});
+
+describe('§3C.5 proceduralization ladder', () => {
+  it('rungs advance 0→5 in order', () => {
+    expect(ladderRung({})).toBe(0);
+    expect(ladderRung({ principleNamed: true })).toBe(1);
+    expect(ladderRung({ principleNamed: true, ifThen: 'When X, I will Y' })).toBe(2);
+    expect(ladderRung({ principleNamed: true, ifThen: 'When X, I will Y', rehearsed: true })).toBe(3);
+    expect(ladderRung({ principleNamed: true, ifThen: 'When X, I will Y', rehearsed: true, liveRep: true })).toBe(4);
+    expect(ladderRung({ principleNamed: true, ifThen: 'When X, I will Y', rehearsed: true, liveRep: true, verifiedUnderLoad: true })).toBe(5);
+  });
+  it('HARD RULE: reading/reflection alone never integrates (rungs 1–3 cap)', () => {
+    expect(integrated({ principleNamed: true, ifThen: 'When X, I will Y', rehearsed: true })).toBe(false);
+    expect(integrated({ principleNamed: true, ifThen: 'When X, I will Y', rehearsed: true, liveRep: true })).toBe(false);
+    expect(integrated({ principleNamed: true, ifThen: 'When X, I will Y', rehearsed: true, liveRep: true, verifiedUnderLoad: true })).toBe(true);
+  });
+  it('a blank if-then plan does not count as rung 2', () => {
+    expect(ladderRung({ principleNamed: true, ifThen: '   ' })).toBe(1);
   });
 });

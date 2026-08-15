@@ -97,3 +97,67 @@ describe('CheckInPanelComponent — template', () => {
     expect(templateHtml).toMatch(/confirmPart\('correct'\)/);
   });
 });
+
+describe('CheckInPanelComponent — §3C.2/§3C.6 charter + events', () => {
+  beforeEach(() => { localStorage.clear(); TestBed.configureTestingModule({}); });
+
+  it('charter sliders record a delivery and the repair/told events', () => {
+    const c = make();
+    c.blame.set(7); c.license.set(2);
+    c.recordCharter(true, true);
+    const d = JSON.parse(localStorage.getItem('INNERVERSE_CHARTER_V1')!);
+    expect(d.length).toBe(1);
+    expect(d[0].blame).toBe(7);
+    const kinds = JSON.parse(localStorage.getItem('INNERVERSE_EVENTS_V1')!).map((e: any) => e.kind);
+    expect(kinds).toContain('repair');
+    expect(kinds).toContain('told');
+  });
+
+  it('a firefighter lapse check-in records a lapse event', () => {
+    const c = make();
+    c.chooseArousal(2);
+    c.chooseEvent('boundary');
+    c.correcting.set(true);
+    c.pickPart('rebel');
+    const kinds = JSON.parse(localStorage.getItem('INNERVERSE_EVENTS_V1') ?? '[]').map((e: any) => e.kind);
+    expect(kinds).toContain('lapse');
+  });
+
+  it('firedUnderLoad logs the if-then fire event', () => {
+    const c = make();
+    c.firedUnderLoad();
+    const kinds = JSON.parse(localStorage.getItem('INNERVERSE_EVENTS_V1')!).map((e: any) => e.kind);
+    expect(kinds).toContain('ifthen_fired');
+  });
+
+  it('worsening charter trend swaps to the stricter variant copy', () => {
+    const c = make();
+    localStorage.setItem('INNERVERSE_CHARTER_V1', JSON.stringify([
+      { blame: 8, license: 2, at: '2026-08-01T10:00:00' },
+      { blame: 6, license: 4, at: '2026-08-05T10:00:00' },
+      { blame: 3, license: 7, at: '2026-08-09T10:00:00' },
+    ]));
+    const fresh = make(); // reloads deliveries from storage
+    expect(fresh.charterDeliveries().length).toBe(3);
+    const copy = fresh.jitaiCopy('dual_bound_charter');
+    expect(copy.body).toContain('No verdicts');
+  });
+
+  it('template renders the two sliders and the fired button', () => {
+    const html = readFileSync(resolve(DIR, 'checkin-panel.component.html'), 'utf-8');
+    expect(html).toMatch(/blameQ/);
+    expect(html).toMatch(/licenseQ/);
+    expect(html).toMatch(/recordCharter\(repair\.checked, told\.checked\)/);
+    expect(html).toMatch(/firedUnderLoad\(\)/);
+  });
+});
+
+describe('arousal scale mapping (sign convention)', () => {
+  it('Shutdown = −2 … Hyper = +2, matching shutdownStreak’s convention', () => {
+    TestBed.configureTestingModule({});
+    const c = TestBed.runInInjectionContext(() => new CheckInPanelComponent()) as CheckInPanelComponent;
+    expect(c.arousalForIndex(0)).toBe(-2); // Shutdown
+    expect(c.arousalForIndex(2)).toBe(0);  // Window
+    expect(c.arousalForIndex(4)).toBe(2);  // Hyper
+  });
+});

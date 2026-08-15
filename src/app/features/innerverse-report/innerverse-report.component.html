@@ -54,6 +54,20 @@
         </div>
       }
     </div>
+    <div class="vane">
+      <span class="vane-title">{{ ui().vane }}</span>
+      @if (vane(); as v) {
+        <div class="vane-track" aria-hidden="true">
+          <div class="vane-fill" [style.width.%]="100 - vanePosition()"></div>
+          <span class="vane-needle" [style.left.%]="100 - vanePosition()"></span>
+        </div>
+        <div class="vane-labels">
+          <span>{{ ui().vaneEssence }}</span><span>{{ ui().vaneBehavior }}</span>
+        </div>
+      } @else {
+        <p class="vane-empty">{{ ui().vaneEmpty }}</p>
+      }
+    </div>
     <div class="attachment-line">
       <span>{{ ui().attachment }}:</span>
       <strong>{{ ui().attStyle[attachmentStyle()] }}</strong>

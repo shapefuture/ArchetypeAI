@@ -4,9 +4,9 @@
   inset: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  font-family: 'Space Grotesk', sans-serif;
-  background-color: #F5F1E8;
-  color: #1C1917;
+  font-family: var(--font-sans);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
@@ -17,12 +17,13 @@
 }
 
 :host::-webkit-scrollbar { width: 8px; }
-:host::-webkit-scrollbar-track { background: #F5F1E8; border-left: 2px solid #1C1917; }
-:host::-webkit-scrollbar-thumb { background: #1C1917; border: 2px solid #F5F1E8; border-radius: 4px; }
+:host::-webkit-scrollbar-track { background: var(--color-paper); border-left: 2px solid var(--color-ink); }
+:host::-webkit-scrollbar-thumb { background: var(--color-ink); border: 2px solid var(--color-paper); border-radius: 4px; }
 
-/* Neo-serif heading font */
+/* Neo-serif heading font — the Fraunces identity (kept for any local override) */
 .neo-serif {
-  font-family: 'DM Serif Display', serif;
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
 }
 
 .soft-float {

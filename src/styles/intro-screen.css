@@ -353,3 +353,35 @@
   .marginalia, .part-constellation .pc-star { animation: none; }
   .hero-title-animated { text-shadow: none; }
 }
+
+
+/* ============================================
+   STORYBOOK SYSTEM — whole-page consistency
+   Warm ink borders (2px), layered warm shadows,
+   hand-drawn radii, aged-paper panels
+   ============================================ */
+
+.sb-shadow-sm { box-shadow: 2px 2px 0 rgba(200, 190, 180, 0.55) !important; }
+.sb-shadow { box-shadow: 4px 4px 0 rgba(200, 190, 180, 0.5), 8px 8px 0 rgba(180, 170, 160, 0.28) !important; }
+.sb-shadow-lg { box-shadow: 6px 6px 0 rgba(200, 190, 180, 0.5), 12px 12px 0 rgba(180, 170, 160, 0.3) !important; }
+.sb-shadow-accent { box-shadow: 6px 6px 0 rgba(249, 199, 79, 0.65), 12px 12px 0 rgba(200, 190, 180, 0.35) !important; }
+.sb-shadow-coral { box-shadow: 5px 5px 0 rgba(231, 84, 128, 0.4) !important; }
+
+.sb-radius-a { border-radius: var(--radius-sketch-primary) !important; }
+.sb-radius-b { border-radius: var(--radius-sketch-secondary) !important; }
+.sb-radius-soft { border-radius: var(--radius-soft, 16px) !important; }
+
+.sb-panel { background-color: #fdfbf6 !important; }
+
+/* The deliberate dark register (synergy section): Innerverse indigo,
+   not muddy warm-black — the page's one night-sky beat */
+.sb-night {
+  background: linear-gradient(180deg, #191833 0%, #12122b 100%) !important;
+}
+
+/* Section label: the small dash + caps kicker, warm ink */
+.sb-kicker { color: var(--color-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .neo-card, .neo-card .neo-card-shadow { transition: none; }
+}

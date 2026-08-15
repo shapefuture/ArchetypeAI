@@ -1,4 +1,9 @@
 export const environment = {
+  /** §3.8 Web Push: register the matching private key in Firebase Console →
+   *  Cloud Messaging → Web Push certificates. Public key only, client-side. */
+  vapidPublicKey: 'BNYK0YZFP3PukxpjhpLTie-DF22URLEeFM9TKxc0jt4wq5rsOItICLG_lbZHv9qhI1QSWMM_Wqbj7AAEyiXmbZI',
+  /** Anonymous telemetry sink (§4 step 10): Firestore `telemetryResponses`. */
+  telemetryToCloud: true,
   production: true,
   firebase: {
     apiKey: "AIzaSyD1idTHp-16XiDFRCXIPjkjHQti6HjfpCw",

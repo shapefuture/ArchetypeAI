@@ -15,6 +15,7 @@ import {
   type SealedVerdict, type JitaiCardId, type CharterDelivery,
 } from '../../core/data/state-v2';
 import { COMPLEXES } from '../../core/data/parts';
+import { PushService } from '../../../services/push.service';
 
 const STORE_KEY = 'INNERVERSE_CHECKINS_V1';
 const VERDICT_KEY = 'INNERVERSE_SEALED_VERDICTS_V1';
@@ -95,6 +96,7 @@ const JITAI_CARDS: Record<'en' | 'ru', Record<JitaiCardId, { title: string; body
 })
 export class CheckInPanelComponent {
   private readonly translationService = inject(TranslationService);
+  private readonly push = inject(PushService);
 
   /** model so hosts bind [profile] and tests can .set() it. */
   readonly profile = model<ScoredProfile | null>(null);
@@ -186,10 +188,6 @@ export class CheckInPanelComponent {
 
   /** §3C.6 sources: lapse events ride along with the JITAI lapse detection. */
   static readonly EVENTS = { loadEvents };
-
-  constructor() {
-    this.load();
-  }
 
   private load(): void {
     try {
@@ -286,6 +284,18 @@ arousalForIndex(i: number): Arousal { return (i - 2) as Arousal; }
       if (i >= 0) { verdicts[i].reRating = rating; localStorage.setItem(VERDICT_KEY, JSON.stringify(verdicts)); }
     } catch { /* unavailable */ }
     this.resurfacing.set(null);
+  }
+
+  readonly pushState = signal<'unknown' | 'unsupported' | 'denied' | 'ready' | 'enabled'>('unknown');
+
+  constructor() {
+    this.load();
+    void this.push.currentState().then(st => this.pushState.set(st));
+  }
+
+  async toggleReminder(): Promise<void> {
+    const st = await this.push.enable();
+    this.pushState.set(st);
   }
 
   close(): void { this.closed.emit(); }

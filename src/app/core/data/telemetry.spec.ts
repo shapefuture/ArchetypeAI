@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   recordResponses, totalResponses, recordAndStore, loadTelemetry,
-  exportTelemetry, partResponseTotals, type Distributions,
+  exportTelemetry, partResponseTotals, syncTelemetry, type Distributions,
 } from './telemetry';
 import { SHADOW_PARTS, RESOURCES } from './parts';
 import type { AssessmentInput } from './scoring-v2';
@@ -51,5 +51,21 @@ describe('telemetry (§4 step 10)', () => {
     expect(payload.kind).toBe('innerverse-item-distributions');
     expect(payload.items['items.taskmaster.q1']).toEqual([0, 1, 0, 0, 0]);
     expect(payload.items['items.taskmaster.q1'].length).toBe(5);
+  });
+});
+
+describe('telemetry cloud sink (§4 step 10 / issue 8m4)', () => {
+  it('syncTelemetry ships the export payload through the injected writer', async () => {
+    const sent: string[] = [];
+    const ok = await syncTelemetry(recordResponses(input(4)), async p => { sent.push(p); });
+    expect(ok).toBe(true);
+    expect(sent.length).toBe(1);
+    const payload = JSON.parse(sent[0]);
+    expect(payload.schema).toBe(1);
+    expect(payload.items['items.taskmaster.q1'].length).toBe(5);
+  });
+  it('a failing writer never throws — the local copy is the source of truth', async () => {
+    const ok = await syncTelemetry(recordResponses(input(4)), async () => { throw new Error('offline'); });
+    expect(ok).toBe(false);
   });
 });

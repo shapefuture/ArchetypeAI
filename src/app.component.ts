@@ -20,7 +20,7 @@ import { QuickScanPanelComponent } from './app/features/quickscan-panel/quicksca
 import { TherapistPanelComponent } from './app/features/therapist-panel/therapist-panel.component';
 import { SynastryCompareComponent } from './app/features/synastry-compare/synastry-compare.component';
 import { scoreProfile, type AssessmentInput, type ScoredProfile } from './app/core/data/scoring-v2';
-import { recordAndStore } from './app/core/data/telemetry';
+import { recordAndStore, syncTelemetry, loadTelemetry } from './app/core/data/telemetry';
 import { ResultsPanelComponent, AssessmentResults } from './app/features/results-panel/results-panel.component';
 import { UniverseControlsComponent } from './app/features/universe-controls/universe-controls.component';
 import { SynastryPanelComponent } from './app/features/synastry-panel/synastry-panel.component';
@@ -700,6 +700,7 @@ export class AppComponent implements OnDestroy {
   onDescentCompleted(input: AssessmentInput): void {
     this.innerverseProfile.set(scoreProfile(input));
     recordAndStore(input); // §4 step 10: anonymized item distributions, local-only
+    void syncTelemetry(loadTelemetry()); // fire-and-forget to Firestore (no PII)
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(input)); } catch { /* storage unavailable */ }
     this.appState.set('innerverse');
   }

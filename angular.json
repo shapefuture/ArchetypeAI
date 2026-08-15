@@ -29,6 +29,11 @@
               "src/styles/loading-screen.css"
             ],
             "assets": [
+              {
+                "glob": "firebase-messaging-sw.js",
+                "input": "src",
+                "output": "/"
+              }
             ],
             "define": {
               "process.env.API_KEY": "\"\""

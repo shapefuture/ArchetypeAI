@@ -65,6 +65,32 @@ export function exportTelemetry(d: Distributions): string {
   return JSON.stringify({ schema: 1, kind: 'innerverse-item-distributions', items: out });
 }
 
+// --- Cloud sink (§4 step 10, issue 8m4): Firestore `telemetryResponses` ---
+// One anonymous doc per completion: item keys + counts only. No uid, no dates
+// beyond the server timestamp, no free text. The endpoint decision (h8c's
+// sibling) is thereby the existing Firebase project.
+
+export type TelemetryWriter = (payload: string) => Promise<void>;
+
+export function cloudWriter(): TelemetryWriter {
+  // Lazy import shape kept sync-friendly: firebase already bundled app-side.
+  return async (payload: string) => {
+    const { collection, addDoc, getFirestore } = await import('firebase/firestore');
+    const { getFirestoreDb } = await import('../../../environments/firebase-init');
+    void getFirestore; // use the shared long-lived instance
+    await addDoc(collection(getFirestoreDb(), 'telemetryResponses'), {
+      payload, at: new Date().toISOString(),
+    });
+  };
+}
+
+export async function syncTelemetry(d: Distributions, write: TelemetryWriter = cloudWriter()): Promise<boolean> {
+  try {
+    await write(exportTelemetry(d));
+    return true;
+  } catch { return false; } // offline / rules pending: local copy remains intact
+}
+
 /** Convenience for tests/consumers: raw per-part totals. */
 export function partResponseTotals(
   d: Distributions, part: ShadowPartId | ResourceId,

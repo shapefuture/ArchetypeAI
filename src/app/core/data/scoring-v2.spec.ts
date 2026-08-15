@@ -275,3 +275,15 @@ describe('determinism (same answers → same result)', () => {
     expect(PROTECTORS).toContain(p.headline.protector);
   });
 });
+
+describe('§1.3 remote norm override (post-5k refresh)', () => {
+  it('an override shifts T-scores exactly; without it the provisional tables rule', () => {
+    const base = scoreProfile(input(3));
+    expect(base.parts.taskmaster.T).toBeCloseTo(46.67, 2);
+    const shifted = scoreProfile(input(3), { NORM_MEAN: { taskmaster: 24 }, NORM_SD: { taskmaster: 6 } });
+    // raw 24, mean 24 → T = 50
+    expect(shifted.parts.taskmaster.T).toBeCloseTo(50, 5);
+    // other parts untouched by a partial override
+    expect(shifted.parts.inner_critic.T).toBeCloseTo(base.parts.inner_critic.T, 5);
+  });
+});

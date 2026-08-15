@@ -262,3 +262,9 @@
   border-color: rgba(236, 234, 246, 0.35);
   box-shadow: 0 0 18px rgba(109, 123, 208, 0.25);
 }
+.innerverse-pill--practice {
+  right: 18px;
+  bottom: 130px;
+  color: rgba(236, 234, 246, 0.9);
+  border-color: rgba(169, 160, 214, 0.5);
+}

@@ -366,3 +366,12 @@
 @media (prefers-reduced-motion: reduce) {
   .neo-card, .neo-card .neo-card-shadow { transition: none; }
 }
+
+
+/* Nav: small CTA stays a clean pill (sketchy radius is for big buttons only) */
+.landing-nav .neo-btn .neo-btn-body,
+.landing-nav .neo-btn .neo-btn-shadow { border-radius: 999px; }
+.landing-nav .neo-btn .neo-btn-shadow { transform: translate(3px, 3px); }
+
+/* Wordmark: Fraunces semibold, comfortable tracking — not black-tight */
+.landing-nav .neo-serif { font-weight: 600; }

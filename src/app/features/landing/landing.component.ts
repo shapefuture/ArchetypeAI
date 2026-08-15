@@ -74,6 +74,8 @@ export class LandingComponent implements OnDestroy {
 
   // Outputs
   readonly startTest = output<void>();
+  readonly quickScanRequested = output<void>();
+  readonly therapistRequested = output<void>();
   readonly exploreUniverse = output<void>();
   readonly langToggle = output<void>();
   readonly backupUpload = output<Event>();

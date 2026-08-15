@@ -62,7 +62,7 @@
           </div>
 
           <!-- Tagline -->
-          <p class="loading-tagline">Archetype.ai &middot; relational engine</p>
+          <p class="loading-tagline">Innerverse &middot; relational engine</p>
 
           <!-- Decorative Book Spine -->
           <div class="loading-book-spine">
@@ -82,7 +82,9 @@
         (exploreUniverse)="enterUniverse()"
         (langToggle)="toggleLanguage()"
         (backupUpload)="onBackupUploaded($event)"
-        (restoreLocalBackup)="restoreLocalBackup()">
+        (restoreLocalBackup)="restoreLocalBackup()"
+        (quickScanRequested)="openQuickScan()"
+        (therapistRequested)="openTherapist()">
       </app-landing>
     }
 
@@ -343,18 +345,11 @@
     }
   }
 
-  <!-- Lead magnet (§1.13): the 90-second teaser, only before a profile exists -->
-  @if (appState() === 'intro' && !innerverseProfile()) {
-    <button class="innerverse-pill innerverse-pill--quickscan" (click)="openQuickScan()">
-      <span class="innerverse-pill-star" aria-hidden="true">✦</span>
-      Meet one part in 90 seconds
-    </button>
-    @if (quickScanOpen()) {
-      <app-quickscan-panel
-        (closed)="closeQuickScan()"
-        (startDescent)="closeQuickScan(); startDescent()">
-      </app-quickscan-panel>
-    }
+  @if (appState() === 'intro' && quickScanOpen()) {
+    <app-quickscan-panel
+      (closed)="closeQuickScan()"
+      (startDescent)="closeQuickScan(); startDescent()">
+    </app-quickscan-panel>
   }
 
   <!-- Innerverse report shortcut (persistent after first descent) -->
@@ -365,14 +360,8 @@
     </button>
   }
 
-  @if (appState() === 'intro') {
-    <button class="innerverse-pill innerverse-pill--therapist" (click)="openTherapist()">
-      <span class="innerverse-pill-star" aria-hidden="true">✚</span>
-      Therapist
-    </button>
-    @if (therapistOpen()) {
-      <app-therapist-panel (closed)="closeTherapist()"></app-therapist-panel>
-    }
+  @if (appState() === 'intro' && therapistOpen()) {
+    <app-therapist-panel (closed)="closeTherapist()"></app-therapist-panel>
   }
 
   @if (appState() === 'intro' && innerverseProfile()) {

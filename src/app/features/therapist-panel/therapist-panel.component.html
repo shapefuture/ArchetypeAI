@@ -1,0 +1,101 @@
+<div class="th-overlay" (click)="close()">
+  <div class="th-card" (click)="$event.stopPropagation()">
+    <header class="th-head">
+      <span class="th-kicker">{{ ui().title }}</span>
+      <button class="th-x" (click)="close()" aria-label="Close">✕</button>
+    </header>
+
+    @if (!entered()) {
+      <!-- §3B.4 license self-attestation -->
+      <label class="th-attest">
+        <input type="checkbox" [checked]="attested()" (change)="attest($any($event.target).checked)" />
+        <span>{{ ui().attest }}</span>
+      </label>
+      <label class="th-license">
+        <span>{{ ui().license }}</span>
+        <input type="text" [value]="license()" (input)="setLicense($any($event.target).value)" />
+      </label>
+      <button class="th-primary" [disabled]="!attested() || license().trim().length < 3" (click)="enter()">
+        {{ ui().enter }}
+      </button>
+    } @else {
+      <!-- consent contract, verbatim on the dashboard -->
+      <section class="th-consent">
+        <h3>{{ ui().consentTitle }}</h3>
+        <p>{{ consentText() }}</p>
+      </section>
+
+      <section class="th-claim">
+        <label>
+          <span>{{ ui().claimLabel }}</span>
+          <input type="text" maxlength="6" [value]="code()"
+                 (input)="code.set($any($event.target).value.toUpperCase())" />
+        </label>
+        <button class="th-primary" [disabled]="claiming() || code().length !== 6" (click)="claim()">
+          {{ ui().claim }}
+        </button>
+        @if (error()) { <p class="th-error">{{ error() }}</p> }
+      </section>
+
+      <section class="th-clients">
+        <h2>{{ ui().clients }}</h2>
+        @if (clients().length === 0) {
+          <p class="th-quiet">{{ ui().noClients }}</p>
+        }
+        @for (c of clients(); track c.headline) {
+          <article class="th-client">
+            <div class="th-client-head">
+              <span class="th-client-name">{{ c.headline }}</span>
+              <span class="th-client-meta">Self {{ c.selfEnergy }} · burden {{ c.burden }} · {{ c.adherence.done }}/{{ c.adherence.done + c.adherence.skipped }}</span>
+            </div>
+            <div class="th-stack">
+              @for (cx of c.activeComplexes; track cx.id) {
+                <span class="th-complex" [class.gripping]="cx.tier === 'gripping'">{{ cx.id }} {{ cx.activation }}</span>
+              }
+            </div>
+            <div class="th-stack-line">
+              {{ c.copingStack.l1 }} → {{ c.copingStack.l2 || '…' }} → {{ c.copingStack.l3 || '…' }} → {{ c.copingStack.floor }}
+            </div>
+          </article>
+        }
+        <p class="th-rednote">{{ ui().redNote }}</p>
+      </section>
+
+      <section class="th-assign">
+        <h2>{{ ui().assign }}</h2>
+        <label class="th-row">
+          <span>{{ ui().fClient }}</span>
+          <select (change)="assignFor.set($any($event.target).value)">
+            <option value="">—</option>
+            @for (c of clients(); track c.headline) {
+              <option [value]="c.headline">{{ c.headline }}</option>
+            }
+          </select>
+        </label>
+        <label class="th-row">
+          <span>{{ ui().fExercise }}</span>
+          <select (change)="assignExerciseId.set($any($event.target).value)">
+            <option value="">—</option>
+            @for (e of exercises; track e.id) {
+              <option [value]="e.id">
+                {{ (lang() === 'en' ? e.title.en : e.title.ru) }} · {{ e.type }} ({{ exGate(e.id) }})
+              </option>
+            }
+          </select>
+        </label>
+        <label class="th-row">
+          <span>{{ ui().fFrequency }}</span>
+          <select (change)="assignFreq.set($any($event.target).value)">
+            @for (f of ui().frequency; track f) {
+              <option [value]="f">{{ f }}</option>
+            }
+          </select>
+        </label>
+        <button class="th-primary" [disabled]="!assignFor() || !assignExerciseId()" (click)="send()">
+          {{ ui().send }}
+        </button>
+        @if (assignedOk()) { <p class="th-ok">{{ ui().assigned }}</p> }
+      </section>
+    }
+  </div>
+</div>

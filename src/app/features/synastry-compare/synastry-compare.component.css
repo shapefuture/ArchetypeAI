@@ -1,0 +1,65 @@
+.sc-overlay {
+  position: fixed; inset: 0; z-index: 120;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(11, 11, 30, 0.78); backdrop-filter: blur(4px); padding: 16px;
+}
+.sc-card {
+  width: min(620px, 94vw); max-height: 86dvh; overflow-y: auto;
+  background: #12122b; border: 1px solid rgba(236, 234, 246, 0.14);
+  border-radius: 20px; padding: 18px; color: #eceaf6;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.sc-head { display: flex; justify-content: space-between; align-items: center; }
+.sc-kicker { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(236, 234, 246, 0.5); }
+.sc-x { background: none; border: none; color: rgba(236, 234, 246, 0.5); font-size: 14px; cursor: pointer; }
+.sc-quiet { margin: 0; font-size: 14px; color: rgba(236, 234, 246, 0.6); }
+
+.sc-pair { display: flex; flex-direction: column; gap: 10px; }
+.sc-label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: rgba(236, 234, 246, 0.75); }
+.sc-code-row { display: flex; gap: 8px; align-items: stretch; }
+.sc-code {
+  flex: 1; font: inherit; font-size: 12px; color: #eceaf6; padding: 8px;
+  background: rgba(236, 234, 246, 0.05); border: 1px solid rgba(236, 234, 246, 0.2);
+  border-radius: 8px; resize: vertical; font-family: monospace;
+}
+.sc-copy, .sc-primary {
+  font: inherit; font-size: 13px; padding: 10px 14px; cursor: pointer; border-radius: 999px;
+  border: 1px solid #f2e7c9; background: #f2e7c9; color: #1b1a2e; white-space: nowrap;
+}
+.sc-copy { align-self: center; }
+.sc-primary { align-self: flex-start; padding: 10px 18px; }
+.sc-error { color: #e0917d; font-size: 13px; margin: 0; }
+
+.sc-section h2 { margin: 0 0 8px; font-size: 15px; font-weight: 400; color: #f2e7c9; }
+.sc-loop-nodes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; }
+.sc-node {
+  font-size: 13px; padding: 7px 12px; border-radius: 10px;
+  border: 1px solid rgba(236, 234, 246, 0.2); background: rgba(236, 234, 246, 0.05);
+}
+.sc-node.exile { border-color: rgba(169, 160, 214, 0.5); }
+.sc-loop-arc {
+  width: 28px; height: 2px;
+  background: linear-gradient(90deg, #6d7bd0, #d98a74);
+  animation: scPulse 2.4s ease-in-out infinite;
+}
+@keyframes scPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.sc-loop-name { text-align: center; margin: 10px 0 0; color: #f2e7c9; font-size: 16px; }
+
+.sc-hex-wrap { display: flex; gap: 16px; align-items: center; }
+.sc-hex { width: 180px; flex-shrink: 0; }
+.sc-axis-list { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+.sc-axis-row { display: flex; justify-content: space-between; font-size: 13px; }
+.sc-axis-name { color: rgba(236, 234, 246, 0.7); }
+.sc-axis-val { color: #f2e7c9; }
+
+.sc-interlock { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.sc-interlock-name { font-size: 14px; color: #f2e7c9; }
+.sc-strength { height: 6px; border-radius: 99px; background: rgba(236, 234, 246, 0.1); overflow: hidden; }
+.sc-strength-fill { height: 100%; background: linear-gradient(90deg, #6d7bd0, #d98a74); border-radius: 99px; }
+
+.sc-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.sc-dance { margin: 0; font-size: 14px; color: rgba(236, 234, 246, 0.85); }
+.sc-nourish { margin: 0 0 4px; font-size: 13px; color: rgba(232, 201, 135, 0.9); }
+
+@media (prefers-reduced-motion: reduce) { .sc-loop-arc { animation: none; opacity: 0.7; } }

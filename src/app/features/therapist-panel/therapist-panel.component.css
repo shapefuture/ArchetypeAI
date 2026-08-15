@@ -1,0 +1,43 @@
+.th-overlay {
+  position: fixed; inset: 0; z-index: 120;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(11, 11, 30, 0.78); backdrop-filter: blur(4px); padding: 16px;
+}
+.th-card {
+  width: min(560px, 94vw); max-height: 86dvh; overflow-y: auto;
+  background: #12122b; border: 1px solid rgba(236, 234, 246, 0.14);
+  border-radius: 20px; padding: 18px; color: #eceaf6;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.th-head { display: flex; justify-content: space-between; align-items: center; }
+.th-kicker { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(236, 234, 246, 0.5); }
+.th-x { background: none; border: none; color: rgba(236, 234, 246, 0.5); font-size: 14px; cursor: pointer; }
+.th-attest { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; }
+.th-license, .th-claim label, .th-row { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: rgba(236, 234, 246, 0.75); }
+.th-license input, .th-claim input, .th-row select {
+  font: inherit; font-size: 14px; color: #eceaf6; padding: 9px;
+  background: rgba(236, 234, 246, 0.05); border: 1px solid rgba(236, 234, 246, 0.25); border-radius: 8px;
+}
+.th-primary {
+  font: inherit; font-size: 14px; padding: 11px 18px; cursor: pointer; align-self: flex-start;
+  border-radius: 999px; border: 1px solid #f2e7c9; background: #f2e7c9; color: #1b1a2e;
+}
+.th-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.th-error { color: #e0917d; font-size: 13px; margin: 0; }
+.th-ok { color: #a9d0b8; font-size: 13px; margin: 0; }
+.th-consent { border: 1px solid rgba(232, 201, 135, 0.3); border-radius: 12px; padding: 12px 14px; }
+.th-consent h3 { margin: 0 0 6px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #e8c987; font-weight: 400; }
+.th-consent p { margin: 0; font-size: 13px; line-height: 1.55; color: rgba(236, 234, 246, 0.8); }
+.th-clients h2, .th-assign h2 { margin: 0; font-size: 15px; font-weight: 400; color: #f2e7c9; }
+.th-quiet { margin: 0; font-size: 13.5px; color: rgba(236, 234, 246, 0.55); }
+.th-client { border: 1px solid rgba(236, 234, 246, 0.12); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.th-client-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.th-client-name { font-size: 15px; color: #f2e7c9; }
+.th-client-meta { font-size: 12px; color: rgba(236, 234, 246, 0.55); }
+.th-stack { display: flex; flex-wrap: wrap; gap: 6px; }
+.th-complex { font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid rgba(109, 123, 208, 0.5); color: #a9b0e8; }
+.th-complex.gripping { border-color: rgba(217, 138, 116, 0.6); color: #e0917d; }
+.th-stack-line { font-size: 12.5px; color: rgba(236, 234, 246, 0.65); }
+.th-rednote { margin: 4px 0 0; font-size: 12px; color: #e0917d; line-height: 1.5; }
+.th-assign { display: flex; flex-direction: column; gap: 10px; }

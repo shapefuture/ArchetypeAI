@@ -1,0 +1,125 @@
+/**
+ * INNERVERSE — Synastry compare (§2, §3.5): two constellations, the Loop,
+ * the six-axis hexagon (NO compatibility %), interlocks, the attachment
+ * dance. Local-first pairing: your profile becomes a paste-code; the partner
+ * pastes theirs back. Fully client-side, deterministic.
+ */
+import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslationService } from '../../../services/translation.service';
+import { scoreProfile, type AssessmentInput } from '../../core/data/scoring-v2';
+import { synastry, toSynastryProfile, type SynastryProfile, type SynastryResult } from '../../core/data/synastry-v2';
+
+const PROFILE_KEY = 'INNERVERSE_PROFILE_V1';
+
+const UI = {
+  en: {
+    title: 'Synastry — the Pattern between you',
+    yourCode: 'Your pairing code',
+    copy: 'Copy',
+    copied: 'Copied',
+    pasteLabel: 'Paste their code',
+    compare: 'Read the pattern',
+    badCode: 'That code could not be read.',
+    noProfile: 'Complete the battery first — your constellation is one of the two inputs.',
+    loopTitle: 'Your signature loop',
+    hexagon: 'Six dynamics — no single number, ever',
+    interlocks: 'Locked storylines',
+    noInterlocks: 'No locked storyline — your complexes run in parallel. That is a good result.',
+    dance: 'Attachment dance',
+    nourish: 'What you can actually give each other',
+    axes: ['Friction', 'Resonance', 'Balance', 'Safety', 'Growth', 'Nourish'],
+    close: 'Close',
+  },
+  ru: {
+    title: 'Синастрия — узор между вами',
+    yourCode: 'Ваш код для пары',
+    copy: 'Скопировать',
+    copied: 'Скопировано',
+    pasteLabel: 'Вставьте их код',
+    compare: 'Прочитать узор',
+    badCode: 'Код не читается.',
+    noProfile: 'Сначала пройдите батарею — ваше созвездие половина входа.',
+    loopTitle: 'Ваша сигнатурная петля',
+    hexagon: 'Шесть динамик — и никогда одной цифры',
+    interlocks: 'Сцепленные сюжетные линии',
+    noInterlocks: 'Сцепленной линии нет — ваши комплексы идут параллельно. Это хороший результат.',
+    dance: 'Танец привязанности',
+    nourish: 'Что вы реально можете дать друг другу',
+    axes: ['Трение', 'Резонанс', 'Баланс', 'Безопасность', 'Рост', 'Питание'],
+    close: 'Закрыть',
+  },
+};
+
+function encodeProfile(p: SynastryProfile): string {
+  const json = JSON.stringify(p);
+  return btoa(encodeURIComponent(json));
+}
+function decodeProfile(code: string): SynastryProfile | null {
+  try { return JSON.parse(decodeURIComponent(atob(code.trim()))); } catch { return null; }
+}
+
+@Component({
+  selector: 'app-synastry-compare',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './synastry-compare.component.html',
+  styleUrls: ['./synastry-compare.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SynastryCompareComponent {
+  private readonly translationService = inject(TranslationService);
+
+  closed = output<void>();
+
+  readonly lang = computed(() => this.translationService.getLanguage());
+  readonly ui = computed(() => UI[this.lang()] as typeof UI.en);
+
+  readonly myProfile = signal<SynastryProfile | null>(this.loadMine());
+  readonly partnerCode = signal('');
+  readonly result = signal<SynastryResult | null>(null);
+  readonly copied = signal(false);
+  readonly error = signal(false);
+
+  readonly myCode = computed(() => this.myProfile() ? encodeProfile(this.myProfile()!) : '');
+
+  readonly hexPoints = computed(() => {
+    const r = this.result();
+    if (!r) return '';
+    const values = [r.FRICTION, r.RESONANCE, r.BALANCE, r.SAFETY, r.GROWTH, r.NOURISH];
+    const cx = 110, cy = 100, R = 80;
+    return values.map((v, i) => {
+      const a = -Math.PI / 2 + (i / 6) * Math.PI * 2;
+      const rad = R * (v / 100);
+      return `${cx + Math.cos(a) * rad},${cy + Math.sin(a) * rad}`;
+    }).join(' ');
+  });
+
+  private loadMine(): SynastryProfile | null {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      return raw ? toSynastryProfile(scoreProfile(JSON.parse(raw) as AssessmentInput)) : null;
+    } catch { return null; }
+  }
+
+  copyCode(): void {
+    try { navigator.clipboard.writeText(this.myCode()); this.copied.set(true); }
+    catch { /* clipboard unavailable */ }
+    setTimeout(() => this.copied.set(false), 1500);
+  }
+
+  compare(): void {
+    this.error.set(false);
+    const theirs = decodeProfile(this.partnerCode());
+    if (!theirs || !this.myProfile()) { this.error.set(true); return; }
+    this.result.set(synastry(this.myProfile()!, theirs));
+  }
+
+  axisValue(i: number): number {
+    const r = this.result();
+    if (!r) return 0;
+    return [r.FRICTION, r.RESONANCE, r.BALANCE, r.SAFETY, r.GROWTH, r.NOURISH][i];
+  }
+
+  close(): void { this.closed.emit(); }
+}

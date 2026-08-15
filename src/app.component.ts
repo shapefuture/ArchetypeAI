@@ -17,6 +17,8 @@ import { InnerverseReportComponent } from './app/features/innerverse-report/inne
 import { CheckInPanelComponent } from './app/features/checkin-panel/checkin-panel.component';
 import { PracticePanelComponent } from './app/features/practice-panel/practice-panel.component';
 import { QuickScanPanelComponent } from './app/features/quickscan-panel/quickscan-panel.component';
+import { TherapistPanelComponent } from './app/features/therapist-panel/therapist-panel.component';
+import { SynastryCompareComponent } from './app/features/synastry-compare/synastry-compare.component';
 import { scoreProfile, type AssessmentInput, type ScoredProfile } from './app/core/data/scoring-v2';
 import { recordAndStore } from './app/core/data/telemetry';
 import { ResultsPanelComponent, AssessmentResults } from './app/features/results-panel/results-panel.component';
@@ -54,6 +56,8 @@ const AUTH_REDIRECT_PENDING_KEY = 'ARCHETYPE_AUTH_REDIRECT_PENDING';
     CheckInPanelComponent,
     PracticePanelComponent,
     QuickScanPanelComponent,
+    TherapistPanelComponent,
+    SynastryCompareComponent,
     CommonModule,
     BlobCharacterComponent,
     ArchetypeDetailCardComponent,
@@ -728,6 +732,14 @@ export class AppComponent implements OnDestroy {
   readonly quickScanOpen = signal(false);
   openQuickScan(): void { this.quickScanOpen.set(true); }
   closeQuickScan(): void { this.quickScanOpen.set(false); }
+
+  readonly therapistOpen = signal(false);
+  openTherapist(): void { this.therapistOpen.set(true); }
+  closeTherapist(): void { this.therapistOpen.set(false); }
+
+  readonly synastryOpen = signal(false);
+  openSynastry(): void { this.synastryOpen.set(true); }
+  closeSynastry(): void { this.synastryOpen.set(false); }
 
   toggleLanguage(): void {
     const newLang = this.translationService.getLanguage() === 'en' ? 'ru' : 'en';

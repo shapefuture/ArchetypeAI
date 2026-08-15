@@ -8,7 +8,7 @@
   width: min(560px, 94vw); max-height: 86dvh; overflow-y: auto;
   background: #12122b; border: 1px solid rgba(236, 234, 246, 0.14);
   border-radius: 20px; padding: 18px;
-  color: #eceaf6; font-family: 'Georgia', 'Times New Roman', serif;
+  color: #eceaf6; font-family: var(--font-serif);
   display: flex; flex-direction: column; gap: 16px;
 }
 .practice-head { display: flex; justify-content: space-between; align-items: center; }
@@ -63,3 +63,11 @@
 }
 .rehearsal-timer { font-size: 18px; color: #f2e7c9; }
 .rung-note { font-size: 12px; font-style: italic; color: rgba(236,234,246,0.65); }
+
+/* UI micro-copy in the sans identity (Fraunces stays for content) */
+.practice-kicker { font-family: var(--font-sans); }
+.practice-x { font-family: var(--font-sans); }
+.badge { font-family: var(--font-sans); }
+.done-btn { font-family: var(--font-sans); }
+.ladder-title { font-family: var(--font-sans); }
+.chapter-state { font-family: var(--font-sans); }

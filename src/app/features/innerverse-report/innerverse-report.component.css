@@ -12,7 +12,7 @@
   flex-direction: column;
   gap: 18px;
   color: #eceaf6;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: var(--font-serif);
 }
 
 .ghost-btn {
@@ -29,10 +29,16 @@
   color: rgba(236, 234, 246, 0.5); margin: 18px 0 6px;
 }
 .constellation-name {
-  font-size: clamp(30px, 7vw, 44px); font-weight: 400; margin: 0;
-  color: #f2e7c9; text-shadow: 0 0 32px rgba(242, 231, 201, 0.25);
+  font-size: clamp(34px, 8vw, 56px); font-weight: 380; margin: 0;
+  color: #f2e7c9; letter-spacing: 0.005em;
+  text-shadow: 0 0 12px rgba(242, 231, 201, 0.2), 0 0 44px rgba(242, 231, 201, 0.18);
 }
-.constellation-pair { margin: 8px 0 0; color: rgba(236, 234, 246, 0.65); }
+.constellation-pair {
+  margin: 6px 0 0; color: rgba(236, 234, 246, 0.6);
+  font-family: var(--font-sans); font-size: 13px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+}
+.kicker { font-size: 10px; letter-spacing: 0.3em; }
 
 .crisis {
   border: 1px solid rgba(217, 138, 116, 0.5);
@@ -182,3 +188,37 @@
 }
 .vane-labels { display: flex; justify-content: space-between; font-size: 11px; color: rgba(236, 234, 246, 0.55); }
 .vane-empty { margin: 0; font-size: 12px; color: rgba(236, 234, 246, 0.45); }
+
+/* UI micro-copy in the sans identity (Fraunces stays for content) */
+.kicker { font-family: var(--font-sans); }
+.ghost-btn { font-family: var(--font-sans); }
+.part-tier { font-family: var(--font-sans); }
+.layer-label { font-family: var(--font-sans); }
+.complex-tier { font-family: var(--font-sans); }
+.gauge-label { font-family: var(--font-sans); }
+.radar-label { font-family: var(--font-sans); }
+.need-name { font-family: var(--font-sans); }
+.resource-band { font-family: var(--font-sans); }
+.stack-floor-label { font-family: var(--font-sans); }
+.report-footer { font-family: var(--font-sans); }
+.panel-sub { font-family: var(--font-sans); }
+/* Memory-anchor motion: sections rise in on scroll (added by IO in the component) */
+.panel, .strength-hero, .crisis {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.panel.revealed, .strength-hero.revealed, .crisis.revealed {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel, .strength-hero, .crisis { opacity: 1; transform: none; transition: none; }
+}
+.constellation-name {
+  font-variation-settings: 'opsz' 144, 'SOFT' 60;
+  font-weight: 350;
+  letter-spacing: 0.01em;
+}
+.report { font-size: 16px; }
+.report p, .layer-text, .complex-belief, .complex-experiment { line-height: 1.65; }

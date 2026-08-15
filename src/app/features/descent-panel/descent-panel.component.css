@@ -6,7 +6,7 @@
   flex-direction: column;
   background: #0b0b1e;
   color: #eceaf6;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: var(--font-serif);
   overflow: hidden;
 }
 
@@ -225,3 +225,10 @@
   border-radius: 10px; resize: vertical;
 }
 .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
+
+/* UI micro-copy in the sans identity (Fraunces stays for content) */
+.stage-text { font-family: var(--font-sans); }
+.star { font-family: var(--font-sans); }
+.ghost-btn { font-family: var(--font-sans); }
+.tiny { font-family: var(--font-sans); }
+.stars-summary { font-family: var(--font-sans); }

@@ -7,7 +7,7 @@
   width: min(620px, 94vw); max-height: 86dvh; overflow-y: auto;
   background: #12122b; border: 1px solid rgba(236, 234, 246, 0.14);
   border-radius: 20px; padding: 18px; color: #eceaf6;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: var(--font-serif);
   display: flex; flex-direction: column; gap: 14px;
 }
 .sc-head { display: flex; justify-content: space-between; align-items: center; }
@@ -65,3 +65,12 @@
 @media (prefers-reduced-motion: reduce) { .sc-loop-arc { animation: none; opacity: 0.7; } }
 
 .sc-export { font: inherit; font-size: 13px; padding: 9px 16px; cursor: pointer; border-radius: 999px; border: 1px solid rgba(236,234,246,0.3); background: none; color: #eceaf6; align-self: flex-start; }
+
+/* UI micro-copy in the sans identity (Fraunces stays for content) */
+.sc-kicker { font-family: var(--font-sans); }
+.sc-x { font-family: var(--font-sans); }
+.sc-copy { font-family: var(--font-sans); }
+.sc-primary { font-family: var(--font-sans); }
+.sc-export { font-family: var(--font-sans); }
+.sc-axis-name { font-family: var(--font-sans); }
+.sc-quiet { font-family: var(--font-sans); }

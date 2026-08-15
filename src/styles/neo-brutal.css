@@ -172,8 +172,8 @@
 
 /* Scrollbar styling */
 .neo-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-.neo-scroll::-webkit-scrollbar-track { background: #F5F1E8; border-left: 2px solid #1C1917; }
-.neo-scroll::-webkit-scrollbar-thumb { background: #1C1917; border: 2px solid #F5F1E8; border-radius: 4px; }
+.neo-scroll::-webkit-scrollbar-track { background: var(--color-paper); border-left: 2px solid var(--color-ink); }
+.neo-scroll::-webkit-scrollbar-thumb { background: var(--color-ink); border: 2px solid var(--color-paper); border-radius: 4px; }
 
 /* ============================================
    SIGGRAPH-QUALITY LOADING ANIMATIONS

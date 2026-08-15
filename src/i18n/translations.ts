@@ -228,9 +228,9 @@ export const translations = {
       enginePause: 'Pause', enginePlay: 'Play', engineDrag: 'Drag to Orbit', engineLive: 'Live Render',
       // Method
       methodTitle: 'Three steps to clarity.',
-      step1Title: 'Take the Test', step1Desc: 'Answer 64 precisely calibrated questions about your relational instincts.',
-      step2Title: 'AI Computes', step2Desc: 'Our model plots you across four relational axes, generating your unique fingerprint.',
-      step3Title: 'Read the Map', step3Desc: 'Explore your interactive 3D universe. Identify your patterns and growth edges.',
+      step1Title: 'Take the Test', step1Desc: 'Answer 147 statements across three sittings — measured, not guessed. Your progress is kept if you pause.',
+      step2Title: 'The Engine Measures', step2Desc: 'A deterministic engine maps eighteen inner parts and your Self energy — the same answers always yield the same map.',
+      step3Title: 'Read the Map', step3Desc: 'Explore your living constellation. Meet your parts, your storylines, and your practice path.',
       // Footer
       footerTitle: 'Discover your', footerTitleEmphasis: 'universe.',
       footerSubtitle: 'Take the test in 10 minutes and receive a personal map of your relational dynamics. Free and confidential.',
@@ -1129,9 +1129,9 @@ export const translations = {
       enginePause: 'Пауза', enginePlay: 'Играть', engineDrag: 'Перетащите для вращения', engineLive: 'Рендеринг',
       // Method
       methodTitle: 'Три шага к ясности.',
-      step1Title: 'Пройдите тест', step1Desc: 'Ответьте на 64 точно калиброванных вопроса о ваших реляционных инстинктах.',
-      step2Title: 'ИИ вычисляет', step2Desc: 'Наша модель отображает вас на четырёх реляционных осях, создавая ваш уникальный отпечаток.',
-      step3Title: 'Изучите карту', step3Desc: 'Исследуйте свою интерактивную 3D-вселенную. Определите свои паттерны и точки роста.',
+      step1Title: 'Пройдите тест', step1Desc: 'Ответьте на 147 утверждений в трёх частях — измерение, а не гадание. Прогресс сохраняется, если сделать паузу.',
+      step2Title: 'Движок измеряет', step2Desc: 'Детерминированный движок отображает восемнадцать внутренних частей и энергию Self — одни и те же ответы всегда дают одну карту.',
+      step3Title: 'Изучите карту', step3Desc: 'Исследуйте своё живое созвездие. Встретьте свои части, сюжетные линии и путь практики.',
       // Footer
       footerTitle: 'Откройте свою', footerTitleEmphasis: 'вселенную.',
       footerSubtitle: 'Пройдите тест за 10 минут и получите личную карту ваших реляционных динамик. Бесплатно и конфиденциально.',

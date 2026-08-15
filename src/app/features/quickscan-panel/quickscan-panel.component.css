@@ -8,7 +8,7 @@
   width: min(460px, 94vw); max-height: 86dvh; overflow-y: auto;
   background: #12122b; border: 1px solid rgba(236, 234, 246, 0.14);
   border-radius: 20px; padding: 18px; color: #eceaf6;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: var(--font-serif);
   display: flex; flex-direction: column; gap: 12px;
 }
 .qs-head { display: flex; justify-content: space-between; align-items: center; }
@@ -54,3 +54,11 @@
   border-radius: 999px; border: 1px solid #f2e7c9; background: #f2e7c9; color: #1b1a2e;
 }
 .qs-primary:hover { box-shadow: 0 0 22px rgba(242, 231, 201, 0.35); }
+
+/* UI micro-copy in the sans identity (Fraunces stays for content) */
+.qs-kicker { font-family: var(--font-sans); }
+.qs-x { font-family: var(--font-sans); }
+.qs-count { font-family: var(--font-sans); }
+.qs-btn { font-family: var(--font-sans); }
+.qs-primary { font-family: var(--font-sans); }
+.qs-card-face .layer { font-family: var(--font-sans); }

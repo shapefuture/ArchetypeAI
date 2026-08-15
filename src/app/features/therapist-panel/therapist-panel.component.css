@@ -7,7 +7,7 @@
   width: min(560px, 94vw); max-height: 86dvh; overflow-y: auto;
   background: #12122b; border: 1px solid rgba(236, 234, 246, 0.14);
   border-radius: 20px; padding: 18px; color: #eceaf6;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: var(--font-serif);
   display: flex; flex-direction: column; gap: 14px;
 }
 .th-head { display: flex; justify-content: space-between; align-items: center; }
@@ -45,3 +45,11 @@
 .th-metrics h2 { margin: 0; font-size: 13px; font-weight: 400; color: #f2e7c9; }
 .th-metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 13px; color: rgba(236,234,246,0.8); }
 .th-metrics-rule { margin: 4px 0 0; font-size: 12px; font-style: italic; color: rgba(232,201,135,0.85); line-height: 1.5; }
+
+/* UI micro-copy in the sans identity (Fraunces stays for content) */
+.th-kicker { font-family: var(--font-sans); }
+.th-x { font-family: var(--font-sans); }
+.th-primary { font-family: var(--font-sans); }
+.th-consent h3 { font-family: var(--font-sans); }
+.th-client-meta { font-family: var(--font-sans); }
+.th-complex { font-family: var(--font-sans); }

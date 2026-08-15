@@ -3,7 +3,7 @@
  * Strength-first: the strongest resource leads before any shadow content.
  * No global verdicts; every insight card ends in something behavioral (§3C.8).
  */
-import { ChangeDetectionStrategy, Component, computed, inject, model, output, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, computed, inject, model, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import {
@@ -125,7 +125,28 @@ const NEED_PRACTICE: Record<'en' | 'ru', Record<Need, string>> = {
   styleUrls: ['./innerverse-report.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InnerverseReportComponent {
+export class InnerverseReportComponent implements AfterViewInit, OnDestroy {
+  private readonly host = inject(ElementRef<HTMLElement>, { optional: true });
+  private observer: IntersectionObserver | null = null;
+
+  /** Memory-anchor motion: sections rise in as they enter the viewport. */
+  ngAfterViewInit(): void {
+    if (typeof IntersectionObserver === 'undefined' || !this.host) return;
+    const sections = (this.host.nativeElement as HTMLElement)
+      .querySelectorAll('.panel, .strength-hero, .crisis');
+    this.observer = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          (e.target as HTMLElement).classList.add('revealed');
+          this.observer?.unobserve(e.target);
+        }
+      }
+    }, { threshold: 0.12 });
+    sections.forEach(s => this.observer?.observe(s));
+  }
+
+  ngOnDestroy(): void { this.observer?.disconnect(); }
+
   private readonly translationService = inject(TranslationService);
 
   /** model (not plain input) so hosts bind [profile] and tests can .set() it. */

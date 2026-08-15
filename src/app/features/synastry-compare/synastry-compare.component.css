@@ -63,3 +63,5 @@
 .sc-nourish { margin: 0 0 4px; font-size: 13px; color: rgba(232, 201, 135, 0.9); }
 
 @media (prefers-reduced-motion: reduce) { .sc-loop-arc { animation: none; opacity: 0.7; } }
+
+.sc-export { font: inherit; font-size: 13px; padding: 9px 16px; cursor: pointer; border-radius: 999px; border: 1px solid rgba(236,234,246,0.3); background: none; color: #eceaf6; align-self: flex-start; }

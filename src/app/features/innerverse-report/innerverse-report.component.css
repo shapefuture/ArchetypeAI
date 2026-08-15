@@ -165,3 +165,9 @@
   .pol-arc { animation: none; opacity: 0.7; }
   .part-card, .ghost-btn { transition: none; }
 }
+
+.constellation-canvas-wrap {
+  width: min(420px, 82vw);
+  margin: 14px auto 0;
+  filter: drop-shadow(0 0 30px rgba(94, 84, 168, 0.25));
+}

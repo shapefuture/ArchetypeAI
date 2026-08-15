@@ -1,0 +1,82 @@
+<div class="practice-overlay" (click)="close()">
+  <div class="practice-card" (click)="$event.stopPropagation()">
+    <header class="practice-head">
+      <span class="practice-kicker">{{ ui().title }}</span>
+      <button class="practice-x" (click)="close()" aria-label="Close">✕</button>
+    </header>
+
+    <!-- Today's single suggestion (§3B.3: max 1/day, priority-ordered, never RED) -->
+    <section class="today">
+      <h2>{{ ui().today }}</h2>
+      @if (suggestion(); as s) {
+        <article class="exercise featured" [class.open]="open() === s.exercise.type">
+          <div class="ex-row" (click)="open.set(open() === s.exercise.type ? null : s.exercise.type)">
+            <span class="ex-title">{{ lang() === 'en' ? s.exercise.title.en : s.exercise.title.ru }}</span>
+            <span class="badge" [class.yellow]="s.type.gate === 'yellow'">{{ ui().gate[s.type.gate] }}</span>
+          </div>
+          @if (open() === s.exercise.type) {
+            <p class="ex-why">{{ lang() === 'en' ? s.exercise.why.en : s.exercise.why.ru }}</p>
+            <ol class="ex-steps">
+              @for (step of (lang() === 'en' ? s.exercise.steps.en : s.exercise.steps.ru); track $index) {
+                <li>{{ step }}</li>
+              }
+            </ol>
+            @if (s.exercise.stopRule; as sr) {
+              <p class="ex-stop">{{ ui().stopRule }}: {{ lang() === 'en' ? sr.en : sr.ru }}</p>
+            }
+            <button class="done-btn" (click)="markDone(s.exercise)">{{ ui().done }}</button>
+          }
+        </article>
+      } @else {
+        <p class="quiet">{{ ui().noneToday }}</p>
+      }
+    </section>
+
+    <!-- 5-chapter path (§3D.3): skills unlocked, never levels earned -->
+    <section class="chapters">
+      <h2>{{ ui().chapters }}</h2>
+      @for (name of ui().chapterNames; track $index; let n = $index) {
+        @let chapter = chapterOf(n);
+        <div class="chapter" [class.locked]="!chapterUnlocked(chapter)">
+          <div class="chapter-head">
+            <span class="chapter-name">{{ n + 1 }} · {{ name }}</span>
+            @if (chapterUnlocked(chapter)) {
+              <span class="chapter-state ok">{{ ui().unlocked }}</span>
+            } @else {
+              <span class="chapter-state">{{ ui().locked }} — {{
+                chapter === 2 ? ui().ch2Hint : chapter === 3 ? ui().ch3Hint :
+                chapter === 4 ? ui().ch4Hint : ui().ch5Hint }}</span>
+            }
+          </div>
+          @if (chapterUnlocked(chapter)) {
+            <div class="chapter-list">
+              @for (e of chapterExercises(chapter); track e.id) {
+                <button class="exercise-row" [class.done]="isDone(e)"
+                        (click)="open.set(open() === e.type ? null : e.type)">
+                  <span>{{ lang() === 'en' ? e.title.en : e.title.ru }}</span>
+                  <span class="badge" [class.red]="gateOf(e) === 'red'" [class.yellow]="gateOf(e) === 'yellow'">
+                    {{ ui().gate[gateOf(e)] }}{{ isDone(e) ? ' ✓' : '' }}
+                  </span>
+                </button>
+                @if (open() === e.type) {
+                  <div class="exercise-body">
+                    <p class="ex-why">{{ lang() === 'en' ? e.why.en : e.why.ru }}</p>
+                    <ol class="ex-steps">
+                      @for (step of (lang() === 'en' ? e.steps.en : e.steps.ru); track $index) {
+                        <li>{{ step }}</li>
+                      }
+                    </ol>
+                    @if (e.stopRule; as sr) {
+                      <p class="ex-stop">{{ ui().stopRule }}: {{ lang() === 'en' ? sr.en : sr.ru }}</p>
+                    }
+                    <button class="done-btn" (click)="markDone(e)">{{ ui().done }}</button>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+    </section>
+  </div>
+</div>

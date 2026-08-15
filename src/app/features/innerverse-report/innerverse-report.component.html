@@ -15,6 +15,9 @@
       {{ ui().and }}
       {{ p.subtypes[p.headline.exile].name }}
     </p>
+    <div class="constellation-canvas-wrap">
+      <app-innerverse-constellation [profile]="p" />
+    </div>
   </header>
 
   @if (p.crisis) {

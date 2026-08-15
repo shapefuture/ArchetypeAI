@@ -352,6 +352,19 @@
   }
 
   @if (appState() === 'intro' && innerverseProfile()) {
+    <button class="innerverse-pill innerverse-pill--practice" (click)="openPractice()">
+      <span class="innerverse-pill-star" aria-hidden="true">◈</span>
+      Practice
+    </button>
+    @if (practiceOpen()) {
+      <app-practice-panel
+        [profile]="innerverseProfile()"
+        (closed)="closePractice()">
+      </app-practice-panel>
+    }
+  }
+
+  @if (appState() === 'intro' && innerverseProfile()) {
     <button class="innerverse-pill innerverse-pill--checkin" (click)="openCheckin()">
       <span class="innerverse-pill-star" aria-hidden="true">◐</span>
       Daily check-in

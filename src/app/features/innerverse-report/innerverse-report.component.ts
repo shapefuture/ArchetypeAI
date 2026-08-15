@@ -11,6 +11,7 @@ import {
   type ShadowPartId, type Tier, type Need,
 } from '../../core/data/parts';
 import { PART_COPY, LAYERS, type LayerKey } from '../../core/data/part-copy';
+import { InnerverseConstellationComponent } from '../constellation/innerverse-constellation.component';
 import type { ScoredProfile } from '../../core/data/scoring-v2';
 
 const TIER_ORDER: Record<Tier, number> = { dominant: 0, prominent: 1, present: 2, dormant: 3 };
@@ -112,7 +113,7 @@ const NEED_PRACTICE: Record<'en' | 'ru', Record<Need, string>> = {
 @Component({
   selector: 'app-innerverse-report',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InnerverseConstellationComponent],
   templateUrl: './innerverse-report.component.html',
   styleUrls: ['./innerverse-report.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

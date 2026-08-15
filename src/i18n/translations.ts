@@ -184,6 +184,7 @@ export const translations = {
       navProblem: 'Problem', navMatrix: 'Matrix', navCodex: 'Codex', navEngine: 'Engine',
       navDashboard: 'Dashboard', navLogout: 'Logout', navLogin: 'Login',
       startTest: 'Start Test \u2726',
+      quickScanCta: 'Meet one part in 90 seconds',
       // Hero
       liveBadge: 'Live', heroBadge: '147 Statements \u00B7 18 Inner Parts \u00B7 IFS-Grounded',
       heroTitleLine1: 'Meet the', heroTitleEmphasis: 'constellation', heroTitleLine2: 'inside you.',
@@ -1085,6 +1086,7 @@ export const translations = {
       navProblem: 'Проблема', navMatrix: 'Матрица', navCodex: 'Кодекс', navEngine: 'Движок',
       navDashboard: 'Кабинет', navLogout: 'Выйти', navLogin: 'Войти',
       startTest: 'Начать тест \u2726',
+      quickScanCta: 'Встретьте одну часть за 90 секунд',
       // Hero
       liveBadge: 'Live', heroBadge: '147 утверждений \u00B7 18 внутренних частей \u00B7 метод IFS',
       heroTitleLine1: 'Внутри вас —', heroTitleEmphasis: 'созвездие', heroTitleLine2: 'познакомьтесь с ним.',

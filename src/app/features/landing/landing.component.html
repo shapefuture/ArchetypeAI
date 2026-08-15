@@ -3,13 +3,13 @@
      [ngClass]="navScrolled() ? 'py-2' : 'py-4 md:py-5'">
   <div class="max-w-7xl mx-auto px-4 md:px-6">
     <div class="flex items-center justify-between px-4 md:px-6 py-2.5 md:py-3 rounded-full border-2 border-ink transition-all duration-500"
-         [ngClass]="navScrolled() ? 'bg-paper/95 backdrop-blur-xl py-1 sb-shadow' : 'bg-paper/70 sb-shadow'">
+         [ngClass]="navScrolled() ? 'bg-paper py-1 sb-shadow' : 'bg-paper/85 sb-shadow'">
       <!-- Brand -->
       <div class="flex items-center gap-2.5 group cursor-pointer" (click)="exploreUniverse.emit()">
         <div class="w-8 h-8 rounded-full bg-coral border-2 border-ink flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 ease-[cubic-bezier(.34,1.56,.64,1)]">
           <div class="w-2.5 h-2.5 bg-[#fdfbf6] rounded-full animate-pulse-fast"></div>
         </div>
-        <span class="font-black text-xl md:text-2xl tracking-tighter neo-serif">Archetype.ai</span>
+        <span class="text-[22px] font-semibold tracking-normal neo-serif">Innerverse</span>
       </div>
 
       <!-- Desktop Nav -->
@@ -36,6 +36,11 @@
         <input type="file" #backupFileInput (change)="onBackupUpload($event)" accept=".json" style="display:none;" />
 
         <!-- Login / Dashboard -->
+        <button (click)="therapistRequested.emit()"
+                class="hidden md:inline-flex px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-ink-l hover:text-ink transition-colors"
+                title="Therapist Mode">
+          ✚ Therapist
+        </button>
         @if (isLoggedIn()) {
           <button class="hidden md:inline-flex px-4 py-2 rounded-xl border-2 border-ink bg-[#fdfbf6] sb-shadow-sm text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ink/5 transition-colors"
                   (click)="dashboardRequested.emit()">
@@ -219,6 +224,12 @@
         </button>
       }
 
+      <button class="neo-btn magentic-target px-8 py-4 text-base text-ink hover-lift" (click)="quickScanRequested.emit()">
+        <div class="neo-btn-shadow"></div>
+        <div class="neo-btn-body bg-[#fdfbf6] border-2 border-ink"></div>
+        <span class="relative z-10">✦ {{ t('quickScanCta') }}</span>
+      </button>
+
       <a href="javascript:void(0)" (click)="exploreUniverse.emit()" class="magentic-target font-black text-sm uppercase tracking-widest text-ink underline decoration-wavy decoration-2 underline-offset-8 hover:text-coral transition-colors flex items-center gap-2 hover-lift">
         {{ t('exploreMatrix') }}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
@@ -321,7 +332,7 @@
 
       <!-- Arena + Output -->
       <div class="lg:col-span-7 bg-[linear-gradient(180deg,#fffdf8,#f6f3eb)] sb-radius-b border-2 border-ink p-6 md:p-8 sb-shadow-accent flex flex-col relative overflow-hidden hover-lift transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-           [ngClass]="synSelected().length === 0 ? 'max-h-[180px] opacity-80' : 'max-h-[700px]'">
+           [ngClass]="synSelected().length === 0 ? 'max-h-[320px] opacity-95' : 'max-h-[760px]'">
         <div class="absolute inset-0 bg-[radial-gradient(rgba(74,62,53,0.9)_1.5px,transparent_1.5px)] [background-size:32px_32px] opacity-[0.05]"></div>
 
         <div class="relative z-10 w-full flex items-center justify-center transition-all duration-500"
@@ -650,7 +661,7 @@
 
     <div class="border-t-2 border-[rgba(246,243,235,0.15)] pt-12 flex flex-col md:flex-row justify-between items-center gap-8 font-black text-xs uppercase tracking-widest text-[rgba(246,243,235,0.65)] select-text">
       <div class="flex items-center gap-3 text-[#f6f3eb] text-xl neo-serif select-text">
-        <div class="w-4 h-4 bg-coral rounded-full border-2 border-[#f6f3eb]"></div> Archetype.ai
+        <div class="w-4 h-4 bg-coral rounded-full border-2 border-[#f6f3eb]"></div> Innerverse
       </div>
       <div>&copy; 2026</div>
     </div>

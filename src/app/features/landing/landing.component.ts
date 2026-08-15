@@ -525,10 +525,21 @@ export class LandingComponent implements OnDestroy {
   }
 
   // ===== 3D MAP ENGINE =====
+  /** PERF: the engine only renders while its canvas is on screen. */
+  readonly engineOffscreen = signal(true);
+
   private initEngine(): void {
     const canvasEl = this.engineCanvas()?.nativeElement;
     const wrapperEl = this.engineWrapper()?.nativeElement;
     if (!canvasEl || !wrapperEl) return;
+
+    if (typeof IntersectionObserver !== 'undefined') {
+      new IntersectionObserver(entries => {
+        this.engineOffscreen.set(!entries.some(e => e.isIntersecting));
+      }, { rootMargin: '120px' }).observe(wrapperEl);
+    } else {
+      this.engineOffscreen.set(false);
+    }
 
     const ctx = canvasEl.getContext('2d');
     if (!ctx) return;
@@ -590,9 +601,9 @@ export class LandingComponent implements OnDestroy {
       const dpr = DPR();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const bg = ctx.createRadialGradient(W() / 2, H() / 2, 0, W() / 2, H() / 2, Math.max(W(), H()) * 0.7);
-      bg.addColorStop(0, '#1e1b18');
-      bg.addColorStop(0.6, '#151310');
-      bg.addColorStop(1, '#0d0b09');
+      bg.addColorStop(0, '#191833');
+      bg.addColorStop(0.6, '#12122b');
+      bg.addColorStop(1, '#0d0d24');
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W(), H());
     };
@@ -603,15 +614,15 @@ export class LandingComponent implements OnDestroy {
       const step = gridSize / divisions;
       const half = gridSize / 2;
       const planes = [
-        { rot: 'XZ', color: '255,255,255' },
-        { rot: 'XY', color: '255,255,255' },
-        { rot: 'YZ', color: '255,255,255' },
+        { rot: 'XZ', color: '226,230,246' },
+        { rot: 'XY', color: '226,230,246' },
+        { rot: 'YZ', color: '226,230,246' },
       ];
       planes.forEach(plane => {
         for (let i = 0; i <= divisions; i++) {
           const pos = -half + i * step;
           const isMajor = i % 5 === 0;
-          const opacity = isMajor ? 0.035 : 0.015;
+          const opacity = isMajor ? 0.06 : 0.025;
           ctx.strokeStyle = `rgba(${plane.color}, ${opacity})`;
           ctx.lineWidth = isMajor ? 0.6 : 0.3;
           let p1a, p1b, p2a, p2b;
@@ -640,14 +651,14 @@ export class LandingComponent implements OnDestroy {
       labels.forEach(l => {
         const p = project(...l.pos as [number, number, number]);
         if (!p || p.sc < 0.15) return;
-        const fontSize = Math.max(8, Math.min(14, 13 * p.sc));
+        const fontSize = Math.max(10, Math.min(15, 13 * p.sc));
         ctx.font = `700 ${fontSize}px 'Fraunces', serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const metrics = ctx.measureText(l.text);
         const tw = metrics.width + 16;
         const th = fontSize + 10;
-        ctx.fillStyle = 'rgba(28, 25, 23, 0.7)';
+        ctx.fillStyle = 'rgba(18, 18, 43, 0.85)';
         ctx.strokeStyle = l.color + '66';
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -660,8 +671,14 @@ export class LandingComponent implements OnDestroy {
     };
 
     const loop = () => {
-      if (!this.enginePaused()) time += 0.006;
-      if (!dragging && !this.enginePaused()) {
+      // PERF: no work at all when paused (manual), offscreen, or tab hidden —
+      // previously this still drew the full scene every frame.
+      if (this.enginePaused() || this.engineOffscreen() || document.hidden) {
+        animFrame = requestAnimationFrame(loop);
+        return;
+      }
+      time += 0.006;
+      if (!dragging) {
         tcam.ry += 0.002;
         tcam.rx += velX; tcam.ry += velY;
         velX *= 0.94; velY *= 0.94;
@@ -719,7 +736,7 @@ export class LandingComponent implements OnDestroy {
 
         // Multi-layer glow
         const g2 = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, sz * 0.9);
-        g2.addColorStop(0, arch.color + '18');
+        g2.addColorStop(0, arch.color + '30');
         g2.addColorStop(1, arch.color + '00');
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sz * 0.9, 0, Math.PI * 2);
@@ -727,7 +744,7 @@ export class LandingComponent implements OnDestroy {
         ctx.fill();
 
         const g = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, sz * 0.6);
-        g.addColorStop(0, arch.color + '40');
+        g.addColorStop(0, arch.color + '70');
         g.addColorStop(1, arch.color + '00');
         ctx.beginPath();
         ctx.arc(p.sx, p.sy, sz * 0.6, 0, Math.PI * 2);
@@ -745,7 +762,7 @@ export class LandingComponent implements OnDestroy {
         }
 
         // Name label
-        const fontSize = Math.max(8, Math.min(14, 13 * p.sc));
+        const fontSize = Math.max(10, Math.min(15, 13 * p.sc));
         ctx.font = `700 ${fontSize}px 'Fraunces', serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';

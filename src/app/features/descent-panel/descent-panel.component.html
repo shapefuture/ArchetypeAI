@@ -31,6 +31,19 @@
       }
       <div class="ethics-card">
         <p class="ethics-sub">{{ ui().ethicsSub }}</p>
+        <div class="plan-block">
+          <span class="plan-title">{{ ui().planTitle }}</span>
+          <div class="sittings-row">
+            @for (s of ui().plan; track $index; let last = $last) {
+              <div class="sitting">
+                <span class="sitting-name">{{ s.name }}</span>
+                <span class="sitting-meta">{{ s.meta }}</span>
+              </div>
+              @if (!last) { <span class="sitting-gap">✦ {{ ui().planPause }}</span> }
+            }
+          </div>
+          <p class="ethics-why">{{ ui().ethicsWhy }}</p>
+        </div>
         <p>{{ ui().ethics1 }}</p>
         <p>{{ ui().ethics2 }}</p>
       </div>
@@ -76,6 +89,7 @@
       </div>
       <div class="cta-column">
         <button class="primary-btn" (click)="resumeFromBreak()">{{ ui().breakResume(descentIndex()) }}</button>
+        <button class="secondary-btn" (click)="leaveFromBreak()">{{ ui().breakLater }}</button>
       </div>
       <p class="tiny">{{ ui().retakeNote }}</p>
     </main>

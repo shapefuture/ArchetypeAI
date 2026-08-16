@@ -1,0 +1,12 @@
+- generic [ref=f1e947]:
+  - banner [ref=f1e948]:
+    - button "Exit" [ref=f1e949] [cursor=pointer]
+    - generic [ref=f1e953]: Descent I · 49 / 49
+  - main [ref=f1e1004]:
+    - heading "I shape my image to whatever will impress the person in front of me" [level=2] [ref=f1e1005]
+    - generic [ref=f1e1006]:
+      - button "Never true of me" [ref=f1e1007] [cursor=pointer]
+      - button "Rarely true of me" [ref=f1e1008] [cursor=pointer]
+      - button "Sometimes true of me" [ref=f1e1009] [cursor=pointer]
+      - button "Very often true of me" [ref=f1e1010] [cursor=pointer]
+      - button "Almost always true of me" [ref=f1e1011] [cursor=pointer]

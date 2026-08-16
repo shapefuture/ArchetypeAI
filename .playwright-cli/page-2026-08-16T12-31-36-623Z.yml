@@ -1,0 +1,12 @@
+- generic [ref=f1e947]:
+  - banner [ref=f1e948]:
+    - button "Exit" [ref=f1e949] [cursor=pointer]
+    - generic [ref=f1e1012]: Innerverse
+  - main [ref=f1e1013]:
+    - heading "Descent I complete" [level=1] [ref=f1e1014]
+    - paragraph [ref=f1e1015]: The stars you lit are held safely. Continue now, or return when you are ready — nothing is lost.
+    - generic [ref=f1e1016]: 49 / 147
+    - generic [ref=f1e1017]:
+      - button "Continue — Descent II" [ref=f1e1018] [cursor=pointer]
+      - button "Return later" [ref=f1e1019] [cursor=pointer]
+    - paragraph [ref=f1e1020]: Your answers stay on this device.

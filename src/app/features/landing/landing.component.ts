@@ -552,17 +552,34 @@ export class LandingComponent implements OnDestroy {
     let time = 0;
     let animFrame = 0;
 
+    // PERF (reference EngineScene): cached layout reads + capped backing
+    // store. Retina DPR 2 quadruples every fill; 1.5 is visually identical
+    // for a slowly-rotating galaxy, and the width cap bounds the worst case.
+    let vw = 0, vh = 0, dprEff = 1;
+    const bgCanvas = document.createElement('canvas');
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      canvasEl.width = wrapperEl.offsetWidth * dpr;
-      canvasEl.height = wrapperEl.offsetHeight * dpr;
+      vw = wrapperEl.offsetWidth;
+      vh = wrapperEl.offsetHeight;
+      dprEff = Math.min(window.devicePixelRatio || 1, 1.5, 1600 / Math.max(vw, 1));
+      canvasEl.width = Math.max(1, Math.round(vw * dprEff));
+      canvasEl.height = Math.max(1, Math.round(vh * dprEff));
+      // Pre-render the background gradient once per resize — a per-frame
+      // createRadialGradient over a 4K-pixel canvas was the top frame cost.
+      bgCanvas.width = canvasEl.width;
+      bgCanvas.height = canvasEl.height;
+      const bctx = bgCanvas.getContext('2d')!;
+      const bg = bctx.createRadialGradient(
+        bgCanvas.width / 2, bgCanvas.height / 2, 0,
+        bgCanvas.width / 2, bgCanvas.height / 2, Math.max(bgCanvas.width, bgCanvas.height) * 0.7,
+      );
+      bg.addColorStop(0, '#191833');
+      bg.addColorStop(0.6, '#12122b');
+      bg.addColorStop(1, '#0d0d24');
+      bctx.fillStyle = bg;
+      bctx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
     };
     window.addEventListener('resize', resize);
     resize();
-
-    const W = () => wrapperEl.offsetWidth;
-    const H = () => wrapperEl.offsetHeight;
-    const DPR = () => window.devicePixelRatio || 1;
 
     const blobImgs: Record<string, HTMLImageElement> = {};
     ARCHETYPES.forEach(arch => {
@@ -572,42 +589,62 @@ export class LandingComponent implements OnDestroy {
       blobImgs[arch.id] = img;
     });
 
-    // Enhanced dust particles with trails
-    const particles: { x: number; y: number; z: number; vx: number; vy: number; vz: number; color: string; size: number; trail: {x:number;y:number;z:number}[] }[] = [];
-    for (let i = 0; i < 60; i++) {
-      particles.push({
-        x: (Math.random() - 0.5) * 12,
-        y: (Math.random() - 0.5) * 12,
-        z: (Math.random() - 0.5) * 12,
-        vx: (Math.random() - 0.5) * 0.005,
-        vy: (Math.random() - 0.5) * 0.005,
-        vz: (Math.random() - 0.5) * 0.005,
-        color: ARCHETYPES[Math.floor(Math.random() * ARCHETYPES.length)].color,
-        size: 1 + Math.random() * 2,
-        trail: []
+    // PERF (reference): glow sprites pre-rendered once per archetype —
+    // replaces 2 createRadialGradient + 2 arc fills per node per frame
+    // (36 gradient allocations/frame) with 2 image blits per node.
+    const glowSprites: Record<string, HTMLCanvasElement[]> = {};
+    ARCHETYPES.forEach(arch => {
+      const layers: HTMLCanvasElement[] = [];
+      ([[0.9, '30'], [0.6, '70']] as const).forEach(([radiusF, alphaHex]) => {
+        const S = 128;
+        const c = document.createElement('canvas');
+        c.width = S; c.height = S;
+        const g = c.getContext('2d')!;
+        const grad = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+        grad.addColorStop(0, arch.color + alphaHex);
+        grad.addColorStop(1, arch.color + '00');
+        g.fillStyle = grad;
+        g.fillRect(0, 0, S, S);
+        layers.push(c);
       });
-    }
+      glowSprites[arch.id] = layers;
+    });
 
+    // PERF: label metrics cache — measureText re-parses the font each call;
+    // snapped integer sizes keep the cache tiny and hit-stable.
+    const labelWidthCache = new Map<string, number>();
+    const labelWidth = (label: string, fontSize: number): number => {
+      const key = fontSize + '|' + label;
+      let w = labelWidthCache.get(key);
+      if (w === undefined) {
+        ctx.font = `600 ${fontSize}px 'Fredoka','Comfortaa','Nunito',sans-serif`;
+        w = ctx.measureText(label).width + 12;
+        labelWidthCache.set(key, w);
+      }
+      return w;
+    };
+
+    // PERF: rotation trig hoisted out of project() — was recomputed for
+    // every projected point (100+ sin/cos pairs per frame).
+    let rcx = 1, rsx = 0, rcy = 1, rsy = 0;
+    const updateRotation = () => {
+      rcx = Math.cos(cam.rx); rsx = Math.sin(cam.rx);
+      rcy = Math.cos(cam.ry); rsy = Math.sin(cam.ry);
+    };
     const project = (x: number, y: number, z: number) => {
-      const cX = Math.cos(cam.rx), sX = Math.sin(cam.rx);
-      const y1 = y * cX - z * sX, z1 = y * sX + z * cX;
-      const cY = Math.cos(cam.ry), sY = Math.sin(cam.ry);
-      const x2 = x * cY + z1 * sY, z2 = -x * sY + z1 * cY;
+      const y1 = y * rcx - z * rsx, z1 = y * rsx + z * rcx;
+      const x2 = x * rcy + z1 * rsy, z2 = -x * rsy + z1 * rcy;
       const depth = 9 + z2;
       if (depth < 0.5) return null;
       const sc = 5 / depth;
-      return { sx: W() / 2 + x2 * sc * W() * 0.06, sy: H() / 2 - y1 * sc * W() * 0.06, sc, z2 };
+      return { sx: vw / 2 + x2 * sc * vw * 0.06, sy: vh / 2 - y1 * sc * vw * 0.06, sc, z2 };
     };
 
     const drawBackground = () => {
-      const dpr = DPR();
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const bg = ctx.createRadialGradient(W() / 2, H() / 2, 0, W() / 2, H() / 2, Math.max(W(), H()) * 0.7);
-      bg.addColorStop(0, '#191833');
-      bg.addColorStop(0.6, '#12122b');
-      bg.addColorStop(1, '#0d0d24');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, W(), H());
+      // One blit of the cached gradient canvas instead of a fresh gradient.
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(bgCanvas, 0, 0);
+      ctx.setTransform(dprEff, 0, 0, dprEff, 0, 0);
     };
 
     const drawGrids = () => {
@@ -615,33 +652,27 @@ export class LandingComponent implements OnDestroy {
       const divisions = 10;
       const step = gridSize / divisions;
       const half = gridSize / 2;
-      const planes = [
-        { rot: 'XZ', color: '226,230,246' },
-        { rot: 'XY', color: '226,230,246' },
-        { rot: 'YZ', color: '226,230,246' },
-      ];
-      planes.forEach(plane => {
+      // PERF: batched paths — one beginPath/stroke per (major, plane)
+      // bucket instead of 2 strokes per grid line (60+ stroke calls/frame).
+      for (const isMajor of [true, false]) {
+        ctx.strokeStyle = `rgba(226,230,246,${isMajor ? 0.06 : 0.025})`;
+        ctx.lineWidth = isMajor ? 0.6 : 0.3;
+        ctx.beginPath();
         for (let i = 0; i <= divisions; i++) {
+          if ((i % 5 === 0) !== isMajor) continue;
           const pos = -half + i * step;
-          const isMajor = i % 5 === 0;
-          const opacity = isMajor ? 0.06 : 0.025;
-          ctx.strokeStyle = `rgba(${plane.color}, ${opacity})`;
-          ctx.lineWidth = isMajor ? 0.6 : 0.3;
-          let p1a, p1b, p2a, p2b;
-          if (plane.rot === 'XZ') {
-            p1a = project(-half, 0, pos); p1b = project(half, 0, pos);
-            p2a = project(pos, 0, -half); p2b = project(pos, 0, half);
-          } else if (plane.rot === 'XY') {
-            p1a = project(-half, pos, 0); p1b = project(half, pos, 0);
-            p2a = project(pos, -half, 0); p2b = project(pos, half, 0);
-          } else {
-            p1a = project(0, -half, pos); p1b = project(0, half, pos);
-            p2a = project(0, pos, -half); p2b = project(0, pos, half);
-          }
-          if (p1a && p1b) { ctx.beginPath(); ctx.moveTo(p1a.sx, p1a.sy); ctx.lineTo(p1b.sx, p1b.sy); ctx.stroke(); }
-          if (p2a && p2b) { ctx.beginPath(); ctx.moveTo(p2a.sx, p2a.sy); ctx.lineTo(p2b.sx, p2b.sy); ctx.stroke(); }
+          const seg = (a: { sx: number; sy: number } | null, b: { sx: number; sy: number } | null) => {
+            if (a && b) { ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); }
+          };
+          seg(project(-half, 0, pos), project(half, 0, pos));
+          seg(project(pos, 0, -half), project(pos, 0, half));
+          seg(project(-half, pos, 0), project(half, pos, 0));
+          seg(project(pos, -half, 0), project(pos, half, 0));
+          seg(project(0, -half, pos), project(0, half, pos));
+          seg(project(0, pos, -half), project(0, pos, half));
         }
-      });
+        ctx.stroke();
+      }
     };
 
     const drawAxisLabels = () => {
@@ -653,12 +684,11 @@ export class LandingComponent implements OnDestroy {
       labels.forEach(l => {
         const p = project(...l.pos as [number, number, number]);
         if (!p || p.sc < 0.15) return;
-        const fontSize = Math.max(10, Math.min(15, 13 * p.sc));
-        ctx.font = `700 ${fontSize}px 'Fraunces', serif`;
+        const fontSize = Math.max(10, Math.min(15, Math.round(13 * p.sc)));
+        ctx.font = `600 ${fontSize}px 'Fredoka','Comfortaa','Nunito',sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        const metrics = ctx.measureText(l.text);
-        const tw = metrics.width + 16;
+        const tw = labelWidth(l.text, fontSize) + 4;
         const th = fontSize + 10;
         ctx.fillStyle = 'rgba(18, 18, 43, 0.85)';
         ctx.strokeStyle = l.color + '66';
@@ -672,22 +702,33 @@ export class LandingComponent implements OnDestroy {
       });
     };
 
-    const loop = () => {
+    // PERF (reference): 30fps cap — the scene drifts slowly, so rendering
+    // every other frame halves all rasterization cost for no visible loss.
+    const FRAME_MS = 1000 / 30;
+    let lastFrame = 0;
+
+    const loop = (now = 0) => {
       // PERF: no work at all when paused (manual), offscreen, or tab hidden —
       // previously this still drew the full scene every frame.
       if (this.enginePaused() || this.engineOffscreen() || document.hidden) {
         animFrame = requestAnimationFrame(loop);
         return;
       }
-      time += 0.006;
+      if (now - lastFrame < FRAME_MS) {
+        animFrame = requestAnimationFrame(loop);
+        return;
+      }
+      lastFrame = now;
+      time += 0.006 * 2;
       if (!dragging) {
-        tcam.ry += 0.002;
+        tcam.ry += 0.004;
         tcam.rx += velX; tcam.ry += velY;
         velX *= 0.94; velY *= 0.94;
       }
       tcam.rx = Math.max(-1.0, Math.min(1.0, tcam.rx));
-      cam.rx += (tcam.rx - cam.rx) * 0.06;
-      cam.ry += (tcam.ry - cam.ry) * 0.06;
+      cam.rx += (tcam.rx - cam.rx) * 0.12;
+      cam.ry += (tcam.ry - cam.ry) * 0.12;
+      updateRotation();
 
       drawBackground();
       drawGrids();
@@ -705,53 +746,37 @@ export class LandingComponent implements OnDestroy {
       proj.sort((a, b) => b.p.z2 - a.p.z2);
       const projMap = new Map(proj.map(n => [n.arch.id, n.p]));
 
-      // Connection lines with enhanced glow
+      // Connection lines — batched into one glow path + one dashed core
+      // path (was 2 strokes + 2 dash state changes per edge).
+      const pulse = 0.15 + Math.sin(time * 2) * 0.08;
+      ctx.beginPath();
       EDGES.forEach(([i, j]) => {
         const pa = projMap.get(ARCHETYPES[i].id);
         const pb = projMap.get(ARCHETYPES[j].id);
         if (!pa || !pb) return;
-        const pulse = 0.15 + Math.sin(time * 2 + i + j) * 0.08;
-
-        // Outer glow
-        ctx.beginPath();
         ctx.moveTo(pa.sx, pa.sy);
         ctx.lineTo(pb.sx, pb.sy);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${pulse * 0.15})`;
-        ctx.lineWidth = 6;
-        ctx.stroke();
-
-        // Core line
-        ctx.beginPath();
-        ctx.setLineDash([4, 6]);
-        ctx.moveTo(pa.sx, pa.sy);
-        ctx.lineTo(pb.sx, pb.sy);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${pulse})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.setLineDash([]);
       });
+      ctx.strokeStyle = `rgba(255, 255, 255, ${pulse * 0.15})`;
+      ctx.lineWidth = 6;
+      ctx.stroke();
+      ctx.setLineDash([4, 6]);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${pulse})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-      // Draw nodes with enhanced glow
+      // Draw nodes — glow via pre-rendered sprites, labels via cached widths
       proj.forEach(({ arch, p }) => {
         const sz = 100 * p.sc;
         if (sz < 8) return;
 
-        // Multi-layer glow
-        const g2 = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, sz * 0.9);
-        g2.addColorStop(0, arch.color + '30');
-        g2.addColorStop(1, arch.color + '00');
-        ctx.beginPath();
-        ctx.arc(p.sx, p.sy, sz * 0.9, 0, Math.PI * 2);
-        ctx.fillStyle = g2;
-        ctx.fill();
-
-        const g = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, sz * 0.6);
-        g.addColorStop(0, arch.color + '70');
-        g.addColorStop(1, arch.color + '00');
-        ctx.beginPath();
-        ctx.arc(p.sx, p.sy, sz * 0.6, 0, Math.PI * 2);
-        ctx.fillStyle = g;
-        ctx.fill();
+        const sprites = glowSprites[arch.id];
+        if (sprites) {
+          const r9 = sz * 0.9, r6 = sz * 0.6;
+          ctx.drawImage(sprites[0], p.sx - r9, p.sy - r9, r9 * 2, r9 * 2);
+          ctx.drawImage(sprites[1], p.sx - r6, p.sy - r6, r6 * 2, r6 * 2);
+        }
 
         const img = blobImgs[arch.id];
         if (img && img.complete && img.naturalWidth !== 0) {
@@ -764,22 +789,21 @@ export class LandingComponent implements OnDestroy {
         }
 
         // Name label
-        const fontSize = Math.max(10, Math.min(15, 13 * p.sc));
-        ctx.font = `700 ${fontSize}px 'Fraunces', serif`;
+        const fontSize = Math.max(10, Math.min(15, Math.round(13 * p.sc)));
+        ctx.font = `600 ${fontSize}px 'Fredoka','Comfortaa','Nunito',sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const label = this.getArchName(arch);
-        const metrics = ctx.measureText(label);
-        const tw = metrics.width + 12;
+        const tw = labelWidth(label, fontSize);
         const th = fontSize + 6;
-        const lx = p.sx;
-        const ly = p.sy + sz / 2 + th / 2 + 4;
+        const llx = p.sx;
+        const lly = p.sy + sz / 2 + th / 2 + 4;
         ctx.fillStyle = `rgba(13, 11, 9, 0.8)`;
         ctx.beginPath();
-        ctx.roundRect(lx - tw / 2, ly - th / 2, tw, th, 6);
+        ctx.roundRect(llx - tw / 2, lly - th / 2, tw, th, 6);
         ctx.fill();
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(label, lx, ly);
+        ctx.fillText(label, llx, lly);
       });
 
       drawAxisLabels();

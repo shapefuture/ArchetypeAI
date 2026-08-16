@@ -3,24 +3,31 @@
 <head>
   <meta charset="utf-8" />
   <title>Innerverse — your parts as a living constellation</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore the 4D map of relational dynamics through illustrated archetypes">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="An IFS-grounded map of your inner cast of characters — 147 statements, 18 parts, one living constellation.">
+  <meta name="theme-color" content="#fbf3e3">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Innerverse">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&family=Comfortaa:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --paper-bg: #f6f3eb;
-      --ink-main: #4a3e35;
-      --accent-orange: #e69f00;
+      --paper-bg: #fbf3e3;
+      --ink-main: #201a3a;
+      --accent-orange: #ffb03a;
     }
     html, body {
       width: 100%;
       min-height: 100dvh;
       margin: 0;
       overflow: hidden;
-      background: #f5f1e8;
+      background: #fbf3e3;
     }
     app-root {
       display: block;
@@ -39,12 +46,9 @@
       justify-content: center;
       overflow: hidden;
       background:
-        linear-gradient(rgba(28, 25, 23, 0.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(28, 25, 23, 0.045) 1px, transparent 1px),
-        radial-gradient(circle at 50% 42%, rgba(240, 228, 66, 0.34), transparent 22rem),
-        linear-gradient(180deg, #fbf7ef 0%, #f5f1e8 58%, #ede8dd 100%);
-      background-size: 46px 46px, 46px 46px, auto, auto;
-      color: #1c1917;
+        radial-gradient(circle at 50% 42%, rgba(255, 194, 60, 0.18), transparent 22rem),
+        linear-gradient(180deg, #191833 0%, #12122b 58%, #0d0d24 100%);
+      color: #f2e7c9;
     }
     .loading-constellation-canvas,
     .loading-orbits {
@@ -62,16 +66,16 @@
       border-radius: 50%;
       opacity: 1;
     }
-    .loading-orbit--1 { width: 200px; height: 200px; border: 2px solid rgba(28, 25, 23, 0.08); }
-    .loading-orbit--2 { width: 320px; height: 320px; border: 1px solid rgba(213, 94, 0, 0.16); }
-    .loading-orbit--3 { width: 460px; height: 460px; border: 1px solid rgba(28, 25, 23, 0.06); }
+    .loading-orbit--1 { width: 200px; height: 200px; border: 2px solid rgba(226, 230, 246, 0.12); }
+    .loading-orbit--2 { width: 320px; height: 320px; border: 1px solid rgba(255, 107, 87, 0.18); }
+    .loading-orbit--3 { width: 460px; height: 460px; border: 1px solid rgba(226, 230, 246, 0.08); }
     .loading-blob-container {
       position: relative;
       z-index: 10;
       width: 160px;
       height: 160px;
       margin-bottom: 2rem;
-      filter: drop-shadow(8px 12px 0 rgba(28, 25, 23, 0.16));
+      filter: drop-shadow(8px 12px 0 rgba(0, 0, 0, 0.35));
     }
     .loading-blob-container app-blob-character {
       display: block;
@@ -88,7 +92,7 @@
     .loading-text {
       max-width: min(560px, 85vw);
       margin: 0;
-      color: #1c1917;
+      color: #f2e7c9;
       font: 600 clamp(1.3rem, 3vw, 1.8rem) 'Fraunces', Georgia, serif;
       text-align: center;
     }
@@ -98,16 +102,16 @@
       margin-top: 1.8rem;
       overflow: hidden;
       border-radius: 3px;
-      border: 2px solid #1c1917;
-      background: rgba(28, 25, 23, 0.12);
+      border: 2px solid rgba(242, 231, 201, 0.4);
+      background: rgba(226, 230, 246, 0.12);
     }
     .loading-progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #f0e442, #d55e00);
+      background: linear-gradient(90deg, #ffc23c, #ff6b57);
     }
     .loading-tagline {
       margin-top: 1.4rem;
-      color: rgba(28, 25, 23, 0.42);
+      color: rgba(226, 230, 246, 0.42);
       font: 900 9px system-ui, sans-serif;
       letter-spacing: 0.24em;
       text-transform: uppercase;

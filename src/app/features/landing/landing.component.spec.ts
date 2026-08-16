@@ -139,29 +139,28 @@ describe('LandingComponent — resume button styling (regression guard)', () => 
     expect(generatedCss).toMatch(/\.bg-amber(?:\\\\\/\d+)?\s*\{/);
   });
 
-  it('resume button body div should reference a defined bg-* color', () => {
-    // The neo-btn-body has no default background — it relies on a Tailwind
+  it('resume button should reference a defined bg-* color', () => {
+    // The sticker-btn has no default background — it relies on a Tailwind
     // bg-* class. The resume button must use a defined color so the
     // background is actually painted. We verify the bg-* class on the
-    // body div within the resume block refers to a defined color.
+    // button within the resume block refers to a defined color.
     const resumeBlock = templateHtml.match(/@if\s*\(\s*hasInProgressBackup\(\)\s*\)\s*\{[\s\S]*?\}/);
     expect(resumeBlock).not.toBeNull();
-    // Find the <div class="neo-btn-body ..."> element specifically
-    // (not the <div class="neo-btn-shadow">) and grab its class attr.
-    const bodyMatch = resumeBlock![0].match(/<div\s+class="(neo-btn-body[^"]*)"/);
-    expect(bodyMatch).not.toBeNull();
-    const bodyClasses = bodyMatch![1];
+    // Find the <button class="sticker-btn ..."> element specifically.
+    const btnMatch = resumeBlock![0].match(/<button\s+class="(sticker-btn[^"]*)"/);
+    expect(btnMatch).not.toBeNull();
+    const btnClasses = btnMatch![1];
     // Must contain a bg-* class
-    expect(bodyClasses).toMatch(/\bbg-([a-z-]+)(?:\/\d+)?/);
+    expect(btnClasses).toMatch(/\bbg-([a-z-]+)(?:\/\d+)?/);
     // And that color must be defined in the tailwind config (so Tailwind
     // actually generates the rule).
-    const colorMatch = bodyClasses.match(/\bbg-([a-z-]+)(?:\/\d+)?/);
+    const colorMatch = btnClasses.match(/\bbg-([a-z-]+)(?:\/\d+)?/);
     expect(colorMatch).not.toBeNull();
     const colorToken = colorMatch![1];
     expect(isColorDefinedInTailwindConfig(colorToken)).toBe(true);
   });
 
-  it('the EXACT bg-* class on the resume button body must be in the generated CSS', () => {
+  it('the EXACT bg-* class on the resume button must be in the generated CSS', () => {
     // Strongest end-to-end test: extract the literal class string used
     // in the template and assert the generated CSS contains a matching
     // rule. This catches:
@@ -172,11 +171,11 @@ describe('LandingComponent — resume button styling (regression guard)', () => 
     //   - Template uses a non-existent Tailwind utility
     const resumeBlock = templateHtml.match(/@if\s*\(\s*hasInProgressBackup\(\)\s*\)\s*\{[\s\S]*?\}/);
     expect(resumeBlock).not.toBeNull();
-    const bodyMatch = resumeBlock![0].match(/<div\s+class="(neo-btn-body[^"]*)"/);
-    expect(bodyMatch).not.toBeNull();
-    const bodyClasses = bodyMatch![1];
+    const btnMatch = resumeBlock![0].match(/<button\s+class="(sticker-btn[^"]*)"/);
+    expect(btnMatch).not.toBeNull();
+    const btnClasses = btnMatch![1];
     // Grab the literal bg-* class (preserving any /N opacity modifier)
-    const bgClassMatch = bodyClasses.match(/\b(bg-[a-z-]+(?:\/\d+)?)/);
+    const bgClassMatch = btnClasses.match(/\b(bg-[a-z-]+(?:\/\d+)?)/);
     expect(bgClassMatch).not.toBeNull();
     const bgClass = bgClassMatch![1];
     // In CSS, the slash is escaped: `bg-amber\/20` becomes `.bg-amber\/20`.

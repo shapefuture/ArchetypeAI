@@ -177,6 +177,58 @@
 }
 .ethics-card p { margin: 0; font-size: 15px; line-height: 1.6; color: rgba(236, 234, 246, 0.85); }
 
+/* "What to expect" — the three-sitting plan, so the shape of the journey
+ * is known before the first statement. */
+.plan-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(242, 231, 201, 0.16);
+  border-radius: 12px;
+  background: rgba(13, 13, 36, 0.35);
+}
+.plan-title {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(242, 231, 201, 0.6);
+}
+.sittings-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sitting {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 14px;
+  border: 1px solid rgba(236, 234, 246, 0.18);
+  border-radius: 10px;
+  background: rgba(236, 234, 246, 0.05);
+  text-align: center;
+}
+.sitting-name { font-family: var(--font-serif); font-size: 15px; color: #f2e7c9; }
+.sitting-meta { font-size: 11px; letter-spacing: 0.04em; color: rgba(236, 234, 246, 0.55); }
+.sitting-gap {
+  align-self: center;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(236, 234, 246, 0.4);
+  white-space: nowrap;
+}
+.ethics-why {
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+  color: rgba(236, 234, 246, 0.6) !important;
+  font-style: italic;
+}
+
 .zone-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(120px, 1fr));

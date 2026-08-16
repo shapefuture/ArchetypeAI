@@ -83,6 +83,31 @@ describe('DescentPanelComponent — flow', () => {
     expect(emitted).toBe(true);
   });
 
+  it('break screen offers BOTH options — resume now, or leave with progress kept', () => {
+    // The subtitle promises "continue now or return later" — the template
+    // must render the second button (regression: it was promise-only).
+    expect(templateHtml).toMatch(/leaveFromBreak\(\)/);
+    expect(templateHtml).toMatch(/breakResume\(descentIndex\(\)\)/);
+    const c = make();
+    c.acceptEthics();
+    // Walk to the first break (49 answers → sitting I done).
+    let guard = 0;
+    while (c.stage() !== 'break') {
+      if (guard++ > 400) throw new Error('never reached break');
+      if (c.pendingSomaticPart()) { c.skipZone(); vi.advanceTimersByTime(200); continue; }
+      c.answer(4);
+      vi.advanceTimersByTime(200);
+    }
+    let left = false;
+    c.cancelled.subscribe(() => { left = true; });
+    c.leaveFromBreak();
+    expect(left).toBe(true);
+    // Progress is persisted — a fresh instance resumes at the same sitting.
+    const resumed = make();
+    expect(resumed.stage()).toBe('item');
+    expect(resumed.litStars()).toBe(49);
+  });
+
   it('§3D.2 Future Self: min-2-sentence gate, saved before the reveal', () => {
     const c = make();
     c.acceptEthics();
@@ -123,6 +148,12 @@ describe('DescentPanelComponent — template structure', () => {
     expect(templateHtml).toMatch(/likert\[lang\(\)\]/);
     expect((templateHtml.match(/class="likert-btn"/g) ?? []).length).toBeGreaterThanOrEqual(1);
   });
+  it('ethics gate explains the three-sitting plan before the first statement', () => {
+    expect(templateHtml).toMatch(/planTitle/);
+    expect(templateHtml).toMatch(/sittings-row/);
+    expect(templateHtml).toMatch(/ethicsWhy/);
+  });
+
   it('contains the mandatory ethics gate and break screens', () => {
     expect(templateHtml).toMatch(/stage\(\) === 'ethics'/);
     expect(templateHtml).toMatch(/stage\(\) === 'break'/);

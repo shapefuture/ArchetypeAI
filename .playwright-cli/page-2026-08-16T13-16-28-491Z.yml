@@ -1,0 +1,13 @@
+- generic [ref=f2e947]:
+  - banner [ref=f2e948]:
+    - button "Exit" [ref=f2e949] [cursor=pointer]:
+      - generic [ref=f2e952]: Выйти
+    - generic [ref=f2e953]: Погружение II · 49 / 49
+  - main [ref=f2e1004]:
+    - 'heading "Внутренний голос твердит: можно было сделать лучше" [level=2] [ref=f2e1005]'
+    - generic [ref=f2e1006]:
+      - button "Совсем не про меня" [ref=f2e1007] [cursor=pointer]
+      - button "Скорее не про меня" [ref=f2e1008] [cursor=pointer]
+      - button "Иногда про меня" [ref=f2e1009] [cursor=pointer]
+      - button "Чаще всего про меня" [ref=f2e1010] [cursor=pointer]
+      - button "Точно про меня" [ref=f2e1011] [cursor=pointer]

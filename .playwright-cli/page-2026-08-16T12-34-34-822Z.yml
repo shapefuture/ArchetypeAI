@@ -1,0 +1,12 @@
+- generic [ref=f1e1964]:
+  - banner [ref=f1e1965]:
+    - button "Exit" [ref=f1e1966] [cursor=pointer]
+    - generic [ref=f1e1970]: Descent II · 1 / 49
+  - main [ref=f1e2021]:
+    - heading "I hold on to relationships I know are not good for me" [level=2] [ref=f1e2022]
+    - generic [ref=f1e2023]:
+      - button "Never true of me" [ref=f1e2024] [cursor=pointer]
+      - button "Rarely true of me" [ref=f1e2025] [cursor=pointer]
+      - button "Sometimes true of me" [ref=f1e2026] [cursor=pointer]
+      - button "Very often true of me" [ref=f1e2027] [cursor=pointer]
+      - button "Almost always true of me" [ref=f1e2028] [cursor=pointer]

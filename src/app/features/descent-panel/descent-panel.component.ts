@@ -40,6 +40,14 @@ const UI = {
     exit: 'Exit',
     ethicsTitle: 'Before you descend',
     ethicsSub: 'The full battery: three sittings of 49 statements, one at a time. You can pause at any sitting — progress is kept on this device.',
+    planTitle: 'What to expect',
+    plan: [
+      { name: 'Descent I', meta: '49 statements · ~10 min' },
+      { name: 'Descent II', meta: '49 statements · ~10 min' },
+      { name: 'Descent III', meta: '49 statements · ~10 min' },
+    ],
+    planPause: 'pause',
+    ethicsWhy: 'Why three sittings? Attention fades — somewhere past the fiftieth statement, answers slide onto autopilot. Three short sittings keep you honest, and the pauses between them let what you saw settle.',
     ethics1: 'This is a self-reflection tool grounded in the Internal Family Systems model, not a diagnosis or therapy.',
     ethics2: 'Every part of you is welcome here. Nothing aims to delete or fix away any of you. You can stop at any time; anything can wait.',
     ethicsGo: 'I understand — begin Descent I',
@@ -50,6 +58,7 @@ const UI = {
     breakTitle: n => `Descent ${['I', 'II', 'III'][n]} complete`,
     breakSub: 'The stars you lit are held safely. Continue now, or return when you are ready — nothing is lost.',
     breakResume: n => (n < 2 ? `Continue — Descent ${['II', 'III'][n]}` : 'Behold your constellation'),
+    breakLater: 'Return later',
     retakeNote: 'Your answers stay on this device.',
     recalibrated: 'The stars have been recalibrated. The old map cannot be translated — descend again to be measured anew.',
     fsTitle: 'Your North Star',
@@ -66,6 +75,14 @@ const UI = {
     exit: 'Выйти',
     ethicsTitle: 'Перед погружением',
     ethicsSub: 'Вас ждут три части по 49 утверждений — по одному на экран. Можно остановиться после любой части: прогресс сохранится на этом устройстве.',
+    planTitle: 'Как всё устроено',
+    plan: [
+      { name: 'Погружение I', meta: '49 утверждений · ~10 минут' },
+      { name: 'Погружение II', meta: '49 утверждений · ~10 минут' },
+      { name: 'Погружение III', meta: '49 утверждений · ~10 минут' },
+    ],
+    planPause: 'пауза',
+    ethicsWhy: 'Почему три части? Внимание быстро притупляется: где-то после пятидесятого утверждения ответы начинаются «на автомате». Три короткие части помогают отвечать честно, а паузы между ними дают увиденному улечься.',
     ethics1: 'Это инструмент самопознания, основанный на модели «Внутренние семейные системы». Это не диагностика и не терапия.',
     ethics2: 'Каждая ваша часть здесь желанна: ничего не нужно «удалять» или «чинить». Вы можете остановиться в любой момент — всё подождёт.',
     ethicsGo: 'Хорошо — начинаем Погружение I',
@@ -76,6 +93,7 @@ const UI = {
     breakTitle: n => `Погружение ${['I', 'II', 'III'][n]} завершено`,
     breakSub: 'Зажжённые вами звёзды мы сохранили. Можно продолжить сразу или вернуться позже — ничего не потеряется.',
     breakResume: n => (n < 2 ? `Продолжить — Погружение ${['II', 'III'][n]}` : 'Пора увидеть ваше созвездие'),
+    breakLater: 'Вернуться позже',
     retakeNote: 'Ответы остаются на этом устройстве.',
     recalibrated: 'Звёзды перенастроены: прежнюю карту не перевести на новый лад. Пройдите все три погружения заново — вас измерят по-новой.',
     fsTitle: 'Ваша Полярная звезда',
@@ -249,6 +267,13 @@ export class DescentPanelComponent implements OnDestroy {
     this.itemIndex.update(i => Math.min(146, i + 1));
     this.stage.set('item');
     this.persist();
+  }
+
+  /** The second break option: progress is already persisted — leave to the
+   * dashboard and pick up at this sitting next time. */
+  leaveFromBreak(): void {
+    this.persist();
+    this.cancelled.emit();
   }
 
   goBack(): void {

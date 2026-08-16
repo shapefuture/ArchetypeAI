@@ -1,0 +1,728 @@
+- generic [ref=f1e4]:
+  - navigation [ref=f1e5]:
+    - generic [ref=f1e7]:
+      - generic [ref=f1e8] [cursor=pointer]:
+        - generic [ref=f1e9]: ✦
+        - generic [ref=f1e10]: Innerverse
+      - generic [ref=f1e11]:
+        - link "Проблема" [ref=f1e12] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - link "Матрица" [ref=f1e13] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - link "Кодекс" [ref=f1e14] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - link "Движок" [ref=f1e15] [cursor=pointer]:
+          - /url: javascript:void(0)
+      - generic [ref=f1e16]:
+        - button "🌐 RU" [ref=f1e17] [cursor=pointer]
+        - button "💾" [ref=f1e18] [cursor=pointer]
+        - button "✚ Терапевт" [ref=f1e20] [cursor=pointer]
+        - button "Войти" [ref=f1e21] [cursor=pointer]
+        - button "Начать тест ✦" [ref=f1e22] [cursor=pointer]
+  - generic [ref=f1e23]:
+    - generic: ✦
+    - generic: ✦
+    - generic: ★
+    - generic: ✦
+    - generic [ref=f1e24]:
+      - generic [ref=f1e25]:
+        - generic [ref=f1e26]:
+          - generic [ref=f1e27]: Live
+          - generic [ref=f1e29]: 147 утверждений
+          - generic [ref=f1e30]: 18 внутренних частей
+          - generic [ref=f1e31]: IFS
+        - heading [level=1] [ref=f1e32]:
+          - text: Внутри вас —
+          - generic [ref=f1e33]: созвездие
+          - text: познакомьтесь с ним.
+        - paragraph [ref=f1e36]: "Ответьте на 147 утверждений в трёх частях — и ваши внутренние части станут живым созвездием: измеренным, а не выдуманным. В основе — метод «Внутренние семейные системы»: это самопознание, а не диагностика."
+        - generic [ref=f1e37]:
+          - button "✦ Начать тест" [ref=f1e38] [cursor=pointer]
+          - button "✦ Встретьте одну часть за 90 секунд" [ref=f1e39] [cursor=pointer]
+        - generic [ref=f1e40]:
+          - generic [ref=f1e41]: ℹ️
+          - generic [ref=f1e42]:
+            - paragraph [ref=f1e43]: Важно
+            - paragraph [ref=f1e44]: "Ответы остаются на вашем устройстве. Полный тест — три части по 49 утверждений: можно остановиться после любой части, и прогресс сохранится. Резервную копию в любой момент можно скачать из кабинета."
+        - generic [ref=f1e45]:
+          - generic [ref=f1e46]:
+            - generic [ref=f1e47]: "18"
+            - generic [ref=f1e48]: 18 внутренних частей
+          - generic [ref=f1e49]:
+            - generic [ref=f1e50]: "147"
+            - generic [ref=f1e51]: 147 утверждений
+          - generic [ref=f1e52]:
+            - generic [ref=f1e53]: ~25 мин
+            - generic [ref=f1e54]: До вашей карты
+      - generic [ref=f1e55]:
+        - img "A whimsical night-sky illustration of small creature constellations connected by dotted lines, with a star-shaped mascot floating in the middle." [ref=f1e57]
+        - generic [ref=f1e62]:
+          - paragraph [ref=f1e63]: 18 Inner Parts
+          - paragraph [ref=f1e64]: ✦ ✦ ✦
+  - generic [ref=f1e66]:
+    - generic [ref=f1e67]: Раскройте паттерны
+    - generic [ref=f1e68]: ✦
+    - generic [ref=f1e69]: Разорвите цикл
+    - generic [ref=f1e70]: ✦
+    - generic [ref=f1e71]: Познайте себя
+    - generic [ref=f1e72]: ✦
+    - generic [ref=f1e73]: Нанесите хаос на карту
+    - generic [ref=f1e74]: ✦
+    - generic [ref=f1e75]: Геометрия отношений
+    - generic [ref=f1e76]: ✦
+    - generic [ref=f1e77]: Раскройте паттерны
+    - generic [ref=f1e78]: ✦
+    - generic [ref=f1e79]: Разорвите цикл
+    - generic [ref=f1e80]: ✦
+    - generic [ref=f1e81]: Познайте себя
+    - generic [ref=f1e82]: ✦
+    - generic [ref=f1e83]: Нанесите хаос на карту
+    - generic [ref=f1e84]: ✦
+    - generic [ref=f1e85]: Геометрия отношений
+    - generic [ref=f1e86]: ✦
+    - generic [ref=f1e87]: Раскройте паттерны
+    - generic [ref=f1e88]: ✦
+    - generic [ref=f1e89]: Разорвите цикл
+    - generic [ref=f1e90]: ✦
+    - generic [ref=f1e91]: Познайте себя
+    - generic [ref=f1e92]: ✦
+    - generic [ref=f1e93]: Нанесите хаос на карту
+    - generic [ref=f1e94]: ✦
+    - generic [ref=f1e95]: Геометрия отношений
+    - generic [ref=f1e96]: ✦
+    - generic [ref=f1e97]: Раскройте паттерны
+    - generic [ref=f1e98]: ✦
+    - generic [ref=f1e99]: Разорвите цикл
+    - generic [ref=f1e100]: ✦
+    - generic [ref=f1e101]: Познайте себя
+    - generic [ref=f1e102]: ✦
+    - generic [ref=f1e103]: Нанесите хаос на карту
+    - generic [ref=f1e104]: ✦
+    - generic [ref=f1e105]: Геометрия отношений
+    - generic [ref=f1e106]: ✦
+    - generic [ref=f1e107]: Раскройте паттерны
+    - generic [ref=f1e108]: ✦
+    - generic [ref=f1e109]: Разорвите цикл
+    - generic [ref=f1e110]: ✦
+    - generic [ref=f1e111]: Познайте себя
+    - generic [ref=f1e112]: ✦
+    - generic [ref=f1e113]: Нанесите хаос на карту
+    - generic [ref=f1e114]: ✦
+    - generic [ref=f1e115]: Геометрия отношений
+    - generic [ref=f1e116]: ✦
+    - generic [ref=f1e117]: Раскройте паттерны
+    - generic [ref=f1e118]: ✦
+    - generic [ref=f1e119]: Разорвите цикл
+    - generic [ref=f1e120]: ✦
+    - generic [ref=f1e121]: Познайте себя
+    - generic [ref=f1e122]: ✦
+    - generic [ref=f1e123]: Нанесите хаос на карту
+    - generic [ref=f1e124]: ✦
+    - generic [ref=f1e125]: Геометрия отношений
+    - generic [ref=f1e126]: ✦
+  - generic [ref=f1e128]:
+    - generic [ref=f1e129]:
+      - generic [ref=f1e130]: Проблема
+      - heading "Почему вы повторяете это снова и снова?" [level=2] [ref=f1e132]
+      - paragraph [ref=f1e133]: Те же циклы. То же трение. Те же упущенные связи. Это не проклятие — это геометрия.
+    - generic [ref=f1e134]:
+      - generic [ref=f1e135]:
+        - generic [ref=f1e136]: "01"
+        - generic [ref=f1e137]: 🌪️
+        - heading "Цикл игнорирования" [level=3] [ref=f1e138]
+        - paragraph [ref=f1e139]: Вы привлекаете Кочевников, действуя как Якорь. Физика предсказывает их исчезновение.
+      - generic [ref=f1e140]:
+        - generic [ref=f1e141]: "02"
+        - generic [ref=f1e142]: ⚡
+        - heading "Столкновение Катализаторов" [level=3] [ref=f1e143]
+        - paragraph [ref=f1e144]: Два Катализатора — это огонь. Блестяще для стартапов. Катастрофично для исполнения.
+      - generic [ref=f1e145]:
+        - generic [ref=f1e146]: "03"
+        - generic [ref=f1e147]: 🪞
+        - heading "Эхо-камера" [level=3] [ref=f1e148]
+        - paragraph [ref=f1e149]: Окружены Зеркалами. Все согласны. Никто не инициирует. Консенсус удушает.
+      - generic [ref=f1e150]:
+        - generic [ref=f1e151]: "04"
+        - generic [ref=f1e152]: 💣
+        - heading "Невидимые триггеры" [level=3] [ref=f1e153]
+        - paragraph [ref=f1e154]: Конфликт вспыхивает, и вы не знаете почему. Несчитанные сигналы детонируют раньше вас.
+      - generic [ref=f1e155]:
+        - generic [ref=f1e156]: "05"
+        - generic [ref=f1e157]: ⚓
+        - heading "Эмоциональное выгорание" [level=3] [ref=f1e158]
+        - paragraph [ref=f1e159]: Якорь несёт всех и истощает себя. Система никогда не восстанавливает его.
+      - generic [ref=f1e160]:
+        - generic [ref=f1e161]: "06"
+        - generic [ref=f1e162]: 🌀
+        - heading "Асимметричная орбита" [level=3] [ref=f1e163]
+        - paragraph [ref=f1e164]: Один вкладывается интенсивно; другой держится свободно. Дисбаланс структурен.
+  - generic [ref=f1e166]:
+    - generic [ref=f1e167]:
+      - generic [ref=f1e168]: Инструмент
+      - heading "Матрица синергии" [level=2] [ref=f1e170]
+      - paragraph [ref=f1e171]: Не все формы сочетаются грациозно. Выберите два узла, чтобы вычислить их реляционную физику.
+    - generic [ref=f1e172]:
+      - generic [ref=f1e173]:
+        - button "Деятель Менеджер ✓" [active] [ref=f1e1701] [cursor=pointer]:
+          - generic [ref=f1e187]:
+            - generic [ref=f1e188]: Деятель
+            - generic [ref=f1e189]: Менеджер
+          - generic [ref=f1e1713]: ✓
+        - button "Внутренний критик Менеджер" [ref=f1e190] [cursor=pointer]:
+          - generic [ref=f1e203]:
+            - generic [ref=f1e204]: Внутренний критик
+            - generic [ref=f1e205]: Менеджер
+        - button "Угодник Менеджер" [ref=f1e206] [cursor=pointer]:
+          - generic [ref=f1e219]:
+            - generic [ref=f1e220]: Угодник
+            - generic [ref=f1e221]: Менеджер
+        - button "Контролёр Менеджер" [ref=f1e222] [cursor=pointer]:
+          - generic [ref=f1e235]:
+            - generic [ref=f1e236]: Контролёр
+            - generic [ref=f1e237]: Менеджер
+        - button "Аналитик Менеджер" [ref=f1e238] [cursor=pointer]:
+          - generic [ref=f1e251]:
+            - generic [ref=f1e252]: Аналитик
+            - generic [ref=f1e253]: Менеджер
+        - button "Отшельник Менеджер" [ref=f1e254] [cursor=pointer]:
+          - generic [ref=f1e267]:
+            - generic [ref=f1e268]: Отшельник
+            - generic [ref=f1e269]: Менеджер
+        - button "Обходчик Менеджер" [ref=f1e270] [cursor=pointer]:
+          - generic [ref=f1e283]:
+            - generic [ref=f1e284]: Обходчик
+            - generic [ref=f1e285]: Менеджер
+        - button "Онемение Пожарный" [ref=f1e286] [cursor=pointer]:
+          - generic [ref=f1e299]:
+            - generic [ref=f1e300]: Онемение
+            - generic [ref=f1e301]: Пожарный
+        - button "Бунтарь Пожарный" [ref=f1e302] [cursor=pointer]:
+          - generic [ref=f1e315]:
+            - generic [ref=f1e316]: Бунтарь
+            - generic [ref=f1e317]: Пожарный
+        - button "Обаяшка Пожарный" [ref=f1e318] [cursor=pointer]:
+          - generic [ref=f1e331]:
+            - generic [ref=f1e332]: Обаяшка
+            - generic [ref=f1e333]: Пожарный
+        - button "Брошенный Изгнанник" [ref=f1e334] [cursor=pointer]:
+          - generic [ref=f1e346]:
+            - generic [ref=f1e347]: Брошенный
+            - generic [ref=f1e348]: Изгнанник
+        - button "Стыдящийся Изгнанник" [ref=f1e349] [cursor=pointer]:
+          - generic [ref=f1e361]:
+            - generic [ref=f1e362]: Стыдящийся
+            - generic [ref=f1e363]: Изгнанник
+        - button "Напуганный Изгнанник" [ref=f1e364] [cursor=pointer]:
+          - generic [ref=f1e376]:
+            - generic [ref=f1e377]: Напуганный
+            - generic [ref=f1e378]: Изгнанник
+        - button "Незамеченный Изгнанник" [ref=f1e379] [cursor=pointer]:
+          - generic [ref=f1e391]:
+            - generic [ref=f1e392]: Незамеченный
+            - generic [ref=f1e393]: Изгнанник
+        - button "Мудрец Ресурс" [ref=f1e394] [cursor=pointer]:
+          - generic [ref=f1e406]:
+            - generic [ref=f1e407]: Мудрец
+            - generic [ref=f1e408]: Ресурс
+        - button "Воин Ресурс" [ref=f1e409] [cursor=pointer]:
+          - generic [ref=f1e421]:
+            - generic [ref=f1e422]: Воин
+            - generic [ref=f1e423]: Ресурс
+        - button "Заботник Ресурс" [ref=f1e424] [cursor=pointer]:
+          - generic [ref=f1e436]:
+            - generic [ref=f1e437]: Заботник
+            - generic [ref=f1e438]: Ресурс
+        - button "Исследователь Ресурс" [ref=f1e439] [cursor=pointer]:
+          - generic [ref=f1e451]:
+            - generic [ref=f1e452]: Исследователь
+            - generic [ref=f1e453]: Ресурс
+      - generic [ref=f1e454]:
+        - generic [ref=f1e456]: Деятель
+        - generic [ref=f1e460]:
+          - generic [ref=f1e461]: Результат
+          - heading "Ожидание второго узла" [level=4] [ref=f1e1728]
+          - paragraph [ref=f1e1729]: Выберите другой архетип для вычисления физики связи.
+  - generic [ref=f1e467]:
+    - generic [ref=f1e468]:
+      - generic [ref=f1e469]: Возможности
+      - heading "Всё, что нужно для расшифровки связей." [level=2] [ref=f1e471]
+    - generic [ref=f1e472]:
+      - generic [ref=f1e476]:
+        - heading "Интерактивная 3D-карта" [level=3] [ref=f1e477]
+        - paragraph [ref=f1e478]: Вращайте, масштабируйте и кликайте по живому реляционному космосу.Каждый узел — история.
+      - generic [ref=f1e486]:
+        - heading "ИИ-движок инсайтов" [level=3] [ref=f1e491]
+        - paragraph [ref=f1e492]: Обнаружение паттернов в реальном времени выявляет то, что вы сами не видите.
+      - generic [ref=f1e495]:
+        - heading "Четырёхосный анализ" [level=3] [ref=f1e499]
+        - paragraph [ref=f1e500]: Агентность, Температура, Фокус и Привязанность — измерены точно.
+      - generic [ref=f1e503]:
+        - heading "Клинические отчёты" [level=3] [ref=f1e508]
+        - paragraph [ref=f1e509]: JSON-экспорт. ИИ-нарративы. Детализированные психологические профили для специалиста.
+  - generic [ref=f1e510]:
+    - generic [ref=f1e511]:
+      - generic [ref=f1e512]: Кодекс
+      - heading "Восемь сущностей. Бесконечные конфигурации." [level=2] [ref=f1e514]: Восемь сущностей.Бесконечные конфигурации.
+      - paragraph [ref=f1e515]: Перетаскивайте для изучения каталога. Нажмите, чтобы перевернуть.
+    - generic [ref=f1e516]:
+      - generic [ref=f1e518] [cursor=pointer]:
+        - generic [ref=f1e519]:
+          - generic [ref=f1e520]: "01"
+          - generic [ref=f1e535]:
+            - heading "Деятель" [level=3] [ref=f1e536]
+            - generic [ref=f1e537]: Менеджер
+        - generic [ref=f1e538]:
+          - heading "Деятель" [level=3] [ref=f1e539]
+          - paragraph [ref=f1e540]: Тот, кто всегда на виду продуктивен.
+          - generic [ref=f1e541]:
+            - generic [ref=f1e543]:
+              - generic [ref=f1e544]: Агентность
+              - generic [ref=f1e545]: 82%
+            - generic [ref=f1e549]:
+              - generic [ref=f1e550]: Температура
+              - generic [ref=f1e551]: 60%
+            - generic [ref=f1e555]:
+              - generic [ref=f1e556]: Фокус
+              - generic [ref=f1e557]: 78%
+            - generic [ref=f1e561]:
+              - generic [ref=f1e562]: Привязанность
+              - generic [ref=f1e563]: 30%
+      - generic [ref=f1e567] [cursor=pointer]:
+        - generic [ref=f1e568]:
+          - generic [ref=f1e569]: "02"
+          - generic [ref=f1e584]:
+            - heading "Внутренний критик" [level=3] [ref=f1e585]
+            - generic [ref=f1e586]: Менеджер
+        - generic [ref=f1e587]:
+          - heading "Внутренний критик" [level=3] [ref=f1e588]
+          - paragraph [ref=f1e589]: Строгий оценщик всего, что ты делаешь.
+          - generic [ref=f1e590]:
+            - generic [ref=f1e592]:
+              - generic [ref=f1e593]: Агентность
+              - generic [ref=f1e594]: 55%
+            - generic [ref=f1e598]:
+              - generic [ref=f1e599]: Температура
+              - generic [ref=f1e600]: 40%
+            - generic [ref=f1e604]:
+              - generic [ref=f1e605]: Фокус
+              - generic [ref=f1e606]: 85%
+            - generic [ref=f1e610]:
+              - generic [ref=f1e611]: Привязанность
+              - generic [ref=f1e612]: 45%
+      - generic [ref=f1e616] [cursor=pointer]:
+        - generic [ref=f1e617]:
+          - generic [ref=f1e618]: "03"
+          - generic [ref=f1e633]:
+            - heading "Угодник" [level=3] [ref=f1e634]
+            - generic [ref=f1e635]: Менеджер
+        - generic [ref=f1e636]:
+          - heading "Угодник" [level=3] [ref=f1e637]
+          - paragraph [ref=f1e638]: Уживчивый, сглаживающий любое напряжение.
+          - generic [ref=f1e639]:
+            - generic [ref=f1e641]:
+              - generic [ref=f1e642]: Агентность
+              - generic [ref=f1e643]: 45%
+            - generic [ref=f1e647]:
+              - generic [ref=f1e648]: Температура
+              - generic [ref=f1e649]: 70%
+            - generic [ref=f1e653]:
+              - generic [ref=f1e654]: Фокус
+              - generic [ref=f1e655]: 55%
+            - generic [ref=f1e659]:
+              - generic [ref=f1e660]: Привязанность
+              - generic [ref=f1e661]: 88%
+      - generic [ref=f1e665] [cursor=pointer]:
+        - generic [ref=f1e666]:
+          - generic [ref=f1e667]: "04"
+          - generic [ref=f1e682]:
+            - heading "Контролёр" [level=3] [ref=f1e683]
+            - generic [ref=f1e684]: Менеджер
+        - generic [ref=f1e685]:
+          - heading "Контролёр" [level=3] [ref=f1e686]
+          - paragraph [ref=f1e687]: Плановой с запасным вариантом на всё.
+          - generic [ref=f1e688]:
+            - generic [ref=f1e690]:
+              - generic [ref=f1e691]: Агентность
+              - generic [ref=f1e692]: 75%
+            - generic [ref=f1e696]:
+              - generic [ref=f1e697]: Температура
+              - generic [ref=f1e698]: 50%
+            - generic [ref=f1e702]:
+              - generic [ref=f1e703]: Фокус
+              - generic [ref=f1e704]: 90%
+            - generic [ref=f1e708]:
+              - generic [ref=f1e709]: Привязанность
+              - generic [ref=f1e710]: 40%
+      - generic [ref=f1e714] [cursor=pointer]:
+        - generic [ref=f1e715]:
+          - generic [ref=f1e716]: "05"
+          - generic [ref=f1e731]:
+            - heading "Аналитик" [level=3] [ref=f1e732]
+            - generic [ref=f1e733]: Менеджер
+        - generic [ref=f1e734]:
+          - heading "Аналитик" [level=3] [ref=f1e735]
+          - paragraph [ref=f1e736]: Спокойный объясняющий всё происходящее.
+          - generic [ref=f1e737]:
+            - generic [ref=f1e739]:
+              - generic [ref=f1e740]: Агентность
+              - generic [ref=f1e741]: 50%
+            - generic [ref=f1e745]:
+              - generic [ref=f1e746]: Температура
+              - generic [ref=f1e747]: 25%
+            - generic [ref=f1e751]:
+              - generic [ref=f1e752]: Фокус
+              - generic [ref=f1e753]: 88%
+            - generic [ref=f1e757]:
+              - generic [ref=f1e758]: Привязанность
+              - generic [ref=f1e759]: 35%
+      - generic [ref=f1e763] [cursor=pointer]:
+        - generic [ref=f1e764]:
+          - generic [ref=f1e765]: "06"
+          - generic [ref=f1e780]:
+            - heading "Отшельник" [level=3] [ref=f1e781]
+            - generic [ref=f1e782]: Менеджер
+        - generic [ref=f1e783]:
+          - heading "Отшельник" [level=3] [ref=f1e784]
+          - paragraph [ref=f1e785]: Тот, кого славно трудно достать.
+          - generic [ref=f1e786]:
+            - generic [ref=f1e788]:
+              - generic [ref=f1e789]: Агентность
+              - generic [ref=f1e790]: 40%
+            - generic [ref=f1e794]:
+              - generic [ref=f1e795]: Температура
+              - generic [ref=f1e796]: 20%
+            - generic [ref=f1e800]:
+              - generic [ref=f1e801]: Фокус
+              - generic [ref=f1e802]: 70%
+            - generic [ref=f1e806]:
+              - generic [ref=f1e807]: Привязанность
+              - generic [ref=f1e808]: 25%
+      - generic [ref=f1e812] [cursor=pointer]:
+        - generic [ref=f1e813]:
+          - generic [ref=f1e814]: "07"
+          - generic [ref=f1e829]:
+            - heading "Обходчик" [level=3] [ref=f1e830]
+            - generic [ref=f1e831]: Менеджер
+        - generic [ref=f1e832]:
+          - heading "Обходчик" [level=3] [ref=f1e833]
+          - paragraph [ref=f1e834]: Мгновенно находящий светлую сторону.
+          - generic [ref=f1e835]:
+            - generic [ref=f1e837]:
+              - generic [ref=f1e838]: Агентность
+              - generic [ref=f1e839]: 48%
+            - generic [ref=f1e843]:
+              - generic [ref=f1e844]: Температура
+              - generic [ref=f1e845]: 45%
+            - generic [ref=f1e849]:
+              - generic [ref=f1e850]: Фокус
+              - generic [ref=f1e851]: 50%
+            - generic [ref=f1e855]:
+              - generic [ref=f1e856]: Привязанность
+              - generic [ref=f1e857]: 40%
+      - generic [ref=f1e861] [cursor=pointer]:
+        - generic [ref=f1e862]:
+          - generic [ref=f1e863]: "08"
+          - generic [ref=f1e878]:
+            - heading "Онемение" [level=3] [ref=f1e879]
+            - generic [ref=f1e880]: Пожарный
+        - generic [ref=f1e881]:
+          - heading "Онемение" [level=3] [ref=f1e882]
+          - paragraph [ref=f1e883]: Тот, у кого всё нормально, всегда нормально.
+          - generic [ref=f1e884]:
+            - generic [ref=f1e886]:
+              - generic [ref=f1e887]: Агентность
+              - generic [ref=f1e888]: 30%
+            - generic [ref=f1e892]:
+              - generic [ref=f1e893]: Температура
+              - generic [ref=f1e894]: 15%
+            - generic [ref=f1e898]:
+              - generic [ref=f1e899]: Фокус
+              - generic [ref=f1e900]: 45%
+            - generic [ref=f1e904]:
+              - generic [ref=f1e905]: Привязанность
+              - generic [ref=f1e906]: 20%
+      - generic [ref=f1e910] [cursor=pointer]:
+        - generic [ref=f1e911]:
+          - generic [ref=f1e912]: "09"
+          - generic [ref=f1e927]:
+            - heading "Бунтарь" [level=3] [ref=f1e928]
+            - generic [ref=f1e929]: Пожарный
+        - generic [ref=f1e930]:
+          - heading "Бунтарь" [level=3] [ref=f1e931]
+          - paragraph [ref=f1e932]: Тот, кому не указывают.
+          - generic [ref=f1e933]:
+            - generic [ref=f1e935]:
+              - generic [ref=f1e936]: Агентность
+              - generic [ref=f1e937]: 88%
+            - generic [ref=f1e941]:
+              - generic [ref=f1e942]: Температура
+              - generic [ref=f1e943]: 85%
+            - generic [ref=f1e947]:
+              - generic [ref=f1e948]: Фокус
+              - generic [ref=f1e949]: 35%
+            - generic [ref=f1e953]:
+              - generic [ref=f1e954]: Привязанность
+              - generic [ref=f1e955]: 30%
+      - generic [ref=f1e959] [cursor=pointer]:
+        - generic [ref=f1e960]:
+          - generic [ref=f1e961]: "10"
+          - generic [ref=f1e976]:
+            - heading "Обаяшка" [level=3] [ref=f1e977]
+            - generic [ref=f1e978]: Пожарный
+        - generic [ref=f1e979]:
+          - heading "Обаяшка" [level=3] [ref=f1e980]
+          - paragraph [ref=f1e981]: Незабываемый выход и идеальная последняя реплика.
+          - generic [ref=f1e982]:
+            - generic [ref=f1e984]:
+              - generic [ref=f1e985]: Агентность
+              - generic [ref=f1e986]: 65%
+            - generic [ref=f1e990]:
+              - generic [ref=f1e991]: Температура
+              - generic [ref=f1e992]: 80%
+            - generic [ref=f1e996]:
+              - generic [ref=f1e997]: Фокус
+              - generic [ref=f1e998]: 50%
+            - generic [ref=f1e1002]:
+              - generic [ref=f1e1003]: Привязанность
+              - generic [ref=f1e1004]: 75%
+      - generic [ref=f1e1008] [cursor=pointer]:
+        - generic [ref=f1e1009]:
+          - generic [ref=f1e1010]: "11"
+          - generic [ref=f1e1024]:
+            - heading "Брошенный" [level=3] [ref=f1e1025]
+            - generic [ref=f1e1026]: Изгнанник
+        - generic [ref=f1e1027]:
+          - heading "Брошенный" [level=3] [ref=f1e1028]
+          - paragraph [ref=f1e1029]: Тот, кто всегда пишет первым.
+          - generic [ref=f1e1030]:
+            - generic [ref=f1e1032]:
+              - generic [ref=f1e1033]: Агентность
+              - generic [ref=f1e1034]: 25%
+            - generic [ref=f1e1038]:
+              - generic [ref=f1e1039]: Температура
+              - generic [ref=f1e1040]: 55%
+            - generic [ref=f1e1044]:
+              - generic [ref=f1e1045]: Фокус
+              - generic [ref=f1e1046]: 30%
+            - generic [ref=f1e1050]:
+              - generic [ref=f1e1051]: Привязанность
+              - generic [ref=f1e1052]: 92%
+      - generic [ref=f1e1056] [cursor=pointer]:
+        - generic [ref=f1e1057]:
+          - generic [ref=f1e1058]: "12"
+          - generic [ref=f1e1072]:
+            - heading "Стыдящийся" [level=3] [ref=f1e1073]
+            - generic [ref=f1e1074]: Изгнанник
+        - generic [ref=f1e1075]:
+          - heading "Стыдящийся" [level=3] [ref=f1e1076]
+          - paragraph [ref=f1e1077]: Тот, кто прячет настоящую работу.
+          - generic [ref=f1e1078]:
+            - generic [ref=f1e1080]:
+              - generic [ref=f1e1081]: Агентность
+              - generic [ref=f1e1082]: 20%
+            - generic [ref=f1e1086]:
+              - generic [ref=f1e1087]: Температура
+              - generic [ref=f1e1088]: 40%
+            - generic [ref=f1e1092]:
+              - generic [ref=f1e1093]: Фокус
+              - generic [ref=f1e1094]: 35%
+            - generic [ref=f1e1098]:
+              - generic [ref=f1e1099]: Привязанность
+              - generic [ref=f1e1100]: 85%
+      - generic [ref=f1e1104] [cursor=pointer]:
+        - generic [ref=f1e1105]:
+          - generic [ref=f1e1106]: "13"
+          - generic [ref=f1e1120]:
+            - heading "Напуганный" [level=3] [ref=f1e1121]
+            - generic [ref=f1e1122]: Изгнанник
+        - generic [ref=f1e1123]:
+          - heading "Напуганный" [level=3] [ref=f1e1124]
+          - paragraph [ref=f1e1125]: Тот, кто знает, где выходы.
+          - generic [ref=f1e1126]:
+            - generic [ref=f1e1128]:
+              - generic [ref=f1e1129]: Агентность
+              - generic [ref=f1e1130]: 22%
+            - generic [ref=f1e1134]:
+              - generic [ref=f1e1135]: Температура
+              - generic [ref=f1e1136]: 60%
+            - generic [ref=f1e1140]:
+              - generic [ref=f1e1141]: Фокус
+              - generic [ref=f1e1142]: 28%
+            - generic [ref=f1e1146]:
+              - generic [ref=f1e1147]: Привязанность
+              - generic [ref=f1e1148]: 90%
+      - generic [ref=f1e1152] [cursor=pointer]:
+        - generic [ref=f1e1153]:
+          - generic [ref=f1e1154]: "14"
+          - generic [ref=f1e1168]:
+            - heading "Незамеченный" [level=3] [ref=f1e1169]
+            - generic [ref=f1e1170]: Изгнанник
+        - generic [ref=f1e1171]:
+          - heading "Незамеченный" [level=3] [ref=f1e1172]
+          - paragraph [ref=f1e1173]: Тихий на краю фотографии.
+          - generic [ref=f1e1174]:
+            - generic [ref=f1e1176]:
+              - generic [ref=f1e1177]: Агентность
+              - generic [ref=f1e1178]: 28%
+            - generic [ref=f1e1182]:
+              - generic [ref=f1e1183]: Температура
+              - generic [ref=f1e1184]: 35%
+            - generic [ref=f1e1188]:
+              - generic [ref=f1e1189]: Фокус
+              - generic [ref=f1e1190]: 40%
+            - generic [ref=f1e1194]:
+              - generic [ref=f1e1195]: Привязанность
+              - generic [ref=f1e1196]: 80%
+      - generic [ref=f1e1200] [cursor=pointer]:
+        - generic [ref=f1e1201]:
+          - generic [ref=f1e1202]: "15"
+          - generic [ref=f1e1216]:
+            - heading "Мудрец" [level=3] [ref=f1e1217]
+            - generic [ref=f1e1218]: Ресурс
+        - generic [ref=f1e1219]:
+          - heading "Мудрец" [level=3] [ref=f1e1220]
+          - paragraph [ref=f1e1221]: Тихое знание, которое видит всю картину.
+          - generic [ref=f1e1222]:
+            - generic [ref=f1e1224]:
+              - generic [ref=f1e1225]: Агентность
+              - generic [ref=f1e1226]: 60%
+            - generic [ref=f1e1230]:
+              - generic [ref=f1e1231]: Температура
+              - generic [ref=f1e1232]: 30%
+            - generic [ref=f1e1236]:
+              - generic [ref=f1e1237]: Фокус
+              - generic [ref=f1e1238]: 75%
+            - generic [ref=f1e1242]:
+              - generic [ref=f1e1243]: Привязанность
+              - generic [ref=f1e1244]: 45%
+      - generic [ref=f1e1248] [cursor=pointer]:
+        - generic [ref=f1e1249]:
+          - generic [ref=f1e1250]: "16"
+          - generic [ref=f1e1264]:
+            - heading "Воин" [level=3] [ref=f1e1265]
+            - generic [ref=f1e1266]: Ресурс
+        - generic [ref=f1e1267]:
+          - heading "Воин" [level=3] [ref=f1e1268]
+          - paragraph [ref=f1e1269]: Ясное «нет», которое защищает важное.
+          - generic [ref=f1e1270]:
+            - generic [ref=f1e1272]:
+              - generic [ref=f1e1273]: Агентность
+              - generic [ref=f1e1274]: 90%
+            - generic [ref=f1e1278]:
+              - generic [ref=f1e1279]: Температура
+              - generic [ref=f1e1280]: 55%
+            - generic [ref=f1e1284]:
+              - generic [ref=f1e1285]: Фокус
+              - generic [ref=f1e1286]: 80%
+            - generic [ref=f1e1290]:
+              - generic [ref=f1e1291]: Привязанность
+              - generic [ref=f1e1292]: 35%
+      - generic [ref=f1e1296] [cursor=pointer]:
+        - generic [ref=f1e1297]:
+          - generic [ref=f1e1298]: "17"
+          - generic [ref=f1e1312]:
+            - heading "Заботник" [level=3] [ref=f1e1313]
+            - generic [ref=f1e1314]: Ресурс
+        - generic [ref=f1e1315]:
+          - heading "Заботник" [level=3] [ref=f1e1316]
+          - paragraph [ref=f1e1317]: Тепло, которое заботится и ничего не ждёт взамен.
+          - generic [ref=f1e1318]:
+            - generic [ref=f1e1320]:
+              - generic [ref=f1e1321]: Агентность
+              - generic [ref=f1e1322]: 55%
+            - generic [ref=f1e1326]:
+              - generic [ref=f1e1327]: Температура
+              - generic [ref=f1e1328]: 75%
+            - generic [ref=f1e1332]:
+              - generic [ref=f1e1333]: Фокус
+              - generic [ref=f1e1334]: 60%
+            - generic [ref=f1e1338]:
+              - generic [ref=f1e1339]: Привязанность
+              - generic [ref=f1e1340]: 82%
+      - generic [ref=f1e1344] [cursor=pointer]:
+        - generic [ref=f1e1345]:
+          - generic [ref=f1e1346]: "18"
+          - generic [ref=f1e1360]:
+            - heading "Исследователь" [level=3] [ref=f1e1361]
+            - generic [ref=f1e1362]: Ресурс
+        - generic [ref=f1e1363]:
+          - heading "Исследователь" [level=3] [ref=f1e1364]
+          - paragraph [ref=f1e1365]: Любопытный шаг навстречу новому.
+          - generic [ref=f1e1366]:
+            - generic [ref=f1e1368]:
+              - generic [ref=f1e1369]: Агентность
+              - generic [ref=f1e1370]: 78%
+            - generic [ref=f1e1374]:
+              - generic [ref=f1e1375]: Температура
+              - generic [ref=f1e1376]: 65%
+            - generic [ref=f1e1380]:
+              - generic [ref=f1e1381]: Фокус
+              - generic [ref=f1e1382]: 55%
+            - generic [ref=f1e1386]:
+              - generic [ref=f1e1387]: Привязанность
+              - generic [ref=f1e1388]: 40%
+    - generic [ref=f1e1391]: ← Прокрутите для обзора →
+  - generic [ref=f1e1393]:
+    - generic [ref=f1e1394]:
+      - generic [ref=f1e1395]: Движок
+      - heading "Ваша реляционная вселенная, стала видимой." [level=2] [ref=f1e1399]: Ваша реляционная вселенная,стала видимой.
+      - paragraph [ref=f1e1400]: Перетаскивайте для вращения. 3D-рендеринг сети архетипов в реальном времени.
+    - generic [ref=f1e1401]:
+      - generic [ref=f1e1403]: Рендеринг
+      - generic [ref=f1e1408]:
+        - generic [ref=f1e1409]: Агентность
+        - generic [ref=f1e1410]: Температура
+        - generic [ref=f1e1411]: Фокус
+        - generic [ref=f1e1412]: Привязанность
+      - button "Пауза" [ref=f1e1414] [cursor=pointer]
+      - generic [ref=f1e1419]: Перетащите для вращения
+    - generic [ref=f1e1420]:
+      - generic [ref=f1e1421]: Деятель
+      - generic [ref=f1e1435]: Внутренний критик
+      - generic [ref=f1e1449]: Угодник
+      - generic [ref=f1e1463]: Контролёр
+      - generic [ref=f1e1477]: Аналитик
+      - generic [ref=f1e1491]: Отшельник
+      - generic [ref=f1e1505]: Обходчик
+      - generic [ref=f1e1519]: Онемение
+      - generic [ref=f1e1533]: Бунтарь
+      - generic [ref=f1e1547]: Обаяшка
+      - generic [ref=f1e1561]: Брошенный
+      - generic [ref=f1e1574]: Стыдящийся
+      - generic [ref=f1e1587]: Напуганный
+      - generic [ref=f1e1600]: Незамеченный
+      - generic [ref=f1e1613]: Мудрец
+      - generic [ref=f1e1626]: Воин
+      - generic [ref=f1e1639]: Заботник
+      - generic [ref=f1e1652]: Исследователь
+  - generic [ref=f1e1666]:
+    - heading "Три шага к ясности." [level=2] [ref=f1e1668]
+    - generic [ref=f1e1669]:
+      - generic [ref=f1e1670]:
+        - generic [ref=f1e1671]: 📝
+        - generic [ref=f1e1672]: "01"
+        - heading "Пройдите тест" [level=3] [ref=f1e1673]
+        - paragraph [ref=f1e1674]: Ответьте на 147 утверждений в трёх частях — измерение, а не гадание. Прогресс сохраняется, если сделать паузу.
+      - generic [ref=f1e1675]:
+        - generic [ref=f1e1676]: ⚡
+        - generic [ref=f1e1677]: "02"
+        - heading "Движок измеряет" [level=3] [ref=f1e1678]
+        - paragraph [ref=f1e1679]: Детерминированный движок отображает восемнадцать внутренних частей и энергию Self — одни и те же ответы всегда дают одну карту.
+      - generic [ref=f1e1680]:
+        - generic [ref=f1e1681]: 🗺
+        - generic [ref=f1e1682]: "03"
+        - heading "Изучите карту" [level=3] [ref=f1e1683]
+        - paragraph [ref=f1e1684]: Исследуйте своё живое созвездие. Встретьте свои части, сюжетные линии и путь практики.
+  - contentinfo [ref=f1e1685]:
+    - generic: ✦
+    - generic: ★
+    - generic [ref=f1e1686]:
+      - generic [ref=f1e1687]: Бесплатно и конфиденциально
+      - heading "Откройте свою вселенную." [level=2] [ref=f1e1692]
+      - paragraph [ref=f1e1693]: Пройдите тест за 10 минут и получите личную карту ваших реляционных динамик. Бесплатно и конфиденциально.
+      - button "✦ Начать тест" [ref=f1e1695] [cursor=pointer]
+      - generic [ref=f1e1696]:
+        - generic [ref=f1e1697]:
+          - generic [ref=f1e1698]: ✦
+          - generic [ref=f1e1699]: Innerverse
+        - generic [ref=f1e1700]: © 2026

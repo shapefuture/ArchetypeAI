@@ -8,6 +8,7 @@ import { TranslationService } from '../../../services/translation.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { gsap } from 'gsap';
 import { User } from '../../core/ports/auth.port';
+import { PART_COPY } from '../../core/data/part-copy';
 
 interface ShowcaseArchetype {
   id: string;
@@ -16,7 +17,6 @@ interface ShowcaseArchetype {
   mood: 'happy' | 'joy' | 'neutral' | 'wise';
   path: string;
   stats: { agency: number; temperature: number; focus: number; attachment: number };
-  pos: { x: number; y: number; z: number };
 }
 
 interface ShowcasePainPoint {
@@ -31,16 +31,84 @@ const C = {
   sky: '#7DD3FC', lavender: '#C4B5FD', rose: '#FCA5A5', orange: '#FB923C', ink: '#1C1917'
 };
 
-const ARCHETYPES: ShowcaseArchetype[] = [
-  { id: 'wanderer', type: 'Seeker', color: C.mustard, mood: 'happy', path: 'M50 8 C78 8 92 28 88 52 C85 76 68 92 50 92 C32 92 15 76 12 52 C8 28 22 8 50 8 Z', stats: { agency: 55, temperature: 45, focus: 40, attachment: 20 }, pos: {x:-150, y:-50, z:-80} },
-  { id: 'catalyst', type: 'Disruptor', color: C.coral, mood: 'joy', path: 'M50 5 L72 28 L95 22 L78 50 L95 78 L68 68 L50 95 L32 68 L5 78 L22 50 L5 22 L28 28 Z', stats: { agency: 90, temperature: 85, focus: 30, attachment: 25 }, pos: {x:0, y:-180, z:50} },
-  { id: 'anchor', type: 'Stabilizer', color: C.sky, mood: 'neutral', path: 'M22 22 L78 22 L78 78 L22 78 Z', stats: { agency: 35, temperature: 70, focus: 90, attachment: 85 }, pos: {x:180, y:0, z:-60} },
-  { id: 'sage', type: 'Oracle', color: C.lavender, mood: 'wise', path: 'M50 5 L62 38 L98 38 L70 58 L80 92 L50 72 L20 92 L30 58 L2 38 L38 38 Z', stats: { agency: 40, temperature: 20, focus: 80, attachment: 50 }, pos: {x:-120, y:120, z:100} },
-  { id: 'weaver', type: 'Connector', color: C.mint, mood: 'happy', path: 'M50 10 C82 10 94 38 86 62 C78 86 64 94 50 94 C36 94 22 86 14 62 C6 38 18 10 50 10 Z', stats: { agency: 60, temperature: 65, focus: 75, attachment: 70 }, pos: {x:140, y:-100, z:80} },
-  { id: 'mirror', type: 'Reflector', color: C.rose, mood: 'neutral', path: 'M50 10 Q82 28 82 50 Q82 82 50 92 Q18 82 18 50 Q18 28 50 10 Z', stats: { agency: 30, temperature: 60, focus: 55, attachment: 60 }, pos: {x:-80, y:-100, z:-50} },
-  { id: 'herald', type: 'Messenger', color: C.orange, mood: 'happy', path: 'M50 8 L90 68 L10 68 Z', stats: { agency: 70, temperature: 75, focus: 50, attachment: 35 }, pos: {x:80, y:130, z:-120} },
-  { id: 'guardian', type: 'Protector', color: C.sage, mood: 'neutral', path: 'M50 5 L92 26 L92 74 L50 95 L8 74 L8 26 Z', stats: { agency: 45, temperature: 55, focus: 85, attachment: 90 }, pos: {x:-100, y:50, z:140} }
+// The REAL taxonomy (core/data/parts.ts): 7 managers + 3 firefighters +
+// 4 exiles + 4 resources = the 18 inner parts the battery measures.
+const SHAPES = [
+  'M50 8 C78 8 92 28 88 52 C85 76 68 92 50 92 C32 92 15 76 12 52 C8 28 22 8 50 8 Z',
+  'M50 5 L72 28 L95 22 L78 50 L95 78 L68 68 L50 95 L32 68 L5 78 L22 50 L5 22 L28 28 Z',
+  'M22 22 L78 22 L78 78 L22 78 Z',
+  'M50 5 L62 38 L98 38 L70 58 L80 92 L50 72 L20 92 L30 58 L2 38 L38 38 Z',
+  'M50 10 C82 10 94 38 86 62 C78 86 64 94 50 94 C36 94 22 86 14 62 C6 38 18 10 50 10 Z',
+  'M50 10 Q82 28 82 50 Q82 82 50 92 Q18 82 18 50 Q18 28 50 10 Z',
+  'M50 8 L90 68 L10 68 Z',
+  'M50 5 L92 26 L92 74 L50 95 L8 74 L8 26 Z',
 ];
+const shape = (i: number) => SHAPES[i % SHAPES.length];
+
+const s = (agency: number, temperature: number, focus: number, attachment: number) =>
+  ({ agency, temperature, focus, attachment });
+
+const ARCHETYPES: ShowcaseArchetype[] = [
+  // Managers — preemptive order-keepers (wise faces)
+  { id: 'taskmaster',    type: 'manager',    color: '#ffb03a', mood: 'wise',    path: shape(0), stats: s(82, 60, 78, 30) },
+  { id: 'inner_critic',  type: 'manager',    color: '#9a6bff', mood: 'wise',    path: shape(3), stats: s(55, 40, 85, 45) },
+  { id: 'pleaser',       type: 'manager',    color: '#ff9fd1', mood: 'wise',    path: shape(4), stats: s(45, 70, 55, 88) },
+  { id: 'controller',    type: 'manager',    color: '#57c4ff', mood: 'wise',    path: shape(2), stats: s(75, 50, 90, 40) },
+  { id: 'analyst',       type: 'manager',    color: '#a5e3ff', mood: 'wise',    path: shape(5), stats: s(50, 25, 88, 35) },
+  { id: 'hermit',        type: 'manager',    color: '#b9b3e8', mood: 'wise',    path: shape(6), stats: s(40, 20, 70, 25) },
+  { id: 'bypasser',      type: 'manager',    color: '#8fe3b0', mood: 'wise',    path: shape(7), stats: s(48, 45, 50, 40) },
+  // Firefighters — reactive extinguishers (joy faces)
+  { id: 'numb',          type: 'firefighter', color: '#c9c4f0', mood: 'joy',    path: shape(1), stats: s(30, 15, 45, 20) },
+  { id: 'rebel',         type: 'firefighter', color: '#ff6b57', mood: 'joy',    path: shape(1), stats: s(88, 85, 35, 30) },
+  { id: 'charmer',       type: 'firefighter', color: '#ffc23c', mood: 'joy',    path: shape(0), stats: s(65, 80, 50, 75) },
+  // Exiles — the young carriers (neutral faces)
+  { id: 'abandoned',     type: 'exile',       color: '#f4a7c3', mood: 'neutral', path: shape(4), stats: s(25, 55, 30, 92) },
+  { id: 'ashamed',       type: 'exile',       color: '#c084fc', mood: 'neutral', path: shape(5), stats: s(20, 40, 35, 85) },
+  { id: 'frightened',    type: 'exile',       color: '#89d0f5', mood: 'neutral', path: shape(6), stats: s(22, 60, 28, 90) },
+  { id: 'unseen',        type: 'exile',       color: '#b0b7c9', mood: 'neutral', path: shape(7), stats: s(28, 35, 40, 80) },
+  // Resources — the grown strengths (happy faces)
+  { id: 'sage',          type: 'resource',    color: '#46d8ae', mood: 'happy',  path: shape(3), stats: s(60, 30, 75, 45) },
+  { id: 'warrior',       type: 'resource',    color: '#ef5a45', mood: 'happy',  path: shape(2), stats: s(90, 55, 80, 35) },
+  { id: 'caregiver',     type: 'resource',    color: '#ffd93d', mood: 'happy',  path: shape(4), stats: s(55, 75, 60, 82) },
+  { id: 'explorer',      type: 'resource',    color: '#4cc9f0', mood: 'happy',  path: shape(0), stats: s(78, 65, 55, 40) },
+];
+
+/** Bilingual display names — the register the report uses. */
+const PART_NAMES: Record<string, [string, string]> = {
+  taskmaster: ['The Taskmaster', 'Деятель'],
+  inner_critic: ['The Inner Critic', 'Внутренний критик'],
+  pleaser: ['The Pleaser', 'Угодник'],
+  controller: ['The Controller', 'Контролёр'],
+  analyst: ['The Analyst', 'Аналитик'],
+  hermit: ['The Hermit', 'Отшельник'],
+  bypasser: ['The Bypasser', 'Обходчик'],
+  numb: ['The Numb', 'Онемение'],
+  rebel: ['The Rebel', 'Бунтарь'],
+  charmer: ['The Charmer', 'Обаяшка'],
+  abandoned: ['The Abandoned One', 'Брошенный'],
+  ashamed: ['The Ashamed One', 'Стыдящийся'],
+  frightened: ['The Frightened One', 'Напуганный'],
+  unseen: ['The Unseen One', 'Незамеченный'],
+  sage: ['The Sage', 'Мудрец'],
+  warrior: ['The Warrior', 'Воин'],
+  caregiver: ['The Caregiver', 'Заботник'],
+  explorer: ['The Explorer', 'Исследователь'],
+};
+
+const CLASS_LABELS: Record<string, [string, string]> = {
+  manager: ['Manager', 'Менеджер'],
+  firefighter: ['Firefighter', 'Пожарный'],
+  exile: ['Exile', 'Изгнанник'],
+  resource: ['Resource', 'Ресурс'],
+};
+
+/** Resource face-lines — shadow parts read PART_COPY (§1.9). */
+const RESOURCE_FACE: Record<string, [string, string]> = {
+  sage: ['The quiet knowing that sees the whole field.', 'Тихое знание, которое видит всю картину.'],
+  warrior: ['The clear no that protects what matters.', 'Ясное «нет», которое защищает важное.'],
+  caregiver: ['The warm tending that asks nothing back.', 'Тепло, которое заботится и ничего не ждёт взамен.'],
+  explorer: ['The curious reach toward the new.', 'Любопытный шаг навстречу новому.'],
+};
 
 const PAIN_POINTS: ShowcasePainPoint[] = [
   { icon: '\u{1F32A}️', color: C.coral, titleKey: 'painTitle1', textKey: 'painText1' },
@@ -51,8 +119,20 @@ const PAIN_POINTS: ShowcasePainPoint[] = [
   { icon: '\u{1F300}', color: C.mint, titleKey: 'painTitle6', textKey: 'painText6' }
 ];
 
+// Constellation wiring for the 18-part layout: family rings, the
+// manager→exile guarding links (who protects whom), and resource spokes.
 const EDGES: [number, number][] = [
-  [0,3], [0,6], [0,4], [1,2], [1,4], [1,6], [2,7], [2,4], [2,3], [3,7], [3,5], [4,6], [4,5], [7,5]
+  ...Array.from({ length: 18 }, (_, i) => [i, (i + 1) % 18] as [number, number]),
+  // Guards: each exile is shielded by the manager that binds it
+  [2, 10],  // pleaser → abandoned
+  [1, 11],  // inner_critic → ashamed
+  [3, 12],  // controller → frightened
+  [4, 13],  // analyst → unseen
+  // Resource spokes: what each resource grows from
+  [7, 14],  // numb → sage
+  [8, 15],  // rebel → warrior
+  [10, 16], // abandoned → caregiver
+  [9, 17],  // charmer → explorer
 ];
 
 @Component({
@@ -134,8 +214,11 @@ export class LandingComponent implements OnDestroy {
     const a2 = ARCHETYPES.find(a => a.id === sel[1]);
     if (!a1 || !a2) return null;
     if (a1.id === a2.id) return { titleKey: 'synEcho', descKey: 'synEchoDesc', label: 'Echo Chamber' };
-    if ((a1.id === 'catalyst' && a2.id === 'anchor') || (a1.id === 'anchor' && a2.id === 'catalyst'))
-      return { titleKey: 'synTension', descKey: 'synTensionDesc', label: 'Dynamic Tension' };
+    // A protector paired with the exile it guards reads as dynamic tension;
+    // everything else flows through the composite complexes.
+    const pair = [a1.type, a2.type];
+    const isGuard = pair.includes('exile') && (pair.includes('manager') || pair.includes('firefighter'));
+    if (isGuard) return { titleKey: 'synTension', descKey: 'synTensionDesc', label: 'Dynamic Tension' };
     return { titleKey: 'synComplex', descKey: 'synComplexDesc', label: 'Complex Flow' };
   });
 
@@ -837,7 +920,8 @@ export class LandingComponent implements OnDestroy {
 
   // ===== HELPERS =====
   getArchName(arch: ShowcaseArchetype): string {
-    return this.t(`arch${arch.id.charAt(0).toUpperCase() + arch.id.slice(1)}`);
+    const entry = PART_NAMES[arch.id];
+    return entry ? entry[this.isEnglish() ? 0 : 1] : arch.id;
   }
 
   getSynArchName(index: number): string {
@@ -847,11 +931,16 @@ export class LandingComponent implements OnDestroy {
   }
 
   getArchType(arch: ShowcaseArchetype): string {
-    return this.t(`arch${arch.id.charAt(0).toUpperCase() + arch.id.slice(1)}Type`);
+    const entry = CLASS_LABELS[arch.type];
+    return entry ? entry[this.isEnglish() ? 0 : 1] : arch.type;
   }
 
   getArchDesc(arch: ShowcaseArchetype): string {
-    return this.t(`arch${arch.id.charAt(0).toUpperCase() + arch.id.slice(1)}Desc`);
+    const lang = this.isEnglish() ? 'en' : 'ru';
+    const resource = RESOURCE_FACE[arch.id];
+    if (resource) return resource[this.isEnglish() ? 0 : 1];
+    const copy = PART_COPY[lang][arch.id as keyof typeof PART_COPY['en']];
+    return copy ? copy.face : '';
   }
 
   getStatLabel(key: string): string {

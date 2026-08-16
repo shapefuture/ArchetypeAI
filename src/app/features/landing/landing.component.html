@@ -35,18 +35,21 @@
         </button>
         <input type="file" #backupFileInput (change)="onBackupUpload($event)" accept=".json" style="display:none;" />
 
-        <!-- Login / Dashboard -->
+        <!-- Account group: tertiary therapist link, then account action,
+             then the single primary CTA. Icons stay quiet so the coral
+             Start Test remains the one loud button. -->
+        <span class="hidden lg:block w-[3px] h-6 bg-ink/15 rounded-full mx-1" aria-hidden="true"></span>
         <button (click)="therapistRequested.emit()"
-                class="hidden md:inline-flex px-3 py-2 text-[11px] font-display font-semibold text-ink-l hover:text-ink transition-colors"
-                title="Therapist Mode">
-          ✚ Therapist
+                class="hidden lg:inline-flex items-center gap-1 px-2.5 py-2 text-[11px] font-display font-semibold text-ink-l hover:text-coral transition-colors"
+                [title]="t('navTherapist')">
+          ✚ {{ t('navTherapist') }}
         </button>
         @if (isLoggedIn()) {
           <button class="hidden md:inline-flex px-4 py-2 rounded-full border-[3px] border-ink bg-[#fffdf5] pop-shadow-sm text-[11px] font-display font-semibold uppercase tracking-wider hover:bg-paper-dk transition-colors"
                   (click)="dashboardRequested.emit()">
             {{ t('navDashboard') }}
           </button>
-          <button class="hidden md:inline-flex px-4 py-2 rounded-full border-[3px] border-ink bg-coral pop-shadow-sm text-[11px] font-display font-semibold uppercase tracking-wider hover:brightness-95 transition-colors"
+          <button class="hidden md:inline-flex px-3 py-2 text-[11px] font-display font-semibold text-ink-l hover:text-ink transition-colors"
                   (click)="logoutRequested.emit()">
             {{ t('navLogout') }}
           </button>
@@ -57,7 +60,7 @@
           </button>
         }
 
-        <!-- Start Test CTA -->
+        <!-- Start Test CTA — the one primary action -->
         <button class="sticker-btn hidden md:inline-flex !px-5 !py-2 text-sm bg-coral" (click)="startTest.emit()">
           {{ t('startTest') }}
         </button>
@@ -86,6 +89,11 @@
         🌐 {{ isEnglish() ? 'EN' : 'RU' }}
       </button>
     </div>
+
+    <button class="relative px-6 py-3 text-base font-display font-semibold text-ink-l hover:text-coral transition-colors"
+            (click)="therapistRequested.emit(); closeMobileMenu()">
+      ✚ {{ t('navTherapist') }}
+    </button>
 
     @if (isLoggedIn()) {
       <button class="relative px-8 py-4 text-base font-display font-semibold uppercase tracking-wider wobbly-a border-[3px] border-ink bg-[#fffdf5] pop-shadow hover:bg-paper-dk transition-colors"

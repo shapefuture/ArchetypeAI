@@ -861,6 +861,11 @@ video {
   margin-right: 0px;
 }
 
+.mx-1 {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+
 .mx-2 {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
@@ -1262,6 +1267,10 @@ video {
 
 .w-\[300px\] {
   width: 300px;
+}
+
+.w-\[3px\] {
+  width: 3px;
 }
 
 .w-\[calc\(100vw-2rem\)\] {
@@ -3449,6 +3458,10 @@ video {
 
   .lg\:flex {
     display: flex;
+  }
+
+  .lg\:inline-flex {
+    display: inline-flex;
   }
 
   .lg\:hidden {

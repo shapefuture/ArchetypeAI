@@ -183,6 +183,7 @@ export const translations = {
       // Navbar
       navProblem: 'Problem', navMatrix: 'Matrix', navCodex: 'Codex', navEngine: 'Engine',
       navDashboard: 'Dashboard', navLogout: 'Logout', navLogin: 'Login',
+      navTherapist: 'Therapist',
       startTest: 'Start Test \u2726',
       quickScanCta: 'Meet one part in 90 seconds',
       // Hero
@@ -1085,6 +1086,7 @@ export const translations = {
       // Navbar
       navProblem: 'Проблема', navMatrix: 'Матрица', navCodex: 'Кодекс', navEngine: 'Движок',
       navDashboard: 'Кабинет', navLogout: 'Выйти', navLogin: 'Войти',
+      navTherapist: 'Терапевт',
       startTest: 'Начать тест \u2726',
       quickScanCta: 'Встретьте одну часть за 90 секунд',
       // Hero

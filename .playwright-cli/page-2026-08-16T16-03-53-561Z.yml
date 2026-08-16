@@ -1,0 +1,455 @@
+- generic [ref=e22]:
+  - navigation [ref=e23]:
+    - generic [ref=e25]:
+      - generic [ref=e26] [cursor=pointer]:
+        - generic [ref=e27]: ✦
+        - generic [ref=e28]: Innerverse
+      - generic [ref=e34]:
+        - button "🌐 EN" [ref=e35] [cursor=pointer]
+        - button "💾" [ref=e36] [cursor=pointer]
+        - button "Start Test ✦" [ref=e39] [cursor=pointer]
+        - button "Menu" [active] [ref=e936] [cursor=pointer]
+  - generic [ref=e940]:
+    - button "Close" [ref=e941] [cursor=pointer]: ×
+    - link "Problem" [ref=e942] [cursor=pointer]:
+      - /url: javascript:void(0)
+    - link "Matrix" [ref=e943] [cursor=pointer]:
+      - /url: javascript:void(0)
+    - link "Codex" [ref=e944] [cursor=pointer]:
+      - /url: javascript:void(0)
+    - link "Engine" [ref=e945] [cursor=pointer]:
+      - /url: javascript:void(0)
+    - button "🌐 EN" [ref=e947] [cursor=pointer]
+    - button "Login" [ref=e948] [cursor=pointer]
+    - button "✦ Begin the Test" [ref=e949] [cursor=pointer]
+  - generic [ref=e41]:
+    - generic [ref=e42]:
+      - generic [ref=e43]:
+        - generic [ref=e44]: Live
+        - generic [ref=e46]: "147"
+        - generic [ref=e47]: "18"
+        - generic [ref=e48]: IFS
+      - heading [level=1] [ref=e49]:
+        - text: Meet the
+        - generic [ref=e50]: constellation
+        - text: inside you.
+      - paragraph [ref=e53]: "Answer 147 statements across three sittings. Your inner parts become a living constellation — measured, not guessed. Grounded in Internal Family Systems: self-reflection, not diagnosis."
+      - generic [ref=e54]:
+        - button "✦ Begin the Test" [ref=e55] [cursor=pointer]
+        - button "✦ Meet one part in 90 seconds" [ref=e56] [cursor=pointer]
+      - generic [ref=e57]:
+        - generic [ref=e58]: ℹ️
+        - generic [ref=e59]:
+          - paragraph [ref=e60]: Important Note
+          - paragraph [ref=e61]: Your answers stay on this device. The full battery is three sittings of 49 statements — pause after any sitting and your progress is kept. A backup can be downloaded from the dashboard at any time.
+      - generic [ref=e62]:
+        - generic [ref=e63]:
+          - generic [ref=e64]: "18"
+          - generic [ref=e65]: 18 Inner Parts
+        - generic [ref=e66]:
+          - generic [ref=e67]: "147"
+          - generic [ref=e68]: 147 Statements
+        - generic [ref=e69]:
+          - generic [ref=e70]: ~25m
+          - generic [ref=e71]: To Your Map
+    - generic [ref=e72]:
+      - img "A whimsical night-sky illustration of small creature constellations connected by dotted lines, with a star-shaped mascot floating in the middle." [ref=e74]
+      - generic [ref=e79]:
+        - paragraph [ref=e80]: 18 Inner Parts
+        - paragraph [ref=e81]: ✦ ✦ ✦
+  - generic [ref=e83]:
+    - generic [ref=e84]: Uncover Patterns
+    - generic [ref=e85]: ✦
+    - generic [ref=e86]: Break the Loop
+    - generic [ref=e87]: ✦
+    - generic [ref=e88]: Know Thyself
+    - generic [ref=e89]: ✦
+    - generic [ref=e90]: Map the Chaos
+    - generic [ref=e91]: ✦
+    - generic [ref=e92]: Relational Geometry
+    - generic [ref=e93]: ✦
+    - generic [ref=e94]: Uncover Patterns
+    - generic [ref=e95]: ✦
+    - generic [ref=e96]: Break the Loop
+    - generic [ref=e97]: ✦
+    - generic [ref=e98]: Know Thyself
+    - generic [ref=e99]: ✦
+    - generic [ref=e100]: Map the Chaos
+    - generic [ref=e101]: ✦
+    - generic [ref=e102]: Relational Geometry
+    - generic [ref=e103]: ✦
+    - generic [ref=e104]: Uncover Patterns
+    - generic [ref=e105]: ✦
+    - generic [ref=e106]: Break the Loop
+    - generic [ref=e107]: ✦
+    - generic [ref=e108]: Know Thyself
+    - generic [ref=e109]: ✦
+    - generic [ref=e110]: Map the Chaos
+    - generic [ref=e111]: ✦
+    - generic [ref=e112]: Relational Geometry
+    - generic [ref=e113]: ✦
+    - generic [ref=e114]: Uncover Patterns
+    - generic [ref=e115]: ✦
+    - generic [ref=e116]: Break the Loop
+    - generic [ref=e117]: ✦
+    - generic [ref=e118]: Know Thyself
+    - generic [ref=e119]: ✦
+    - generic [ref=e120]: Map the Chaos
+    - generic [ref=e121]: ✦
+    - generic [ref=e122]: Relational Geometry
+    - generic [ref=e123]: ✦
+    - generic [ref=e124]: Uncover Patterns
+    - generic [ref=e125]: ✦
+    - generic [ref=e126]: Break the Loop
+    - generic [ref=e127]: ✦
+    - generic [ref=e128]: Know Thyself
+    - generic [ref=e129]: ✦
+    - generic [ref=e130]: Map the Chaos
+    - generic [ref=e131]: ✦
+    - generic [ref=e132]: Relational Geometry
+    - generic [ref=e133]: ✦
+    - generic [ref=e134]: Uncover Patterns
+    - generic [ref=e135]: ✦
+    - generic [ref=e136]: Break the Loop
+    - generic [ref=e137]: ✦
+    - generic [ref=e138]: Know Thyself
+    - generic [ref=e139]: ✦
+    - generic [ref=e140]: Map the Chaos
+    - generic [ref=e141]: ✦
+    - generic [ref=e142]: Relational Geometry
+    - generic [ref=e143]: ✦
+  - generic [ref=e145]:
+    - generic [ref=e146]:
+      - generic [ref=e147]: The Problem
+      - heading "Why do you keep repeating this?" [level=2] [ref=e149]
+      - paragraph [ref=e150]: The same loops. The same friction. The same missed connections. It's not a curse—it's geometry.
+    - generic [ref=e151]:
+      - generic [ref=e152]:
+        - generic [ref=e153]: "01"
+        - generic [ref=e154]: 🌪️
+        - heading "The Ghosting Loop" [level=3] [ref=e155]
+        - paragraph [ref=e156]: You attract Wanderers while acting as an Anchor. Physics dictates they drift away.
+      - generic [ref=e157]:
+        - generic [ref=e158]: "02"
+        - generic [ref=e159]: ⚡
+        - heading "Catalyst Collision" [level=3] [ref=e160]
+        - paragraph [ref=e161]: Two Catalysts equals fire. Brilliant for startups. Catastrophic for execution.
+      - generic [ref=e162]:
+        - generic [ref=e163]: "03"
+        - generic [ref=e164]: 🪞
+        - heading "The Echo Chamber" [level=3] [ref=e165]
+        - paragraph [ref=e166]: Surrounded by Mirrors. Everyone agrees. Nobody initiates. Consensus suffocates.
+      - generic [ref=e167]:
+        - generic [ref=e168]: "04"
+        - generic [ref=e169]: 💣
+        - heading "Invisible Triggers" [level=3] [ref=e170]
+        - paragraph [ref=e171]: Conflict flares and you don't know why. Unread signals detonate before you react.
+      - generic [ref=e172]:
+        - generic [ref=e173]: "05"
+        - generic [ref=e174]: ⚓
+        - heading "Compassion Fatigue" [level=3] [ref=e175]
+        - paragraph [ref=e176]: The Anchor carries everyone and exhausts themselves. The system never replenishes them.
+      - generic [ref=e177]:
+        - generic [ref=e178]: "06"
+        - generic [ref=e179]: 🌀
+        - heading "Asymmetric Orbit" [level=3] [ref=e180]
+        - paragraph [ref=e181]: One invests intensely; the other holds loosely. The imbalance is structural.
+  - generic [ref=e183]:
+    - generic [ref=e184]:
+      - generic [ref=e185]: The Tool
+      - heading "The Synergy Matrix" [level=2] [ref=e187]
+      - paragraph [ref=e188]: Not all shapes fit together gracefully. Select two nodes to calculate their relational physics.
+    - generic [ref=e189]:
+      - generic [ref=e190]:
+        - button "The Wanderer Seeker" [ref=e191] [cursor=pointer]:
+          - generic [ref=e203]:
+            - generic [ref=e204]: The Wanderer
+            - generic [ref=e205]: Seeker
+        - button "The Catalyst Disruptor" [ref=e206] [cursor=pointer]:
+          - generic [ref=e219]:
+            - generic [ref=e220]: The Catalyst
+            - generic [ref=e221]: Disruptor
+        - button "The Anchor Stabilizer" [ref=e222] [cursor=pointer]:
+          - generic [ref=e234]:
+            - generic [ref=e235]: The Anchor
+            - generic [ref=e236]: Stabilizer
+        - button "The Sage Oracle" [ref=e237] [cursor=pointer]:
+          - generic [ref=e250]:
+            - generic [ref=e251]: The Sage
+            - generic [ref=e252]: Oracle
+        - button "The Weaver Connector" [ref=e253] [cursor=pointer]:
+          - generic [ref=e265]:
+            - generic [ref=e266]: The Weaver
+            - generic [ref=e267]: Connector
+        - button "The Mirror Reflector" [ref=e268] [cursor=pointer]:
+          - generic [ref=e280]:
+            - generic [ref=e281]: The Mirror
+            - generic [ref=e282]: Reflector
+        - button "The Herald Messenger" [ref=e283] [cursor=pointer]:
+          - generic [ref=e295]:
+            - generic [ref=e296]: The Herald
+            - generic [ref=e297]: Messenger
+        - button "The Guardian Protector" [ref=e298] [cursor=pointer]:
+          - generic [ref=e310]:
+            - generic [ref=e311]: The Guardian
+            - generic [ref=e312]: Protector
+      - generic [ref=e313]:
+        - generic [ref=e315]: Select Two Nodes
+        - generic [ref=e319]:
+          - generic [ref=e320]: Result
+          - heading "Awaiting Input" [level=4] [ref=e323]
+          - paragraph [ref=e324]: Select two archetypes above to compute dynamic friction.
+  - generic [ref=e326]:
+    - generic [ref=e327]:
+      - generic [ref=e328]: Capabilities
+      - heading "Everything you need to decode connection." [level=2] [ref=e330]
+    - generic [ref=e331]:
+      - generic [ref=e335]:
+        - heading "Interactive 3D Map" [level=3] [ref=e336]
+        - paragraph [ref=e337]: Orbit, zoom, and click your way through a living relational cosmos.Every node is a story.
+      - generic [ref=e345]:
+        - heading "AI Insight Engine" [level=3] [ref=e350]
+        - paragraph [ref=e351]: Real-time pattern detection surfaces what you can't see yourself.
+      - generic [ref=e354]:
+        - heading "Four-Axis Analysis" [level=3] [ref=e358]
+        - paragraph [ref=e359]: Agency, Temperature, Focus, and Attachment—measured precisely.
+      - generic [ref=e362]:
+        - heading "Clinical Reports" [level=3] [ref=e367]
+        - paragraph [ref=e368]: JSON exports. AI narratives. Detailed psychological profiles you can share with a specialist.
+  - generic [ref=e369]:
+    - generic [ref=e370]:
+      - generic [ref=e371]: The Codex
+      - heading "Eight entities. Infinite configurations." [level=2] [ref=e373]: Eight entities.Infinite configurations.
+      - paragraph [ref=e374]: Drag to explore the catalog. Click to flip and reveal.
+    - generic [ref=e375]:
+      - generic [ref=e377] [cursor=pointer]:
+        - generic [ref=e378]:
+          - generic [ref=e379]: "01"
+          - generic [ref=e393]:
+            - heading "The Wanderer" [level=3] [ref=e394]
+            - generic [ref=e395]: Seeker
+        - generic [ref=e396]:
+          - heading "The Wanderer" [level=3] [ref=e397]
+          - paragraph [ref=e398]: Drifts through social constellations absorbing context without altering it. The eternal observer.
+          - generic [ref=e399]:
+            - generic [ref=e401]:
+              - generic [ref=e402]: Agency
+              - generic [ref=e403]: 55%
+            - generic [ref=e407]:
+              - generic [ref=e408]: Temperature
+              - generic [ref=e409]: 45%
+            - generic [ref=e413]:
+              - generic [ref=e414]: Focus
+              - generic [ref=e415]: 40%
+            - generic [ref=e419]:
+              - generic [ref=e420]: Attachment
+              - generic [ref=e421]: 20%
+      - generic [ref=e425] [cursor=pointer]:
+        - generic [ref=e426]:
+          - generic [ref=e427]: "02"
+          - generic [ref=e442]:
+            - heading "The Catalyst" [level=3] [ref=e443]
+            - generic [ref=e444]: Disruptor
+        - generic [ref=e445]:
+          - heading "The Catalyst" [level=3] [ref=e446]
+          - paragraph [ref=e447]: Sparks sudden paradigm shifts in group dynamics. Highly volatile, deeply transformative.
+          - generic [ref=e448]:
+            - generic [ref=e450]:
+              - generic [ref=e451]: Agency
+              - generic [ref=e452]: 90%
+            - generic [ref=e456]:
+              - generic [ref=e457]: Temperature
+              - generic [ref=e458]: 85%
+            - generic [ref=e462]:
+              - generic [ref=e463]: Focus
+              - generic [ref=e464]: 30%
+            - generic [ref=e468]:
+              - generic [ref=e469]: Attachment
+              - generic [ref=e470]: 25%
+      - generic [ref=e474] [cursor=pointer]:
+        - generic [ref=e475]:
+          - generic [ref=e476]: "03"
+          - generic [ref=e490]:
+            - heading "The Anchor" [level=3] [ref=e491]
+            - generic [ref=e492]: Stabilizer
+        - generic [ref=e493]:
+          - heading "The Anchor" [level=3] [ref=e494]
+          - paragraph [ref=e495]: Provides emotional gravity. Creates the still center around which others orbit.
+          - generic [ref=e496]:
+            - generic [ref=e498]:
+              - generic [ref=e499]: Agency
+              - generic [ref=e500]: 35%
+            - generic [ref=e504]:
+              - generic [ref=e505]: Temperature
+              - generic [ref=e506]: 70%
+            - generic [ref=e510]:
+              - generic [ref=e511]: Focus
+              - generic [ref=e512]: 90%
+            - generic [ref=e516]:
+              - generic [ref=e517]: Attachment
+              - generic [ref=e518]: 85%
+      - generic [ref=e522] [cursor=pointer]:
+        - generic [ref=e523]:
+          - generic [ref=e524]: "04"
+          - generic [ref=e539]:
+            - heading "The Sage" [level=3] [ref=e540]
+            - generic [ref=e541]: Oracle
+        - generic [ref=e542]:
+          - heading "The Sage" [level=3] [ref=e543]
+          - paragraph [ref=e544]: Observes from altitude. Synthesizes disparate information into wisdom.
+          - generic [ref=e545]:
+            - generic [ref=e547]:
+              - generic [ref=e548]: Agency
+              - generic [ref=e549]: 40%
+            - generic [ref=e553]:
+              - generic [ref=e554]: Temperature
+              - generic [ref=e555]: 20%
+            - generic [ref=e559]:
+              - generic [ref=e560]: Focus
+              - generic [ref=e561]: 80%
+            - generic [ref=e565]:
+              - generic [ref=e566]: Attachment
+              - generic [ref=e567]: 50%
+      - generic [ref=e571] [cursor=pointer]:
+        - generic [ref=e572]:
+          - generic [ref=e573]: "05"
+          - generic [ref=e587]:
+            - heading "The Weaver" [level=3] [ref=e588]
+            - generic [ref=e589]: Connector
+        - generic [ref=e590]:
+          - heading "The Weaver" [level=3] [ref=e591]
+          - paragraph [ref=e592]: Silently ties disparate nodes together. The invisible architect of connection.
+          - generic [ref=e593]:
+            - generic [ref=e595]:
+              - generic [ref=e596]: Agency
+              - generic [ref=e597]: 60%
+            - generic [ref=e601]:
+              - generic [ref=e602]: Temperature
+              - generic [ref=e603]: 65%
+            - generic [ref=e607]:
+              - generic [ref=e608]: Focus
+              - generic [ref=e609]: 75%
+            - generic [ref=e613]:
+              - generic [ref=e614]: Attachment
+              - generic [ref=e615]: 70%
+      - generic [ref=e619] [cursor=pointer]:
+        - generic [ref=e620]:
+          - generic [ref=e621]: "06"
+          - generic [ref=e635]:
+            - heading "The Mirror" [level=3] [ref=e636]
+            - generic [ref=e637]: Reflector
+        - generic [ref=e638]:
+          - heading "The Mirror" [level=3] [ref=e639]
+          - paragraph [ref=e640]: Returns exactly the energy received. A perfect diagnostic tool for any relationship.
+          - generic [ref=e641]:
+            - generic [ref=e643]:
+              - generic [ref=e644]: Agency
+              - generic [ref=e645]: 30%
+            - generic [ref=e649]:
+              - generic [ref=e650]: Temperature
+              - generic [ref=e651]: 60%
+            - generic [ref=e655]:
+              - generic [ref=e656]: Focus
+              - generic [ref=e657]: 55%
+            - generic [ref=e661]:
+              - generic [ref=e662]: Attachment
+              - generic [ref=e663]: 60%
+      - generic [ref=e667] [cursor=pointer]:
+        - generic [ref=e668]:
+          - generic [ref=e669]: "07"
+          - generic [ref=e683]:
+            - heading "The Herald" [level=3] [ref=e684]
+            - generic [ref=e685]: Messenger
+        - generic [ref=e686]:
+          - heading "The Herald" [level=3] [ref=e687]
+          - paragraph [ref=e688]: Carries information across boundaries between groups. Operates at the edges.
+          - generic [ref=e689]:
+            - generic [ref=e691]:
+              - generic [ref=e692]: Agency
+              - generic [ref=e693]: 70%
+            - generic [ref=e697]:
+              - generic [ref=e698]: Temperature
+              - generic [ref=e699]: 75%
+            - generic [ref=e703]:
+              - generic [ref=e704]: Focus
+              - generic [ref=e705]: 50%
+            - generic [ref=e709]:
+              - generic [ref=e710]: Attachment
+              - generic [ref=e711]: 35%
+      - generic [ref=e715] [cursor=pointer]:
+        - generic [ref=e716]:
+          - generic [ref=e717]: "08"
+          - generic [ref=e731]:
+            - heading "The Guardian" [level=3] [ref=e732]
+            - generic [ref=e733]: Protector
+        - generic [ref=e734]:
+          - heading "The Guardian" [level=3] [ref=e735]
+          - paragraph [ref=e736]: Creates the container within which others can be vulnerable. The shield-bearer.
+          - generic [ref=e737]:
+            - generic [ref=e739]:
+              - generic [ref=e740]: Agency
+              - generic [ref=e741]: 45%
+            - generic [ref=e745]:
+              - generic [ref=e746]: Temperature
+              - generic [ref=e747]: 55%
+            - generic [ref=e751]:
+              - generic [ref=e752]: Focus
+              - generic [ref=e753]: 85%
+            - generic [ref=e757]:
+              - generic [ref=e758]: Attachment
+              - generic [ref=e759]: 90%
+    - generic [ref=e762]: ← Swipe to browse →
+  - generic [ref=e764]:
+    - generic [ref=e765]:
+      - generic [ref=e766]: The Engine
+      - heading "Your relational universe, made visible." [level=2] [ref=e772]: Your relational universe,made visible.
+      - paragraph [ref=e773]: Drag to orbit. Real-time 3D physics rendering of the archetype network.
+    - generic [ref=e774]:
+      - generic [ref=e776]: Live Render
+      - generic [ref=e781]:
+        - generic [ref=e782]: Agency
+        - generic [ref=e783]: Temperature
+        - generic [ref=e784]: Focus
+        - generic [ref=e785]: Attachment
+      - button "Pause" [ref=e787] [cursor=pointer]
+      - generic [ref=e792]: Drag to Orbit
+    - generic [ref=e793]:
+      - generic [ref=e794]: The Wanderer
+      - generic [ref=e807]: The Catalyst
+      - generic [ref=e821]: The Anchor
+      - generic [ref=e834]: The Sage
+      - generic [ref=e848]: The Weaver
+      - generic [ref=e861]: The Mirror
+      - generic [ref=e874]: The Herald
+      - generic [ref=e887]: The Guardian
+  - generic [ref=e901]:
+    - heading "Three steps to clarity." [level=2] [ref=e903]
+    - generic [ref=e904]:
+      - generic [ref=e905]:
+        - generic [ref=e906]: 📝
+        - generic [ref=e907]: "01"
+        - heading "Take the Test" [level=3] [ref=e908]
+        - paragraph [ref=e909]: Answer 147 statements across three sittings — measured, not guessed. Your progress is kept if you pause.
+      - generic [ref=e910]:
+        - generic [ref=e911]: ⚡
+        - generic [ref=e912]: "02"
+        - heading "The Engine Measures" [level=3] [ref=e913]
+        - paragraph [ref=e914]: A deterministic engine maps eighteen inner parts and your Self energy — the same answers always yield the same map.
+      - generic [ref=e915]:
+        - generic [ref=e916]: 🗺
+        - generic [ref=e917]: "03"
+        - heading "Read the Map" [level=3] [ref=e918]
+        - paragraph [ref=e919]: Explore your living constellation. Meet your parts, your storylines, and your practice path.
+  - contentinfo [ref=e920]:
+    - generic: ✦
+    - generic: ★
+    - generic [ref=e921]:
+      - generic [ref=e922]: Free & confidential
+      - heading "Discover your universe." [level=2] [ref=e927]
+      - paragraph [ref=e928]: Take the test in 10 minutes and receive a personal map of your relational dynamics. Free and confidential.
+      - button "✦ Begin the Test" [ref=e930] [cursor=pointer]
+      - generic [ref=e931]:
+        - generic [ref=e932]:
+          - generic [ref=e933]: ✦
+          - generic [ref=e934]: Innerverse
+        - generic [ref=e935]: © 2026

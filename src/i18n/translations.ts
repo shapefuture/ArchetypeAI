@@ -233,7 +233,7 @@ export const translations = {
       step2Title: 'The Engine Measures', step2Desc: 'A deterministic engine maps eighteen inner parts and your Self energy — the same answers always yield the same map.',
       step3Title: 'Read the Map', step3Desc: 'Explore your living constellation. Meet your parts, your storylines, and your practice path.',
       // Footer
-      footerTitle: 'Discover your', footerTitleEmphasis: 'universe.',
+      footerTitle: 'Discover your', footerTitleEmphasis: 'universe.', footerChip: 'Free & confidential',
       footerSubtitle: 'Take the test in 10 minutes and receive a personal map of your relational dynamics. Free and confidential.',
       uploadBackup: 'Upload Backup',
       downloadNoticeTitle: 'Important Note',
@@ -1135,7 +1135,7 @@ export const translations = {
       step2Title: 'Движок измеряет', step2Desc: 'Детерминированный движок отображает восемнадцать внутренних частей и энергию Self — одни и те же ответы всегда дают одну карту.',
       step3Title: 'Изучите карту', step3Desc: 'Исследуйте своё живое созвездие. Встретьте свои части, сюжетные линии и путь практики.',
       // Footer
-      footerTitle: 'Откройте свою', footerTitleEmphasis: 'вселенную.',
+      footerTitle: 'Откройте свою', footerTitleEmphasis: 'вселенную.', footerChip: 'Бесплатно и конфиденциально',
       footerSubtitle: 'Пройдите тест за 10 минут и получите личную карту ваших реляционных динамик. Бесплатно и конфиденциально.',
       uploadBackup: 'Загрузить бэкап',
       downloadNoticeTitle: 'Важно',

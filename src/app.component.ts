@@ -599,7 +599,7 @@ export class AppComponent implements OnDestroy {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(74, 62, 53, ${opacity})`;
+            ctx.strokeStyle = `rgba(226, 230, 246, ${opacity})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }

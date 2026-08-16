@@ -32,16 +32,23 @@
             </div>
           </div>
 
-          <!-- Central Blob with Glow -->
+          <!-- The Self star being born (the product's first frame) -->
           <div class="loading-blob-container">
             <div class="loading-blob-glow"></div>
-            <app-blob-character
-              color="var(--accent-orange)"
-              size="xl"
-              mood="happy"
-              [animate]="true">
-            </app-blob-character>
+            <div class="self-star" aria-hidden="true">
+              <span class="self-star-flare self-star-flare--h"></span>
+              <span class="self-star-flare self-star-flare--v"></span>
+              <span class="self-star-core"></span>
+            </div>
           </div>
+
+          <!-- Wordmark -->
+          <h1 class="loading-wordmark" aria-label="Innerverse">Innerverse</h1>
+          <p class="loading-wordmark-sub">@if (translationService.getLanguage() === 'en') {
+            your parts as a living constellation
+          } @else {
+            ваши части — живое созвездие
+          }</p>
 
           <!-- Loading Text -->
           <div class="loading-text-container">
@@ -64,11 +71,6 @@
           <!-- Tagline -->
           <p class="loading-tagline">Innerverse &middot; relational engine</p>
 
-          <!-- Decorative Book Spine -->
-          <div class="loading-book-spine">
-            <div class="spine-line spine-left"></div>
-            <div class="spine-line spine-right"></div>
-          </div>
         }
       </div>
     }

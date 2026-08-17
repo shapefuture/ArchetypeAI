@@ -9,11 +9,12 @@
       <span>{{ ui().back }}</span>
     </button>
     <p class="kicker">{{ ui().constellationOf }}</p>
-    <h1 class="constellation-name">{{ p.headline.name }}</h1>
+    <h1 class="constellation-name">{{ headlineName() }}</h1>
+    <p class="constellation-essay">{{ headlineEssay() }}</p>
     <p class="constellation-pair">
-      {{ p.subtypes[p.headline.protector].name }}
+      {{ headlineSubtype(p.headline.protector) }}
       {{ ui().and }}
-      {{ p.subtypes[p.headline.exile].name }}
+      {{ headlineSubtype(p.headline.exile) }}
     </p>
     <div class="constellation-canvas-wrap">
       <app-innerverse-constellation [profile]="p" />
@@ -27,8 +28,8 @@
   <!-- 2 · Strength FIRST (§1.1 non-negotiable) -->
   <section class="strength-hero">
     <h2>{{ ui().strongestResource }}</h2>
-    <p class="strength-name">{{ p.strongestResource.id }}</p>
-    <p class="strength-sub">{{ ui().strongestResourceSub(p.strongestResource.id) }}</p>
+    <p class="strength-name">{{ strongResourceName() }}</p>
+    <p class="strength-sub">{{ ui().strongestResourceSub(strongResourceName()) }}</p>
   </section>
 
   <!-- 3 · Self energy + radar -->
@@ -84,7 +85,7 @@
                 [class.prominent]="p.parts[id].tier === 'prominent'"
                 (click)="cycleLayer(id)">
           <div class="part-top">
-            <span class="part-name">{{ p.subtypes[id].name }}</span>
+            <span class="part-name">{{ partName(id) }}</span>
             <span class="part-tier">{{ ui().tierNames[p.parts[id].tier] }}</span>
           </div>
           <span class="layer-label">{{ layerLabel(layerFor(id)) }}</span>
@@ -104,11 +105,11 @@
       @for (pol of p.polarizations; track pol.name) {
         <div class="polarization">
           <div class="pol-nodes">
-            <span class="pol-node left">{{ p.subtypes[pol.pair[0]].name }}</span>
+            <span class="pol-node left">{{ partName(pol.pair[0]) }}</span>
             <span class="pol-arc" aria-hidden="true"></span>
-            <span class="pol-node right">{{ p.subtypes[pol.pair[1]].name }}</span>
+            <span class="pol-node right">{{ partName(pol.pair[1]) }}</span>
           </div>
-          <span class="pol-name">{{ pol.name }}</span>
+          <span class="pol-name">{{ polarizationName(pol.name) }}</span>
         </div>
       }
     </section>
@@ -123,14 +124,14 @@
     @for (c of activeComplexDefs(); track c.id) {
       <div class="complex" [class.gripping]="c.tier === 'gripping'">
         <div class="complex-head">
-          <span class="complex-name">{{ c.def.name }}</span>
-          <span class="complex-tier">{{ c.tier }} · {{ c.activation | number:'1.0-0' }}</span>
+          <span class="complex-name">{{ complexName(c.id, c.def.name) }}</span>
+          <span class="complex-tier">{{ ui().complexTierNames[c.tier] }} · {{ c.activation | number:'1.0-0' }}</span>
         </div>
         <p class="complex-belief">
-          <em>{{ ui().complexBelief }}:</em> “{{ c.def.belief }}”
+          <em>{{ ui().complexBelief }}:</em> “{{ complexBelief(c.id, c.def.belief) }}”
         </p>
         <p class="complex-experiment">
-          <em>{{ ui().complexExperiment }}:</em> {{ c.def.experiment }}
+          <em>{{ ui().complexExperiment }}:</em> {{ complexExperiment(c.id, c.def.experiment) }}
         </p>
       </div>
     }

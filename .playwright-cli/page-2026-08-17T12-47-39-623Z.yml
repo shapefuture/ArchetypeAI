@@ -1,0 +1,199 @@
+- article [ref=f1e3497]:
+  - generic [ref=f1e3498]:
+    - button "Back" [ref=f1e3499] [cursor=pointer]
+    - paragraph [ref=f1e3503]: Constellation of
+    - heading "The Cornered Storm" [level=1] [ref=f1e3504]
+    - paragraph [ref=f1e3505]: You come out swinging because stillness once meant getting hit.
+    - paragraph [ref=f1e3506]: The Cornered One and The Startled Child
+    - 'img "Your inner constellation: 18 parts around the Self" [ref=f1e3509]'
+  - generic [ref=f1e3510]:
+    - heading "Your strongest resource leads" [level=2] [ref=f1e3511]
+    - paragraph [ref=f1e3512]: sage
+    - paragraph [ref=f1e3513]: Your sage is online. Everything below is weather around it — strengths first, always.
+  - generic [ref=f1e3514]:
+    - generic [ref=f1e3515]:
+      - heading "Self energy" [level=2] [ref=f1e3516]
+      - generic [ref=f1e3517]: 63/100
+    - generic [ref=f1e3518]:
+      - generic [ref=f1e3519]: System burden
+      - generic [ref=f1e3522]: "27"
+    - paragraph [ref=f1e3523]: Self Radar · 8 qualities (indicative, not diagnostic)
+    - generic [ref=f1e3524]:
+      - generic [ref=f1e3525]:
+        - generic [ref=f1e3526]: calm
+        - generic [ref=f1e3529]: "50"
+      - generic [ref=f1e3530]:
+        - generic [ref=f1e3531]: clarity
+        - generic [ref=f1e3534]: "60"
+      - generic [ref=f1e3535]:
+        - generic [ref=f1e3536]: compassion
+        - generic [ref=f1e3539]: "50"
+      - generic [ref=f1e3540]:
+        - generic [ref=f1e3541]: curiosity
+        - generic [ref=f1e3544]: "60"
+      - generic [ref=f1e3545]:
+        - generic [ref=f1e3546]: confidence
+        - generic [ref=f1e3549]: "50"
+      - generic [ref=f1e3550]:
+        - generic [ref=f1e3551]: courage
+        - generic [ref=f1e3554]: "60"
+      - generic [ref=f1e3555]:
+        - generic [ref=f1e3556]: creativity
+        - generic [ref=f1e3559]: "50"
+      - generic [ref=f1e3560]:
+        - generic [ref=f1e3561]: connectedness
+        - generic [ref=f1e3564]: "60"
+    - generic [ref=f1e3565]:
+      - generic [ref=f1e3566]: Language weather vane · essence ↔ behavior (indicative)
+      - paragraph [ref=f1e3567]: Your sealed verdicts will draw this vane over time.
+    - generic [ref=f1e3568]:
+      - text: "Attachment pattern:"
+      - strong [ref=f1e3569]: Secure leaning
+  - generic [ref=f1e3570]:
+    - heading "Your parts, loudest to quietest" [level=2] [ref=f1e3571]
+    - paragraph [ref=f1e3572]: "tap a card: face → need → shadow → superpower"
+    - generic [ref=f1e3573]:
+      - button "The Cornered One prominent Face The one who will not be told. T 61" [ref=f1e3574] [cursor=pointer]:
+        - generic [ref=f1e3575]:
+          - generic [ref=f1e3576]: The Cornered One
+          - generic [ref=f1e3577]: prominent
+        - generic [ref=f1e3578]: Face
+        - paragraph [ref=f1e3579]: The one who will not be told.
+        - generic [ref=f1e3582]: T 61
+      - button "The Startled Child prominent Face The one who knows where the exits are. T 60" [ref=f1e3583] [cursor=pointer]:
+        - generic [ref=f1e3584]:
+          - generic [ref=f1e3585]: The Startled Child
+          - generic [ref=f1e3586]: prominent
+        - generic [ref=f1e3587]: Face
+        - paragraph [ref=f1e3588]: The one who knows where the exits are.
+        - generic [ref=f1e3591]: T 60
+      - button "The Sky Gazer present Face The one who finds the silver lining instantly. T 59" [ref=f1e3592] [cursor=pointer]:
+        - generic [ref=f1e3593]:
+          - generic [ref=f1e3594]: The Sky Gazer
+          - generic [ref=f1e3595]: present
+        - generic [ref=f1e3596]: Face
+        - paragraph [ref=f1e3597]: The one who finds the silver lining instantly.
+        - generic [ref=f1e3600]: T 59
+      - button "The Flirt with Fire present Face The unforgettable entrance, the perfect exit line. T 59" [ref=f1e3601] [cursor=pointer]:
+        - generic [ref=f1e3602]:
+          - generic [ref=f1e3603]: The Flirt with Fire
+          - generic [ref=f1e3604]: present
+        - generic [ref=f1e3605]: Face
+        - paragraph [ref=f1e3606]: The unforgettable entrance, the perfect exit line.
+        - generic [ref=f1e3609]: T 59
+      - button "The Small Hours present Face The one who texts first, always. T 58" [ref=f1e3610] [cursor=pointer]:
+        - generic [ref=f1e3611]:
+          - generic [ref=f1e3612]: The Small Hours
+          - generic [ref=f1e3613]: present
+        - generic [ref=f1e3614]: Face
+        - paragraph [ref=f1e3615]: The one who texts first, always.
+        - generic [ref=f1e3618]: T 58
+      - button "The Masked One present Face The one who hides the real work. T 58" [ref=f1e3619] [cursor=pointer]:
+        - generic [ref=f1e3620]:
+          - generic [ref=f1e3621]: The Masked One
+          - generic [ref=f1e3622]: present
+        - generic [ref=f1e3623]: Face
+        - paragraph [ref=f1e3624]: The one who hides the real work.
+        - generic [ref=f1e3627]: T 58
+      - button "The Bunker Keeper present Face The one who is gloriously hard to reach. T 57" [ref=f1e3628] [cursor=pointer]:
+        - generic [ref=f1e3629]:
+          - generic [ref=f1e3630]: The Bunker Keeper
+          - generic [ref=f1e3631]: present
+        - generic [ref=f1e3632]: Face
+        - paragraph [ref=f1e3633]: The one who is gloriously hard to reach.
+        - generic [ref=f1e3636]: T 57
+      - button "The Saboteur present Face The one who is fine, always fine. T 57" [ref=f1e3637] [cursor=pointer]:
+        - generic [ref=f1e3638]:
+          - generic [ref=f1e3639]: The Saboteur
+          - generic [ref=f1e3640]: present
+        - generic [ref=f1e3641]: Face
+        - paragraph [ref=f1e3642]: The one who is fine, always fine.
+        - generic [ref=f1e3645]: T 57
+      - button "The Unheard Scream present Face The quiet one at the edge of the photo. T 56" [ref=f1e3646] [cursor=pointer]:
+        - generic [ref=f1e3647]:
+          - generic [ref=f1e3648]: The Unheard Scream
+          - generic [ref=f1e3649]: present
+        - generic [ref=f1e3650]: Face
+        - paragraph [ref=f1e3651]: The quiet one at the edge of the photo.
+        - generic [ref=f1e3654]: T 56
+      - button "The Tyrant present Face The planner with a contingency for everything. T 52" [ref=f1e3655] [cursor=pointer]:
+        - generic [ref=f1e3656]:
+          - generic [ref=f1e3657]: The Tyrant
+          - generic [ref=f1e3658]: present
+        - generic [ref=f1e3659]: Face
+        - paragraph [ref=f1e3660]: The planner with a contingency for everything.
+        - generic [ref=f1e3663]: T 52
+      - button "The Watchtower present Face The calm explainer of whatever happens. T 52" [ref=f1e3664] [cursor=pointer]:
+        - generic [ref=f1e3665]:
+          - generic [ref=f1e3666]: The Watchtower
+          - generic [ref=f1e3667]: present
+        - generic [ref=f1e3668]: Face
+        - paragraph [ref=f1e3669]: The calm explainer of whatever happens.
+        - generic [ref=f1e3672]: T 52
+      - button "The Prosecutor present Face The sharp evaluator of everything you do. T 52" [ref=f1e3673] [cursor=pointer]:
+        - generic [ref=f1e3674]:
+          - generic [ref=f1e3675]: The Prosecutor
+          - generic [ref=f1e3676]: present
+        - generic [ref=f1e3677]: Face
+        - paragraph [ref=f1e3678]: The sharp evaluator of everything you do.
+        - generic [ref=f1e3681]: T 52
+      - button "The Star Performer present Face The one who is always visibly productive. T 50" [ref=f1e3682] [cursor=pointer]:
+        - generic [ref=f1e3683]:
+          - generic [ref=f1e3684]: The Star Performer
+          - generic [ref=f1e3685]: present
+        - generic [ref=f1e3686]: Face
+        - paragraph [ref=f1e3687]: The one who is always visibly productive.
+        - generic [ref=f1e3690]: T 50
+      - button "The Diplomat present Face The agreeable one who keeps every room smooth. T 50" [ref=f1e3691] [cursor=pointer]:
+        - generic [ref=f1e3692]:
+          - generic [ref=f1e3693]: The Diplomat
+          - generic [ref=f1e3694]: present
+        - generic [ref=f1e3695]: Face
+        - paragraph [ref=f1e3696]: The agreeable one who keeps every room smooth.
+        - generic [ref=f1e3699]: T 50
+  - generic [ref=f1e3700]:
+    - heading "Active storylines" [level=2] [ref=f1e3701]
+    - generic [ref=f1e3702]:
+      - generic [ref=f1e3703]:
+        - generic [ref=f1e3704]: The Engulfment Complex
+        - generic [ref=f1e3705]: active · 57
+      - paragraph [ref=f1e3706]:
+        - emphasis [ref=f1e3707]: "The sentence that runs this storyline:"
+        - text: “If I comply, I will disappear.”
+      - paragraph [ref=f1e3708]:
+        - emphasis [ref=f1e3709]: "This week's micro-experiment:"
+        - text: Find one "yes" this week that does not cost you yourself — and give it freely.
+    - generic [ref=f1e3710]:
+      - generic [ref=f1e3711]:
+        - generic [ref=f1e3712]: The Unlovability Complex
+        - generic [ref=f1e3713]: active · 56
+      - paragraph [ref=f1e3714]:
+        - emphasis [ref=f1e3715]: "The sentence that runs this storyline:"
+        - text: “My needs are a burden; love must be earned through sacrifice.”
+      - paragraph [ref=f1e3716]:
+        - emphasis [ref=f1e3717]: "This week's micro-experiment:"
+        - text: Ask for one small thing for yourself and accept it without repaying.
+  - generic [ref=f1e3718]:
+    - heading "Your coping stack · how the system escalates" [level=2] [ref=f1e3719]
+    - list [ref=f1e3720]:
+      - listitem [ref=f1e3721]:
+        - generic [ref=f1e3722]: The Sky Gazer
+      - listitem [ref=f1e3723]: when that fails…
+      - listitem [ref=f1e3724]:
+        - generic [ref=f1e3725]: The Cornered One
+      - listitem [ref=f1e3726]: when that fails…
+      - listitem [ref=f1e3727]:
+        - generic [ref=f1e3728]: The Flirt with Fire
+      - listitem [ref=f1e3729]: when that fails…
+      - listitem [ref=f1e3730]:
+        - generic [ref=f1e3731]: The Unheard Scream
+        - generic [ref=f1e3732]: “I do not matter.”
+        - generic [ref=f1e3733]: at the floor
+  - generic [ref=f1e3734]:
+    - heading "What your system is asking for" [level=2] [ref=f1e3735]
+    - paragraph [ref=f1e3736]: Your loudest unmet need right now.
+    - generic [ref=f1e3737]:
+      - generic [ref=f1e3738]: autonomy
+      - paragraph [ref=f1e3739]: Say one small, clean no this week and stay in the room with the discomfort.
+  - heading "Resources · bands" [level=2] [ref=f1e3741]
+  - generic [ref=f1e3742]: This is a self-reflection tool grounded in the Internal Family Systems model, not a diagnosis or therapy.

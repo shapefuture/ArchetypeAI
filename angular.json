@@ -41,6 +41,11 @@
                 "output": "/"
               },
               {
+                "glob": "sw.js",
+                "input": "src",
+                "output": "/"
+              },
+              {
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "/assets"

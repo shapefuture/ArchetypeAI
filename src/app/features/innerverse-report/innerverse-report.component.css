@@ -222,3 +222,13 @@
 }
 .report { font-size: 16px; }
 .report p, .layer-text, .complex-belief, .complex-experiment { line-height: 1.65; }
+
+.constellation-essay {
+  max-width: 56ch;
+  margin: 6px auto 0;
+  font-family: var(--font-hand, var(--font-display, sans-serif));
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(236, 234, 246, 0.75);
+  font-style: italic;
+}

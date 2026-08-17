@@ -1,0 +1,27 @@
+- generic [ref=f1e1705]:
+  - banner [ref=f1e1706]:
+    - button "Exit" [ref=f1e1707] [cursor=pointer]
+    - generic [ref=f1e1711]: Innerverse
+  - main [ref=f1e1712]:
+    - heading "Before you descend" [level=1] [ref=f1e1713]
+    - generic [ref=f1e1714]:
+      - paragraph [ref=f1e1715]: "The full battery: three sittings of 49 statements, one at a time. You can pause at any sitting — progress is kept on this device."
+      - generic [ref=f1e1716]:
+        - generic [ref=f1e1717]: What to expect
+        - generic [ref=f1e1718]:
+          - generic [ref=f1e1719]:
+            - generic [ref=f1e1720]: Descent I
+            - generic [ref=f1e1721]: 49 statements · ~10 min
+          - generic [ref=f1e1722]: ✦ pause
+          - generic [ref=f1e1723]:
+            - generic [ref=f1e1724]: Descent II
+            - generic [ref=f1e1725]: 49 statements · ~10 min
+          - generic [ref=f1e1726]: ✦ pause
+          - generic [ref=f1e1727]:
+            - generic [ref=f1e1728]: Descent III
+            - generic [ref=f1e1729]: 49 statements · ~10 min
+        - paragraph [ref=f1e1730]: Why three sittings? Attention fades — somewhere past the fiftieth statement, answers slide onto autopilot. Three short sittings keep you honest, and the pauses between them let what you saw settle.
+      - paragraph [ref=f1e1731]: This is a self-reflection tool grounded in the Internal Family Systems model, not a diagnosis or therapy.
+      - paragraph [ref=f1e1732]: Every part of you is welcome here. Nothing aims to delete or fix away any of you. You can stop at any time; anything can wait.
+    - button "I understand — begin Descent I" [ref=f1e1734] [cursor=pointer]
+    - paragraph [ref=f1e1735]: Your answers stay on this device.

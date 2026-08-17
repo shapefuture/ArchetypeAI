@@ -1,0 +1,739 @@
+- generic [ref=f1e3]:
+  - generic [ref=f1e4]:
+    - navigation [ref=f1e5]:
+      - generic [ref=f1e7]:
+        - generic [ref=f1e8] [cursor=pointer]:
+          - generic [ref=f1e9]: ✦
+          - generic [ref=f1e10]: Innerverse
+        - generic [ref=f1e11]:
+          - button "🌐 EN" [ref=f1e12] [cursor=pointer]
+          - button "💾" [ref=f1e13] [cursor=pointer]
+          - button "Start Test ✦" [ref=f1e14] [cursor=pointer]
+          - button "Menu" [active] [ref=f1e15] [cursor=pointer]
+    - generic [ref=f1e1797]:
+      - button "Close" [ref=f1e1798] [cursor=pointer]: ×
+      - link "Problem" [ref=f1e1799] [cursor=pointer]:
+        - /url: javascript:void(0)
+      - link "Matrix" [ref=f1e1800] [cursor=pointer]:
+        - /url: javascript:void(0)
+      - link "Codex" [ref=f1e1801] [cursor=pointer]:
+        - /url: javascript:void(0)
+      - link "Engine" [ref=f1e1802] [cursor=pointer]:
+        - /url: javascript:void(0)
+      - button "🌐 EN" [ref=f1e1804] [cursor=pointer]
+      - button "✚ Therapist" [ref=f1e1805] [cursor=pointer]
+      - button "Login" [ref=f1e1806] [cursor=pointer]
+      - button "✦ Begin the Test" [ref=f1e1807] [cursor=pointer]
+    - generic [ref=f1e20]:
+      - generic [ref=f1e21]:
+        - generic [ref=f1e22]:
+          - generic [ref=f1e23]: Live
+          - generic [ref=f1e25]: 147 Statements
+          - generic [ref=f1e26]: 18 Inner Parts
+          - generic [ref=f1e27]: IFS
+        - heading [level=1] [ref=f1e28]:
+          - text: Meet the
+          - generic [ref=f1e29]: constellation
+          - text: inside you.
+        - paragraph [ref=f1e32]: "Answer 147 statements across three sittings. Your inner parts become a living constellation — measured, not guessed. Grounded in Internal Family Systems: self-reflection, not diagnosis."
+        - generic [ref=f1e33]:
+          - button "✦ Begin the Test" [ref=f1e34] [cursor=pointer]
+          - button "✦ Meet one part in 90 seconds" [ref=f1e35] [cursor=pointer]
+        - generic [ref=f1e36]:
+          - generic [ref=f1e37]: ℹ️
+          - generic [ref=f1e38]:
+            - paragraph [ref=f1e39]: Important Note
+            - paragraph [ref=f1e40]: Your answers stay on this device. The full battery is three sittings of 49 statements — pause after any sitting and your progress is kept. A backup can be downloaded from the dashboard at any time.
+        - generic [ref=f1e41]:
+          - generic [ref=f1e42]:
+            - generic [ref=f1e43]: "18"
+            - generic [ref=f1e44]: 18 Inner Parts
+          - generic [ref=f1e45]:
+            - generic [ref=f1e46]: "147"
+            - generic [ref=f1e47]: 147 Statements
+          - generic [ref=f1e48]:
+            - generic [ref=f1e49]: ~25m
+            - generic [ref=f1e50]: To Your Map
+      - generic [ref=f1e51]:
+        - img "A whimsical night-sky illustration of small creature constellations connected by dotted lines, with a star-shaped mascot floating in the middle." [ref=f1e53]
+        - generic [ref=f1e58]:
+          - paragraph [ref=f1e59]: 18 Inner Parts
+          - paragraph [ref=f1e60]: ✦ ✦ ✦
+    - generic [ref=f1e62]:
+      - generic [ref=f1e63]: Uncover Patterns
+      - generic [ref=f1e64]: ✦
+      - generic [ref=f1e65]: Break the Loop
+      - generic [ref=f1e66]: ✦
+      - generic [ref=f1e67]: Know Thyself
+      - generic [ref=f1e68]: ✦
+      - generic [ref=f1e69]: Map the Chaos
+      - generic [ref=f1e70]: ✦
+      - generic [ref=f1e71]: Relational Geometry
+      - generic [ref=f1e72]: ✦
+      - generic [ref=f1e73]: Uncover Patterns
+      - generic [ref=f1e74]: ✦
+      - generic [ref=f1e75]: Break the Loop
+      - generic [ref=f1e76]: ✦
+      - generic [ref=f1e77]: Know Thyself
+      - generic [ref=f1e78]: ✦
+      - generic [ref=f1e79]: Map the Chaos
+      - generic [ref=f1e80]: ✦
+      - generic [ref=f1e81]: Relational Geometry
+      - generic [ref=f1e82]: ✦
+      - generic [ref=f1e83]: Uncover Patterns
+      - generic [ref=f1e84]: ✦
+      - generic [ref=f1e85]: Break the Loop
+      - generic [ref=f1e86]: ✦
+      - generic [ref=f1e87]: Know Thyself
+      - generic [ref=f1e88]: ✦
+      - generic [ref=f1e89]: Map the Chaos
+      - generic [ref=f1e90]: ✦
+      - generic [ref=f1e91]: Relational Geometry
+      - generic [ref=f1e92]: ✦
+      - generic [ref=f1e93]: Uncover Patterns
+      - generic [ref=f1e94]: ✦
+      - generic [ref=f1e95]: Break the Loop
+      - generic [ref=f1e96]: ✦
+      - generic [ref=f1e97]: Know Thyself
+      - generic [ref=f1e98]: ✦
+      - generic [ref=f1e99]: Map the Chaos
+      - generic [ref=f1e100]: ✦
+      - generic [ref=f1e101]: Relational Geometry
+      - generic [ref=f1e102]: ✦
+      - generic [ref=f1e103]: Uncover Patterns
+      - generic [ref=f1e104]: ✦
+      - generic [ref=f1e105]: Break the Loop
+      - generic [ref=f1e106]: ✦
+      - generic [ref=f1e107]: Know Thyself
+      - generic [ref=f1e108]: ✦
+      - generic [ref=f1e109]: Map the Chaos
+      - generic [ref=f1e110]: ✦
+      - generic [ref=f1e111]: Relational Geometry
+      - generic [ref=f1e112]: ✦
+      - generic [ref=f1e113]: Uncover Patterns
+      - generic [ref=f1e114]: ✦
+      - generic [ref=f1e115]: Break the Loop
+      - generic [ref=f1e116]: ✦
+      - generic [ref=f1e117]: Know Thyself
+      - generic [ref=f1e118]: ✦
+      - generic [ref=f1e119]: Map the Chaos
+      - generic [ref=f1e120]: ✦
+      - generic [ref=f1e121]: Relational Geometry
+      - generic [ref=f1e122]: ✦
+    - generic [ref=f1e124]:
+      - generic [ref=f1e125]:
+        - generic [ref=f1e126]: The Problem
+        - heading "Why do you keep repeating this?" [level=2] [ref=f1e128]
+        - paragraph [ref=f1e129]: The same loops. The same friction. The same missed connections. It's not a curse—it's geometry.
+      - generic [ref=f1e130]:
+        - generic [ref=f1e131]:
+          - generic [ref=f1e132]: "01"
+          - generic [ref=f1e133]: 🌪️
+          - heading "The Ghosting Loop" [level=3] [ref=f1e134]
+          - paragraph [ref=f1e135]: You attract Wanderers while acting as an Anchor. Physics dictates they drift away.
+        - generic [ref=f1e136]:
+          - generic [ref=f1e137]: "02"
+          - generic [ref=f1e138]: ⚡
+          - heading "Catalyst Collision" [level=3] [ref=f1e139]
+          - paragraph [ref=f1e140]: Two Catalysts equals fire. Brilliant for startups. Catastrophic for execution.
+        - generic [ref=f1e141]:
+          - generic [ref=f1e142]: "03"
+          - generic [ref=f1e143]: 🪞
+          - heading "The Echo Chamber" [level=3] [ref=f1e144]
+          - paragraph [ref=f1e145]: Surrounded by Mirrors. Everyone agrees. Nobody initiates. Consensus suffocates.
+        - generic [ref=f1e146]:
+          - generic [ref=f1e147]: "04"
+          - generic [ref=f1e148]: 💣
+          - heading "Invisible Triggers" [level=3] [ref=f1e149]
+          - paragraph [ref=f1e150]: Conflict flares and you don't know why. Unread signals detonate before you react.
+        - generic [ref=f1e151]:
+          - generic [ref=f1e152]: "05"
+          - generic [ref=f1e153]: ⚓
+          - heading "Compassion Fatigue" [level=3] [ref=f1e154]
+          - paragraph [ref=f1e155]: The Anchor carries everyone and exhausts themselves. The system never replenishes them.
+        - generic [ref=f1e156]:
+          - generic [ref=f1e157]: "06"
+          - generic [ref=f1e158]: 🌀
+          - heading "Asymmetric Orbit" [level=3] [ref=f1e159]
+          - paragraph [ref=f1e160]: One invests intensely; the other holds loosely. The imbalance is structural.
+    - generic [ref=f1e162]:
+      - generic [ref=f1e163]:
+        - generic [ref=f1e164]: The Tool
+        - heading "The Synergy Matrix" [level=2] [ref=f1e166]
+        - paragraph [ref=f1e167]: Not all shapes fit together gracefully. Select two nodes to calculate their relational physics.
+      - generic [ref=f1e168]:
+        - generic [ref=f1e169]:
+          - button "The Taskmaster Manager" [ref=f1e170] [cursor=pointer]:
+            - generic [ref=f1e183]:
+              - generic [ref=f1e184]: The Taskmaster
+              - generic [ref=f1e185]: Manager
+          - button "The Inner Critic Manager" [ref=f1e186] [cursor=pointer]:
+            - generic [ref=f1e199]:
+              - generic [ref=f1e200]: The Inner Critic
+              - generic [ref=f1e201]: Manager
+          - button "The Pleaser Manager" [ref=f1e202] [cursor=pointer]:
+            - generic [ref=f1e215]:
+              - generic [ref=f1e216]: The Pleaser
+              - generic [ref=f1e217]: Manager
+          - button "The Controller Manager" [ref=f1e218] [cursor=pointer]:
+            - generic [ref=f1e231]:
+              - generic [ref=f1e232]: The Controller
+              - generic [ref=f1e233]: Manager
+          - button "The Analyst Manager" [ref=f1e234] [cursor=pointer]:
+            - generic [ref=f1e247]:
+              - generic [ref=f1e248]: The Analyst
+              - generic [ref=f1e249]: Manager
+          - button "The Hermit Manager" [ref=f1e250] [cursor=pointer]:
+            - generic [ref=f1e263]:
+              - generic [ref=f1e264]: The Hermit
+              - generic [ref=f1e265]: Manager
+          - button "The Bypasser Manager" [ref=f1e266] [cursor=pointer]:
+            - generic [ref=f1e279]:
+              - generic [ref=f1e280]: The Bypasser
+              - generic [ref=f1e281]: Manager
+          - button "The Numb Firefighter" [ref=f1e282] [cursor=pointer]:
+            - generic [ref=f1e295]:
+              - generic [ref=f1e296]: The Numb
+              - generic [ref=f1e297]: Firefighter
+          - button "The Rebel Firefighter" [ref=f1e298] [cursor=pointer]:
+            - generic [ref=f1e311]:
+              - generic [ref=f1e312]: The Rebel
+              - generic [ref=f1e313]: Firefighter
+          - button "The Charmer Firefighter" [ref=f1e314] [cursor=pointer]:
+            - generic [ref=f1e327]:
+              - generic [ref=f1e328]: The Charmer
+              - generic [ref=f1e329]: Firefighter
+          - button "The Abandoned One Exile" [ref=f1e330] [cursor=pointer]:
+            - generic [ref=f1e342]:
+              - generic [ref=f1e343]: The Abandoned One
+              - generic [ref=f1e344]: Exile
+          - button "The Ashamed One Exile" [ref=f1e345] [cursor=pointer]:
+            - generic [ref=f1e357]:
+              - generic [ref=f1e358]: The Ashamed One
+              - generic [ref=f1e359]: Exile
+          - button "The Frightened One Exile" [ref=f1e360] [cursor=pointer]:
+            - generic [ref=f1e372]:
+              - generic [ref=f1e373]: The Frightened One
+              - generic [ref=f1e374]: Exile
+          - button "The Unseen One Exile" [ref=f1e375] [cursor=pointer]:
+            - generic [ref=f1e387]:
+              - generic [ref=f1e388]: The Unseen One
+              - generic [ref=f1e389]: Exile
+          - button "The Sage Resource" [ref=f1e390] [cursor=pointer]:
+            - generic [ref=f1e402]:
+              - generic [ref=f1e403]: The Sage
+              - generic [ref=f1e404]: Resource
+          - button "The Warrior Resource" [ref=f1e405] [cursor=pointer]:
+            - generic [ref=f1e417]:
+              - generic [ref=f1e418]: The Warrior
+              - generic [ref=f1e419]: Resource
+          - button "The Caregiver Resource" [ref=f1e420] [cursor=pointer]:
+            - generic [ref=f1e432]:
+              - generic [ref=f1e433]: The Caregiver
+              - generic [ref=f1e434]: Resource
+          - button "The Explorer Resource" [ref=f1e435] [cursor=pointer]:
+            - generic [ref=f1e447]:
+              - generic [ref=f1e448]: The Explorer
+              - generic [ref=f1e449]: Resource
+        - generic [ref=f1e450]:
+          - generic [ref=f1e452]: Select Two Nodes
+          - generic [ref=f1e456]:
+            - generic [ref=f1e457]: Result
+            - heading "Awaiting Input" [level=4] [ref=f1e460]
+            - paragraph [ref=f1e461]: Select two archetypes above to compute dynamic friction.
+    - generic [ref=f1e463]:
+      - generic [ref=f1e464]:
+        - generic [ref=f1e465]: Capabilities
+        - heading "Everything you need to decode connection." [level=2] [ref=f1e467]
+      - generic [ref=f1e468]:
+        - generic [ref=f1e472]:
+          - heading "Interactive 3D Map" [level=3] [ref=f1e473]
+          - paragraph [ref=f1e474]: Orbit, zoom, and click your way through a living relational cosmos.Every node is a story.
+        - generic [ref=f1e482]:
+          - heading "AI Insight Engine" [level=3] [ref=f1e487]
+          - paragraph [ref=f1e488]: Real-time pattern detection surfaces what you can't see yourself.
+        - generic [ref=f1e491]:
+          - heading "Four-Axis Analysis" [level=3] [ref=f1e495]
+          - paragraph [ref=f1e496]: Agency, Temperature, Focus, and Attachment—measured precisely.
+        - generic [ref=f1e499]:
+          - heading "Clinical Reports" [level=3] [ref=f1e504]
+          - paragraph [ref=f1e505]: JSON exports. AI narratives. Detailed psychological profiles you can share with a specialist.
+    - generic [ref=f1e506]:
+      - generic [ref=f1e507]:
+        - generic [ref=f1e508]: The Codex
+        - heading "Eight entities. Infinite configurations." [level=2] [ref=f1e510]: Eight entities.Infinite configurations.
+        - paragraph [ref=f1e511]: Drag to explore the catalog. Click to flip and reveal.
+      - generic [ref=f1e512]:
+        - generic [ref=f1e514] [cursor=pointer]:
+          - generic [ref=f1e515]:
+            - generic [ref=f1e516]: "01"
+            - generic [ref=f1e531]:
+              - heading "The Taskmaster" [level=3] [ref=f1e532]
+              - generic [ref=f1e533]: Manager
+          - generic [ref=f1e534]:
+            - heading "The Taskmaster" [level=3] [ref=f1e535]
+            - paragraph [ref=f1e536]: The one who is always visibly productive.
+            - generic [ref=f1e537]:
+              - generic [ref=f1e539]:
+                - generic [ref=f1e540]: Agency
+                - generic [ref=f1e541]: 82%
+              - generic [ref=f1e545]:
+                - generic [ref=f1e546]: Temperature
+                - generic [ref=f1e547]: 60%
+              - generic [ref=f1e551]:
+                - generic [ref=f1e552]: Focus
+                - generic [ref=f1e553]: 78%
+              - generic [ref=f1e557]:
+                - generic [ref=f1e558]: Attachment
+                - generic [ref=f1e559]: 30%
+        - generic [ref=f1e563] [cursor=pointer]:
+          - generic [ref=f1e564]:
+            - generic [ref=f1e565]: "02"
+            - generic [ref=f1e580]:
+              - heading "The Inner Critic" [level=3] [ref=f1e581]
+              - generic [ref=f1e582]: Manager
+          - generic [ref=f1e583]:
+            - heading "The Inner Critic" [level=3] [ref=f1e584]
+            - paragraph [ref=f1e585]: The sharp evaluator of everything you do.
+            - generic [ref=f1e586]:
+              - generic [ref=f1e588]:
+                - generic [ref=f1e589]: Agency
+                - generic [ref=f1e590]: 55%
+              - generic [ref=f1e594]:
+                - generic [ref=f1e595]: Temperature
+                - generic [ref=f1e596]: 40%
+              - generic [ref=f1e600]:
+                - generic [ref=f1e601]: Focus
+                - generic [ref=f1e602]: 85%
+              - generic [ref=f1e606]:
+                - generic [ref=f1e607]: Attachment
+                - generic [ref=f1e608]: 45%
+        - generic [ref=f1e612] [cursor=pointer]:
+          - generic [ref=f1e613]:
+            - generic [ref=f1e614]: "03"
+            - generic [ref=f1e629]:
+              - heading "The Pleaser" [level=3] [ref=f1e630]
+              - generic [ref=f1e631]: Manager
+          - generic [ref=f1e632]:
+            - heading "The Pleaser" [level=3] [ref=f1e633]
+            - paragraph [ref=f1e634]: The agreeable one who keeps every room smooth.
+            - generic [ref=f1e635]:
+              - generic [ref=f1e637]:
+                - generic [ref=f1e638]: Agency
+                - generic [ref=f1e639]: 45%
+              - generic [ref=f1e643]:
+                - generic [ref=f1e644]: Temperature
+                - generic [ref=f1e645]: 70%
+              - generic [ref=f1e649]:
+                - generic [ref=f1e650]: Focus
+                - generic [ref=f1e651]: 55%
+              - generic [ref=f1e655]:
+                - generic [ref=f1e656]: Attachment
+                - generic [ref=f1e657]: 88%
+        - generic [ref=f1e661] [cursor=pointer]:
+          - generic [ref=f1e662]:
+            - generic [ref=f1e663]: "04"
+            - generic [ref=f1e678]:
+              - heading "The Controller" [level=3] [ref=f1e679]
+              - generic [ref=f1e680]: Manager
+          - generic [ref=f1e681]:
+            - heading "The Controller" [level=3] [ref=f1e682]
+            - paragraph [ref=f1e683]: The planner with a contingency for everything.
+            - generic [ref=f1e684]:
+              - generic [ref=f1e686]:
+                - generic [ref=f1e687]: Agency
+                - generic [ref=f1e688]: 75%
+              - generic [ref=f1e692]:
+                - generic [ref=f1e693]: Temperature
+                - generic [ref=f1e694]: 50%
+              - generic [ref=f1e698]:
+                - generic [ref=f1e699]: Focus
+                - generic [ref=f1e700]: 90%
+              - generic [ref=f1e704]:
+                - generic [ref=f1e705]: Attachment
+                - generic [ref=f1e706]: 40%
+        - generic [ref=f1e710] [cursor=pointer]:
+          - generic [ref=f1e711]:
+            - generic [ref=f1e712]: "05"
+            - generic [ref=f1e727]:
+              - heading "The Analyst" [level=3] [ref=f1e728]
+              - generic [ref=f1e729]: Manager
+          - generic [ref=f1e730]:
+            - heading "The Analyst" [level=3] [ref=f1e731]
+            - paragraph [ref=f1e732]: The calm explainer of whatever happens.
+            - generic [ref=f1e733]:
+              - generic [ref=f1e735]:
+                - generic [ref=f1e736]: Agency
+                - generic [ref=f1e737]: 50%
+              - generic [ref=f1e741]:
+                - generic [ref=f1e742]: Temperature
+                - generic [ref=f1e743]: 25%
+              - generic [ref=f1e747]:
+                - generic [ref=f1e748]: Focus
+                - generic [ref=f1e749]: 88%
+              - generic [ref=f1e753]:
+                - generic [ref=f1e754]: Attachment
+                - generic [ref=f1e755]: 35%
+        - generic [ref=f1e759] [cursor=pointer]:
+          - generic [ref=f1e760]:
+            - generic [ref=f1e761]: "06"
+            - generic [ref=f1e776]:
+              - heading "The Hermit" [level=3] [ref=f1e777]
+              - generic [ref=f1e778]: Manager
+          - generic [ref=f1e779]:
+            - heading "The Hermit" [level=3] [ref=f1e780]
+            - paragraph [ref=f1e781]: The one who is gloriously hard to reach.
+            - generic [ref=f1e782]:
+              - generic [ref=f1e784]:
+                - generic [ref=f1e785]: Agency
+                - generic [ref=f1e786]: 40%
+              - generic [ref=f1e790]:
+                - generic [ref=f1e791]: Temperature
+                - generic [ref=f1e792]: 20%
+              - generic [ref=f1e796]:
+                - generic [ref=f1e797]: Focus
+                - generic [ref=f1e798]: 70%
+              - generic [ref=f1e802]:
+                - generic [ref=f1e803]: Attachment
+                - generic [ref=f1e804]: 25%
+        - generic [ref=f1e808] [cursor=pointer]:
+          - generic [ref=f1e809]:
+            - generic [ref=f1e810]: "07"
+            - generic [ref=f1e825]:
+              - heading "The Bypasser" [level=3] [ref=f1e826]
+              - generic [ref=f1e827]: Manager
+          - generic [ref=f1e828]:
+            - heading "The Bypasser" [level=3] [ref=f1e829]
+            - paragraph [ref=f1e830]: The one who finds the silver lining instantly.
+            - generic [ref=f1e831]:
+              - generic [ref=f1e833]:
+                - generic [ref=f1e834]: Agency
+                - generic [ref=f1e835]: 48%
+              - generic [ref=f1e839]:
+                - generic [ref=f1e840]: Temperature
+                - generic [ref=f1e841]: 45%
+              - generic [ref=f1e845]:
+                - generic [ref=f1e846]: Focus
+                - generic [ref=f1e847]: 50%
+              - generic [ref=f1e851]:
+                - generic [ref=f1e852]: Attachment
+                - generic [ref=f1e853]: 40%
+        - generic [ref=f1e857] [cursor=pointer]:
+          - generic [ref=f1e858]:
+            - generic [ref=f1e859]: "08"
+            - generic [ref=f1e874]:
+              - heading "The Numb" [level=3] [ref=f1e875]
+              - generic [ref=f1e876]: Firefighter
+          - generic [ref=f1e877]:
+            - heading "The Numb" [level=3] [ref=f1e878]
+            - paragraph [ref=f1e879]: The one who is fine, always fine.
+            - generic [ref=f1e880]:
+              - generic [ref=f1e882]:
+                - generic [ref=f1e883]: Agency
+                - generic [ref=f1e884]: 30%
+              - generic [ref=f1e888]:
+                - generic [ref=f1e889]: Temperature
+                - generic [ref=f1e890]: 15%
+              - generic [ref=f1e894]:
+                - generic [ref=f1e895]: Focus
+                - generic [ref=f1e896]: 45%
+              - generic [ref=f1e900]:
+                - generic [ref=f1e901]: Attachment
+                - generic [ref=f1e902]: 20%
+        - generic [ref=f1e906] [cursor=pointer]:
+          - generic [ref=f1e907]:
+            - generic [ref=f1e908]: "09"
+            - generic [ref=f1e923]:
+              - heading "The Rebel" [level=3] [ref=f1e924]
+              - generic [ref=f1e925]: Firefighter
+          - generic [ref=f1e926]:
+            - heading "The Rebel" [level=3] [ref=f1e927]
+            - paragraph [ref=f1e928]: The one who will not be told.
+            - generic [ref=f1e929]:
+              - generic [ref=f1e931]:
+                - generic [ref=f1e932]: Agency
+                - generic [ref=f1e933]: 88%
+              - generic [ref=f1e937]:
+                - generic [ref=f1e938]: Temperature
+                - generic [ref=f1e939]: 85%
+              - generic [ref=f1e943]:
+                - generic [ref=f1e944]: Focus
+                - generic [ref=f1e945]: 35%
+              - generic [ref=f1e949]:
+                - generic [ref=f1e950]: Attachment
+                - generic [ref=f1e951]: 30%
+        - generic [ref=f1e955] [cursor=pointer]:
+          - generic [ref=f1e956]:
+            - generic [ref=f1e957]: "10"
+            - generic [ref=f1e972]:
+              - heading "The Charmer" [level=3] [ref=f1e973]
+              - generic [ref=f1e974]: Firefighter
+          - generic [ref=f1e975]:
+            - heading "The Charmer" [level=3] [ref=f1e976]
+            - paragraph [ref=f1e977]: The unforgettable entrance, the perfect exit line.
+            - generic [ref=f1e978]:
+              - generic [ref=f1e980]:
+                - generic [ref=f1e981]: Agency
+                - generic [ref=f1e982]: 65%
+              - generic [ref=f1e986]:
+                - generic [ref=f1e987]: Temperature
+                - generic [ref=f1e988]: 80%
+              - generic [ref=f1e992]:
+                - generic [ref=f1e993]: Focus
+                - generic [ref=f1e994]: 50%
+              - generic [ref=f1e998]:
+                - generic [ref=f1e999]: Attachment
+                - generic [ref=f1e1000]: 75%
+        - generic [ref=f1e1004] [cursor=pointer]:
+          - generic [ref=f1e1005]:
+            - generic [ref=f1e1006]: "11"
+            - generic [ref=f1e1020]:
+              - heading "The Abandoned One" [level=3] [ref=f1e1021]
+              - generic [ref=f1e1022]: Exile
+          - generic [ref=f1e1023]:
+            - heading "The Abandoned One" [level=3] [ref=f1e1024]
+            - paragraph [ref=f1e1025]: The one who texts first, always.
+            - generic [ref=f1e1026]:
+              - generic [ref=f1e1028]:
+                - generic [ref=f1e1029]: Agency
+                - generic [ref=f1e1030]: 25%
+              - generic [ref=f1e1034]:
+                - generic [ref=f1e1035]: Temperature
+                - generic [ref=f1e1036]: 55%
+              - generic [ref=f1e1040]:
+                - generic [ref=f1e1041]: Focus
+                - generic [ref=f1e1042]: 30%
+              - generic [ref=f1e1046]:
+                - generic [ref=f1e1047]: Attachment
+                - generic [ref=f1e1048]: 92%
+        - generic [ref=f1e1052] [cursor=pointer]:
+          - generic [ref=f1e1053]:
+            - generic [ref=f1e1054]: "12"
+            - generic [ref=f1e1068]:
+              - heading "The Ashamed One" [level=3] [ref=f1e1069]
+              - generic [ref=f1e1070]: Exile
+          - generic [ref=f1e1071]:
+            - heading "The Ashamed One" [level=3] [ref=f1e1072]
+            - paragraph [ref=f1e1073]: The one who hides the real work.
+            - generic [ref=f1e1074]:
+              - generic [ref=f1e1076]:
+                - generic [ref=f1e1077]: Agency
+                - generic [ref=f1e1078]: 20%
+              - generic [ref=f1e1082]:
+                - generic [ref=f1e1083]: Temperature
+                - generic [ref=f1e1084]: 40%
+              - generic [ref=f1e1088]:
+                - generic [ref=f1e1089]: Focus
+                - generic [ref=f1e1090]: 35%
+              - generic [ref=f1e1094]:
+                - generic [ref=f1e1095]: Attachment
+                - generic [ref=f1e1096]: 85%
+        - generic [ref=f1e1100] [cursor=pointer]:
+          - generic [ref=f1e1101]:
+            - generic [ref=f1e1102]: "13"
+            - generic [ref=f1e1116]:
+              - heading "The Frightened One" [level=3] [ref=f1e1117]
+              - generic [ref=f1e1118]: Exile
+          - generic [ref=f1e1119]:
+            - heading "The Frightened One" [level=3] [ref=f1e1120]
+            - paragraph [ref=f1e1121]: The one who knows where the exits are.
+            - generic [ref=f1e1122]:
+              - generic [ref=f1e1124]:
+                - generic [ref=f1e1125]: Agency
+                - generic [ref=f1e1126]: 22%
+              - generic [ref=f1e1130]:
+                - generic [ref=f1e1131]: Temperature
+                - generic [ref=f1e1132]: 60%
+              - generic [ref=f1e1136]:
+                - generic [ref=f1e1137]: Focus
+                - generic [ref=f1e1138]: 28%
+              - generic [ref=f1e1142]:
+                - generic [ref=f1e1143]: Attachment
+                - generic [ref=f1e1144]: 90%
+        - generic [ref=f1e1148] [cursor=pointer]:
+          - generic [ref=f1e1149]:
+            - generic [ref=f1e1150]: "14"
+            - generic [ref=f1e1164]:
+              - heading "The Unseen One" [level=3] [ref=f1e1165]
+              - generic [ref=f1e1166]: Exile
+          - generic [ref=f1e1167]:
+            - heading "The Unseen One" [level=3] [ref=f1e1168]
+            - paragraph [ref=f1e1169]: The quiet one at the edge of the photo.
+            - generic [ref=f1e1170]:
+              - generic [ref=f1e1172]:
+                - generic [ref=f1e1173]: Agency
+                - generic [ref=f1e1174]: 28%
+              - generic [ref=f1e1178]:
+                - generic [ref=f1e1179]: Temperature
+                - generic [ref=f1e1180]: 35%
+              - generic [ref=f1e1184]:
+                - generic [ref=f1e1185]: Focus
+                - generic [ref=f1e1186]: 40%
+              - generic [ref=f1e1190]:
+                - generic [ref=f1e1191]: Attachment
+                - generic [ref=f1e1192]: 80%
+        - generic [ref=f1e1196] [cursor=pointer]:
+          - generic [ref=f1e1197]:
+            - generic [ref=f1e1198]: "15"
+            - generic [ref=f1e1212]:
+              - heading "The Sage" [level=3] [ref=f1e1213]
+              - generic [ref=f1e1214]: Resource
+          - generic [ref=f1e1215]:
+            - heading "The Sage" [level=3] [ref=f1e1216]
+            - paragraph [ref=f1e1217]: The quiet knowing that sees the whole field.
+            - generic [ref=f1e1218]:
+              - generic [ref=f1e1220]:
+                - generic [ref=f1e1221]: Agency
+                - generic [ref=f1e1222]: 60%
+              - generic [ref=f1e1226]:
+                - generic [ref=f1e1227]: Temperature
+                - generic [ref=f1e1228]: 30%
+              - generic [ref=f1e1232]:
+                - generic [ref=f1e1233]: Focus
+                - generic [ref=f1e1234]: 75%
+              - generic [ref=f1e1238]:
+                - generic [ref=f1e1239]: Attachment
+                - generic [ref=f1e1240]: 45%
+        - generic [ref=f1e1244] [cursor=pointer]:
+          - generic [ref=f1e1245]:
+            - generic [ref=f1e1246]: "16"
+            - generic [ref=f1e1260]:
+              - heading "The Warrior" [level=3] [ref=f1e1261]
+              - generic [ref=f1e1262]: Resource
+          - generic [ref=f1e1263]:
+            - heading "The Warrior" [level=3] [ref=f1e1264]
+            - paragraph [ref=f1e1265]: The clear no that protects what matters.
+            - generic [ref=f1e1266]:
+              - generic [ref=f1e1268]:
+                - generic [ref=f1e1269]: Agency
+                - generic [ref=f1e1270]: 90%
+              - generic [ref=f1e1274]:
+                - generic [ref=f1e1275]: Temperature
+                - generic [ref=f1e1276]: 55%
+              - generic [ref=f1e1280]:
+                - generic [ref=f1e1281]: Focus
+                - generic [ref=f1e1282]: 80%
+              - generic [ref=f1e1286]:
+                - generic [ref=f1e1287]: Attachment
+                - generic [ref=f1e1288]: 35%
+        - generic [ref=f1e1292] [cursor=pointer]:
+          - generic [ref=f1e1293]:
+            - generic [ref=f1e1294]: "17"
+            - generic [ref=f1e1308]:
+              - heading "The Caregiver" [level=3] [ref=f1e1309]
+              - generic [ref=f1e1310]: Resource
+          - generic [ref=f1e1311]:
+            - heading "The Caregiver" [level=3] [ref=f1e1312]
+            - paragraph [ref=f1e1313]: The warm tending that asks nothing back.
+            - generic [ref=f1e1314]:
+              - generic [ref=f1e1316]:
+                - generic [ref=f1e1317]: Agency
+                - generic [ref=f1e1318]: 55%
+              - generic [ref=f1e1322]:
+                - generic [ref=f1e1323]: Temperature
+                - generic [ref=f1e1324]: 75%
+              - generic [ref=f1e1328]:
+                - generic [ref=f1e1329]: Focus
+                - generic [ref=f1e1330]: 60%
+              - generic [ref=f1e1334]:
+                - generic [ref=f1e1335]: Attachment
+                - generic [ref=f1e1336]: 82%
+        - generic [ref=f1e1340] [cursor=pointer]:
+          - generic [ref=f1e1341]:
+            - generic [ref=f1e1342]: "18"
+            - generic [ref=f1e1356]:
+              - heading "The Explorer" [level=3] [ref=f1e1357]
+              - generic [ref=f1e1358]: Resource
+          - generic [ref=f1e1359]:
+            - heading "The Explorer" [level=3] [ref=f1e1360]
+            - paragraph [ref=f1e1361]: The curious reach toward the new.
+            - generic [ref=f1e1362]:
+              - generic [ref=f1e1364]:
+                - generic [ref=f1e1365]: Agency
+                - generic [ref=f1e1366]: 78%
+              - generic [ref=f1e1370]:
+                - generic [ref=f1e1371]: Temperature
+                - generic [ref=f1e1372]: 65%
+              - generic [ref=f1e1376]:
+                - generic [ref=f1e1377]: Focus
+                - generic [ref=f1e1378]: 55%
+              - generic [ref=f1e1382]:
+                - generic [ref=f1e1383]: Attachment
+                - generic [ref=f1e1384]: 40%
+      - generic [ref=f1e1387]: ← Swipe to browse →
+    - generic [ref=f1e1389]:
+      - generic [ref=f1e1390]:
+        - generic [ref=f1e1391]: The Engine
+        - heading "Your relational universe, made visible." [level=2] [ref=f1e1395]: Your relational universe,made visible.
+        - paragraph [ref=f1e1396]: Drag to orbit. Real-time 3D physics rendering of the archetype network.
+      - generic [ref=f1e1397]:
+        - generic [ref=f1e1399]: Live Render
+        - generic [ref=f1e1404]:
+          - generic [ref=f1e1405]: Agency
+          - generic [ref=f1e1406]: Temperature
+          - generic [ref=f1e1407]: Focus
+          - generic [ref=f1e1408]: Attachment
+        - button "Pause" [ref=f1e1410] [cursor=pointer]
+        - generic [ref=f1e1415]: Drag to Orbit
+      - generic [ref=f1e1416]:
+        - generic [ref=f1e1417]: The Taskmaster
+        - generic [ref=f1e1431]: The Inner Critic
+        - generic [ref=f1e1445]: The Pleaser
+        - generic [ref=f1e1459]: The Controller
+        - generic [ref=f1e1473]: The Analyst
+        - generic [ref=f1e1487]: The Hermit
+        - generic [ref=f1e1501]: The Bypasser
+        - generic [ref=f1e1515]: The Numb
+        - generic [ref=f1e1529]: The Rebel
+        - generic [ref=f1e1543]: The Charmer
+        - generic [ref=f1e1557]: The Abandoned One
+        - generic [ref=f1e1570]: The Ashamed One
+        - generic [ref=f1e1583]: The Frightened One
+        - generic [ref=f1e1596]: The Unseen One
+        - generic [ref=f1e1609]: The Sage
+        - generic [ref=f1e1622]: The Warrior
+        - generic [ref=f1e1635]: The Caregiver
+        - generic [ref=f1e1648]: The Explorer
+    - generic [ref=f1e1662]:
+      - heading "Three steps to clarity." [level=2] [ref=f1e1664]
+      - generic [ref=f1e1665]:
+        - generic [ref=f1e1666]:
+          - generic [ref=f1e1667]: 📝
+          - generic [ref=f1e1668]: "01"
+          - heading "Take the Test" [level=3] [ref=f1e1669]
+          - paragraph [ref=f1e1670]: Answer 147 statements across three sittings — measured, not guessed. Your progress is kept if you pause.
+        - generic [ref=f1e1671]:
+          - generic [ref=f1e1672]: ⚡
+          - generic [ref=f1e1673]: "02"
+          - heading "The Engine Measures" [level=3] [ref=f1e1674]
+          - paragraph [ref=f1e1675]: A deterministic engine maps eighteen inner parts and your Self energy — the same answers always yield the same map.
+        - generic [ref=f1e1676]:
+          - generic [ref=f1e1677]: 🗺
+          - generic [ref=f1e1678]: "03"
+          - heading "Read the Map" [level=3] [ref=f1e1679]
+          - paragraph [ref=f1e1680]: Explore your living constellation. Meet your parts, your storylines, and your practice path.
+    - contentinfo [ref=f1e1681]:
+      - generic: ✦
+      - generic: ★
+      - generic [ref=f1e1682]:
+        - generic [ref=f1e1683]: Free & confidential
+        - heading "Discover your universe." [level=2] [ref=f1e1688]
+        - paragraph [ref=f1e1689]: Take the test in 10 minutes and receive a personal map of your relational dynamics. Free and confidential.
+        - button "✦ Begin the Test" [ref=f1e1691] [cursor=pointer]
+        - generic [ref=f1e1692]:
+          - generic [ref=f1e1693]:
+            - generic [ref=f1e1694]: ✦
+            - generic [ref=f1e1695]: Innerverse
+          - generic [ref=f1e1696]: © 2026
+  - button "The Cornered Storm" [ref=f1e1697] [cursor=pointer]:
+    - generic [ref=f1e1698]: ✦
+    - text: The Cornered Storm
+  - button "Synastry" [ref=f1e1699] [cursor=pointer]:
+    - generic [ref=f1e1700]: ∞
+    - text: Synastry
+  - button "Practice" [ref=f1e1701] [cursor=pointer]:
+    - generic [ref=f1e1702]: ◈
+    - text: Practice
+  - button "Daily check-in" [ref=f1e1703] [cursor=pointer]:
+    - generic [ref=f1e1704]: ◐
+    - text: Daily check-in

@@ -11,6 +11,7 @@ import {
   type ShadowPartId, type Tier, type Need,
 } from '../../core/data/parts';
 import { PART_COPY, LAYERS, type LayerKey } from '../../core/data/part-copy';
+import { constellationName, constellationEssay, subtypeName, resourceName, COMPLEX_COPY_RU, polarizationName as polName } from '../../core/data/constellation-copy';
 import { InnerverseConstellationComponent } from '../constellation/innerverse-constellation.component';
 import type { ScoredProfile } from '../../core/data/scoring-v2';
 import { attributionRatio } from '../../core/data/state-v2';
@@ -55,6 +56,7 @@ const UI = {
     crisis: 'Today\'s result is heavy. If it stirs more than it settles, crisis resources are one tap away in Settings.',
     back: 'Back',
     tierNames: { dormant: 'dormant', present: 'present', prominent: 'prominent', dominant: 'holding the floor' } as Record<Tier, string>,
+    complexTierNames: { active: 'active', gripping: 'gripping' } as Record<string, string>,
   },
   ru: {
     report: 'Ваш Внутренний Космос',
@@ -93,6 +95,7 @@ const UI = {
     crisis: 'Сегодняшний результат тяжёлый. Если он поднимает больше, чем успокаивает, — ресурсы поддержки в одном нажатии в настройках.',
     back: 'Назад',
     tierNames: { dormant: 'дремлет', present: 'присутствует', prominent: 'заметна', dominant: 'держит слово' } as Record<Tier, string>,
+    complexTierNames: { active: 'активен', gripping: 'сжимает' } as Record<string, string>,
   },
 };
 
@@ -157,6 +160,31 @@ export class InnerverseReportComponent implements AfterViewInit, OnDestroy {
   readonly ui = computed(() => UI[this.lang()] as typeof UI.en);
   readonly needPractice = computed(() => NEED_PRACTICE[this.lang()]);
   readonly qualities = SELF_QUALITIES;
+
+  /** Bilingual headline + subtype names (constellation-copy.ts). */
+  readonly headlineName = computed(() =>
+    constellationName(this.profile().headline, this.lang() as 'en' | 'ru'));
+  readonly headlineEssay = computed(() =>
+    constellationEssay(this.profile().headline, this.lang() as 'en' | 'ru'));
+  headlineSubtype(id: ShadowPartId): string {
+    const p = this.profile();
+    const sub = p.subtypes[id];
+    return subtypeName(id, sub.slug, sub.name, this.lang() as 'en' | 'ru');
+  }
+  partName(id: ShadowPartId): string { return this.headlineSubtype(id); }
+  polarizationName(en: string): string { return polName(en, this.lang() as 'en' | 'ru'); }
+  strongResourceName(): string {
+    return resourceName(this.profile().strongestResource.id, this.lang() as 'en' | 'ru');
+  }
+  complexName(id: string, en: string): string {
+    return this.lang() === 'ru' ? COMPLEX_COPY_RU[id]?.name ?? en : en;
+  }
+  complexBelief(id: string, en: string): string {
+    return this.lang() === 'ru' ? COMPLEX_COPY_RU[id]?.belief ?? en : en;
+  }
+  complexExperiment(id: string, en: string): string {
+    return this.lang() === 'ru' ? COMPLEX_COPY_RU[id]?.experiment ?? en : en;
+  }
 
   readonly sortedParts = computed(() => {
     const p = this.profile();

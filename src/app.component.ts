@@ -18,6 +18,8 @@ import { CheckInPanelComponent } from './app/features/checkin-panel/checkin-pane
 import { PracticePanelComponent } from './app/features/practice-panel/practice-panel.component';
 import { QuickScanPanelComponent } from './app/features/quickscan-panel/quickscan-panel.component';
 import { TherapistPanelComponent } from './app/features/therapist-panel/therapist-panel.component';
+import { InstallPromptComponent } from './app/shared/install-prompt/install-prompt.component';
+import { InstallService } from './services/install.service';
 import { SynastryCompareComponent } from './app/features/synastry-compare/synastry-compare.component';
 import { scoreProfile, type AssessmentInput, type ScoredProfile } from './app/core/data/scoring-v2';
 import { recordAndStore, syncTelemetry, loadTelemetry } from './app/core/data/telemetry';
@@ -57,6 +59,7 @@ const AUTH_REDIRECT_PENDING_KEY = 'ARCHETYPE_AUTH_REDIRECT_PENDING';
     PracticePanelComponent,
     QuickScanPanelComponent,
     TherapistPanelComponent,
+    InstallPromptComponent,
     SynastryCompareComponent,
     CommonModule,
     BlobCharacterComponent,
@@ -264,7 +267,12 @@ export class AppComponent implements OnDestroy {
   private anonymousBootstrapTimeout: ReturnType<typeof setTimeout> | null = null;
   private authSubscription: Subscription | null = null;
 
+  private readonly installService = inject(InstallService);
+
   constructor() {
+    // PWA install dialog: offer once per week, well after first paint.
+    this.installService.autoOpenAfterDelay(9000);
+
     effect(() => this.visualizationService.setComparisonState(this.isComparing(), this.firstComparisonArchetype()));
 
     // Auth state tracking

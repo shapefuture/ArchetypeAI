@@ -633,9 +633,12 @@
       {{ t('footerSubtitle') }}
     </p>
 
-    <div class="mt-8 mb-14">
+    <div class="mt-8 mb-10 flex flex-wrap items-center justify-center gap-4">
       <button class="sticker-btn !px-10 !py-4 text-lg bg-paper" (click)="startTest.emit()">
         {{ t('beginTest') }}
+      </button>
+      <button (click)="installService.open()" class="ip-footer-link">
+        ⬇ {{ t('installAppCta') }}
       </button>
     </div>
 

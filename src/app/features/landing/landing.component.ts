@@ -9,6 +9,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { gsap } from 'gsap';
 import { User } from '../../core/ports/auth.port';
 import { PART_COPY } from '../../core/data/part-copy';
+import { InstallService } from '../../../services/install.service';
 
 interface ShowcaseArchetype {
   id: string;
@@ -145,6 +146,7 @@ const EDGES: [number, number][] = [
 })
 export class LandingComponent implements OnDestroy {
   readonly ts = inject(TranslationService);
+  readonly installService = inject(InstallService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly el = inject(ElementRef<HTMLElement>);
   readonly hostEl = this.el;

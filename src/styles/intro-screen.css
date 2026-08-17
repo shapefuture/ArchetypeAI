@@ -230,36 +230,55 @@
 
 
 /* Innerverse report shortcut pill (intro) */
+/* Feature pills — kawaii sticker register, feature-colored, safe-area aware */
 .innerverse-pill {
   position: fixed;
   right: 16px;
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   z-index: 90;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 14px;
-  border-radius: var(--radius-sketch-primary, 255px 15px 225px 15px / 15px 225px 15px 255px);
-  border: 2px solid var(--color-ink);
-  background: #fdfbf6;
+  padding: 9px 15px;
+  border-radius: 999px;
+  border: 3px solid var(--color-ink);
+  background: #fffdf5;
   color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  box-shadow: 3px 3px 0 rgba(200, 190, 180, 0.55), 6px 6px 0 rgba(180, 170, 160, 0.28);
+  box-shadow: 4px 4px 0 0 var(--color-ink);
   transition: box-shadow 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
 }
 .innerverse-pill:hover {
-  transform: translateY(-2px) rotate(-0.5deg);
-  box-shadow: 4px 4px 0 rgba(200, 190, 180, 0.6), 8px 8px 0 rgba(180, 170, 160, 0.3);
-  background: #fdfbf6;
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0 0 var(--color-ink);
+}
+.innerverse-pill:active {
+  transform: translateY(1px);
+  box-shadow: 2px 2px 0 0 var(--color-ink);
 }
 .innerverse-pill-star { font-size: 11px; }
-.innerverse-pill--checkin { bottom: 64px; color: var(--color-ink); border-color: var(--color-ink); }
-.innerverse-pill--practice { bottom: 112px; color: var(--color-ink); border-color: var(--color-ink); }
-.innerverse-pill--synastry { bottom: 160px; color: var(--color-ink); border-color: var(--color-ink); }
+.innerverse-pill--checkin {
+  bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-sky);
+}
+.innerverse-pill--practice {
+  bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-sage);
+}
+.innerverse-pill--synastry {
+  bottom: calc(172px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-rose);
+}
+@media (max-width: 480px) {
+  .innerverse-pill { font-size: 11.5px; padding: 8px 12px; right: 12px; }
+  .innerverse-pill--checkin { bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
+  .innerverse-pill--practice { bottom: calc(108px + env(safe-area-inset-bottom, 0px)); }
+  .innerverse-pill--synastry { bottom: calc(154px + env(safe-area-inset-bottom, 0px)); }
+}
 .innerverse-pill--therapist { bottom: 208px; color: var(--color-ink); border-color: rgba(74, 62, 53, 0.55); font-weight: 700; }
 .innerverse-pill--practice {
   right: 18px;

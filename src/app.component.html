@@ -516,6 +516,9 @@
     </app-help-modal>
   }
 
+  <!-- PWA install dialog (khmyznikov/pwa-install-inspired) -->
+  <app-install-prompt />
+
   <!-- Synastry Panel -->
   @if (isSynastryOpen()) {
     @if (synastryPartnerResponses().length > 0 && assessmentResponses().length > 0) {

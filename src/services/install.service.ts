@@ -23,6 +23,7 @@ export class InstallService {
   readonly dialogOpen = signal(false);
 
   private deferredPrompt: BeforeInstallPromptEvent | null = null;
+  private autoTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     if (this.installed()) return;
@@ -31,6 +32,9 @@ export class InstallService {
       e.preventDefault();
       this.deferredPrompt = e as BeforeInstallPromptEvent;
       this.canInstall.set(true);
+      // The event often arrives AFTER the app constructor ran — arm the
+      // auto-offer here, not once at startup, or the dialog never shows.
+      this.autoOpenAfterDelay(9000);
     });
 
     window.addEventListener('appinstalled', () => {
@@ -48,7 +52,11 @@ export class InstallService {
 
   autoOpenAfterDelay(ms: number): void {
     if (!this.canPrompt()) return;
-    setTimeout(() => this.open(), ms);
+    if (this.autoTimer !== null) return; // one pending timer at most
+    this.autoTimer = setTimeout(() => {
+      this.autoTimer = null;
+      this.open();
+    }, ms);
   }
 
   dismiss(): void {

@@ -1,3 +1,16 @@
+/* The report is its own scroll host: body/app-root are overflow:hidden
+ * (the shell pattern), so without this the report cannot scroll on touch
+ * devices — it renders one frozen screen. */
+:host {
+  display: block;
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  background: #0b0b1e;
+}
+
 /* Innerverse report — warm cosmos, strength-first */
 .report {
   position: relative;

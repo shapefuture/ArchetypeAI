@@ -12,6 +12,7 @@ import {
 } from '../../core/data/parts';
 import { PART_COPY, LAYERS, type LayerKey } from '../../core/data/part-copy';
 import { constellationName, constellationEssay, subtypeName, resourceName, COMPLEX_COPY_RU, polarizationName as polName } from '../../core/data/constellation-copy';
+import { generateLinkCode } from '../../core/data/therapist-link';
 import { InnerverseConstellationComponent } from '../constellation/innerverse-constellation.component';
 import type { ScoredProfile } from '../../core/data/scoring-v2';
 import { attributionRatio } from '../../core/data/state-v2';
@@ -55,6 +56,22 @@ const UI = {
     ethics: 'This is a self-reflection tool grounded in the Internal Family Systems model, not a diagnosis or therapy.',
     crisis: 'Today\'s result is heavy. If it stirs more than it settles, crisis resources are one tap away in Settings.',
     back: 'Back',
+    continueTitle: 'Continue your journey',
+    continueSub: 'The map is yours — these keep it alive.',
+    saveTitle: 'Save your map',
+    saveDesc: 'Register so your map, check-ins and practice travel with you across devices.',
+    saveCta: 'Create account / sign in',
+    cabinetTitle: 'Your personal cabinet',
+    cabinetDesc: 'Your dashboard: results, backups, linked specialists.',
+    cabinetCta: 'Open cabinet',
+    practiceTitle: 'Begin daily practice',
+    practiceDesc: 'A five-chapter path, one gentle practice at a time.',
+    practiceCta: 'Open practice',
+    specialistTitle: 'Deep dive with a specialist',
+    specialistDesc: 'Share this code with your therapist or coach — they can follow your map in their dashboard.',
+    specialistCta: 'Show my code',
+    specialistCodeHint: 'Read it to your specialist, or send it any way you like.',
+    copied: 'Copied!',
     tierNames: { dormant: 'dormant', present: 'present', prominent: 'prominent', dominant: 'holding the floor' } as Record<Tier, string>,
     complexTierNames: { active: 'active', gripping: 'gripping' } as Record<string, string>,
   },
@@ -94,6 +111,22 @@ const UI = {
     ethics: 'Это инструмент саморефлексии на основе модели «Внутренние семейные системы», а не диагностика и не терапия.',
     crisis: 'Сегодняшний результат тяжёлый. Если он поднимает больше, чем успокаивает, — ресурсы поддержки в одном нажатии в настройках.',
     back: 'Назад',
+    continueTitle: 'Продолжите путь',
+    continueSub: 'Карта ваша — эти шаги не дадут ей замолчать.',
+    saveTitle: 'Сохраните карту',
+    saveDesc: 'Зарегистрируйтесь — карта, чек-ины и практика будут с вами на любом устройстве.',
+    saveCta: 'Создать аккаунт / войти',
+    cabinetTitle: 'Личный кабинет',
+    cabinetDesc: 'Ваша панель: результаты, резервные копии, связанные специалисты.',
+    cabinetCta: 'Открыть кабинет',
+    practiceTitle: 'Начните ежедневную практику',
+    practiceDesc: 'Путь из пяти глав — по одной мягкой практике за раз.',
+    practiceCta: 'Открыть практику',
+    specialistTitle: 'Глубокая сессия со специалистом',
+    specialistDesc: 'Передайте этот код своему терапевту или коучу — он увидит вашу карту в своей панели.',
+    specialistCta: 'Показать мой код',
+    specialistCodeHint: 'Продиктуйте код специалисту или отправьте любым способом.',
+    copied: 'Скопировано!',
     tierNames: { dormant: 'дремлет', present: 'присутствует', prominent: 'заметна', dominant: 'держит слово' } as Record<Tier, string>,
     complexTierNames: { active: 'активен', gripping: 'сжимает' } as Record<string, string>,
   },
@@ -155,6 +188,35 @@ export class InnerverseReportComponent implements AfterViewInit, OnDestroy {
   /** model (not plain input) so hosts bind [profile] and tests can .set() it. */
   readonly profile = model.required<ScoredProfile>();
   back = output<void>();
+  saveRequested = output<void>();
+  cabinetRequested = output<void>();
+  practiceRequested = output<void>();
+
+  /** §3B.4: stable client code the user reads to their specialist. */
+  readonly specialistCode = signal(this.loadOrMakeCode());
+  readonly codeShown = signal(false);
+  readonly codeCopied = signal(false);
+
+  private loadOrMakeCode(): string {
+    const KEY = 'INNERVERSE_CLIENT_CODE_V1';
+    try {
+      const saved = localStorage.getItem(KEY);
+      if (saved) return saved;
+      const code = generateLinkCode();
+      localStorage.setItem(KEY, code);
+      return code;
+    } catch { return generateLinkCode(); }
+  }
+
+  toggleCode(): void {
+    this.codeShown.update(v => !v);
+    this.codeCopied.set(false);
+  }
+
+  copyCode(): void {
+    try { navigator.clipboard?.writeText(this.specialistCode()); } catch { /* no clipboard */ }
+    this.codeCopied.set(true);
+  }
 
   readonly lang = computed(() => this.translationService.getLanguage());
   readonly ui = computed(() => UI[this.lang()] as typeof UI.en);

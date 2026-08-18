@@ -122,7 +122,10 @@
       @if (innerverseProfile(); as p) {
         <app-innerverse-report
           [profile]="p"
-          (back)="onInnerverseBack()">
+          (back)="onInnerverseBack()"
+          (saveRequested)="openLoginModal()"
+          (cabinetRequested)="openCabinet()"
+          (practiceRequested)="onInnerverseBack(); openPractice()">
         </app-innerverse-report>
       }
     }

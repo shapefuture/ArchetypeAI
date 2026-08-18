@@ -1,0 +1,219 @@
+- article [ref=f1e1707]:
+  - generic [ref=f1e1708]:
+    - button "Назад" [ref=f1e1709] [cursor=pointer]
+    - paragraph [ref=f1e1713]: Созвездие
+    - heading "Загнанная буря" [level=1] [ref=f1e1714]
+    - paragraph [ref=f1e1715]: Вы бросаетесь в драку, потому что неподвижность однажды означала удар.
+    - paragraph [ref=f1e1716]: Загнанный и Вздрогнувший ребёнок
+    - 'img "Ваше внутреннее созвездие: 18 частей вокруг Self" [ref=f1e1719]'
+  - generic [ref=f1e1720]:
+    - heading "Ваш сильнейший ресурс ведёт" [level=2] [ref=f1e1721]
+    - paragraph [ref=f1e1722]: Мудрец
+    - paragraph [ref=f1e1723]: Ваш «Мудрец» включён. Всё ниже — погода вокруг него. Сначала силы, всегда.
+  - generic [ref=f1e1724]:
+    - generic [ref=f1e1725]:
+      - heading "Энергия Self" [level=2] [ref=f1e1726]
+      - generic [ref=f1e1727]: 63/100
+    - generic [ref=f1e1728]:
+      - generic [ref=f1e1729]: Нагрузка системы
+      - generic [ref=f1e1732]: "27"
+    - paragraph [ref=f1e1733]: Радар Self · 8 качеств (ориентировочно, не диагностика)
+    - generic [ref=f1e1734]:
+      - generic [ref=f1e1735]:
+        - generic [ref=f1e1736]: calm
+        - generic [ref=f1e1739]: "50"
+      - generic [ref=f1e1740]:
+        - generic [ref=f1e1741]: clarity
+        - generic [ref=f1e1744]: "60"
+      - generic [ref=f1e1745]:
+        - generic [ref=f1e1746]: compassion
+        - generic [ref=f1e1749]: "50"
+      - generic [ref=f1e1750]:
+        - generic [ref=f1e1751]: curiosity
+        - generic [ref=f1e1754]: "60"
+      - generic [ref=f1e1755]:
+        - generic [ref=f1e1756]: confidence
+        - generic [ref=f1e1759]: "50"
+      - generic [ref=f1e1760]:
+        - generic [ref=f1e1761]: courage
+        - generic [ref=f1e1764]: "60"
+      - generic [ref=f1e1765]:
+        - generic [ref=f1e1766]: creativity
+        - generic [ref=f1e1769]: "50"
+      - generic [ref=f1e1770]:
+        - generic [ref=f1e1771]: connectedness
+        - generic [ref=f1e1774]: "60"
+    - generic [ref=f1e1775]:
+      - generic [ref=f1e1776]: Флюгер языка · сущность ↔ поведение (ориентировочно)
+      - paragraph [ref=f1e1777]: Со временем запечатанные выводы нарисуют этот флюгер.
+    - generic [ref=f1e1778]:
+      - text: "Паттерн привязанности:"
+      - strong [ref=f1e1779]: Скорее надёжная
+  - generic [ref=f1e1780]:
+    - heading "Ваши части — от громких к тихим" [level=2] [ref=f1e1781]
+    - paragraph [ref=f1e1782]: "нажмите на карточку: лицо → потребность → тень → суперсила"
+    - generic [ref=f1e1783]:
+      - button "Загнанный заметна Лицо Тот, кому не указывают. T 61" [ref=f1e1784] [cursor=pointer]:
+        - generic [ref=f1e1785]:
+          - generic [ref=f1e1786]: Загнанный
+          - generic [ref=f1e1787]: заметна
+        - generic [ref=f1e1788]: Лицо
+        - paragraph [ref=f1e1789]: Тот, кому не указывают.
+        - generic [ref=f1e1792]: T 61
+      - button "Вздрогнувший ребёнок заметна Лицо Тот, кто знает, где выходы. T 60" [ref=f1e1793] [cursor=pointer]:
+        - generic [ref=f1e1794]:
+          - generic [ref=f1e1795]: Вздрогнувший ребёнок
+          - generic [ref=f1e1796]: заметна
+        - generic [ref=f1e1797]: Лицо
+        - paragraph [ref=f1e1798]: Тот, кто знает, где выходы.
+        - generic [ref=f1e1801]: T 60
+      - button "Созерцатель неба присутствует Лицо Мгновенно находящий светлую сторону. T 59" [ref=f1e1802] [cursor=pointer]:
+        - generic [ref=f1e1803]:
+          - generic [ref=f1e1804]: Созерцатель неба
+          - generic [ref=f1e1805]: присутствует
+        - generic [ref=f1e1806]: Лицо
+        - paragraph [ref=f1e1807]: Мгновенно находящий светлую сторону.
+        - generic [ref=f1e1810]: T 59
+      - button "Играющий с огнём присутствует Лицо Незабываемый выход и идеальная последняя реплика. T 59" [ref=f1e1811] [cursor=pointer]:
+        - generic [ref=f1e1812]:
+          - generic [ref=f1e1813]: Играющий с огнём
+          - generic [ref=f1e1814]: присутствует
+        - generic [ref=f1e1815]: Лицо
+        - paragraph [ref=f1e1816]: Незабываемый выход и идеальная последняя реплика.
+        - generic [ref=f1e1819]: T 59
+      - button "Час до рассвета присутствует Лицо Тот, кто всегда пишет первым. T 58" [ref=f1e1820] [cursor=pointer]:
+        - generic [ref=f1e1821]:
+          - generic [ref=f1e1822]: Час до рассвета
+          - generic [ref=f1e1823]: присутствует
+        - generic [ref=f1e1824]: Лицо
+        - paragraph [ref=f1e1825]: Тот, кто всегда пишет первым.
+        - generic [ref=f1e1828]: T 58
+      - button "В маске присутствует Лицо Тот, кто прячет настоящую работу. T 58" [ref=f1e1829] [cursor=pointer]:
+        - generic [ref=f1e1830]:
+          - generic [ref=f1e1831]: В маске
+          - generic [ref=f1e1832]: присутствует
+        - generic [ref=f1e1833]: Лицо
+        - paragraph [ref=f1e1834]: Тот, кто прячет настоящую работу.
+        - generic [ref=f1e1837]: T 58
+      - button "Хранитель бункера присутствует Лицо Тот, кого славно трудно достать. T 57" [ref=f1e1838] [cursor=pointer]:
+        - generic [ref=f1e1839]:
+          - generic [ref=f1e1840]: Хранитель бункера
+          - generic [ref=f1e1841]: присутствует
+        - generic [ref=f1e1842]: Лицо
+        - paragraph [ref=f1e1843]: Тот, кого славно трудно достать.
+        - generic [ref=f1e1846]: T 57
+      - button "Саботажник присутствует Лицо Тот, у кого всё нормально, всегда нормально. T 57" [ref=f1e1847] [cursor=pointer]:
+        - generic [ref=f1e1848]:
+          - generic [ref=f1e1849]: Саботажник
+          - generic [ref=f1e1850]: присутствует
+        - generic [ref=f1e1851]: Лицо
+        - paragraph [ref=f1e1852]: Тот, у кого всё нормально, всегда нормально.
+        - generic [ref=f1e1855]: T 57
+      - button "Неуслышанный крик присутствует Лицо Тихий на краю фотографии. T 56" [ref=f1e1856] [cursor=pointer]:
+        - generic [ref=f1e1857]:
+          - generic [ref=f1e1858]: Неуслышанный крик
+          - generic [ref=f1e1859]: присутствует
+        - generic [ref=f1e1860]: Лицо
+        - paragraph [ref=f1e1861]: Тихий на краю фотографии.
+        - generic [ref=f1e1864]: T 56
+      - button "Тиран присутствует Лицо Плановой с запасным вариантом на всё. T 52" [ref=f1e1865] [cursor=pointer]:
+        - generic [ref=f1e1866]:
+          - generic [ref=f1e1867]: Тиран
+          - generic [ref=f1e1868]: присутствует
+        - generic [ref=f1e1869]: Лицо
+        - paragraph [ref=f1e1870]: Плановой с запасным вариантом на всё.
+        - generic [ref=f1e1873]: T 52
+      - button "Дозорная башня присутствует Лицо Спокойный объясняющий всё происходящее. T 52" [ref=f1e1874] [cursor=pointer]:
+        - generic [ref=f1e1875]:
+          - generic [ref=f1e1876]: Дозорная башня
+          - generic [ref=f1e1877]: присутствует
+        - generic [ref=f1e1878]: Лицо
+        - paragraph [ref=f1e1879]: Спокойный объясняющий всё происходящее.
+        - generic [ref=f1e1882]: T 52
+      - button "Прокурор присутствует Лицо Строгий оценщик всего, что ты делаешь. T 52" [ref=f1e1883] [cursor=pointer]:
+        - generic [ref=f1e1884]:
+          - generic [ref=f1e1885]: Прокурор
+          - generic [ref=f1e1886]: присутствует
+        - generic [ref=f1e1887]: Лицо
+        - paragraph [ref=f1e1888]: Строгий оценщик всего, что ты делаешь.
+        - generic [ref=f1e1891]: T 52
+      - button "Звезда сцены присутствует Лицо Тот, кто всегда на виду продуктивен. T 50" [ref=f1e1892] [cursor=pointer]:
+        - generic [ref=f1e1893]:
+          - generic [ref=f1e1894]: Звезда сцены
+          - generic [ref=f1e1895]: присутствует
+        - generic [ref=f1e1896]: Лицо
+        - paragraph [ref=f1e1897]: Тот, кто всегда на виду продуктивен.
+        - generic [ref=f1e1900]: T 50
+      - button "Дипломат присутствует Лицо Уживчивый, сглаживающий любое напряжение. T 50" [ref=f1e1901] [cursor=pointer]:
+        - generic [ref=f1e1902]:
+          - generic [ref=f1e1903]: Дипломат
+          - generic [ref=f1e1904]: присутствует
+        - generic [ref=f1e1905]: Лицо
+        - paragraph [ref=f1e1906]: Уживчивый, сглаживающий любое напряжение.
+        - generic [ref=f1e1909]: T 50
+  - generic [ref=f1e1910]:
+    - heading "Активные сюжетные линии" [level=2] [ref=f1e1911]
+    - generic [ref=f1e1912]:
+      - generic [ref=f1e1913]:
+        - generic [ref=f1e1914]: Комплекс поглощения
+        - generic [ref=f1e1915]: активен · 57
+      - paragraph [ref=f1e1916]:
+        - emphasis [ref=f1e1917]: "Фраза, которая ведёт эту линию:"
+        - text: “Если я подчинюсь, я исчезну.”
+      - paragraph [ref=f1e1918]:
+        - emphasis [ref=f1e1919]: "Микро-эксперимент этой недели:"
+        - text: Найдите на этой неделе одно «да», которое ничего не стоит вам самим, — и подарите его свободно.
+    - generic [ref=f1e1920]:
+      - generic [ref=f1e1921]:
+        - generic [ref=f1e1922]: Комплекс нелюбимости
+        - generic [ref=f1e1923]: активен · 56
+      - paragraph [ref=f1e1924]:
+        - emphasis [ref=f1e1925]: "Фраза, которая ведёт эту линию:"
+        - text: “Мои потребности — обуза; любовь нужно заслужить жертвой.”
+      - paragraph [ref=f1e1926]:
+        - emphasis [ref=f1e1927]: "Микро-эксперимент этой недели:"
+        - text: Попросите одну мелочь для себя и примите её, не возвращая долг.
+  - generic [ref=f1e1928]:
+    - heading "Ваша стратегия совладания · как система эскалирует" [level=2] [ref=f1e1929]
+    - list [ref=f1e1930]:
+      - listitem [ref=f1e1931]:
+        - generic [ref=f1e1932]: The Sky Gazer
+      - listitem [ref=f1e1933]: когда это не срабатывает…
+      - listitem [ref=f1e1934]:
+        - generic [ref=f1e1935]: The Cornered One
+      - listitem [ref=f1e1936]: когда это не срабатывает…
+      - listitem [ref=f1e1937]:
+        - generic [ref=f1e1938]: The Flirt with Fire
+      - listitem [ref=f1e1939]: когда это не срабатывает…
+      - listitem [ref=f1e1940]:
+        - generic [ref=f1e1941]: The Unheard Scream
+        - generic [ref=f1e1942]: “Я не имею значения.”
+        - generic [ref=f1e1943]: на дне
+  - generic [ref=f1e1944]:
+    - heading "О чём просит ваша система" [level=2] [ref=f1e1945]
+    - paragraph [ref=f1e1946]: Ваша самая громкая неудовлетворённая потребность сейчас.
+    - generic [ref=f1e1947]:
+      - generic [ref=f1e1948]: autonomy
+      - paragraph [ref=f1e1949]: Скажите одно маленькое чистое «нет» на этой неделе и останьтесь с этим дискомфортом.
+  - heading "Ресурсы · диапазоны" [level=2] [ref=f1e1951]
+  - generic [ref=f1e1952]:
+    - heading "Продолжите путь" [level=2] [ref=f1e1953]
+    - paragraph [ref=f1e1954]: Карта ваша — эти шаги не дадут ей замолчать.
+    - generic [ref=f1e1955]:
+      - generic [ref=f1e1956]:
+        - heading "Сохраните карту" [level=3] [ref=f1e1957]
+        - paragraph [ref=f1e1958]: Зарегистрируйтесь — карта, чек-ины и практика будут с вами на любом устройстве.
+        - button "Создать аккаунт / войти" [ref=f1e1959] [cursor=pointer]
+      - generic [ref=f1e1960]:
+        - heading "Личный кабинет" [level=3] [ref=f1e1961]
+        - paragraph [ref=f1e1962]: "Ваша панель: результаты, резервные копии, связанные специалисты."
+        - button "Открыть кабинет" [ref=f1e1963] [cursor=pointer]
+      - generic [ref=f1e1964]:
+        - heading "Начните ежедневную практику" [level=3] [ref=f1e1965]
+        - paragraph [ref=f1e1966]: Путь из пяти глав — по одной мягкой практике за раз.
+        - button "Открыть практику" [ref=f1e1967] [cursor=pointer]
+      - generic [ref=f1e1968]:
+        - heading "Глубокая сессия со специалистом" [level=3] [ref=f1e1969]
+        - paragraph [ref=f1e1970]: Передайте этот код своему терапевту или коучу — он увидит вашу карту в своей панели.
+        - button "Показать мой код" [ref=f1e1971] [cursor=pointer]
+  - generic [ref=f1e1972]: Это инструмент саморефлексии на основе модели «Внутренние семейные системы», а не диагностика и не терапия.

@@ -1,0 +1,241 @@
+- generic [ref=f1e3]:
+  - article [ref=f1e1711]:
+    - generic [ref=f1e1712]:
+      - button "Back" [ref=f1e1713] [cursor=pointer]
+      - paragraph [ref=f1e1717]: Constellation of
+      - heading "The Cornered Storm" [level=1] [ref=f1e1718]
+      - paragraph [ref=f1e1719]: You come out swinging because stillness once meant getting hit.
+      - paragraph [ref=f1e1720]: The Cornered One and The Startled Child
+      - 'img "Your inner constellation: 18 parts around the Self" [ref=f1e1723]'
+    - generic [ref=f1e1724]:
+      - heading "Your strongest resource leads" [level=2] [ref=f1e1725]
+      - paragraph [ref=f1e1726]: sage
+      - paragraph [ref=f1e1727]: Your sage is online. Everything below is weather around it — strengths first, always.
+    - generic [ref=f1e1728]:
+      - generic [ref=f1e1729]:
+        - heading "Self energy" [level=2] [ref=f1e1730]
+        - generic [ref=f1e1731]: 63/100
+      - generic [ref=f1e1732]:
+        - generic [ref=f1e1733]: System burden
+        - generic [ref=f1e1736]: "27"
+      - paragraph [ref=f1e1737]: Self Radar · 8 qualities (indicative, not diagnostic)
+      - generic [ref=f1e1738]:
+        - generic [ref=f1e1739]:
+          - generic [ref=f1e1740]: calm
+          - generic [ref=f1e1743]: "50"
+        - generic [ref=f1e1744]:
+          - generic [ref=f1e1745]: clarity
+          - generic [ref=f1e1748]: "60"
+        - generic [ref=f1e1749]:
+          - generic [ref=f1e1750]: compassion
+          - generic [ref=f1e1753]: "50"
+        - generic [ref=f1e1754]:
+          - generic [ref=f1e1755]: curiosity
+          - generic [ref=f1e1758]: "60"
+        - generic [ref=f1e1759]:
+          - generic [ref=f1e1760]: confidence
+          - generic [ref=f1e1763]: "50"
+        - generic [ref=f1e1764]:
+          - generic [ref=f1e1765]: courage
+          - generic [ref=f1e1768]: "60"
+        - generic [ref=f1e1769]:
+          - generic [ref=f1e1770]: creativity
+          - generic [ref=f1e1773]: "50"
+        - generic [ref=f1e1774]:
+          - generic [ref=f1e1775]: connectedness
+          - generic [ref=f1e1778]: "60"
+      - generic [ref=f1e1779]:
+        - generic [ref=f1e1780]: Language weather vane · essence ↔ behavior (indicative)
+        - paragraph [ref=f1e1781]: Your sealed verdicts will draw this vane over time.
+      - generic [ref=f1e1782]:
+        - text: "Attachment pattern:"
+        - strong [ref=f1e1783]: Secure leaning
+    - generic [ref=f1e1784]:
+      - heading "Your parts, loudest to quietest" [level=2] [ref=f1e1785]
+      - paragraph [ref=f1e1786]: "tap a card: face → need → shadow → superpower"
+      - generic [ref=f1e1787]:
+        - button "The Cornered One prominent Face The one who will not be told. T 61" [ref=f1e1788] [cursor=pointer]:
+          - generic [ref=f1e1789]:
+            - generic [ref=f1e1790]: The Cornered One
+            - generic [ref=f1e1791]: prominent
+          - generic [ref=f1e1792]: Face
+          - paragraph [ref=f1e1793]: The one who will not be told.
+          - generic [ref=f1e1796]: T 61
+        - button "The Startled Child prominent Face The one who knows where the exits are. T 60" [ref=f1e1797] [cursor=pointer]:
+          - generic [ref=f1e1798]:
+            - generic [ref=f1e1799]: The Startled Child
+            - generic [ref=f1e1800]: prominent
+          - generic [ref=f1e1801]: Face
+          - paragraph [ref=f1e1802]: The one who knows where the exits are.
+          - generic [ref=f1e1805]: T 60
+        - button "The Sky Gazer present Face The one who finds the silver lining instantly. T 59" [ref=f1e1806] [cursor=pointer]:
+          - generic [ref=f1e1807]:
+            - generic [ref=f1e1808]: The Sky Gazer
+            - generic [ref=f1e1809]: present
+          - generic [ref=f1e1810]: Face
+          - paragraph [ref=f1e1811]: The one who finds the silver lining instantly.
+          - generic [ref=f1e1814]: T 59
+        - button "The Flirt with Fire present Face The unforgettable entrance, the perfect exit line. T 59" [ref=f1e1815] [cursor=pointer]:
+          - generic [ref=f1e1816]:
+            - generic [ref=f1e1817]: The Flirt with Fire
+            - generic [ref=f1e1818]: present
+          - generic [ref=f1e1819]: Face
+          - paragraph [ref=f1e1820]: The unforgettable entrance, the perfect exit line.
+          - generic [ref=f1e1823]: T 59
+        - button "The Small Hours present Face The one who texts first, always. T 58" [ref=f1e1824] [cursor=pointer]:
+          - generic [ref=f1e1825]:
+            - generic [ref=f1e1826]: The Small Hours
+            - generic [ref=f1e1827]: present
+          - generic [ref=f1e1828]: Face
+          - paragraph [ref=f1e1829]: The one who texts first, always.
+          - generic [ref=f1e1832]: T 58
+        - button "The Masked One present Face The one who hides the real work. T 58" [ref=f1e1833] [cursor=pointer]:
+          - generic [ref=f1e1834]:
+            - generic [ref=f1e1835]: The Masked One
+            - generic [ref=f1e1836]: present
+          - generic [ref=f1e1837]: Face
+          - paragraph [ref=f1e1838]: The one who hides the real work.
+          - generic [ref=f1e1841]: T 58
+        - button "The Bunker Keeper present Face The one who is gloriously hard to reach. T 57" [ref=f1e1842] [cursor=pointer]:
+          - generic [ref=f1e1843]:
+            - generic [ref=f1e1844]: The Bunker Keeper
+            - generic [ref=f1e1845]: present
+          - generic [ref=f1e1846]: Face
+          - paragraph [ref=f1e1847]: The one who is gloriously hard to reach.
+          - generic [ref=f1e1850]: T 57
+        - button "The Saboteur present Face The one who is fine, always fine. T 57" [ref=f1e1851] [cursor=pointer]:
+          - generic [ref=f1e1852]:
+            - generic [ref=f1e1853]: The Saboteur
+            - generic [ref=f1e1854]: present
+          - generic [ref=f1e1855]: Face
+          - paragraph [ref=f1e1856]: The one who is fine, always fine.
+          - generic [ref=f1e1859]: T 57
+        - button "The Unheard Scream present Face The quiet one at the edge of the photo. T 56" [ref=f1e1860] [cursor=pointer]:
+          - generic [ref=f1e1861]:
+            - generic [ref=f1e1862]: The Unheard Scream
+            - generic [ref=f1e1863]: present
+          - generic [ref=f1e1864]: Face
+          - paragraph [ref=f1e1865]: The quiet one at the edge of the photo.
+          - generic [ref=f1e1868]: T 56
+        - button "The Tyrant present Face The planner with a contingency for everything. T 52" [ref=f1e1869] [cursor=pointer]:
+          - generic [ref=f1e1870]:
+            - generic [ref=f1e1871]: The Tyrant
+            - generic [ref=f1e1872]: present
+          - generic [ref=f1e1873]: Face
+          - paragraph [ref=f1e1874]: The planner with a contingency for everything.
+          - generic [ref=f1e1877]: T 52
+        - button "The Watchtower present Face The calm explainer of whatever happens. T 52" [ref=f1e1878] [cursor=pointer]:
+          - generic [ref=f1e1879]:
+            - generic [ref=f1e1880]: The Watchtower
+            - generic [ref=f1e1881]: present
+          - generic [ref=f1e1882]: Face
+          - paragraph [ref=f1e1883]: The calm explainer of whatever happens.
+          - generic [ref=f1e1886]: T 52
+        - button "The Prosecutor present Face The sharp evaluator of everything you do. T 52" [ref=f1e1887] [cursor=pointer]:
+          - generic [ref=f1e1888]:
+            - generic [ref=f1e1889]: The Prosecutor
+            - generic [ref=f1e1890]: present
+          - generic [ref=f1e1891]: Face
+          - paragraph [ref=f1e1892]: The sharp evaluator of everything you do.
+          - generic [ref=f1e1895]: T 52
+        - button "The Star Performer present Face The one who is always visibly productive. T 50" [ref=f1e1896] [cursor=pointer]:
+          - generic [ref=f1e1897]:
+            - generic [ref=f1e1898]: The Star Performer
+            - generic [ref=f1e1899]: present
+          - generic [ref=f1e1900]: Face
+          - paragraph [ref=f1e1901]: The one who is always visibly productive.
+          - generic [ref=f1e1904]: T 50
+        - button "The Diplomat present Face The agreeable one who keeps every room smooth. T 50" [ref=f1e1905] [cursor=pointer]:
+          - generic [ref=f1e1906]:
+            - generic [ref=f1e1907]: The Diplomat
+            - generic [ref=f1e1908]: present
+          - generic [ref=f1e1909]: Face
+          - paragraph [ref=f1e1910]: The agreeable one who keeps every room smooth.
+          - generic [ref=f1e1913]: T 50
+    - generic [ref=f1e1914]:
+      - heading "Active storylines" [level=2] [ref=f1e1915]
+      - generic [ref=f1e1916]:
+        - generic [ref=f1e1917]:
+          - generic [ref=f1e1918]: The Engulfment Complex
+          - generic [ref=f1e1919]: active · 57
+        - paragraph [ref=f1e1920]:
+          - emphasis [ref=f1e1921]: "The sentence that runs this storyline:"
+          - text: “If I comply, I will disappear.”
+        - paragraph [ref=f1e1922]:
+          - emphasis [ref=f1e1923]: "This week's micro-experiment:"
+          - text: Find one "yes" this week that does not cost you yourself — and give it freely.
+      - generic [ref=f1e1924]:
+        - generic [ref=f1e1925]:
+          - generic [ref=f1e1926]: The Unlovability Complex
+          - generic [ref=f1e1927]: active · 56
+        - paragraph [ref=f1e1928]:
+          - emphasis [ref=f1e1929]: "The sentence that runs this storyline:"
+          - text: “My needs are a burden; love must be earned through sacrifice.”
+        - paragraph [ref=f1e1930]:
+          - emphasis [ref=f1e1931]: "This week's micro-experiment:"
+          - text: Ask for one small thing for yourself and accept it without repaying.
+    - generic [ref=f1e1932]:
+      - heading "Your coping stack · how the system escalates" [level=2] [ref=f1e1933]
+      - list [ref=f1e1934]:
+        - listitem [ref=f1e1935]:
+          - generic [ref=f1e1936]: The Sky Gazer
+        - listitem [ref=f1e1937]: when that fails…
+        - listitem [ref=f1e1938]:
+          - generic [ref=f1e1939]: The Cornered One
+        - listitem [ref=f1e1940]: when that fails…
+        - listitem [ref=f1e1941]:
+          - generic [ref=f1e1942]: The Flirt with Fire
+        - listitem [ref=f1e1943]: when that fails…
+        - listitem [ref=f1e1944]:
+          - generic [ref=f1e1945]: The Unheard Scream
+          - generic [ref=f1e1946]: “I do not matter.”
+          - generic [ref=f1e1947]: at the floor
+    - generic [ref=f1e1948]:
+      - heading "What your system is asking for" [level=2] [ref=f1e1949]
+      - paragraph [ref=f1e1950]: Your loudest unmet need right now.
+      - generic [ref=f1e1951]:
+        - generic [ref=f1e1952]: autonomy
+        - paragraph [ref=f1e1953]: Say one small, clean no this week and stay in the room with the discomfort.
+    - heading "Resources · bands" [level=2] [ref=f1e1955]
+    - generic [ref=f1e1956]:
+      - heading "Continue your journey" [level=2] [ref=f1e1957]
+      - paragraph [ref=f1e1958]: The map is yours — these keep it alive.
+      - generic [ref=f1e1959]:
+        - generic [ref=f1e1960]:
+          - heading "Save your map" [level=3] [ref=f1e1961]
+          - paragraph [ref=f1e1962]: Register so your map, check-ins and practice travel with you across devices.
+          - button "Create account / sign in" [active] [ref=f1e1963] [cursor=pointer]
+        - generic [ref=f1e1964]:
+          - heading "Your personal cabinet" [level=3] [ref=f1e1965]
+          - paragraph [ref=f1e1966]: "Your dashboard: results, backups, linked specialists."
+          - button "Open cabinet" [ref=f1e1967] [cursor=pointer]
+        - generic [ref=f1e1968]:
+          - heading "Begin daily practice" [level=3] [ref=f1e1969]
+          - paragraph [ref=f1e1970]: A five-chapter path, one gentle practice at a time.
+          - button "Open practice" [ref=f1e1971] [cursor=pointer]
+        - generic [ref=f1e1972]:
+          - heading "Deep dive with a specialist" [level=3] [ref=f1e1973]
+          - paragraph [ref=f1e1974]: Share this code with your therapist or coach — they can follow your map in their dashboard.
+          - button "Show my code" [ref=f1e1975] [cursor=pointer]
+          - generic [ref=f1e1977]:
+            - generic [ref=f1e1978]: YZABQ4
+            - button "⧉" [ref=f1e1979] [cursor=pointer]
+          - generic [ref=f1e1980]: Read it to your specialist, or send it any way you like.
+    - generic [ref=f1e1976]: This is a self-reflection tool grounded in the Internal Family Systems model, not a diagnosis or therapy.
+  - generic [ref=f1e1982]:
+    - generic [ref=f1e1983]:
+      - generic [ref=f1e1984]:
+        - heading "Login" [level=3] [ref=f1e1985]
+        - paragraph [ref=f1e1986]: Sign in to access your cabinet, history, and saved synastries.
+      - button "✕" [ref=f1e1987] [cursor=pointer]
+    - generic [ref=f1e1988]:
+      - button "Continue with Google" [ref=f1e1989] [cursor=pointer]
+      - generic [ref=f1e1990]:
+        - generic [ref=f1e1991]: Email
+        - generic [ref=f1e1992]:
+          - textbox "Email" [ref=f1e1993]
+          - textbox "Password (6+ chars)" [ref=f1e1994]
+          - generic [ref=f1e1995]:
+            - button "Sign in" [ref=f1e1996] [cursor=pointer]
+            - button "Create account" [ref=f1e1997] [cursor=pointer]
+      - paragraph [ref=f1e1998]: "Note: Admin access sharing here is a convenience feature. Real security must be enforced via Firebase rules + custom claims."

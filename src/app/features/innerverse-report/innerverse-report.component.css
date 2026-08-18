@@ -232,3 +232,76 @@
   color: rgba(236, 234, 246, 0.75);
   font-style: italic;
 }
+
+/* Continuation cards — the after-the-map actions */
+.continue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.continue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border: 2px solid rgba(236, 234, 246, 0.25);
+  border-radius: 16px;
+  background: rgba(236, 234, 246, 0.06);
+}
+.continue-card h3 {
+  margin: 0;
+  font-family: var(--font-display, sans-serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: #f2e7c9;
+}
+.continue-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(236, 234, 246, 0.65);
+  flex: 1;
+}
+.continue-btn {
+  align-self: flex-start;
+  padding: 10px 18px;
+  border: 2px solid var(--color-ink, #201a3a);
+  border-radius: 999px;
+  background: var(--color-coral, #ff6b57);
+  color: var(--color-ink, #201a3a);
+  font-family: var(--font-display, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 0 #0d0d24;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.continue-btn:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 0 #0d0d24; }
+.continue-btn:active { transform: translateY(1px); box-shadow: 2px 2px 0 0 #0d0d24; }
+.code-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #0d0d24;
+  border: 2px dashed rgba(242, 231, 201, 0.5);
+  border-radius: 12px;
+}
+.code-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 20px;
+  letter-spacing: 0.35em;
+  color: #f2e7c9;
+}
+.code-copy {
+  margin-left: auto;
+  border: 2px solid rgba(242, 231, 201, 0.4);
+  background: rgba(236, 234, 246, 0.1);
+  color: #f2e7c9;
+  border-radius: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.code-hint { font-size: 11px; color: rgba(236, 234, 246, 0.5); }

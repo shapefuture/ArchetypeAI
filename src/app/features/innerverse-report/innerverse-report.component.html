@@ -196,6 +196,41 @@
     </div>
   </section>
 
+  <!-- Continuation: save / cabinet / practice / specialist after the map -->
+  <section class="panel continue-panel">
+    <h2>{{ ui().continueTitle }}</h2>
+    <p class="panel-sub">{{ ui().continueSub }}</p>
+    <div class="continue-grid">
+      <div class="continue-card">
+        <h3>{{ ui().saveTitle }}</h3>
+        <p>{{ ui().saveDesc }}</p>
+        <button class="continue-btn" (click)="saveRequested.emit()">{{ ui().saveCta }}</button>
+      </div>
+      <div class="continue-card">
+        <h3>{{ ui().cabinetTitle }}</h3>
+        <p>{{ ui().cabinetDesc }}</p>
+        <button class="continue-btn" (click)="cabinetRequested.emit()">{{ ui().cabinetCta }}</button>
+      </div>
+      <div class="continue-card">
+        <h3>{{ ui().practiceTitle }}</h3>
+        <p>{{ ui().practiceDesc }}</p>
+        <button class="continue-btn" (click)="practiceRequested.emit()">{{ ui().practiceCta }}</button>
+      </div>
+      <div class="continue-card">
+        <h3>{{ ui().specialistTitle }}</h3>
+        <p>{{ ui().specialistDesc }}</p>
+        <button class="continue-btn" (click)="toggleCode()">{{ ui().specialistCta }}</button>
+        @if (codeShown()) {
+          <div class="code-box">
+            <span class="code-value">{{ specialistCode() }}</span>
+            <button class="code-copy" (click)="copyCode()">{{ codeCopied() ? ui().copied : '⧉' }}</button>
+          </div>
+          <span class="code-hint">{{ ui().specialistCodeHint }}</span>
+        }
+      </div>
+    </div>
+  </section>
+
   <footer class="report-footer">{{ ui().ethics }}</footer>
 }
 </article>

@@ -19,6 +19,7 @@ import { resolve } from 'node:path';
 
 const LANDING_DIR = resolve(__dirname);
 const componentTs = readFileSync(resolve(LANDING_DIR, 'landing.component.ts'), 'utf-8');
+const componentCss = readFileSync(resolve(LANDING_DIR, 'landing.component.css'), 'utf-8');
 const templateHtml = readFileSync(resolve(LANDING_DIR, 'landing.component.html'), 'utf-8');
 const translationsTs = readFileSync(resolve(LANDING_DIR, '../../../i18n/translations.ts'), 'utf-8');
 
@@ -139,47 +140,27 @@ describe('LandingComponent — resume button styling (regression guard)', () => 
     expect(generatedCss).toMatch(/\.bg-amber(?:\\\\\/\d+)?\s*\{/);
   });
 
-  it('resume button should reference a defined bg-* color', () => {
-    // The sticker-btn has no default background — it relies on a Tailwind
-    // bg-* class. The resume button must use a defined color so the
-    // background is actually painted. We verify the bg-* class on the
-    // button within the resume block refers to a defined color.
+  it('resume card should have a painted background (component CSS)', () => {
+    // After the app-stage revamp the resume CTA is a `.resumecard`
+    // (welcome screen), styled by landing.component.css — not by a
+    // Tailwind bg-* utility. The regression intent stays: the button
+    // must not render with an empty/unpainted body. Assert the class
+    // is used in the template AND painted in the component stylesheet.
     const resumeBlock = templateHtml.match(/@if\s*\(\s*hasInProgressBackup\(\)\s*\)\s*\{[\s\S]*?\}/);
     expect(resumeBlock).not.toBeNull();
-    // Find the <button class="sticker-btn ..."> element specifically.
-    const btnMatch = resumeBlock![0].match(/<button\s+class="(sticker-btn[^"]*)"/);
-    expect(btnMatch).not.toBeNull();
-    const btnClasses = btnMatch![1];
-    // Must contain a bg-* class
-    expect(btnClasses).toMatch(/\bbg-([a-z-]+)(?:\/\d+)?/);
-    // And that color must be defined in the tailwind config (so Tailwind
-    // actually generates the rule).
-    const colorMatch = btnClasses.match(/\bbg-([a-z-]+)(?:\/\d+)?/);
-    expect(colorMatch).not.toBeNull();
-    const colorToken = colorMatch![1];
-    expect(isColorDefinedInTailwindConfig(colorToken)).toBe(true);
+    expect(resumeBlock![0]).toMatch(/<button\s+class="resumecard"/);
+    const resumecardRule = componentCss.match(/\.resumecard\s*\{[^}]*\}/);
+    expect(resumecardRule).not.toBeNull();
+    expect(resumecardRule![0]).toMatch(/background\s*:/);
   });
 
-  it('the EXACT bg-* class on the resume button must be in the generated CSS', () => {
-    // Strongest end-to-end test: extract the literal class string used
-    // in the template and assert the generated CSS contains a matching
-    // rule. This catches:
-    //   - Config has the color but the build pipeline didn't pick it up
-    //   - Template uses `bg-amber/20` but the color is defined as `var(--x)`
-    //     (Tailwind cannot generate /N opacity from CSS variables — a
-    //     project-wide constraint that affects every `var(--*)` color)
-    //   - Template uses a non-existent Tailwind utility
-    const resumeBlock = templateHtml.match(/@if\s*\(\s*hasInProgressBackup\(\)\s*\)\s*\{[\s\S]*?\}/);
-    expect(resumeBlock).not.toBeNull();
-    const btnMatch = resumeBlock![0].match(/<button\s+class="(sticker-btn[^"]*)"/);
-    expect(btnMatch).not.toBeNull();
-    const btnClasses = btnMatch![1];
-    // Grab the literal bg-* class (preserving any /N opacity modifier)
-    const bgClassMatch = btnClasses.match(/\b(bg-[a-z-]+(?:\/\d+)?)/);
-    expect(bgClassMatch).not.toBeNull();
-    const bgClass = bgClassMatch![1];
-    // In CSS, the slash is escaped: `bg-amber\/20` becomes `.bg-amber\/20`.
-    const cssSelector = '.' + bgClass.replace(/\//g, '\\/');
-    expect(generatedCss).toContain(cssSelector);
+  it('the resumecard background must survive the oklch/color-mix pipeline', () => {
+    // End-to-end guard: the rule must use a paint value that renders in
+    // every supported browser (color-mix over component-scoped vars is
+    // the design token path; a raw var(--undefined) would paint nothing).
+    const resumecardRule = componentCss.match(/\.resumecard\s*\{[^}]*\}/);
+    expect(resumecardRule).not.toBeNull();
+    expect(resumecardRule![0]).toMatch(/background\s*:\s*color-mix\(/);
+    expect(resumecardRule![0]).not.toMatch(/background\s*:\s*var\(--[a-z-]+\)\s*;/);
   });
 });

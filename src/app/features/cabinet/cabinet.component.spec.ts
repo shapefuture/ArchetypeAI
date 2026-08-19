@@ -168,17 +168,17 @@ describe('CabinetComponent — template + CSS regression guards', () => {
     // had no Russian translation. The fix: call t('navDashboard') etc.
     // from landing.component.html (the t() shortcut on LandingComponent
     // already routes to section='landing').
-    it('navbar buttons should be rendered via t()', () => {
-      // The template currently has 6 hardcoded instances total (3 desktop,
-      // 3 mobile) of Dashboard / Logout / Login. After the fix, every
-      // instance should be a t() interpolation.
+    it('cabinet/logout/login controls should be rendered via t()', () => {
+      // After the app-stage revamp the navbar is gone; the controls live
+      // on the You screen. The regression intent stands: no hardcoded
+      // English labels, everything through t().
       expect(landingHtml).not.toMatch(/>\s*Dashboard\s*</);
       expect(landingHtml).not.toMatch(/>\s*Logout\s*</);
       expect(landingHtml).not.toMatch(/>\s*Login\s*</);
       // And every replacement should be a t() call:
-      expect(landingHtml).toMatch(/\{\{\s*t\(['"]navDashboard['"]/);
-      expect(landingHtml).toMatch(/\{\{\s*t\(['"]navLogout['"]/);
-      expect(landingHtml).toMatch(/\{\{\s*t\(['"]navLogin['"]/);
+      expect(landingHtml).toMatch(/\{\{\s*t\(['"]youCabinet['"]/);
+      expect(landingHtml).toMatch(/\{\{\s*t\(['"]youLogout['"]/);
+      expect(landingHtml).toMatch(/\{\{\s*t\(['"]youSignIn['"]/);
     });
   });
 

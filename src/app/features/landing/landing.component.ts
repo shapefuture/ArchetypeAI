@@ -1,107 +1,71 @@
+/**
+ * INNERVERSE · app-stage landing — complete revamp per "inner verse.html".
+ *
+ * Not a marketing page: a phone-stage app (430px column, screens + dock)
+ * built from the reference's architecture — welcome / sky / codex / you —
+ * with the real 18-part taxonomy (7 managers + 3 firefighters + 4 exiles
+ * + 4 resources), the sticker characters, the ring-sky canvas, and the
+ * chemistry lab. All existing parent wiring (outputs) is preserved.
+ */
 import {
-  ChangeDetectionStrategy, Component, ElementRef, OnDestroy,
-  afterNextRender, computed, inject, signal, viewChild, output, input,
-  ChangeDetectorRef
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  afterNextRender,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TranslationService } from '../../../services/translation.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { gsap } from 'gsap';
-import { User } from '../../core/ports/auth.port';
-import { PART_COPY } from '../../core/data/part-copy';
+import { TranslationService } from '../../../services/translation.service';
 import { InstallService } from '../../../services/install.service';
+import { PART_COPY } from '../../core/data/part-copy';
+import { sticker, novaSvg, type EyeKind, type FamKind, type MouthKind } from './stickers';
 
-interface ShowcaseArchetype {
+// ---------------------------------------------------------------- data
+
+interface IvPart {
   id: string;
-  type: string;
+  fam: FamKind;
   color: string;
-  mood: 'happy' | 'joy' | 'neutral' | 'wise';
-  path: string;
-  stats: { agency: number; temperature: number; focus: number; attachment: number };
+  glyph: { e: EyeKind; m: MouthKind };
+  ax: { ag: number; te: number; fo: number; at: number };
+  name: [string, string];
+  short: [string, string];
 }
 
-interface ShowcasePainPoint {
-  icon: string;
-  color: string;
-  titleKey: string;
-  textKey: string;
-}
-
-const C = {
-  coral: '#FF6B5B', mustard: '#FFD93D', sage: '#7BC5A0', mint: '#6EE7B7',
-  sky: '#7DD3FC', lavender: '#C4B5FD', rose: '#FCA5A5', orange: '#FB923C', ink: '#1C1917'
-};
-
-// The REAL taxonomy (core/data/parts.ts): 7 managers + 3 firefighters +
-// 4 exiles + 4 resources = the 18 inner parts the battery measures.
-const SHAPES = [
-  'M50 8 C78 8 92 28 88 52 C85 76 68 92 50 92 C32 92 15 76 12 52 C8 28 22 8 50 8 Z',
-  'M50 5 L72 28 L95 22 L78 50 L95 78 L68 68 L50 95 L32 68 L5 78 L22 50 L5 22 L28 28 Z',
-  'M22 22 L78 22 L78 78 L22 78 Z',
-  'M50 5 L62 38 L98 38 L70 58 L80 92 L50 72 L20 92 L30 58 L2 38 L38 38 Z',
-  'M50 10 C82 10 94 38 86 62 C78 86 64 94 50 94 C36 94 22 86 14 62 C6 38 18 10 50 10 Z',
-  'M50 10 Q82 28 82 50 Q82 82 50 92 Q18 82 18 50 Q18 28 50 10 Z',
-  'M50 8 L90 68 L10 68 Z',
-  'M50 5 L92 26 L92 74 L50 95 L8 74 L8 26 Z',
-];
-const shape = (i: number) => SHAPES[i % SHAPES.length];
-
-const s = (agency: number, temperature: number, focus: number, attachment: number) =>
-  ({ agency, temperature, focus, attachment });
-
-const ARCHETYPES: ShowcaseArchetype[] = [
-  // Managers — preemptive order-keepers (wise faces)
-  { id: 'taskmaster',    type: 'manager',    color: '#ffb03a', mood: 'wise',    path: shape(0), stats: s(82, 60, 78, 30) },
-  { id: 'inner_critic',  type: 'manager',    color: '#9a6bff', mood: 'wise',    path: shape(3), stats: s(55, 40, 85, 45) },
-  { id: 'pleaser',       type: 'manager',    color: '#ff9fd1', mood: 'wise',    path: shape(4), stats: s(45, 70, 55, 88) },
-  { id: 'controller',    type: 'manager',    color: '#57c4ff', mood: 'wise',    path: shape(2), stats: s(75, 50, 90, 40) },
-  { id: 'analyst',       type: 'manager',    color: '#a5e3ff', mood: 'wise',    path: shape(5), stats: s(50, 25, 88, 35) },
-  { id: 'hermit',        type: 'manager',    color: '#b9b3e8', mood: 'wise',    path: shape(6), stats: s(40, 20, 70, 25) },
-  { id: 'bypasser',      type: 'manager',    color: '#8fe3b0', mood: 'wise',    path: shape(7), stats: s(48, 45, 50, 40) },
-  // Firefighters — reactive extinguishers (joy faces)
-  { id: 'numb',          type: 'firefighter', color: '#c9c4f0', mood: 'joy',    path: shape(1), stats: s(30, 15, 45, 20) },
-  { id: 'rebel',         type: 'firefighter', color: '#ff6b57', mood: 'joy',    path: shape(1), stats: s(88, 85, 35, 30) },
-  { id: 'charmer',       type: 'firefighter', color: '#ffc23c', mood: 'joy',    path: shape(0), stats: s(65, 80, 50, 75) },
-  // Exiles — the young carriers (neutral faces)
-  { id: 'abandoned',     type: 'exile',       color: '#f4a7c3', mood: 'neutral', path: shape(4), stats: s(25, 55, 30, 92) },
-  { id: 'ashamed',       type: 'exile',       color: '#c084fc', mood: 'neutral', path: shape(5), stats: s(20, 40, 35, 85) },
-  { id: 'frightened',    type: 'exile',       color: '#89d0f5', mood: 'neutral', path: shape(6), stats: s(22, 60, 28, 90) },
-  { id: 'unseen',        type: 'exile',       color: '#b0b7c9', mood: 'neutral', path: shape(7), stats: s(28, 35, 40, 80) },
-  // Resources — the grown strengths (happy faces)
-  { id: 'sage',          type: 'resource',    color: '#46d8ae', mood: 'happy',  path: shape(3), stats: s(60, 30, 75, 45) },
-  { id: 'warrior',       type: 'resource',    color: '#ef5a45', mood: 'happy',  path: shape(2), stats: s(90, 55, 80, 35) },
-  { id: 'caregiver',     type: 'resource',    color: '#ffd93d', mood: 'happy',  path: shape(4), stats: s(55, 75, 60, 82) },
-  { id: 'explorer',      type: 'resource',    color: '#4cc9f0', mood: 'happy',  path: shape(0), stats: s(78, 65, 55, 40) },
+/** The real 18-part roster — family colors, faces and axes from the reference. */
+const IV_PARTS: IvPart[] = [
+  // Managers — preemptive order-keepers
+  { id: 'taskmaster', fam: 'manager', color: '#DE6A40', glyph: { e: 'lid', m: 'grit' }, ax: { ag: 82, te: 60, fo: 78, at: 30 }, name: ['The Taskmaster', 'Деятель'], short: ['Taskmaster', 'Деятель'] },
+  { id: 'inner_critic', fam: 'manager', color: '#C76B85', glyph: { e: 'squint', m: 'flat' }, ax: { ag: 55, te: 40, fo: 85, at: 45 }, name: ['The Inner Critic', 'Внутренний критик'], short: ['Critic', 'Критик'] },
+  { id: 'pleaser', fam: 'manager', color: '#EF8FA5', glyph: { e: 'big', m: 'smile' }, ax: { ag: 45, te: 70, fo: 55, at: 88 }, name: ['The Pleaser', 'Угодник'], short: ['Pleaser', 'Угодник'] },
+  { id: 'controller', fam: 'manager', color: '#D5793B', glyph: { e: 'dot', m: 'flat' }, ax: { ag: 75, te: 50, fo: 90, at: 40 }, name: ['The Controller', 'Контролёр'], short: ['Controller', 'Контролёр'] },
+  { id: 'analyst', fam: 'manager', color: '#7BA3D0', glyph: { e: 'glasses', m: 'flat' }, ax: { ag: 50, te: 25, fo: 88, at: 35 }, name: ['The Analyst', 'Аналитик'], short: ['Analyst', 'Аналитик'] },
+  { id: 'hermit', fam: 'manager', color: '#8A87A8', glyph: { e: 'lid', m: 'smile' }, ax: { ag: 40, te: 20, fo: 70, at: 25 }, name: ['The Hermit', 'Отшельник'], short: ['Hermit', 'Отшельник'] },
+  { id: 'bypasser', fam: 'manager', color: '#CDB32E', glyph: { e: 'big', m: 'smile' }, ax: { ag: 48, te: 45, fo: 50, at: 40 }, name: ['The Bypasser', 'Обходчик'], short: ['Bypasser', 'Обходчик'] },
+  // Firefighters — reactive extinguishers
+  { id: 'numb', fam: 'firefighter', color: '#9AA3AC', glyph: { e: 'lid', m: 'flat' }, ax: { ag: 30, te: 15, fo: 45, at: 20 }, name: ['The Numb', 'Онемение'], short: ['Numb', 'Онемение'] },
+  { id: 'rebel', fam: 'firefighter', color: '#DE5F50', glyph: { e: 'star', m: 'grin' }, ax: { ag: 88, te: 85, fo: 35, at: 30 }, name: ['The Rebel', 'Бунтарь'], short: ['Rebel', 'Бунтарь'] },
+  { id: 'charmer', fam: 'firefighter', color: '#EF8FA5', glyph: { e: 'big', m: 'smirk' }, ax: { ag: 65, te: 80, fo: 50, at: 75 }, name: ['The Charmer', 'Обаяшка'], short: ['Charmer', 'Обаяшка'] },
+  // Exiles — the young carriers
+  { id: 'abandoned', fam: 'exile', color: '#9865C5', glyph: { e: 'big', m: 'wavy' }, ax: { ag: 25, te: 55, fo: 30, at: 92 }, name: ['The Abandoned One', 'Брошенный'], short: ['Abandoned', 'Брошенный'] },
+  { id: 'ashamed', fam: 'exile', color: '#8E62B8', glyph: { e: 'lid', m: 'wavy' }, ax: { ag: 20, te: 40, fo: 35, at: 85 }, name: ['The Ashamed One', 'Стыдящийся'], short: ['Ashamed', 'Стыд'] },
+  { id: 'frightened', fam: 'exile', color: '#7A6FD1', glyph: { e: 'wide', m: 'ooh' }, ax: { ag: 22, te: 60, fo: 28, at: 90 }, name: ['The Frightened One', 'Напуганный'], short: ['Frightened', 'Напуганный'] },
+  { id: 'unseen', fam: 'exile', color: '#8583C0', glyph: { e: 'dot', m: 'flat' }, ax: { ag: 28, te: 35, fo: 40, at: 80 }, name: ['The Unseen One', 'Незамеченный'], short: ['Unseen', 'Незамеченный'] },
+  // Resources — the grown strengths
+  { id: 'sage', fam: 'resource', color: '#2FA39E', glyph: { e: 'lid', m: 'smile' }, ax: { ag: 60, te: 30, fo: 75, at: 45 }, name: ['The Sage', 'Мудрец'], short: ['Sage', 'Мудрец'] },
+  { id: 'warrior', fam: 'resource', color: '#2E9967', glyph: { e: 'dot', m: 'grit' }, ax: { ag: 90, te: 55, fo: 80, at: 35 }, name: ['The Warrior', 'Воин'], short: ['Warrior', 'Воин'] },
+  { id: 'caregiver', fam: 'resource', color: '#E97F63', glyph: { e: 'big', m: 'smile' }, ax: { ag: 55, te: 75, fo: 60, at: 82 }, name: ['The Caregiver', 'Заботник'], short: ['Caregiver', 'Заботник'] },
+  { id: 'explorer', fam: 'resource', color: '#3FA9B5', glyph: { e: 'star', m: 'smile' }, ax: { ag: 78, te: 65, fo: 55, at: 40 }, name: ['The Explorer', 'Исследователь'], short: ['Explorer', 'Исследователь'] },
 ];
 
-/** Bilingual display names — the register the report uses. */
-const PART_NAMES: Record<string, [string, string]> = {
-  taskmaster: ['The Taskmaster', 'Деятель'],
-  inner_critic: ['The Inner Critic', 'Внутренний критик'],
-  pleaser: ['The Pleaser', 'Угодник'],
-  controller: ['The Controller', 'Контролёр'],
-  analyst: ['The Analyst', 'Аналитик'],
-  hermit: ['The Hermit', 'Отшельник'],
-  bypasser: ['The Bypasser', 'Обходчик'],
-  numb: ['The Numb', 'Онемение'],
-  rebel: ['The Rebel', 'Бунтарь'],
-  charmer: ['The Charmer', 'Обаяшка'],
-  abandoned: ['The Abandoned One', 'Брошенный'],
-  ashamed: ['The Ashamed One', 'Стыдящийся'],
-  frightened: ['The Frightened One', 'Напуганный'],
-  unseen: ['The Unseen One', 'Незамеченный'],
-  sage: ['The Sage', 'Мудрец'],
-  warrior: ['The Warrior', 'Воин'],
-  caregiver: ['The Caregiver', 'Заботник'],
-  explorer: ['The Explorer', 'Исследователь'],
-};
-
-const CLASS_LABELS: Record<string, [string, string]> = {
-  manager: ['Manager', 'Менеджер'],
-  firefighter: ['Firefighter', 'Пожарный'],
-  exile: ['Exile', 'Изгнанник'],
-  resource: ['Resource', 'Ресурс'],
-};
+const P = Object.fromEntries(IV_PARTS.map((p) => [p.id, p])) as Record<string, IvPart>;
 
 /** Resource face-lines — shadow parts read PART_COPY (§1.9). */
 const RESOURCE_FACE: Record<string, [string, string]> = {
@@ -111,35 +75,129 @@ const RESOURCE_FACE: Record<string, [string, string]> = {
   explorer: ['The curious reach toward the new.', 'Любопытный шаг навстречу новому.'],
 };
 
-const PAIN_POINTS: ShowcasePainPoint[] = [
-  { icon: '\u{1F32A}️', color: C.coral, titleKey: 'painTitle1', textKey: 'painText1' },
-  { icon: '⚡', color: C.mustard, titleKey: 'painTitle2', textKey: 'painText2' },
-  { icon: '\u{1FA9E}', color: C.lavender, titleKey: 'painTitle3', textKey: 'painText3' },
-  { icon: '\u{1F4A3}', color: C.sky, titleKey: 'painTitle4', textKey: 'painText4' },
-  { icon: '⚓', color: C.rose, titleKey: 'painTitle5', textKey: 'painText5' },
-  { icon: '\u{1F300}', color: C.mint, titleKey: 'painTitle6', textKey: 'painText6' }
+/** One tiny practice per part (bilingual) — the sheet's closing card. */
+const PRACTICE: Record<string, [string, string]> = {
+  taskmaster: ['Schedule one deliberately useless hour — and survive it.', 'Запланируйте один нарочно бесполезный час — и переживите его.'],
+  inner_critic: ['Ask it: “what are you protecting?” — then thank it and continue.', 'Спросите его: «что ты защищаешь?» — поблагодарите и продолжайте.'],
+  pleaser: ['Say one honest “not really” this week — small, safe, real.', 'Скажите одно честное «на самом деле нет» на этой неделе — маленькое, безопасное, настоящее.'],
+  controller: ['Let someone else drive once — and watch the world not end.', 'Позвольте кому-то другому вести — и убедитесь, что мир не рухнул.'],
+  analyst: ['Name one feeling out loud without the word “because”.', 'Назовите одно чувство вслух — без слова «потому что».'],
+  hermit: ['Send one “thinking of you” text. No occasion needed.', 'Отправьте одно «думаю о тебе» — без повода.'],
+  bypasser: ['Let one bad moment be fully bad for sixty seconds.', 'Позвольте одному плохому моменту быть целиком плохим шестьдесят секунд.'],
+  numb: ['Once a day ask: “if I did feel something — what would it be?”', 'Раз в день спрашивайте: «если бы я что-то чувствовал — что бы это было?»'],
+  rebel: ['Choose one rule to follow — on purpose, as an experiment.', 'Выберите одно правило, чтобы соблюсти, — нарочно, как эксперимент.'],
+  charmer: ['Tell one person something unpolished and true.', 'Расскажите одному человеку что-то неотшлифованное и правдивое.'],
+  abandoned: ['Sit with one unanswered message for an hour. Notice the sky stays up.', 'Побудьте час с одним неотвеченным сообщением. Заметьте: небо не упало.'],
+  ashamed: ['Show one person something you made before it was perfect.', 'Покажите одному человеку то, что вы сделали, ещё до совершенства.'],
+  frightened: ['Take one small step past the exit map. Then come back — by choice.', 'Сделайте шаг за карту выходов. Потом вернитесь — по своему выбору.'],
+  unseen: ['Say one true sentence in a group this week. Let it land.', 'Скажите одно правдивое предложение в группе на этой неделе. Дайте ему прозвучать.'],
+  sage: ['Before a hard talk, ask the Sage: “what actually matters here?”', 'Перед трудным разговором спросите Мудреца: «что здесь по-настоящему важно?»'],
+  warrior: ['Practice one warm no: “Not this time — and I do like you.”', 'Потренируйте тёплое «нет»: «Не в этот раз — и ты мне правда нравишься».'],
+  caregiver: ['Give yourself one hour of your own best care this week.', 'Подарите себе час собственной лучшей заботы на этой неделе.'],
+  explorer: ['Finish one small boring thing — purely to feel the other muscle.', 'Доведите до конца одну маленькую скучную вещь — просто чтобы почувствовать другую мышцу.'],
+};
+
+/** Named pair dynamics (bilingual) — the chemistry lab's signature reactions. */
+const DUOS: Record<string, { t: [string, string]; n: [string, string] }> = {
+  'rebel|taskmaster': {
+    t: ['The Deadline Heist', 'Ограбление дедлайна'],
+    n: ['The Taskmaster writes the schedule; the Rebel sells the schedule’s furniture. Productive sabotage — unless the Rebel gets one owned block of beautiful anarchy per week.', 'Деятель составляет расписание; Бунтарь продаёт его мебель. Продуктивный саботаж — если только Бунтарь не получит один принадлежащий только ему блок прекрасной анархии в неделю.'],
+  },
+  'abandoned|hermit': {
+    t: ['Asymmetric Orbit', 'Асимметричная орбита'],
+    n: ['One invests intensely; the other holds loosely. The imbalance is structural, not personal. Named early, it becomes rhythm; unnamed, it becomes the Ghosting Loop.', 'Один вкладывается сильно; другой держится свободно. Дисбаланс структурный, а не личный. Названный рано, он становится ритмом; неназванный — петлёй исчезновений.'],
+  },
+  'charmer|unseen': {
+    t: ['Stage Light, Backstage Shadow', 'Свет рампы, тень за кулисами'],
+    n: ['The Charmer performs the person the Unseen One is sure no one wants. Encore after encore, the audience applauds someone who isn’t there.', 'Обаяшка играет человека, которым Незамеченный уверен, что никто не заинтересуется. Бис за бисом — зал аплодирует тому, кого здесь нет.'],
+  },
+  'inner_critic|sage': {
+    t: ['The Auditor and the Oracle', 'Аудитор и оракул'],
+    n: ['The Critic grades the exam; the Sage already knows it doesn’t count. When both are loud, address the Critic first — it’s the one who’s scared.', 'Критик проверяет экзамен; Мудрец уже знает, что его не засчитают. Когда громкие оба — сначала к Критику: именно ему страшно.'],
+  },
+  'pleaser|warrior': {
+    t: ['The Velvet Fence', 'Бархатный забор'],
+    n: ['Warmth with a spine. When these two align you get the rarest social physics: kindness that doesn’t invoice anyone — including you.', 'Тепло с хребтом. Когда эти двое в согласии, рождается редчайшая социальная физика: доброта, не выставляющая счёт никому — включая вас.'],
+  },
+  'controller|explorer': {
+    t: ['The Map and the Wind', 'Карта и ветер'],
+    n: ['One charts; one sails off the chart. As a team they go further than either dares alone — as rivals they produce itineraries for trips that never happen.', 'Один чертит карту; второй уплывает за её край. В команде они заходят дальше, чем каждый осмелился бы один; как соперники — рисуют маршруты путешествий, которые не случатся.'],
+  },
+  'abandoned|numb': {
+    t: ['Signal in the Fog', 'Сигнал в тумане'],
+    n: ['The Numb turns the volume down exactly where the Abandoned One broadcasts. The channel deserves one low-volume broadcast a day.', 'Онемение убавляет громкость ровно там, откуда вещает Брошенный. Этому каналу нужен один негромкий эфир в день.'],
+  },
+  'analyst|frightened': {
+    t: ['The Threat Model', 'Модель угрозы'],
+    n: ['The Analyst gives the Frightened One something unprecedented: threat data instead of threat. Panic slows when it becomes a spreadsheet.', 'Аналитик даёт Напуганному нечто беспрецедентное: данные об угрозе вместо самой угрозы. Паника замедляется, становясь таблицей.'],
+  },
+  'caregiver|numb': {
+    t: ['The Lighthouse Effect', 'Эффект маяка'],
+    n: ['Light for everyone else, fog for itself. The Caregiver refills others while the Numb mutes its own gauge. Wells need gauges.', 'Свет всем остальным, туман — себе. Заботник наполняет других, пока Онемение глушит его собственный датчик. Колодцам нужны датчики.'],
+  },
+  'inner_critic|warrior': {
+    t: ['The Drill Sergeant', 'Сержант-инструктор'],
+    n: ['Both cut clean — one inward, one outward. Pointed outward together they defend standards; pointed inward they defend nothing and charge rent.', 'Оба режут чисто — один внутрь, другой наружу. Вместе наружу они защищают стандарты; внутрь — не защищают ничего и берут плату за аренду.'],
+  },
+  'caregiver|taskmaster': {
+    t: ['Compassion Logistics', 'Логистика сострадания'],
+    n: ['The Taskmaster industrializes the Caregiver’s warmth: meals planned, crises calendared. Watch the tank — this duo volunteers for everything.', 'Деятель превращает тепло Заботника в производство: еда спланирована, кризисы в календаре. Следите за баком — эта пара записывается добровольцами на всё.'],
+  },
+  'ashamed|bypasser': {
+    t: ['The Quick Paint Job', 'Косметический ремонт'],
+    n: ['The Bypasser paints over what the Ashamed One is hiding — both convinced the inspection is coming. One uncovered corner, shown to one safe person, breaks the loop.', 'Обходчик закрашивает то, что прячет Стыдящийся, — оба уверены: скоро проверка. Один открытый угол, показанный одному безопасному человеку, разрывает петлю.'],
+  },
+  'controller|rebel': {
+    t: ['Catalyst Collision', 'Столкновение катализаторов'],
+    n: ['Two high-agency vectors, opposite headings. Brilliant for starting revolutions. Catastrophic for group projects. Assign separate theaters of war.', 'Два мощных вектора, противоположные курсы. Блестяще для начала революций. Катастрофично для групповых проектов. Разведите их по разным театрам военных действий.'],
+  },
+  'explorer|hermit': {
+    t: ['The Weekend Cartographer', 'Картограф выходного дня'],
+    n: ['Far horizons, deep caves — both authentic, mutually exclusive on Tuesdays. This pair thrives on explicit seasons: explore hard, then guard the cave without apology.', 'Далёкие горизонты, глубокие пещеры — оба подлинные, но несовместимые по вторникам. Эта пара живёт сезонами: исследовать на полную, потом охранять пещеру без извинений.'],
+  },
+};
+
+const FAM: Record<FamKind, { em: string; hex: string; n: [string, string]; line: [string, string] }> = {
+  manager: { em: '📋', hex: '#E1734B', n: ['Manager', 'Менеджер'], line: ['The ones who keep tomorrow safe.', 'Те, кто сохраняет завтрашний день безопасным.'] },
+  firefighter: { em: '🧯', hex: '#E58FA0', n: ['Firefighter', 'Пожарный'], line: ['The ones who arrive when it burns.', 'Те, кто прибегает, когда горит.'] },
+  exile: { em: '🫧', hex: '#8F63C0', n: ['Exile', 'Изгнанник'], line: ['The young ones who hold the hurt.', 'Молодые, которые несут боль.'] },
+  resource: { em: '🌿', hex: '#46A29D', n: ['Resource', 'Ресурс'], line: ['The ones the Self can lean on.', 'Те, на кого может опереться Self.'] },
+};
+
+/** Manager→exile guard links drawn on the sky map. */
+const GUARD_LINKS: [string, string][] = [
+  ['pleaser', 'abandoned'],
+  ['inner_critic', 'ashamed'],
+  ['controller', 'frightened'],
+  ['analyst', 'unseen'],
 ];
 
-// Constellation wiring for the 18-part layout: family rings, the
-// manager→exile guarding links (who protects whom), and resource spokes.
-const EDGES: [number, number][] = [
-  ...Array.from({ length: 18 }, (_, i) => [i, (i + 1) % 18] as [number, number]),
-  // Guards: each exile is shielded by the manager that binds it
-  [2, 10],  // pleaser → abandoned
-  [1, 11],  // inner_critic → ashamed
-  [3, 12],  // controller → frightened
-  [4, 13],  // analyst → unseen
-  // Resource spokes: what each resource grows from
-  [7, 14],  // numb → sage
-  [8, 15],  // rebel → warrior
-  [10, 16], // abandoned → caregiver
-  [9, 17],  // charmer → explorer
-];
+const RINGS: Record<FamKind, number> = { exile: 0.34, firefighter: 0.52, manager: 0.72, resource: 0.9 };
+const SPEEDS: Record<FamKind, number> = { exile: 0.00016, firefighter: -0.00011, manager: 0.00007, resource: -0.00005 };
+const BASE_ANGLE: Record<FamKind, number> = { exile: 0.6, firefighter: 2.2, manager: 0, resource: 1.1 };
+
+interface SkyStar {
+  p: IvPart;
+  fam: FamKind;
+  base: number;
+  r: number;
+  tw: number;
+  sx: number;
+  sy: number;
+}
+
+interface ChemOut {
+  flow: number;
+  spark: number;
+  drag: number;
+  verdict: [string, string];
+  note: [string, string];
+  lens: [string, string][];
+}
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -148,13 +206,10 @@ export class LandingComponent implements OnDestroy {
   readonly ts = inject(TranslationService);
   readonly installService = inject(InstallService);
   private readonly sanitizer = inject(DomSanitizer);
-  private readonly el = inject(ElementRef<HTMLElement>);
-  readonly hostEl = this.el;
-  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly user = input<User | null>(null);
 
-  // Outputs
+  // Outputs — parent wiring preserved verbatim from the previous landing.
   readonly startTest = output<void>();
   readonly quickScanRequested = output<void>();
   readonly therapistRequested = output<void>();
@@ -166,103 +221,328 @@ export class LandingComponent implements OnDestroy {
   readonly dashboardRequested = output<void>();
   readonly logoutRequested = output<void>();
 
-  // UI State
-  readonly mobileMenuOpen = signal(false);
-  readonly synSelected = signal<string[]>([]);
-  readonly enginePaused = signal(false);
-  readonly navScrolled = signal(false);
-  readonly flippedCards = signal<Set<string>>(new Set());
+  // --- app router ---
+  readonly screen = signal<'welcome' | 'sky' | 'codex' | 'you'>('welcome');
+  readonly codexTab = signal<'parts' | 'chem'>('parts');
+  readonly sheetPart = signal<string | null>(null);
+  readonly famFilter = signal<FamKind | ''>('');
+  readonly dark = signal(false);
+  readonly mxA = signal<string | null>(null);
+  readonly mxB = signal<string | null>(null);
+  readonly chemOut = signal<ChemOut | null>(null);
+
+  // --- resume-in-progress (regression-guarded by landing.component.spec) ---
   readonly hasCompletedBackup = signal(false);
-  // In-progress test (auto-saved per answer, before completion). Distinct
-  // from hasCompletedBackup (only true after the AI returns). Drives the
-  // "Resume test in progress — X of 64" CTA on the landing page hero.
   readonly hasInProgressBackup = signal(false);
   readonly answeredCount = signal(0);
-  readonly totalQuestions = 64;
+  readonly totalQuestions = 147;
 
-  // Mouse tracking for parallax and cursor effects
-  private mouseX = 0;
-  private mouseY = 0;
-  private parallaxFrame = 0;
+  readonly parts = IV_PARTS;
+  readonly guardLinks = GUARD_LINKS;
+  readonly famKeys: FamKind[] = ['manager', 'firefighter', 'exile', 'resource'];
+  readonly welcomeSatellites: { id: string; left: string; top: string; delay: string }[] = [
+    { id: 'taskmaster', left: '8%', top: '16%', delay: '.9s' },
+    { id: 'rebel', left: '74%', top: '10%', delay: '1.3s' },
+    { id: 'abandoned', left: '12%', top: '62%', delay: '1.7s' },
+    { id: 'sage', left: '76%', top: '58%', delay: '.5s' },
+  ];
 
-  // Template data
-  readonly archetypes = ARCHETYPES;
-  readonly painPoints = PAIN_POINTS;
-  readonly edges = EDGES;
-
-  // ViewChilds
-  readonly codexContainer = viewChild<ElementRef<HTMLDivElement>>('codexContainer');
-  readonly engineCanvas = viewChild<ElementRef<HTMLCanvasElement>>('engineCanvas');
-  readonly engineWrapper = viewChild<ElementRef<HTMLDivElement>>('engineWrapper');
+  readonly skyCanvas = viewChild<ElementRef<HTMLCanvasElement>>('skyCanvas');
   readonly backupFileInput = viewChild<ElementRef<HTMLInputElement>>('backupFileInput');
 
-  // Internal
-  private svgCache = new Map<string, SafeHtml>();
-  private cleanupFns: (() => void)[] = [];
-  private codexDrag = { active: false, startX: 0, scrollLeft: 0 };
-  private cursorEl: HTMLDivElement | null = null;
-  private cursorTrail: HTMLDivElement[] = [];
-
-  // Computed
   readonly isLoggedIn = computed(() => {
     const u = this.user();
     return !!u && !u.isAnonymous;
   });
-
-  readonly synResult = computed(() => {
-    const sel = this.synSelected();
-    if (sel.length < 2) return null;
-    const a1 = ARCHETYPES.find(a => a.id === sel[0]);
-    const a2 = ARCHETYPES.find(a => a.id === sel[1]);
-    if (!a1 || !a2) return null;
-    if (a1.id === a2.id) return { titleKey: 'synEcho', descKey: 'synEchoDesc', label: 'Echo Chamber' };
-    // A protector paired with the exile it guards reads as dynamic tension;
-    // everything else flows through the composite complexes.
-    const pair = [a1.type, a2.type];
-    const isGuard = pair.includes('exile') && (pair.includes('manager') || pair.includes('firefighter'));
-    if (isGuard) return { titleKey: 'synTension', descKey: 'synTensionDesc', label: 'Dynamic Tension' };
-    return { titleKey: 'synComplex', descKey: 'synComplexDesc', label: 'Complex Flow' };
-  });
-
-  readonly synOneSelected = computed(() => {
-    const sel = this.synSelected();
-    if (sel.length !== 1) return null;
-    return ARCHETYPES.find(a => a.id === sel[0]) || null;
-  });
-
   readonly isEnglish = computed(() => this.ts.getLanguage() === 'en');
+  readonly chemReady = computed(() => !!this.mxA() && !!this.mxB());
+
+  private readonly svgCache = new Map<string, SafeHtml>();
+  private readonly sky = {
+    raf: 0,
+    running: false,
+    stars: [] as SkyStar[],
+    w: 0,
+    h: 0,
+    cx: 0,
+    cy: 0,
+    R: 0,
+    ctx: null as CanvasRenderingContext2D | null,
+  };
+  private readonly onResize = () => {
+    if (this.sky.running) this.startSky();
+  };
 
   constructor() {
+    effect(() => {
+      if (this.screen() === 'sky') this.startSky();
+      else this.stopSky();
+    });
+
     afterNextRender(() => {
-      this.setupCustomCursor();
-      this.setupScrollReveal();
-      this.setupNavScroll();
-      this.setupCodexDrag();
-      this.setupHeroParallax();
-      this.setupMagneticButtons();
-      this.runEntranceAnimation();
-      this.initEngine();
       this.checkLocalBackup();
       this.checkInProgressBackup();
+      window.addEventListener('resize', this.onResize);
     });
   }
 
+  ngOnDestroy(): void {
+    this.stopSky();
+    window.removeEventListener('resize', this.onResize);
+  }
+
+  t(key: string): string {
+    return this.ts.t(key, 'landing');
+  }
+
+  /** Bilingual tuple → current language. */
+  L(x: [string, string]): string {
+    return x[this.isEnglish() ? 0 : 1];
+  }
+
+  fam(id: string) {
+    return FAM[P[id].fam];
+  }
+
+  /** Family meta by family key (not part id) — for the codex crest row. */
+  famMeta(key: FamKind) {
+    return FAM[key];
+  }
+
+  // --- svg (trusted, cached) ---
+  stickerHtml(id: string): SafeHtml {
+    const key = 'p:' + id;
+    let v = this.svgCache.get(key);
+    if (!v) {
+      const p = P[id];
+      v = this.sanitizer.bypassSecurityTrustHtml(
+        sticker({ name: this.L(p.name), fam: p.fam, color: p.color, glyph: p.glyph }),
+      );
+      this.svgCache.set(key, v);
+    }
+    return v;
+  }
+
+  novaHtml(): SafeHtml {
+    let v = this.svgCache.get('nova');
+    if (!v) {
+      v = this.sanitizer.bypassSecurityTrustHtml(novaSvg());
+      this.svgCache.set('nova', v);
+    }
+    return v;
+  }
+
+  partName(id: string): string {
+    return this.L(P[id].name);
+  }
+
+  /** PART_COPY layer for a shadow part (resources fall back to ''). */
+  private partCopyLayer(id: string, layer: 'face' | 'need' | 'shadow' | 'superpower'): string {
+    const table = PART_COPY[this.isEnglish() ? 'en' : 'ru'] as unknown as
+      Record<string, Partial<Record<'face' | 'need' | 'shadow' | 'superpower', string>>>;
+    return table[id]?.[layer] ?? '';
+  }
+
+  /** The sheet's poem line: shadow parts read PART_COPY face; resources have their own. */
+  partFace(id: string): string {
+    const face = this.partCopyLayer(id, 'face');
+    return face || this.L(RESOURCE_FACE[id] ?? ['', '']);
+  }
+
+  partNeed(id: string): string {
+    return this.partCopyLayer(id, 'need');
+  }
+
+  partShadow(id: string): string {
+    return this.partCopyLayer(id, 'shadow');
+  }
+
+  partSuperpower(id: string): string {
+    return this.partCopyLayer(id, 'superpower');
+  }
+
+  partPractice(id: string): string {
+    return this.L(PRACTICE[id] ?? ['', '']);
+  }
+
+  axes(id: string): { key: string; label: string; v: number }[] {
+    const ax = P[id].ax;
+    const labels: Record<string, [string, string]> = {
+      ag: ['Agency', 'Драйв'],
+      te: ['Heat', 'Накал'],
+      fo: ['Focus', 'Фокус'],
+      at: ['Attachment', 'Привязанность'],
+    };
+    return (['ag', 'te', 'fo', 'at'] as const).map((k) => ({
+      key: k,
+      label: this.L(labels[k]),
+      v: ax[k],
+    }));
+  }
+
+  // --- navigation ---
+  go(id: 'welcome' | 'sky' | 'codex' | 'you'): void {
+    this.screen.set(id);
+  }
+
+  openPart(id: string): void {
+    this.sheetPart.set(id);
+  }
+
+  closeSheet(): void {
+    this.sheetPart.set(null);
+  }
+
+  openChemFromSheet(id: string): void {
+    this.closeSheet();
+    this.codexTab.set('chem');
+    if (this.mxA() !== id) {
+      this.mxB.set(null);
+      this.mxA.set(id);
+    }
+    this.go('codex');
+  }
+
+  // --- chemistry ---
+  pickChem(id: string): void {
+    this.chemOut.set(null);
+    if (this.mxA() === id) this.mxA.set(null);
+    else if (this.mxB() === id) this.mxB.set(null);
+    else if (!this.mxA()) this.mxA.set(id);
+    else if (!this.mxB()) this.mxB.set(id);
+    else {
+      this.mxA.set(this.mxB());
+      this.mxB.set(id);
+    }
+  }
+
+  runChem(): void {
+    const a = this.mxA();
+    const b = this.mxB();
+    if (!a || !b) return;
+    this.chemOut.set(this.chemCalc(a, b));
+  }
+
+  private chemCalc(aId: string, bId: string): ChemOut {
+    const a = P[aId];
+    const b = P[bId];
+    const d = {
+      ag: Math.abs(a.ax.ag - b.ax.ag),
+      te: Math.abs(a.ax.te - b.ax.te),
+      fo: Math.abs(a.ax.fo - b.ax.fo),
+      at: Math.abs(a.ax.at - b.ax.at),
+    };
+    const dist = Math.sqrt(d.ag * d.ag + d.te * d.te + d.fo * d.fo + d.at * d.at) / 200;
+    const flow = Math.round(Math.min(97, Math.max(8, 100 - dist * 58)));
+    const spark = Math.round(Math.min(98, (a.ax.ag + b.ax.ag) / 2 * 0.5 + (a.ax.te + b.ax.te) / 2 * 0.5));
+    const drag = Math.round(Math.min(95, d.at * 0.55 + d.ag * 0.45));
+    const duo = DUOS[[aId, bId].sort().join('|')];
+
+    let verdict: [string, string];
+    let note: [string, string];
+    if (duo) {
+      verdict = duo.t;
+      note = duo.n;
+    } else if (flow >= 78) {
+      verdict = ['Sweet Orbit', 'Сладкая орбита'];
+      note = [
+        'Low drag, matched tempo. These two run nearly the same physics — the risk isn’t friction, it’s an echo chamber: nobody aboard flags the icebergs.',
+        'Малое трение, совпадающий темп. Эти двое работают почти на одной физике — риск не в трении, а в эхо-камере: никто на борту не замечает айсберги.',
+      ];
+    } else if (flow >= 60) {
+      verdict = ['Working Gravity', 'Рабочая гравитация'];
+      note = [
+        'Different masses, stable dance. Occasional wobble is the system correcting, not failing. Give them clear lanes and they compound.',
+        'Разные массы, стабильный танец. Лёгкое покачивание — это коррекция системы, а не сбой. Дайте им свои полосы — и они усилят друг друга.',
+      ];
+    } else if (flow >= 45) {
+      verdict = ['Dynamic Friction', 'Динамическое трение'];
+      note = [
+        'Real tension, real torque. This pairing gets things moving that comfortable pairs never touch — but it burns fuel. Schedule recovery on purpose.',
+        'Настоящее напряжение, настоящий момент силы. Эта пара сдвигает то, до чего уютным парам дело не доходит, — но она жжёт топливо. Планируйте восстановление заранее.',
+      ];
+    } else {
+      verdict = ['Collision Course', 'Курс столкновения'];
+      note = [
+        'Opposite vectors at high stakes. Brilliant in short bursts; catastrophic unsupervised. Never let these two co-sign the same plan without a third part in the room.',
+        'Противоположные вектора на высоких ставках. Блестяще короткими рывками; катастрофично без присмотра. Не позволяйте этим двоим подписывать один план без третьей части в комнате.',
+      ];
+    }
+
+    const lensTpl: Record<string, [string, string]> = {
+      ag: ['Agency gap {n} — one drives, one drifts', 'Разрыв драйва {n} — один ведёт, другой дрейфует'],
+      te: ['Temperature gap {n} — different burn rates', 'Разрыв темпа {n} — разная скорость горения'],
+      fo: ['Focus gap {n} — telescopes pointed elsewhere', 'Разрыв фокуса {n} — телескопы смотрят в стороны'],
+      at: ['Attachment gap {n} — one anchors, one wanders', 'Разрыв привязанности {n} — один якорь, другой странник'],
+    };
+    const lens: [string, string][] = [];
+    if (d.ag >= 30) lens.push(lensTpl.ag);
+    if (d.te >= 30) lens.push(lensTpl.te);
+    if (d.fo >= 30) lens.push(lensTpl.fo);
+    if (d.at >= 30) lens.push(lensTpl.at);
+    if (!lens.length) lens.push(['All four axes closely matched', 'Все четыре оси близко совпадают']);
+    const withNums = lens.map(([en, ru]) => [en, ru] as [string, string]);
+
+    return { flow, spark, drag, verdict, note, lens: withNums };
+  }
+
+  lensText(pair: [string, string], gapKind: 'ag' | 'te' | 'fo' | 'at' | ''): string {
+    if (!gapKind) return this.L(pair);
+    const a = P[this.mxA()!];
+    const b = P[this.mxB()!];
+    const d = Math.abs(a.ax[gapKind] - b.ax[gapKind]);
+    return this.L(pair).replace('{n}', String(d));
+  }
+
+  // --- theme ---
+  toggleTheme(): void {
+    const next = !this.dark();
+    this.dark.set(next);
+    document.documentElement.dataset.theme = next ? 'dark' : 'light';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', next ? '#181432' : '#F3EAD4');
+    if (this.sky.running) this.startSky(); // repaint with the new palette
+  }
+
+  // --- share ---
+  async shareApp(): Promise<void> {
+    const text = this.isEnglish()
+      ? 'Innerverse ✦ meet everyone you are. 18 inner parts, one sky — measured, not guessed.'
+      : 'Innerverse ✦ познакомьтесь со всеми, кто вы есть. 18 внутренних частей, одно небо — измерено, а не наугад.';
+    const url = typeof location !== 'undefined' ? location.href.split('#')[0] : undefined;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Innerverse', text, url });
+        return;
+      }
+      await navigator.clipboard.writeText(text + ' ' + (url ?? ''));
+      alert(this.t('shareCopied'));
+    } catch {
+      /* user cancelled or unavailable */
+    }
+  }
+
+  onBackupUpload(event: Event): void {
+    this.backupUpload.emit(event);
+    const input = this.backupFileInput();
+    if (input) input.nativeElement.value = '';
+  }
+
+  // --- backups (resume-in-progress regression guards depend on these) ---
   private checkLocalBackup(): void {
     try {
       const backup = localStorage.getItem('ARCHETYPE_COMPLETED_BACKUP');
-      if (backup) {
-        this.hasCompletedBackup.set(true);
-      }
+      if (backup) this.hasCompletedBackup.set(true);
     } catch {
-      // Storage unavailable
+      // storage unavailable
     }
   }
 
   /**
    * Detects an in-progress assessment: any non-zero answers in
    * ARCHETYPE_ASSESSMENT_RESPONSES. The assessment panel auto-saves every
-   * answer to this key, so a half-finished test is recoverable even if the
-   * user reloads the page. We display "Resume test (X of 64)" as a CTA.
+   * answer to this key, so a half-finished battery is recoverable after a
+   * reload — surfaced as the "Resume · X of 147" card on the welcome screen.
    */
   private checkInProgressBackup(): void {
     try {
@@ -276,687 +556,257 @@ export class LandingComponent implements OnDestroy {
         this.answeredCount.set(answered);
       }
     } catch {
-      // Storage unavailable
+      // storage unavailable
     }
   }
 
-  ngOnDestroy(): void {
-    this.cleanupFns.forEach(fn => fn());
-    cancelAnimationFrame(this.parallaxFrame);
-    if (this.cursorEl) this.cursorEl.remove();
-    this.cursorTrail.forEach(t => t.remove());
-  }
-
-  t(key: string): string {
-    return this.ts.t(key, 'landing');
-  }
-
-  // ===== CUSTOM CURSOR =====
-  private setupCustomCursor(): void {
-    if (window.matchMedia('(pointer: coarse)').matches) return;
-
-    this.cursorEl = document.createElement('div');
-    this.cursorEl.className = 'custom-cursor';
-    this.cursorEl.style.cssText = 'position:fixed;width:20px;height:20px;border-radius:50%;border:2px solid #1C1917;pointer-events:none;z-index:100000;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1),width 0.2s,height 0.2s,border-color 0.2s;mix-blend-mode:difference;transform:translate(-50%,-50%);background:transparent;';
-    document.body.appendChild(this.cursorEl);
-
-    // Trail particles
-    for (let i = 0; i < 4; i++) {
-      const trail = document.createElement('div');
-      trail.style.cssText = `position:fixed;width:${6-i}px;height:${6-i}px;border-radius:50%;background:#D55E00;pointer-events:none;z-index:99999;opacity:${0.3-i*0.06};transform:translate(-50%,-50%);transition:all ${0.15+i*0.08}s ease-out;`;
-      document.body.appendChild(trail);
-      this.cursorTrail.push(trail);
-    }
-
-    const onMove = (e: MouseEvent) => {
-      if (!this.cursorEl) return;
-      gsap.to(this.cursorEl, { left: e.clientX, top: e.clientY, duration: 0.08, ease: 'power2.out' });
-      this.cursorTrail.forEach((trail, i) => {
-        gsap.to(trail, { left: e.clientX, top: e.clientY, duration: 0.12 + i * 0.06, ease: 'power2.out' });
-      });
-      this.mouseX = e.clientX;
-      this.mouseY = e.clientY;
-    };
-
-    // Enlarge cursor on interactive elements
-    const onOver = () => {
-      if (!this.cursorEl) return;
-      this.cursorEl.style.width = '40px';
-      this.cursorEl.style.height = '40px';
-      this.cursorEl.style.borderColor = '#D55E00';
-    };
-    const onOut = () => {
-      if (!this.cursorEl) return;
-      this.cursorEl.style.width = '20px';
-      this.cursorEl.style.height = '20px';
-      this.cursorEl.style.borderColor = '#1C1917';
-    };
-
-    document.addEventListener('mousemove', onMove);
-    this.cleanupFns.push(() => document.removeEventListener('mousemove', onMove));
-
-    // Attach hover effects after a tick so DOM is ready
-    setTimeout(() => {
-      const host = this.el.nativeElement;
-      const interactives = host.querySelectorAll('button, a, [role="button"], .neo-card, .hover-lift');
-      interactives.forEach(el => {
-        el.addEventListener('mouseenter', onOver);
-        el.addEventListener('mouseleave', onOut);
-      });
-    }, 500);
-  }
-
-  // ===== HERO PARALLAX =====
-  private setupHeroParallax(): void {
-    const host = this.el.nativeElement;
-    const heroSection = host.querySelector('.hero-section');
-    const floatingBlobs = host.querySelectorAll('.hero-float-blob');
-    if (!heroSection) return;
-
-    const animate = () => {
-      const rect = heroSection.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const dx = (this.mouseX - centerX) / rect.width;
-      const dy = (this.mouseY - centerY) / rect.height;
-
-      floatingBlobs.forEach((blob, i) => {
-        const depth = 15 + i * 8;
-        gsap.to(blob, {
-          x: dx * depth,
-          y: dy * depth,
-          duration: 0.8 + i * 0.2,
-          ease: 'power2.out'
-        });
-      });
-
-      this.parallaxFrame = requestAnimationFrame(animate);
-    };
-    animate();
-  }
-
-  // ===== MAGNETIC BUTTONS =====
-  private setupMagneticButtons(): void {
-    const host = this.el.nativeElement;
-    const buttons = host.querySelectorAll('.neo-btn, .magentic-target');
-
-    buttons.forEach(btn => {
-      const htmlBtn = btn as HTMLElement;
-      const onMove = (e: MouseEvent) => {
-        const rect = htmlBtn.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width / 2;
-        const y = e.clientY - rect.top - rect.height / 2;
-        gsap.to(htmlBtn, { x: x * 0.2, y: y * 0.2, duration: 0.3, ease: 'power2.out' });
-      };
-      const onLeave = () => {
-        gsap.to(htmlBtn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' });
-      };
-      htmlBtn.addEventListener('mousemove', onMove);
-      htmlBtn.addEventListener('mouseleave', onLeave);
-      this.cleanupFns.push(() => {
-        htmlBtn.removeEventListener('mousemove', onMove);
-        htmlBtn.removeEventListener('mouseleave', onLeave);
-      });
-    });
-  }
-
-  // ===== ENTRANCE ANIMATION =====
-  private runEntranceAnimation(): void {
-    const host = this.el.nativeElement;
-
-    // Navbar slides down
-    const nav = host.querySelector('.landing-nav');
-    if (nav) {
-      gsap.fromTo(nav,
-        { y: -80, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 0.1 }
-      );
-    }
-
-    // Hero elements stagger
-    const heroElements = host.querySelectorAll('.hero-stagger');
-    if (heroElements.length) {
-      gsap.fromTo(heroElements,
-        { y: 40, opacity: 0, scale: 0.96 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.9, stagger: 0.12, ease: 'power3.out', delay: 0.3 }
-      );
-    }
-
-    // Hero title letter reveal
-    const heroTitle = host.querySelector('.hero-title-animated');
-    if (heroTitle) {
-      gsap.fromTo(heroTitle,
-        { y: 60, opacity: 0, clipPath: 'inset(100% 0 0 0)' },
-        { y: 0, opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 1.2, ease: 'power4.out', delay: 0.2 }
-      );
-    }
-
-    // Stats counter animation
-    const statNums = host.querySelectorAll('.stat-animate');
-    statNums.forEach((el) => {
-      const text = el.textContent || '';
-      const match = text.match(/\d+/);
-      if (match) {
-        const target = parseInt(match[0], 10);
-        const proxy = { val: 0 };
-        gsap.to(proxy, {
-          val: target,
-          duration: 1.5,
-          delay: 0.8,
-          ease: 'power2.out',
-          onUpdate: () => {
-            el.textContent = text.replace(/\d+/, Math.round(proxy.val).toString());
-          }
-        });
-      }
-    });
-  }
-
-  // ===== SVG GENERATION =====
-  private generateBlobSvgString(arch: ShowcaseArchetype, size: number, isHovered = false): string {
-    const scaleY = isHovered ? 0.97 : 1;
-    const ecx = 50, eyeY = 44, er = 4.5, eSp = 14;
-    const mY = 62;
-
-    let mouth = '';
-    if (arch.mood === 'joy') mouth = `<polygon points="${ecx-6},${mY} ${ecx+7},${mY-3} ${ecx+2},${mY+7}" fill="${C.ink}" />`;
-    else if (arch.mood === 'wise') mouth = `<path d="M${ecx-9},${mY} Q${ecx},${mY+8} ${ecx+9},${mY}" fill="none" stroke="${C.ink}" stroke-width="2.5" stroke-linecap="round" />`;
-    else mouth = `<line x1="${ecx-9}" y1="${mY}" x2="${ecx+9}" y2="${mY}" stroke="${C.ink}" stroke-width="3" stroke-linecap="round" />`;
-
-    return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" style="overflow:visible;transition:filter 0.3s;${isHovered ? `filter:drop-shadow(0 6px 12px ${arch.color}88);` : ''}">
-      <path d="${arch.path}" fill="rgba(28,25,23,0.15)" transform="translate(4,5) scale(1,${scaleY})" style="transform-origin:50px 50px;" />
-      <path d="${arch.path}" fill="${arch.color}" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round" style="transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);transform:${isHovered ? 'scale(1.04)' : 'scale(1)'};transform-origin:center;" />
-      <g class="blob-eyes" data-mouse="true" style="transition:transform 0.3s;transform:translateY(${isHovered ? '-2px' : '0px'});">
-        <circle cx="${ecx-eSp}" cy="${eyeY}" r="${er}" fill="${C.ink}" class="animate-blink" />
-        <circle cx="${ecx+eSp}" cy="${eyeY}" r="${er}" fill="${C.ink}" class="animate-blink" />
-        <circle cx="${ecx-eSp+2}" cy="${eyeY-2}" r="${er*0.4}" fill="#FFF" />
-        <circle cx="${ecx+eSp+2}" cy="${eyeY-2}" r="${er*0.4}" fill="#FFF" />
-        ${mouth}
-        <ellipse cx="${ecx-eSp-6}" cy="${mY-3}" rx="5.5" ry="3.2" fill="rgba(255,100,80,0.28)" />
-        <ellipse cx="${ecx+eSp+6}" cy="${mY-3}" rx="5.5" ry="3.2" fill="rgba(255,100,80,0.28)" />
-      </g>
-    </svg>`;
-  }
-
-  getBlobHtml(archId: string, size: number, isHovered = false): SafeHtml {
-    const key = `${archId}-${size}-${isHovered}`;
-    if (!this.svgCache.has(key)) {
-      const arch = ARCHETYPES.find(a => a.id === archId);
-      if (!arch) return '';
-      this.svgCache.set(key, this.sanitizer.bypassSecurityTrustHtml(this.generateBlobSvgString(arch, size, isHovered)));
-    }
-    return this.svgCache.get(key)!;
-  }
-
-  // ===== SYNERGY LOGIC =====
-  toggleSynergy(archId: string): void {
-    const sel = [...this.synSelected()];
-    if (sel.includes(archId)) {
-      this.synSelected.set(sel.filter(id => id !== archId));
-    } else if (sel.length < 2) {
-      sel.push(archId);
-      this.synSelected.set(sel);
-    } else {
-      sel.shift();
-      sel.push(archId);
-      this.synSelected.set(sel);
-    }
-  }
-
-  isSynActive(archId: string): boolean {
-    return this.synSelected().includes(archId);
-  }
-
-  // ===== CARD FLIP =====
-  toggleFlip(archId: string): void {
-    const current = new Set(this.flippedCards());
-    if (current.has(archId)) current.delete(archId);
-    else current.add(archId);
-    this.flippedCards.set(current);
-  }
-
-  isFlipped(archId: string): boolean {
-    return this.flippedCards().has(archId);
-  }
-
-  // ===== MOBILE MENU =====
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen.update(v => !v);
-  }
-
-  closeMobileMenu(): void {
-    this.mobileMenuOpen.set(false);
-  }
-
-  // ===== ENGINE PAUSE =====
-  toggleEnginePause(): void {
-    this.enginePaused.update(v => !v);
-  }
-
-  // ===== BACKUP UPLOAD =====
-  triggerBackupUpload(): void {
-    this.backupFileInput()?.nativeElement.click();
-  }
-
-  onBackupUpload(event: Event): void {
-    this.backupUpload.emit(event);
-  }
-
-  // ===== SCROLL REVEAL =====
-  private setupScrollReveal(): void {
-    const host = this.el.nativeElement;
-    const revealNodes = Array.from(host.querySelectorAll('.reveal-on-scroll')) as HTMLElement[];
-    revealNodes.forEach((node, i) => {
-      node.style.transitionDelay = `${Math.min(i * 60, 260)}ms`;
-    });
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('is-revealed');
-
-          // GSAP stagger for children
-          const children = (e.target as HTMLElement).querySelectorAll('.stagger-child');
-          if (children.length) {
-            gsap.fromTo(children,
-              { y: 30, opacity: 0, scale: 0.95 },
-              { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.08, ease: 'power3.out', delay: 0.1 }
-            );
-          }
-
-          observer.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.12, root: host });
-    revealNodes.forEach(el => observer.observe(el));
-    revealNodes.slice(0, 4).forEach(el => el.classList.add('is-revealed'));
-    this.cleanupFns.push(() => observer.disconnect());
-  }
-
-  // ===== NAVBAR SCROLL =====
-  private setupNavScroll(): void {
-    const host = this.el.nativeElement;
-    const handler = () => this.navScrolled.set(host.scrollTop > 50);
-    host.addEventListener('scroll', handler, { passive: true });
-    this.cleanupFns.push(() => host.removeEventListener('scroll', handler));
-  }
-
-  // ===== CODEX DRAG SCROLL =====
-  private setupCodexDrag(): void {
-    const el = this.codexContainer()?.nativeElement;
+  // --- sky canvas (ported from the reference renderer) ---
+  private startSky(): void {
+    const el = this.skyCanvas()?.nativeElement;
     if (!el) return;
+    const parent = el.parentElement;
+    if (!parent) return;
+    const rect = parent.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.sky.w = rect.width;
+    this.sky.h = rect.height;
+    el.width = rect.width * dpr;
+    el.height = rect.height * dpr;
+    this.sky.ctx = el.getContext('2d');
+    this.sky.ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.sky.cx = rect.width / 2;
+    this.sky.cy = rect.height / 2 + 10;
+    this.sky.R = Math.min(rect.width, rect.height) / 2 - 26;
 
-    const onDown = (e: MouseEvent) => {
-      this.codexDrag.active = true;
-      this.codexDrag.startX = e.pageX - el.offsetLeft;
-      this.codexDrag.scrollLeft = el.scrollLeft;
-    };
-    const onLeave = () => { this.codexDrag.active = false; };
-    const onUp = () => { this.codexDrag.active = false; };
-    const onMove = (e: MouseEvent) => {
-      if (!this.codexDrag.active) return;
-      e.preventDefault();
-      const x = e.pageX - el.offsetLeft;
-      el.scrollLeft = this.codexDrag.scrollLeft - (x - this.codexDrag.startX);
-    };
-
-    el.addEventListener('mousedown', onDown);
-    el.addEventListener('mouseleave', onLeave);
-    el.addEventListener('mouseup', onUp);
-    el.addEventListener('mousemove', onMove);
-    this.cleanupFns.push(() => {
-      el.removeEventListener('mousedown', onDown);
-      el.removeEventListener('mouseleave', onLeave);
-      el.removeEventListener('mouseup', onUp);
-      el.removeEventListener('mousemove', onMove);
-    });
-  }
-
-  // ===== 3D MAP ENGINE =====
-  /** PERF: the engine only renders while its canvas is on screen. */
-  readonly engineOffscreen = signal(true);
-
-  private initEngine(): void {
-    const canvasEl = this.engineCanvas()?.nativeElement;
-    const wrapperEl = this.engineWrapper()?.nativeElement;
-    if (!canvasEl || !wrapperEl) return;
-
-    if (typeof IntersectionObserver !== 'undefined') {
-      new IntersectionObserver(entries => {
-        this.engineOffscreen.set(!entries.some(e => e.isIntersecting));
-      }, { rootMargin: '120px' }).observe(wrapperEl);
-    } else {
-      this.engineOffscreen.set(false);
+    this.sky.stars = [];
+    for (const fam of Object.keys(RINGS) as FamKind[]) {
+      const ps = IV_PARTS.filter((p) => p.fam === fam);
+      ps.forEach((p, i) => {
+        this.sky.stars.push({
+          p,
+          fam,
+          base: (i / ps.length) * Math.PI * 2 + BASE_ANGLE[fam],
+          r: RINGS[fam],
+          tw: (i * 1.7) % 6.3,
+          sx: 0,
+          sy: 0,
+        });
+      });
     }
 
-    const ctx = canvasEl.getContext('2d');
-    if (!ctx) return;
-
-    let cam = { rx: 0.35, ry: 0.5 };
-    let tcam = { rx: 0.35, ry: 0.5 };
-    let dragging = false, lx = 0, ly = 0, velX = 0, velY = 0;
-    let time = 0;
-    let animFrame = 0;
-
-    // PERF (reference EngineScene): cached layout reads + capped backing
-    // store. Retina DPR 2 quadruples every fill; 1.5 is visually identical
-    // for a slowly-rotating galaxy, and the width cap bounds the worst case.
-    let vw = 0, vh = 0, dprEff = 1;
-    const bgCanvas = document.createElement('canvas');
-    const resize = () => {
-      vw = wrapperEl.offsetWidth;
-      vh = wrapperEl.offsetHeight;
-      dprEff = Math.min(window.devicePixelRatio || 1, 1.5, 1600 / Math.max(vw, 1));
-      canvasEl.width = Math.max(1, Math.round(vw * dprEff));
-      canvasEl.height = Math.max(1, Math.round(vh * dprEff));
-      // Pre-render the background gradient once per resize — a per-frame
-      // createRadialGradient over a 4K-pixel canvas was the top frame cost.
-      bgCanvas.width = canvasEl.width;
-      bgCanvas.height = canvasEl.height;
-      const bctx = bgCanvas.getContext('2d')!;
-      const bg = bctx.createRadialGradient(
-        bgCanvas.width / 2, bgCanvas.height / 2, 0,
-        bgCanvas.width / 2, bgCanvas.height / 2, Math.max(bgCanvas.width, bgCanvas.height) * 0.7,
-      );
-      bg.addColorStop(0, '#191833');
-      bg.addColorStop(0.6, '#12122b');
-      bg.addColorStop(1, '#0d0d24');
-      bctx.fillStyle = bg;
-      bctx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+    this.sky.running = true;
+    cancelAnimationFrame(this.sky.raf);
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const loop = (t: number) => {
+      if (!this.sky.running) return;
+      this.paintSky(t);
+      if (!reduce) this.sky.raf = requestAnimationFrame(loop);
     };
-    window.addEventListener('resize', resize);
-    resize();
+    this.sky.raf = requestAnimationFrame(loop);
+  }
 
-    const blobImgs: Record<string, HTMLImageElement> = {};
-    ARCHETYPES.forEach(arch => {
-      const svgStr = this.generateBlobSvgString(arch, 100);
-      const img = new Image();
-      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
-      blobImgs[arch.id] = img;
-    });
+  private stopSky(): void {
+    this.sky.running = false;
+    cancelAnimationFrame(this.sky.raf);
+  }
 
-    // PERF (reference): glow sprites pre-rendered once per archetype —
-    // replaces 2 createRadialGradient + 2 arc fills per node per frame
-    // (36 gradient allocations/frame) with 2 image blits per node.
-    const glowSprites: Record<string, HTMLCanvasElement[]> = {};
-    ARCHETYPES.forEach(arch => {
-      const layers: HTMLCanvasElement[] = [];
-      ([[0.9, '30'], [0.6, '70']] as const).forEach(([radiusF, alphaHex]) => {
-        const S = 128;
-        const c = document.createElement('canvas');
-        c.width = S; c.height = S;
-        const g = c.getContext('2d')!;
-        const grad = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
-        grad.addColorStop(0, arch.color + alphaHex);
-        grad.addColorStop(1, arch.color + '00');
-        g.fillStyle = grad;
-        g.fillRect(0, 0, S, S);
-        layers.push(c);
-      });
-      glowSprites[arch.id] = layers;
-    });
+  private starPos(s: SkyStar, t: number): { x: number; y: number } {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const a = s.base + (reduce ? 0 : t * SPEEDS[s.fam]);
+    return { x: this.sky.cx + Math.cos(a) * s.r * this.sky.R, y: this.sky.cy + Math.sin(a) * s.r * this.sky.R * 0.92 };
+  }
 
-    // PERF: label metrics cache — measureText re-parses the font each call;
-    // snapped integer sizes keep the cache tiny and hit-stable.
-    const labelWidthCache = new Map<string, number>();
-    const labelWidth = (label: string, fontSize: number): number => {
-      const key = fontSize + '|' + label;
-      let w = labelWidthCache.get(key);
-      if (w === undefined) {
-        ctx.font = `600 ${fontSize}px 'Fredoka','Comfortaa','Nunito',sans-serif`;
-        w = ctx.measureText(label).width + 12;
-        labelWidthCache.set(key, w);
+  private paintSky(t: number): void {
+    const c = this.sky.ctx;
+    if (!c) return;
+    const dark = this.dark();
+    const filter = this.famFilter();
+    const { w, h, cx, cy, R } = this.sky;
+    c.clearRect(0, 0, w, h);
+
+    const ink = dark ? 'rgba(247,238,218,.5)' : 'rgba(42,28,16,.55)';
+    const faint = dark ? 'rgba(247,238,218,.16)' : 'rgba(42,28,16,.15)';
+
+    if (dark) {
+      for (let i = 0; i < 40; i++) {
+        const x = (i * 97) % w;
+        const y = (i * 173) % h;
+        c.globalAlpha = 0.25 + 0.25 * Math.sin(t / 900 + i);
+        c.fillStyle = '#F7EEDA';
+        c.fillRect(x, y, 1.6, 1.6);
       }
-      return w;
-    };
+      c.globalAlpha = 1;
+    }
 
-    // PERF: rotation trig hoisted out of project() — was recomputed for
-    // every projected point (100+ sin/cos pairs per frame).
-    let rcx = 1, rsx = 0, rcy = 1, rsy = 0;
-    const updateRotation = () => {
-      rcx = Math.cos(cam.rx); rsx = Math.sin(cam.rx);
-      rcy = Math.cos(cam.ry); rsy = Math.sin(cam.ry);
-    };
-    const project = (x: number, y: number, z: number) => {
-      const y1 = y * rcx - z * rsx, z1 = y * rsx + z * rcx;
-      const x2 = x * rcy + z1 * rsy, z2 = -x * rsy + z1 * rcy;
-      const depth = 9 + z2;
-      if (depth < 0.5) return null;
-      const sc = 5 / depth;
-      return { sx: vw / 2 + x2 * sc * vw * 0.06, sy: vh / 2 - y1 * sc * vw * 0.06, sc, z2 };
-    };
+    // family rings
+    c.setLineDash([2, 7]);
+    c.lineWidth = 1.6;
+    for (const k of Object.keys(RINGS) as FamKind[]) {
+      c.strokeStyle = filter && filter !== k ? (dark ? 'rgba(247,238,218,.06)' : 'rgba(42,28,16,.06)') : faint;
+      c.beginPath();
+      c.ellipse(cx, cy, RINGS[k] * R, RINGS[k] * R * 0.92, 0, 0, 7);
+      c.stroke();
+    }
+    c.setLineDash([]);
 
-    const drawBackground = () => {
-      // One blit of the cached gradient canvas instead of a fresh gradient.
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.drawImage(bgCanvas, 0, 0);
-      ctx.setTransform(dprEff, 0, 0, dprEff, 0, 0);
-    };
+    // ring labels
+    c.font = '600 8.5px system-ui';
+    c.textAlign = 'center';
+    for (const k of Object.keys(RINGS) as FamKind[]) {
+      c.fillStyle = filter && filter !== k ? 'transparent' : dark ? 'rgba(247,238,218,.4)' : 'rgba(42,28,16,.4)';
+      const plural: Record<FamKind, [string, string]> = {
+        manager: ['MANAGERS', 'МЕНЕДЖЕРЫ'],
+        firefighter: ['FIREFIGHTERS', 'ПОЖАРНЫЕ'],
+        exile: ['EXILES', 'ИЗГНАННИКИ'],
+        resource: ['RESOURCES', 'РЕСУРСЫ'],
+      };
+      c.fillText(this.L(plural[k]), cx, cy - RINGS[k] * R * 0.92 - 5);
+    }
 
-    const drawGrids = () => {
-      const gridSize = 10;
-      const divisions = 10;
-      const step = gridSize / divisions;
-      const half = gridSize / 2;
-      // PERF: batched paths — one beginPath/stroke per (major, plane)
-      // bucket instead of 2 strokes per grid line (60+ stroke calls/frame).
-      for (const isMajor of [true, false]) {
-        ctx.strokeStyle = `rgba(226,230,246,${isMajor ? 0.06 : 0.025})`;
-        ctx.lineWidth = isMajor ? 0.6 : 0.3;
-        ctx.beginPath();
-        for (let i = 0; i <= divisions; i++) {
-          if ((i % 5 === 0) !== isMajor) continue;
-          const pos = -half + i * step;
-          const seg = (a: { sx: number; sy: number } | null, b: { sx: number; sy: number } | null) => {
-            if (a && b) { ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); }
-          };
-          seg(project(-half, 0, pos), project(half, 0, pos));
-          seg(project(pos, 0, -half), project(pos, 0, half));
-          seg(project(-half, pos, 0), project(half, pos, 0));
-          seg(project(pos, -half, 0), project(pos, half, 0));
-          seg(project(0, -half, pos), project(0, half, pos));
-          seg(project(0, pos, -half), project(0, pos, half));
-        }
-        ctx.stroke();
+    // manager → exile guard links
+    if (!filter) {
+      c.setLineDash([4, 6]);
+      c.strokeStyle = dark ? 'rgba(255,211,77,.4)' : 'rgba(232,67,74,.35)';
+      c.lineWidth = 1.8;
+      for (const [aId, bId] of GUARD_LINKS) {
+        const A = this.sky.stars.find((s) => s.p.id === aId);
+        const B = this.sky.stars.find((s) => s.p.id === bId);
+        if (!A || !B) continue;
+        const pa = this.starPos(A, t);
+        const pb = this.starPos(B, t);
+        c.beginPath();
+        c.moveTo(pa.x, pa.y);
+        c.lineTo(pb.x, pb.y);
+        c.stroke();
       }
-    };
+      c.setLineDash([]);
+    }
 
-    const drawAxisLabels = () => {
-      const labels = [
-        { text: 'Agency', pos: [6.5, 0, 0], color: '#E1846D' },
-        { text: 'Temperature', pos: [0, 6.5, 0], color: '#FCA5A5' },
-        { text: 'Focus', pos: [0, 0, 6.5], color: '#5EEAD4' },
-      ];
-      labels.forEach(l => {
-        const p = project(...l.pos as [number, number, number]);
-        if (!p || p.sc < 0.15) return;
-        const fontSize = Math.max(10, Math.min(15, Math.round(13 * p.sc)));
-        ctx.font = `600 ${fontSize}px 'Fredoka','Comfortaa','Nunito',sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const tw = labelWidth(l.text, fontSize) + 4;
-        const th = fontSize + 10;
-        ctx.fillStyle = 'rgba(18, 18, 43, 0.85)';
-        ctx.strokeStyle = l.color + '66';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(p.sx - tw / 2, p.sy - th / 2, tw, th, 8);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = l.color;
-        ctx.fillText(l.text, p.sx, p.sy);
-      });
-    };
+    // the Self star (center)
+    const pulse = 1 + Math.sin(t / 800) * 0.05;
+    this.drawSelfStar(c, cx, cy, 20 * pulse, dark);
 
-    // PERF (reference): 30fps cap — the scene drifts slowly, so rendering
-    // every other frame halves all rasterization cost for no visible loss.
-    const FRAME_MS = 1000 / 30;
-    let lastFrame = 0;
+    // part stars
+    for (const s of this.sky.stars) {
+      const pos = this.starPos(s, t);
+      s.sx = pos.x;
+      s.sy = pos.y;
+      const dimmed = filter && filter !== s.fam;
+      c.globalAlpha = dimmed ? 0.15 : 1;
 
-    const loop = (now = 0) => {
-      // PERF: no work at all when paused (manual), offscreen, or tab hidden —
-      // previously this still drew the full scene every frame.
-      if (this.enginePaused() || this.engineOffscreen() || document.hidden) {
-        animFrame = requestAnimationFrame(loop);
-        return;
+      const avg = s.p.ax.ag / 100 * 2.2;
+      const rr = 9 + avg * 3 + Math.sin(t / 600 + s.tw) * 0.8;
+      if (dark && !dimmed) {
+        c.shadowColor = s.p.color;
+        c.shadowBlur = 14;
       }
-      if (now - lastFrame < FRAME_MS) {
-        animFrame = requestAnimationFrame(loop);
-        return;
+      c.fillStyle = s.p.color;
+      c.strokeStyle = dark ? '#0A0818' : '#1c1610';
+      c.lineWidth = 2.2;
+      c.beginPath();
+      c.arc(pos.x, pos.y, rr, 0, 7);
+      c.fill();
+      c.stroke();
+      c.shadowBlur = 0;
+      // face
+      c.fillStyle = '#1c1610';
+      c.beginPath();
+      c.arc(pos.x - rr * 0.32, pos.y - rr * 0.15, 1.7, 0, 7);
+      c.fill();
+      c.beginPath();
+      c.arc(pos.x + rr * 0.32, pos.y - rr * 0.15, 1.7, 0, 7);
+      c.fill();
+      c.strokeStyle = '#1c1610';
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.arc(pos.x, pos.y + rr * 0.18, rr * 0.32, 0.4, 2.7);
+      c.stroke();
+      if (s.p.ax.ag >= 85) this.spark(c, pos.x + rr + 5, pos.y - rr - 3, 3.4, ink);
+      c.fillStyle = dark ? 'rgba(247,238,218,.85)' : 'rgba(42,28,16,.85)';
+      c.font = '600 9.5px system-ui';
+      c.fillText(this.L(s.p.short), pos.x, pos.y + rr + 12);
+      c.globalAlpha = 1;
+    }
+  }
+
+  private drawSelfStar(c: CanvasRenderingContext2D, x: number, y: number, r: number, dark: boolean): void {
+    c.save();
+    c.translate(x, y);
+    c.fillStyle = '#E9D23A';
+    c.strokeStyle = dark ? '#0A0818' : '#1c1610';
+    c.lineWidth = 2.4;
+    c.lineJoin = 'round';
+    c.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const a = i * 1.2566 - 1.5708;
+      c.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      c.lineTo(Math.cos(a + 0.6283) * r * 0.48, Math.sin(a + 0.6283) * r * 0.48);
+    }
+    c.closePath();
+    if (dark) {
+      c.shadowColor = '#E9D23A';
+      c.shadowBlur = 18;
+    }
+    c.fill();
+    c.shadowBlur = 0;
+    c.stroke();
+    // face
+    c.fillStyle = '#1c1610';
+    c.beginPath();
+    c.arc(-r * 0.25, -r * 0.15, r * 0.09, 0, 7);
+    c.fill();
+    c.beginPath();
+    c.arc(r * 0.25, -r * 0.15, r * 0.09, 0, 7);
+    c.fill();
+    c.strokeStyle = '#1c1610';
+    c.lineWidth = r * 0.09;
+    c.lineCap = 'round';
+    c.beginPath();
+    c.arc(0, r * 0.12, r * 0.22, 0.3, 2.8);
+    c.stroke();
+    c.restore();
+    c.fillStyle = dark ? 'rgba(247,238,218,.7)' : 'rgba(42,28,16,.7)';
+    c.font = '600 9px system-ui';
+    c.textAlign = 'center';
+    c.fillText(this.isEnglish() ? 'SELF ✦ YOU' : 'SELF ✦ ВЫ', x, y + r + 16);
+  }
+
+  private spark(c: CanvasRenderingContext2D, x: number, y: number, r: number, col: string): void {
+    c.strokeStyle = col;
+    c.lineWidth = 1.4;
+    c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(x - r, y);
+    c.lineTo(x + r, y);
+    c.moveTo(x, y - r);
+    c.lineTo(x, y + r);
+    c.stroke();
+  }
+
+  onCanvasClick(event: MouseEvent): void {
+    const el = this.skyCanvas()?.nativeElement;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    let best: SkyStar | null = null;
+    let bd = Infinity;
+    for (const s of this.sky.stars) {
+      const d = (s.sx - x) ** 2 + (s.sy - y) ** 2;
+      if (d < bd) {
+        bd = d;
+        best = s;
       }
-      lastFrame = now;
-      time += 0.006 * 2;
-      if (!dragging) {
-        tcam.ry += 0.004;
-        tcam.rx += velX; tcam.ry += velY;
-        velX *= 0.94; velY *= 0.94;
-      }
-      tcam.rx = Math.max(-1.0, Math.min(1.0, tcam.rx));
-      cam.rx += (tcam.rx - cam.rx) * 0.12;
-      cam.ry += (tcam.ry - cam.ry) * 0.12;
-      updateRotation();
-
-      drawBackground();
-      drawGrids();
-
-      const proj = ARCHETYPES.map((arch, i) => {
-        const x = (arch.stats.agency - 50) / 50 * 5;
-        const y = (arch.stats.temperature - 50) / 50 * 5;
-        const z = (arch.stats.focus - 50) / 50 * 5;
-        const fY = Math.sin(time * 1.5 + i * 1.2) * 0.15;
-        const fX = Math.cos(time + i * 0.9) * 0.08;
-        const p = project(x + fX, y + fY, z);
-        return p ? { arch, p, i } : null;
-      }).filter(Boolean) as { arch: ShowcaseArchetype; p: NonNullable<ReturnType<typeof project>>; i: number }[];
-
-      proj.sort((a, b) => b.p.z2 - a.p.z2);
-      const projMap = new Map(proj.map(n => [n.arch.id, n.p]));
-
-      // Connection lines — batched into one glow path + one dashed core
-      // path (was 2 strokes + 2 dash state changes per edge).
-      const pulse = 0.15 + Math.sin(time * 2) * 0.08;
-      ctx.beginPath();
-      EDGES.forEach(([i, j]) => {
-        const pa = projMap.get(ARCHETYPES[i].id);
-        const pb = projMap.get(ARCHETYPES[j].id);
-        if (!pa || !pb) return;
-        ctx.moveTo(pa.sx, pa.sy);
-        ctx.lineTo(pb.sx, pb.sy);
-      });
-      ctx.strokeStyle = `rgba(255, 255, 255, ${pulse * 0.15})`;
-      ctx.lineWidth = 6;
-      ctx.stroke();
-      ctx.setLineDash([4, 6]);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${pulse})`;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Draw nodes — glow via pre-rendered sprites, labels via cached widths
-      proj.forEach(({ arch, p }) => {
-        const sz = 100 * p.sc;
-        if (sz < 8) return;
-
-        const sprites = glowSprites[arch.id];
-        if (sprites) {
-          const r9 = sz * 0.9, r6 = sz * 0.6;
-          ctx.drawImage(sprites[0], p.sx - r9, p.sy - r9, r9 * 2, r9 * 2);
-          ctx.drawImage(sprites[1], p.sx - r6, p.sy - r6, r6 * 2, r6 * 2);
-        }
-
-        const img = blobImgs[arch.id];
-        if (img && img.complete && img.naturalWidth !== 0) {
-          ctx.drawImage(img, p.sx - sz / 2, p.sy - sz / 2, sz, sz);
-        } else {
-          ctx.beginPath();
-          ctx.arc(p.sx, p.sy, sz * 0.35, 0, Math.PI * 2);
-          ctx.fillStyle = arch.color;
-          ctx.fill();
-        }
-
-        // Name label
-        const fontSize = Math.max(10, Math.min(15, Math.round(13 * p.sc)));
-        ctx.font = `600 ${fontSize}px 'Fredoka','Comfortaa','Nunito',sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const label = this.getArchName(arch);
-        const tw = labelWidth(label, fontSize);
-        const th = fontSize + 6;
-        const llx = p.sx;
-        const lly = p.sy + sz / 2 + th / 2 + 4;
-        ctx.fillStyle = `rgba(13, 11, 9, 0.8)`;
-        ctx.beginPath();
-        ctx.roundRect(llx - tw / 2, lly - th / 2, tw, th, 6);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(label, llx, lly);
-      });
-
-      drawAxisLabels();
-      animFrame = requestAnimationFrame(loop);
-    };
-
-    const onDown = (e: PointerEvent) => { dragging = true; lx = e.clientX; ly = e.clientY; velX = 0; velY = 0; };
-    const onMove = (e: PointerEvent) => {
-      if (!dragging) return;
-      const dx = e.clientX - lx, dy = e.clientY - ly;
-      tcam.ry -= dx * 0.004; tcam.rx -= dy * 0.004;
-      velY = -dx * 0.0004; velX = -dy * 0.0004;
-      lx = e.clientX; ly = e.clientY;
-    };
-    const onUp = () => { dragging = false; };
-
-    wrapperEl.addEventListener('pointerdown', onDown);
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-
-    loop();
-
-    this.cleanupFns.push(() => {
-      cancelAnimationFrame(animFrame);
-      window.removeEventListener('resize', resize);
-      wrapperEl.removeEventListener('pointerdown', onDown);
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-    });
+    }
+    if (best && bd < 32 * 32) this.openPart(best.p.id);
   }
 
-  // ===== HELPERS =====
-  getArchName(arch: ShowcaseArchetype): string {
-    const entry = PART_NAMES[arch.id];
-    return entry ? entry[this.isEnglish() ? 0 : 1] : arch.id;
+  famCount(fam: FamKind): number {
+    return IV_PARTS.filter((p) => p.fam === fam).length;
   }
+}
 
-  getSynArchName(index: number): string {
-    const id = this.synSelected()[index];
-    const arch = id ? ARCHETYPES.find(a => a.id === id) : null;
-    return arch ? this.getArchName(arch) : '';
-  }
-
-  getArchType(arch: ShowcaseArchetype): string {
-    const entry = CLASS_LABELS[arch.type];
-    return entry ? entry[this.isEnglish() ? 0 : 1] : arch.type;
-  }
-
-  getArchDesc(arch: ShowcaseArchetype): string {
-    const lang = this.isEnglish() ? 'en' : 'ru';
-    const resource = RESOURCE_FACE[arch.id];
-    if (resource) return resource[this.isEnglish() ? 0 : 1];
-    const copy = PART_COPY[lang][arch.id as keyof typeof PART_COPY['en']];
-    return copy ? copy.face : '';
-  }
-
-  getStatLabel(key: string): string {
-    const map: Record<string, string> = {
-      agency: 'statAgency', temperature: 'statTemperature', focus: 'statFocus', attachment: 'statAttachment'
-    };
-    return this.t(map[key] || key);
-  }
-
-  padIndex(i: number): string {
-    return String(i + 1).padStart(2, '0');
-  }
-
-  archStats(arch: ShowcaseArchetype): [string, number][] {
-    return Object.entries(arch.stats) as [string, number][];
-  }
+/** Minimal structural user type (the full type lives at the app boundary). */
+interface User {
+  isAnonymous?: boolean;
 }

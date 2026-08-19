@@ -10,10 +10,12 @@ export class TranslationService {
   private currentLang = signal<Language>(this.restoreLang());
 
   private restoreLang(): Language {
+    // Russian-first product: ru unless the user explicitly saved 'en'.
     try {
       const saved = localStorage.getItem(LANG_KEY);
-      return saved === 'ru' || saved === 'en' ? saved : 'en';
-    } catch { return 'en'; }
+      if (saved === 'en') return 'en';
+      return 'ru';
+    } catch { return 'ru'; }
   }
 
   setLanguage(lang: Language) {

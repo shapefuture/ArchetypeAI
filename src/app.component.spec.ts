@@ -450,13 +450,14 @@ describe('AppComponent', () => {
   describe('toggleLanguage()', () => {
     it('should switch from en to ru', () => {
       const translationService = TestBed.inject(TranslationService);
-      expect(translationService.getLanguage()).toBe('en');
+      translationService.setLanguage('en');
       component.toggleLanguage();
       expect(translationService.getLanguage()).toBe('ru');
     });
 
     it('should toggle back', () => {
       const translationService = TestBed.inject(TranslationService);
+      translationService.setLanguage('en');
       component.toggleLanguage(); // en -> ru
       component.toggleLanguage(); // ru -> en
       expect(translationService.getLanguage()).toBe('en');
@@ -848,7 +849,7 @@ describe('AppComponent', () => {
       const err = (component as any).authError();
       expect(err).toBeTruthy();
       expect(String(err)).not.toMatch(/auth\/email-already-in-use/);
-      expect(String(err)).toMatch(/already exists/i);
+      expect(String(err)).toMatch(/already exists|уже существует/i);
     });
 
     it('signUpWithEmail (gate) should keep the form open on link failure (generic error)', async () => {
@@ -1041,7 +1042,7 @@ describe('AppComponent', () => {
       const loginError = (component as any).loginError();
       expect(loginError).toBeTruthy();
       expect(String(loginError)).not.toMatch(/auth\/email-already-in-use/);
-      expect(String(loginError)).toMatch(/already exists/i);
+      expect(String(loginError)).toMatch(/already exists|уже существует/i);
     });
 
     it('loginCreateAccountEmailFromModal should wait for auth state propagation before closing the modal', async () => {

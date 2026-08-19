@@ -237,9 +237,9 @@ export interface SuggestInput {
 export interface Suggestion { exercise: Exercise; type: ExerciseTypeDef; reasonKey: string; }
 
 /** Auto-target selectors: which construct makes each type “for you” (§3B.2). */
-export function selectorMatches(type: ExerciseTypeId, profile: ScoredProfile, checkIns: CheckIn[]): boolean {
+export function selectorMatches(type: ExerciseTypeId, profile: ScoredProfile, checkIns: CheckIn[], now: Date = new Date()): boolean {
   const last7 = checkIns.filter(c =>
-    (now0().getTime() - new Date(c.date).getTime()) / 86400000 <= 7);
+    (now.getTime() - new Date(c.date).getTime()) / 86400000 <= 7);
   const outOfWindow = last7.filter(c => Math.abs(c.arousal) >= 1);
   const dominant = Object.values(profile.parts).some(p => p.tier === 'dominant');
   const ffHot = ['numb', 'rebel', 'charmer'].some(p => profile.parts[p].T >= 60);
@@ -258,7 +258,6 @@ export function selectorMatches(type: ExerciseTypeId, profile: ScoredProfile, ch
     default: return false;
   }
 }
-function now0(): Date { return new Date(); }
 
 export function suggestExercise(input: SuggestInput): Suggestion | null {
   const { profile, lastSuggestedAt } = input;
@@ -269,7 +268,7 @@ export function suggestExercise(input: SuggestInput): Suggestion | null {
     const def = EXERCISE_TYPES[type];
     if (def.gate === 'red') continue; // never auto-suggested, ever
     if (def.gate === 'yellow' && selfServeGate('yellow', profile) !== 'ok') continue;
-    if (!selectorMatches(type, profile, input.checkIns)) continue;
+    if (!selectorMatches(type, profile, input.checkIns, input.now)) continue;
     const exercise = EXERCISES.find(e => e.type === type);
     if (exercise) return { exercise, type: def, reasonKey: type };
   }

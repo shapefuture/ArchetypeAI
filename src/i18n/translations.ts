@@ -184,12 +184,13 @@ export const translations = {
       navProblem: 'Problem', navMatrix: 'Matrix', navCodex: 'Codex', navEngine: 'Engine',
       navDashboard: 'Dashboard', navLogout: 'Logout', navLogin: 'Login',
       navTherapist: 'Therapist',
+      dockHome: 'Home', dockCodex: 'Codex', dockMatrix: 'Matrix', dockEngine: 'Engine',
       startTest: 'Start Test \u2726',
       quickScanCta: 'Meet one part in 90 seconds',
       // Hero
       liveBadge: 'Live', heroBadge: '147 Statements \u00B7 18 Inner Parts \u00B7 IFS-Grounded',
       heroTitleLine1: 'Meet the', heroTitleEmphasis: 'constellation', heroTitleLine2: 'inside you.',
-      heroSubtitle: 'Answer 147 statements across three sittings. Your inner parts become a living constellation \u2014 measured, not guessed. Grounded in Internal Family Systems: self-reflection, not diagnosis.',
+      heroSubtitle: 'meet everyone you are. 18 inner parts, one sky \u2014 measured, not guessed. Three sittings of 49 statements, grounded in Internal Family Systems: self-reflection, not diagnosis.',
       beginTest: '\u2726 Begin the Test', exploreMatrix: 'Explore Matrix',
       statArchetypes: '18 Inner Parts', statAxes: '147 Statements', statTime: '~25m', statTimeLabel: 'To Your Map',
       // Marquee
@@ -1087,12 +1088,13 @@ export const translations = {
       navProblem: 'Проблема', navMatrix: 'Матрица', navCodex: 'Кодекс', navEngine: 'Движок',
       navDashboard: 'Кабинет', navLogout: 'Выйти', navLogin: 'Войти',
       navTherapist: 'Терапевт',
+      dockHome: 'Главная', dockCodex: 'Кодекс', dockMatrix: 'Матрица', dockEngine: 'Движок',
       startTest: 'Начать тест \u2726',
       quickScanCta: 'Встретьте одну часть за 90 секунд',
       // Hero
       liveBadge: 'Live', heroBadge: '147 утверждений \u00B7 18 внутренних частей \u00B7 метод IFS',
       heroTitleLine1: 'Внутри вас —', heroTitleEmphasis: 'созвездие', heroTitleLine2: 'познакомьтесь с ним.',
-      heroSubtitle: 'Ответьте на 147 утверждений в трёх частях — и ваши внутренние части станут живым созвездием: измеренным, а не выдуманным. В основе — метод «Внутренние семейные системы»: это самопознание, а не диагностика.',
+      heroSubtitle: 'познакомьтесь со всеми, кто вы есть. 18 внутренних частей, одно небо — измеренно, а не наугад. Три части по 49 утверждений; в основе — метод «Внутренние семейные системы»: самопознание, а не диагностика.',
       beginTest: '\u2726 Начать тест', exploreMatrix: 'Исследовать матрицу',
       statArchetypes: '18 внутренних частей', statAxes: '147 утверждений', statTime: '~25 мин', statTimeLabel: 'До вашей карты',
       // Marquee

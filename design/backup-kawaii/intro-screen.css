@@ -1,0 +1,396 @@
+/* ============================================
+   INTRO SCREEN - GROUND-UP REDESIGN
+   CINEMATIC STORYBOOK EXPERIENCE
+   ============================================ */
+
+.intro-redesign {
+  background: var(--paper-bg);
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent any scrolling */
+}
+
+/* Initially hide elements that will be animated in by GSAP */
+.intro-redesign .intro-universe-symbol,
+.intro-redesign .intro-text-block h2,
+.intro-redesign .intro-text-block p,
+.intro-redesign .intro-hero-actions button,
+.intro-redesign .intro-universe-symbol .blob-wrapper {
+  opacity: 0;
+}
+
+.intro-bg-parchment {
+  background: radial-gradient(circle at 70% 30%, #fdfbf6 0%, var(--paper-bg) 100%);
+  z-index: -2;
+}
+
+.intro-bg-vignette {
+  background: radial-gradient(circle at center, transparent 30%, rgba(74, 62, 53, 0.06) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.intro-bg-texture {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3%3E%3C/filter%3%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+  z-index: -1;
+}
+
+/* --- Navigation --- */
+.intro-nav {
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(74, 62, 53, 0.05);
+}
+
+/* --- Universe Symbol & Orbits --- */
+.intro-universe-symbol {
+  width: 280px;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.symbol-orbit-1, .symbol-orbit-2, .symbol-orbit-3 {
+  border-style: solid;
+  opacity: 0.3;
+}
+
+.symbol-orbit-1 { animation: orbit-rotate 30s linear infinite; }
+.symbol-orbit-2 { animation: orbit-rotate 45s linear infinite reverse; }
+.symbol-orbit-3 { animation: orbit-rotate 70s linear infinite; }
+
+@keyframes orbit-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* --- Hero Text --- */
+.intro-title-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.intro-title-underline::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: -2px;
+  right: -2px;
+  height: 12px;
+  background: var(--accent-orange);
+  opacity: 0.15;
+  z-index: -1;
+  border-radius: 2px;
+  transform: rotate(-1deg);
+}
+
+/* --- Buttons: Cinematic Style --- */
+.btn-primary-cinematic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--ink-main);
+  color: white;
+  border: 2px solid transparent;
+  padding: 16px 32px;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.4s var(--ease-storybook);
+  box-shadow: 0 8px 25px rgba(74, 62, 53, 0.2);
+  white-space: nowrap;
+}
+
+.btn-primary-cinematic:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 15px 40px rgba(74, 62, 53, 0.3);
+  background: #3a312a;
+}
+
+.btn-primary-cinematic:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-secondary-cinematic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.4);
+  color: var(--ink-main);
+  border: 2px solid var(--ink-main);
+  padding: 16px 32px;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.4s var(--ease-storybook);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+.btn-secondary-cinematic:hover {
+  background: var(--ink-main);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(74, 62, 53, 0.1);
+}
+
+.btn-tool-minimal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid rgba(74, 62, 53, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-tool-minimal:hover {
+  border-color: var(--ink-main);
+  color: var(--ink-main);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(74, 62, 53, 0.05);
+}
+
+/* --- Animations --- */
+.animate-float-slow {
+  animation: float-y 7s ease-in-out infinite;
+}
+
+.animate-reverse-float-slow {
+  animation: float-y 9s ease-in-out infinite reverse;
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  .intro-universe-symbol {
+    width: 240px;
+    height: 240px;
+  }
+  .intro-main-center {
+    gap: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .intro-redesign {
+    padding: 32px 20px;
+  }
+  .intro-main-center {
+    flex-direction: column;
+    text-align: center;
+    gap: 24px;
+  }
+  .intro-hero-content {
+    align-items: center;
+  }
+  .intro-hero-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+  .btn-primary-cinematic, .btn-secondary-cinematic {
+    width: 100%;
+    min-width: unset;
+    padding: 14px 24px;
+  }
+  .intro-universe-symbol {
+    order: -1;
+    margin-bottom: 0;
+    width: 200px;
+    height: 200px;
+  }
+}
+
+
+
+/* Innerverse report shortcut pill (intro) */
+/* Feature pills — kawaii sticker register, feature-colored, safe-area aware */
+.innerverse-pill {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 90;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  border: 3px solid var(--color-ink);
+  background: #fffdf5;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 0 var(--color-ink);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+}
+.innerverse-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0 0 var(--color-ink);
+}
+.innerverse-pill:active {
+  transform: translateY(1px);
+  box-shadow: 2px 2px 0 0 var(--color-ink);
+}
+.innerverse-pill-star { font-size: 11px; }
+.innerverse-pill--checkin {
+  bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-sky);
+}
+.innerverse-pill--practice {
+  bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-sage);
+}
+.innerverse-pill--synastry {
+  bottom: calc(172px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-rose);
+}
+@media (max-width: 480px) {
+  .innerverse-pill { font-size: 11.5px; padding: 8px 12px; right: 12px; }
+  .innerverse-pill--checkin { bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
+  .innerverse-pill--practice { bottom: calc(108px + env(safe-area-inset-bottom, 0px)); }
+  .innerverse-pill--synastry { bottom: calc(154px + env(safe-area-inset-bottom, 0px)); }
+}
+.innerverse-pill--therapist { bottom: 208px; color: var(--color-ink); border-color: rgba(74, 62, 53, 0.55); font-weight: 700; }
+.innerverse-pill--practice {
+  right: 18px;
+  bottom: 130px;
+  color: rgba(236, 234, 246, 0.9);
+  border-color: rgba(169, 160, 214, 0.5);
+}
+.innerverse-pill--quickscan { color: var(--color-ink); }
+
+/* ============================================
+   STORYBOOK ELEVATION — landing hero
+   Warm ink, Fraunces display, hand-drawn marks
+   ============================================ */
+
+/* The display voice (was an unstyled class falling back to system fonts) */
+.neo-serif {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-variation-settings: 'opsz' 144, 'SOFT' 50;
+}
+
+.hero-title-animated {
+  letter-spacing: -0.015em;
+  text-shadow: 3px 3px 0 rgba(200, 190, 180, 0.35);
+}
+
+/* Sketchy-radius panels on the hero (hand-drawn corners) */
+.hero-sketchy {
+  border-radius: var(--radius-sketch-primary) !important;
+  box-shadow: 4px 4px 0 rgba(200, 190, 180, 0.5), 8px 8px 0 rgba(180, 170, 160, 0.28) !important;
+}
+.hero-sketchy-alt {
+  border-radius: var(--radius-sketch-secondary) !important;
+  box-shadow: 3px 3px 0 rgba(200, 190, 180, 0.5), 6px 6px 0 rgba(180, 170, 160, 0.25) !important;
+}
+
+/* Hand-drawn marginalia (ink sparkles around the hero) */
+.marginalia {
+  position: absolute;
+  color: var(--color-ink);
+  opacity: 0.5;
+  pointer-events: none;
+  animation: marginalia-float 7s ease-in-out infinite;
+}
+.marginalia--a { animation-delay: -2s; }
+.marginalia--b { animation-delay: -4.5s; transform: scale(0.8); }
+@keyframes marginalia-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(6deg); }
+}
+
+/* Part-constellation strip: ten pastel part-stars on a dashed ink path
+   (cartography marginalia inspired by the kawaii drafts' pastel parts) */
+.part-constellation {
+  display: block;
+  margin: 0 auto 20px;
+  max-width: 520px;
+  width: 86%;
+  opacity: 0.9;
+}
+.part-constellation .pc-star {
+  animation: pc-twinkle 3.4s ease-in-out infinite;
+}
+.part-constellation .pc-star:nth-child(2n) { animation-delay: -1.2s; }
+.part-constellation .pc-star:nth-child(3n) { animation-delay: -2.1s; }
+@keyframes pc-twinkle {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marginalia, .part-constellation .pc-star { animation: none; }
+  .hero-title-animated { text-shadow: none; }
+}
+
+
+/* ============================================
+   STORYBOOK SYSTEM — whole-page consistency
+   Warm ink borders (2px), layered warm shadows,
+   hand-drawn radii, aged-paper panels
+   ============================================ */
+
+.sb-shadow-sm { box-shadow: 2px 2px 0 rgba(200, 190, 180, 0.55) !important; }
+.sb-shadow { box-shadow: 4px 4px 0 rgba(200, 190, 180, 0.5), 8px 8px 0 rgba(180, 170, 160, 0.28) !important; }
+.sb-shadow-lg { box-shadow: 6px 6px 0 rgba(200, 190, 180, 0.5), 12px 12px 0 rgba(180, 170, 160, 0.3) !important; }
+.sb-shadow-accent { box-shadow: 6px 6px 0 rgba(249, 199, 79, 0.65), 12px 12px 0 rgba(200, 190, 180, 0.35) !important; }
+.sb-shadow-coral { box-shadow: 5px 5px 0 rgba(231, 84, 128, 0.4) !important; }
+
+.sb-radius-a { border-radius: var(--radius-sketch-primary) !important; }
+.sb-radius-b { border-radius: var(--radius-sketch-secondary) !important; }
+.sb-radius-soft { border-radius: var(--radius-soft, 16px) !important; }
+
+.sb-panel { background-color: #fdfbf6 !important; }
+
+/* The deliberate dark register (synergy section): Innerverse indigo,
+   not muddy warm-black — the page's one night-sky beat */
+.sb-night {
+  background: linear-gradient(180deg, #191833 0%, #12122b 100%) !important;
+}
+
+/* Section label: the small dash + caps kicker, warm ink */
+.sb-kicker { color: var(--color-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .neo-card, .neo-card .neo-card-shadow { transition: none; }
+}
+
+
+/* Nav: small CTA stays a clean pill (sketchy radius is for big buttons only) */
+.landing-nav .neo-btn .neo-btn-body,
+.landing-nav .neo-btn .neo-btn-shadow { border-radius: 999px; }
+.landing-nav .neo-btn .neo-btn-shadow { transform: translate(3px, 3px); }
+
+/* Wordmark: Fraunces semibold, comfortable tracking — not black-tight */
+.landing-nav .neo-serif { font-weight: 600; }

@@ -1,137 +1,141 @@
 /* ============================================================
-   KAWAII STICKER-BOOK LAYER (design/innerverse-assessment-content-draft)
-   Cream paper · indigo ink · hard pop shadows · rounded display
-   type · sticker chips · wobbly borders · dotted + grain texture.
-   Loaded AFTER neo-brutal.css: remaps the shared palette vars and
-   overrides the soft storybook shadows with hard sticker pops.
+   INNERVERSE DESIGN SYSTEM (from "inner verse.html" reference)
+   Warm cream paper · ink outline · Lilita One display + Fraunces
+   serif · family-coded part colors (managers orange, firefighters
+   pink, exiles violet, resources cyan, Self lemon) · hard pop
+   shadows (0 4px 0 outline) · dock navigation · springy motion.
+   Replaces the kawaii layer; same class names so the whole app
+   re-skins in one move. Old design saved under design/backup-kawaii
+   (git: tag/branch design-backup-kawaii).
    ============================================================ */
 
 :root {
-  /* Draft palette — names unchanged so every tailwind utility
-   * (bg-paper, text-ink, bg-coral …) shifts app-wide in one move. */
-  --color-paper: #fbf3e3;
-  --color-paper-dk: #f5ead2;
-  --color-ink: #201a3a;
-  --color-ink-l: #4a3f6e;
-  --color-coral: #ff6b57;
-  --color-mustard: #ffc23c;
-  --color-sage: #46d8ae;
-  --color-mint: #57c4ff;
-  --color-sky: #a5e3ff;
-  --color-lavender: #9a6bff;
-  --color-rose: #ff9fd1;
-  --color-orange: #ffb03a;
-  --color-dark: #201a3a;
-  --accent-yellow: #ffc23c;
+  /* Paper & ink (light theme; dark sections keep their own night palettes) */
+  --color-paper: #F3EAD4;
+  --color-paper-dk: #EDE2C6;
+  --color-ink: #3A3229;
+  --color-ink-l: #7A6F5E;
+  /* Family-coded accents (reference: mgr/orange, ff/pink, ex/violet, res/cyan, self/lemon) */
+  --color-lemon: #F7DD4A;
+  --color-coral: #E5853D;   /* managers / warm accent */
+  --color-mustard: #F7DD4A; /* primary buttons = lemon */
+  --color-sage: #7FD35E;
+  --color-mint: #38AFC9;    /* resources / cyan */
+  --color-sky: #7CCBDD;
+  --color-lavender: #8A57D9; /* exiles / violet */
+  --color-rose: #EE8FA6;     /* firefighters / pink */
+  --color-orange: #E5853D;
+  --color-dark: #1C1610;
+  --color-line: rgba(58, 50, 41, 0.14);
+  --outline-ink: #1C1610;
+  --accent-yellow: #F7DD4A;
 
-  --font-display: 'Fredoka', 'Comfortaa', 'Nunito', ui-rounded, system-ui, sans-serif;
-  --font-hand: 'Comfortaa', 'Fredoka', 'Nunito', ui-rounded, sans-serif;
-  --font-body: 'Atkinson Hyperlegible', 'Nunito', ui-sans-serif, system-ui, sans-serif;
+  /* Type: Lilita One display (latin) — Rubik/Nunito carry Cyrillic in the
+   * same chunky register. Fraunces serif body; Georgia covers ru serif. */
+  --font-display: 'Lilita One', 'Rubik', 'Nunito', system-ui, sans-serif;
+  --font-hand: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Fraunces', Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+
+  /* Motion (reference springs) */
+  --spring: cubic-bezier(0.34, 1.45, 0.4, 1);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ---------- Hard pop shadows replace the soft storybook ones ---------- */
-.neo-btn .neo-btn-shadow {
-  background-color: var(--color-ink);
-}
-.neo-btn .neo-btn-body {
-  border-width: 3px;
-}
-.neo-card .neo-card-shadow {
-  background-color: var(--color-ink);
-  box-shadow: none;
-  opacity: 0.92;
-}
+/* ---------- Pop shadows (down-only, ink outline) ---------- */
+.neo-btn .neo-btn-shadow { background-color: var(--outline-ink); }
+.neo-btn .neo-btn-body { border-width: 2.5px; border-color: var(--outline-ink); }
+.neo-card .neo-card-shadow { background-color: var(--outline-ink); box-shadow: none; opacity: 0.92; }
 .neo-card:hover .neo-card-shadow { opacity: 1; }
 
-.pop-shadow-sm { box-shadow: 3px 3px 0 0 var(--color-ink); }
-.pop-shadow    { box-shadow: 5px 5px 0 0 var(--color-ink); }
-.pop-shadow-lg { box-shadow: 8px 8px 0 0 var(--color-ink); }
+.pop-shadow-sm { box-shadow: 0 2px 0 var(--outline-ink); }
+.pop-shadow    { box-shadow: 0 3px 0 var(--outline-ink); }
+.pop-shadow-lg { box-shadow: 0 4px 0 var(--outline-ink); }
 
 /* ---------- Type ---------- */
-.font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+.font-display { font-family: var(--font-display); letter-spacing: 0.02em; }
 .font-hand { font-family: var(--font-hand); }
 .font-body { font-family: var(--font-body); }
-.text-outline {
-  -webkit-text-stroke: 2px var(--color-ink);
-  paint-order: stroke fill;
-}
+.text-outline { -webkit-text-stroke: 2px var(--outline-ink); paint-order: stroke fill; }
 
-/* ---------- Sticker primitives ---------- */
+/* ---------- Buttons & chips (reference .btn / .chip) ---------- */
 .sticker-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  border: 3px solid var(--color-ink);
-  border-radius: 999px;
-  padding: 0.75rem 1.75rem;
+  gap: 9px;
+  min-height: 56px;
+  padding: 12px 22px;
+  border-radius: 19px;
+  border: 2px solid var(--outline-ink);
+  background: var(--color-lemon);
+  color: var(--outline-ink);
+  box-shadow: 0 4px 0 var(--outline-ink);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--color-ink);
-  background: var(--color-mustard);
-  box-shadow: 4px 4px 0 0 var(--color-ink);
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s;
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.3s ease;
 }
-.sticker-btn:hover { transform: translateY(-2px); box-shadow: 6px 6px 0 0 var(--color-ink); }
-.sticker-btn:active { transform: translateY(1px); box-shadow: 2px 2px 0 0 var(--color-ink); }
+.sticker-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--outline-ink); }
+.sticker-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--outline-ink); }
 .sticker-btn:focus-visible { outline: 3px dashed var(--color-lavender); outline-offset: 4px; }
 
 .sticker-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  border: 2px solid var(--color-ink);
+  gap: 6px;
+  padding: 7px 12px;
   border-radius: 999px;
-  padding: 0.28rem 0.8rem;
+  border: 2px solid var(--outline-ink);
+  background: var(--color-paper);
+  color: var(--outline-ink);
+  box-shadow: 0 2px 0 var(--outline-ink);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--color-ink);
-  background: var(--color-mustard);
-  box-shadow: 3px 3px 0 0 var(--color-ink);
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
-.wobbly-a { border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
-.wobbly-b { border-radius: 25px 180px 25px 180px / 180px 25px 180px 25px; }
+/* ---------- Cards ---------- */
+.wobbly-a { border-radius: 26px; }
+.wobbly-b { border-radius: 22px 26px 22px 26px; }
 
 .wobbly-card {
   position: relative;
-  border: 3px solid var(--color-ink);
-  border-radius: 2rem;
-  background: #fffdf5;
-  box-shadow: 6px 6px 0 0 var(--color-ink);
+  border: 2.5px solid var(--outline-ink);
+  border-radius: 24px;
+  background: #FBF5E3;
+  box-shadow: 0 4px 0 var(--outline-ink);
   transform: rotate(var(--tilt, 0deg));
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+  transition: transform 0.3s var(--spring), box-shadow 0.3s var(--spring);
 }
 .wobbly-card:hover {
   transform: translateY(-4px) rotate(0deg);
-  box-shadow: 9px 9px 0 0 var(--color-ink);
+  box-shadow: 0 7px 0 var(--outline-ink);
 }
-.tilt-l { --tilt: -0.8deg; }
-.tilt-r { --tilt: 0.8deg; }
+.tilt-l { --tilt: -0.6deg; }
+.tilt-r { --tilt: 0.6deg; }
 
-/* ---------- Texture ---------- */
+/* ---------- Texture (subtle, paper-first) ---------- */
 .dotted-bg {
-  background-image: radial-gradient(var(--color-ink) 1.2px, transparent 1.2px);
-  background-size: 22px 22px;
-  opacity: 0.08;
+  background-image: radial-gradient(var(--color-ink) 1.1px, transparent 1.1px);
+  background-size: 24px 24px;
+  opacity: 0.06;
 }
 .grain-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.35;
   mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");
 }
 
-/* ---------- Google-eyes mascot bit ---------- */
+/* ---------- Mascot eyes ---------- */
 .google-eyes { display: inline-flex; gap: 4px; align-items: center; }
 .google-eye {
   position: relative;
@@ -140,7 +144,7 @@
   height: 16px;
   border-radius: 999px;
   background: #fffdf5;
-  border: 2px solid var(--color-ink);
+  border: 2px solid var(--outline-ink);
 }
 .google-eye::after {
   content: '';
@@ -150,10 +154,10 @@
   top: 28%;
   left: 28%;
   border-radius: 999px;
-  background: var(--color-ink);
-  animation: kawaii-blink 4.5s ease-in-out infinite;
+  background: var(--outline-ink);
+  animation: iv-blink 4.5s ease-in-out infinite;
 }
-@keyframes kawaii-blink {
+@keyframes iv-blink {
   0%, 92%, 100% { transform: scaleY(1); }
   95% { transform: scaleY(0.1); }
 }
@@ -175,6 +179,66 @@
 .kawaii-float-slow { animation: kawaii-float-slow 9s ease-in-out infinite; }
 .kawaii-twinkle { animation: kawaii-twinkle 3s ease-in-out infinite; }
 
+/* ---------- Dock navigation (reference signature) ---------- */
+.iv-dock {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  display: none;
+  align-items: stretch;
+  justify-content: space-around;
+  height: 66px;
+  background: #FBF5E3;
+  border: 2.5px solid var(--outline-ink);
+  border-radius: 26px;
+  box-shadow: 0 4px 0 var(--outline-ink);
+  transition: transform 0.45s var(--spring);
+}
+@media (max-width: 1023px) {
+  .iv-dock { display: flex; }
+}
+.iv-dock-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--color-ink-l);
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  padding: 6px 2px;
+}
+.iv-dock-tab svg { width: 22px; height: 22px; }
+.iv-dock-tab.is-active { color: var(--outline-ink); }
+.iv-dock-fab {
+  flex: 0 0 76px;
+  position: relative;
+}
+.iv-dock-fab button {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 22px;
+  border: 2.5px solid var(--outline-ink);
+  background: var(--color-lemon);
+  color: var(--outline-ink);
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--outline-ink);
+  transition: transform 0.2s var(--spring), box-shadow 0.2s var(--spring);
+}
+.iv-dock-fab button:active { transform: translateX(-50%) translateY(3px); box-shadow: 0 1px 0 var(--outline-ink); }
+
 /* ---------- Mobile app readiness ---------- */
 .safe-top { padding-top: env(safe-area-inset-top, 0px); }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -182,17 +246,12 @@
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
 }
-/* Touch targets: every interactive chip/button ≥ 44px on coarse pointers */
 @media (pointer: coarse) {
-  .sticker-btn { min-height: 48px; }
+  .sticker-btn { min-height: 56px; }
   .sticker-chip { min-height: 36px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kawaii-float, .kawaii-float-slow, .kawaii-twinkle, .google-eye::after {
-    animation: none;
-  }
-  .sticker-btn, .wobbly-card {
-    transition: none;
-  }
+  .kawaii-float, .kawaii-float-slow, .kawaii-twinkle, .google-eye::after { animation: none; }
+  .sticker-btn, .wobbly-card, .iv-dock { transition: none; }
 }

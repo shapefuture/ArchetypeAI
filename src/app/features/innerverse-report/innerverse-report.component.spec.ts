@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { InnerverseReportComponent } from './innerverse-report.component';
+import { TranslationService } from '../../../services/translation.service';
 import { SHADOW_PARTS, RESOURCES } from '../../core/data/parts';
 import { scoreProfile, type AssessmentInput } from '../../core/data/scoring-v2';
 
@@ -29,7 +30,11 @@ function make(fill: number): InnerverseReportComponent {
 }
 
 describe('InnerverseReportComponent — class logic', () => {
-  beforeEach(() => TestBed.configureTestingModule({}));
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    // Specs assert English copy; product default is ru.
+    TestBed.inject(TranslationService).setLanguage('en');
+  });
 
   it('sorts parts dominant → dormant with family-order tiebreak', () => {
     const c = make(5);
@@ -110,7 +115,11 @@ describe('InnerverseReportComponent — template structure (§3.3)', () => {
 });
 
 describe('InnerverseReportComponent — §3C.3 attribution weather-vane', () => {
-  beforeEach(() => TestBed.configureTestingModule({}));
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    // Vane cue-words are English; product default is ru.
+    TestBed.inject(TranslationService).setLanguage('en');
+  });
 
   it('draws the vane from stored sealed-verdict texts', () => {
     localStorage.removeItem('INNERVERSE_SEALED_VERDICTS_V1');

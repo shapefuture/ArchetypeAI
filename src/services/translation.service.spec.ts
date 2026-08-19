@@ -10,8 +10,15 @@ describe('TranslationService', () => {
     service = TestBed.inject(TranslationService);
   });
 
-  it('should default to English', () => {
-    expect(service.getLanguage()).toBe('en');
+  it('should default to Russian (ru-first product)', () => {
+    localStorage.removeItem('APP_LANG');
+    expect(new TranslationService().getLanguage()).toBe('ru');
+  });
+
+  it('should restore explicitly saved en', () => {
+    localStorage.setItem('APP_LANG', 'en');
+    expect(new TranslationService().getLanguage()).toBe('en');
+    localStorage.removeItem('APP_LANG');
   });
 
   it('should switch language', () => {

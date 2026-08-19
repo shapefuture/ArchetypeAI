@@ -615,6 +615,29 @@
   </div>
 </section>
 
+<!-- DOCK (reference signature: mobile bottom navigation) -->
+<nav class="iv-dock" aria-label="Primary">
+  <button class="iv-dock-tab" (click)="hostEl.nativeElement.querySelector('.hero-section')?.scrollIntoView({behavior:'smooth'})">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21h-6v-6h-6v6H3z"/></svg>
+    {{ t('dockHome') }}
+  </button>
+  <button class="iv-dock-tab" (click)="hostEl.nativeElement.querySelector('#codex')?.scrollIntoView({behavior:'smooth'})">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    {{ t('dockCodex') }}
+  </button>
+  <div class="iv-dock-fab">
+    <button (click)="startTest.emit()" aria-label="Начать тест">✦</button>
+  </div>
+  <button class="iv-dock-tab" (click)="hostEl.nativeElement.querySelector('#synergy')?.scrollIntoView({behavior:'smooth'})">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="3"/><circle cx="19" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M7.5 8 10 15M16.5 8 14 15M8 6h8"/></svg>
+    {{ t('dockMatrix') }}
+  </button>
+  <button class="iv-dock-tab" (click)="hostEl.nativeElement.querySelector('#engine')?.scrollIntoView({behavior:'smooth'})">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M19.1 4.9l-2.8 2.8M7.7 16.3l-2.8 2.8"/></svg>
+    {{ t('dockEngine') }}
+  </button>
+</nav>
+
 <!-- FOOTER — coral final-CTA band -->
 <footer class="relative overflow-hidden border-t-[3px] border-ink bg-coral text-ink">
   <div class="grain-overlay" aria-hidden="true"></div>

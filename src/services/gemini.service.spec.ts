@@ -75,7 +75,7 @@ describe('GeminiService', () => {
       const archetypes: Archetype[] = [];
 
       const result = await service.analyzeAssessment(answers, questions, archetypes);
-      expect(result.analysis).toContain('Your Relational Fingerprint');
+      expect(result.analysis).toMatch(/Your Relational Fingerprint|Ваш реляционный отпечаток/);
       expect(Array.isArray(result.pantheon)).toBe(true);
       expect(new Set(result.pantheon.map(a => a.color)).size).toBe(result.pantheon.length);
     });
@@ -461,7 +461,7 @@ describe('GeminiService', () => {
         null,
         []
       );
-      expect(result.response).toContain('not available');
+      expect(result.response).toMatch(/not available|недоступен/i);
       expect(result.suggestions).toEqual([]);
     });
   });

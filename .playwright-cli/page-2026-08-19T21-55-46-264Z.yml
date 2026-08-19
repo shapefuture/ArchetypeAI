@@ -1,0 +1,21 @@
+- generic [ref=e5]:
+  - main [ref=e6]:
+    - region "Welcome" [ref=e7]:
+      - generic [ref=e8]:
+        - img "Nova" [ref=e10]
+        - img "Деятель" [ref=e28]
+        - img "Бунтарь" [ref=e42]
+        - img "Брошенный" [ref=e56]
+        - img "Мудрец" [ref=e73]
+      - generic [ref=e85]:
+        - paragraph [ref=e86]: ✦ путеводитель по вашему внутреннему небу
+        - heading "Вы — не одна вещь. Вы — целое небо." [level=1] [ref=e87]: Вы — не одна вещь.Вы — целое небо.
+        - paragraph [ref=e88]: 18 внутренних частей. 147 измеренных утверждений. Одно созвездие — на основе метода внутренних семейных систем (IFS).
+        - button "✦ Зажечь первую звезду" [ref=e89] [cursor=pointer]
+        - button "Я уже здесь был" [ref=e91] [cursor=pointer]
+  - navigation "Main navigation" [ref=e92]:
+    - button "База" [ref=e93] [cursor=pointer]
+    - button "Небо" [ref=e98] [cursor=pointer]
+    - button "Зажечь первую звезду" [ref=e104] [cursor=pointer]
+    - button "Кодекс" [ref=e107] [cursor=pointer]
+    - button "Профиль" [ref=e111] [cursor=pointer]

@@ -1,0 +1,66 @@
+- generic [ref=f2e5]:
+  - main [ref=f2e6]:
+    - region "Codex" [ref=f2e116]:
+      - generic [ref=f2e117]:
+        - generic [ref=f2e118]:
+          - generic [ref=f2e119]: CODEX
+          - generic [ref=f2e120]:
+            - generic [ref=f2e121]: 📖
+            - generic [ref=f2e122]: 18/18
+        - tablist [ref=f2e123]:
+          - button "Части" [ref=f2e124] [cursor=pointer]
+          - button "Химическая лаборатория" [ref=f2e125] [cursor=pointer]
+        - generic [ref=f2e126]:
+          - button [ref=f2e127] [cursor=pointer]:
+            - img "Деятель" [ref=f2e128]
+          - button [ref=f2e141] [cursor=pointer]:
+            - img "Внутренний критик" [ref=f2e142]
+          - button [ref=f2e153] [cursor=pointer]:
+            - img "Угодник" [ref=f2e154]
+          - button [ref=f2e170] [cursor=pointer]:
+            - img "Контролёр" [ref=f2e171]
+          - button [ref=f2e182] [cursor=pointer]:
+            - img "Аналитик" [ref=f2e183]
+          - button [ref=f2e196] [cursor=pointer]:
+            - img "Отшельник" [ref=f2e197]
+          - button [ref=f2e209] [cursor=pointer]:
+            - img "Обходчик" [ref=f2e210]
+          - button [ref=f2e226] [cursor=pointer]:
+            - img "Онемение" [ref=f2e227]
+          - button [ref=f2e238] [cursor=pointer]:
+            - img "Бунтарь" [ref=f2e239]
+          - button [ref=f2e252] [cursor=pointer]:
+            - img "Обаяшка" [ref=f2e253]
+          - button [ref=f2e269] [cursor=pointer]:
+            - img "Брошенный" [ref=f2e270]
+          - button [ref=f2e286] [cursor=pointer]:
+            - img "Стыдящийся" [ref=f2e287]
+          - button [ref=f2e299] [cursor=pointer]:
+            - img "Напуганный" [ref=f2e300]
+          - button [ref=f2e316] [cursor=pointer]:
+            - img "Незамеченный" [ref=f2e317]
+          - button [ref=f2e328] [cursor=pointer]:
+            - img "Мудрец" [ref=f2e329]
+          - button [ref=f2e341] [cursor=pointer]:
+            - img "Воин" [ref=f2e342]
+          - button [ref=f2e355] [cursor=pointer]:
+            - img "Заботник" [ref=f2e356]
+          - button [ref=f2e372] [cursor=pointer]:
+            - img "Исследователь" [ref=f2e373]
+        - paragraph [ref=f2e385]: гербовые знаки семей
+        - generic [ref=f2e386]:
+          - generic [ref=f2e387]: 📋 Менеджер · 7
+          - generic [ref=f2e389]: 🧯 Пожарный · 3
+          - generic [ref=f2e391]: 🫧 Изгнанник · 4
+          - generic [ref=f2e393]: 🌿 Ресурс · 4
+        - generic [ref=f2e395]:
+          - listitem [ref=f2e396]: ✦ Те, кто сохраняет завтрашний день безопасным.
+          - listitem [ref=f2e397]: ✦ Те, кто прибегает, когда горит.
+          - listitem [ref=f2e398]: ✦ Молодые, которые несут боль.
+          - listitem [ref=f2e399]: ✦ Те, на кого может опереться Self.
+  - navigation "Main navigation" [ref=f2e92]:
+    - button "База" [ref=f2e93] [cursor=pointer]
+    - button "Небо" [ref=f2e98] [cursor=pointer]
+    - button "Зажечь первую звезду" [ref=f2e104] [cursor=pointer]
+    - button "Кодекс" [active] [ref=f2e107] [cursor=pointer]
+    - button "Профиль" [ref=f2e111] [cursor=pointer]

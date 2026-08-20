@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Archetype, DimensionalExpressions } from './webxr.service';
 import { TranslationService } from './translation.service';
 import { generateArchetypes, ScoredArchetype } from '../app/core/data/scoring';
+import { environment } from '../environments/environment';
 
 export interface ChatMessage {
   role: 'user' | 'model' | 'error';
@@ -171,7 +172,7 @@ interface AIRequest {
 @Injectable({ providedIn: 'root' })
 export class GeminiService {
   private readonly translationService = inject(TranslationService);
-  private readonly apiUrl = '/api/ai';
+  private readonly apiUrl = environment.aiApiUrl;
 
   constructor() {}
 

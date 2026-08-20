@@ -593,3 +593,62 @@ details.why summary {
 }
 details.why[open] summary { margin-bottom: 6px; }
 details.why p { margin: 0; font-style: italic; line-height: 1.5; }
+
+/* =====================================================================
+   ITEM STAGE — reference sit-screen treatment: the statement lives in
+   a big outlined night card (qcardbig), answers are graded sticker
+   pills with pop shadows, progress is a visible gold star strip.
+   ===================================================================== */
+.descent-main .item-text {
+  background: oklch(22% 0.048 280);
+  border: 2.5px solid rgba(240, 233, 211, 0.35);
+  border-radius: 28px;
+  box-shadow: 0 5px 0 rgba(10, 8, 24, 0.85);
+  padding: clamp(22px, 6vw, 30px) clamp(18px, 5vw, 26px);
+  max-width: 30ch;
+  font-size: clamp(21px, 5.6vw, 25px);
+  color: #f7eeda;
+  text-shadow: 0 1px 0 rgba(10, 8, 24, 0.5);
+}
+
+.likert-btn {
+  border: 1.5px solid rgba(240, 233, 211, 0.55);
+  box-shadow: 0 3px 0 rgba(10, 8, 24, 0.9);
+  font-weight: 600;
+}
+.likert-btn:nth-child(1) { background: color-mix(in srgb, #38afc9 24%, transparent); }
+.likert-btn:nth-child(2) { background: color-mix(in srgb, #38afc9 8%, transparent); }
+.likert-btn:nth-child(3) { background: transparent; }
+.likert-btn:nth-child(4) { background: color-mix(in srgb, #e5853d 22%, transparent); }
+.likert-btn:nth-child(5) { background: color-mix(in srgb, #e58fa6 28%, transparent); }
+.likert-btn:hover,
+.likert-btn:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(240, 233, 211, 0.8);
+}
+
+.star-track { gap: 4px; max-width: 52vw; }
+.star {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  background: rgba(240, 233, 211, 0.22);
+}
+.star.lit {
+  background: #edd75c;
+  box-shadow: 0 0 6px rgba(237, 215, 92, 0.55);
+  animation: starPop 0.5s var(--ease-storybook, ease);
+}
+@keyframes starPop {
+  0% { transform: rotate(45deg) scale(0.2); }
+  70% { transform: rotate(45deg) scale(1.35); }
+  100% { transform: rotate(45deg) scale(1); }
+}
+
+.ghost-btn { color: rgba(240, 233, 211, 0.75); font-weight: 600; }
+.stage-text { font-size: 11px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .star.lit { animation: none; }
+}

@@ -652,3 +652,115 @@ details.why p { margin: 0; font-style: italic; line-height: 1.5; }
 @media (prefers-reduced-motion: reduce) {
   .star.lit { animation: none; }
 }
+
+/* =====================================================================
+   SIT STAGE — the reference's LIGHT sitting screen. The test itself
+   happens on cream paper with an ink-outlined statement card and a
+   2-column emoji answer grid; only ceremonies stay night.
+   ===================================================================== */
+.descent-viewport.sit-light {
+  background: #f3ead4;
+  color: #3a3229;
+}
+.sit-light .descent-bg {
+  background:
+    radial-gradient(2px 2px at 12% 18%, rgba(58, 50, 41, 0.22) 50%, transparent 51%),
+    radial-gradient(2px 2px at 78% 9%, rgba(58, 50, 41, 0.18) 50%, transparent 51%),
+    radial-gradient(2px 2px at 90% 62%, rgba(58, 50, 41, 0.2) 50%, transparent 51%),
+    radial-gradient(2px 2px at 8% 80%, rgba(58, 50, 41, 0.18) 50%, transparent 51%),
+    radial-gradient(2px 2px at 55% 92%, rgba(58, 50, 41, 0.2) 50%, transparent 51%),
+    radial-gradient(circle at 12% 18%, rgba(255, 201, 49, 0.16), transparent 36%),
+    #f3ead4;
+}
+.sit-light .ghost-btn { color: #7a6f5e; }
+.sit-light .ghost-btn svg { stroke: #7a6f5e; }
+.sit-light .stage-text { color: #7a6f5e; }
+.sit-light .star { background: rgba(58, 50, 41, 0.16); }
+.sit-light .star.lit { background: #e9b90f; box-shadow: none; }
+
+.qwrap { perspective: 900px; width: 100%; display: flex; justify-content: center; }
+.qcardbig {
+  background: #fbf5e6;
+  border: 2.5px solid #1c1610;
+  border-radius: 28px;
+  box-shadow: 0 5px 0 #1c1610;
+  padding: clamp(22px, 6vw, 28px) clamp(18px, 5vw, 24px);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  max-width: 480px;
+  width: 100%;
+}
+.q-kicker {
+  font-family: 'Lilita One', var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7a6f5e;
+}
+.sit-light .item-text {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  max-width: none;
+  color: #3a3229;
+  text-shadow: none;
+  font-size: clamp(21px, 5.6vw, 24px);
+}
+
+/* answers: 2-column emoji grid (5th spans) */
+.sit-light .likert {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: min(480px, 92vw);
+}
+.sit-light .likert-btn {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px solid #1c1610;
+  border-radius: 18px;
+  background: #fbf5e6;
+  color: #3a3229;
+  font-family: 'Fraunces', var(--font-serif);
+  font-weight: 600;
+  font-size: 14.5px;
+  text-align: center;
+  padding: 10px 8px;
+}
+.sit-light .likert-btn .em { font-size: 19px; }
+.sit-light .likert-btn:nth-child(5) { grid-column: 1 / -1; }
+.sit-light .likert-btn:nth-child(1) { background: color-mix(in srgb, #38afc9 20%, #fbf5e6); }
+.sit-light .likert-btn:nth-child(2) { background: color-mix(in srgb, #38afc9 10%, #fbf5e6); }
+.sit-light .likert-btn:nth-child(4) { background: color-mix(in srgb, #e5853d 14%, #fbf5e6); }
+.sit-light .likert-btn:nth-child(5) { background: color-mix(in srgb, #e58fa6 22%, #fbf5e6); }
+.sit-light .likert-btn:hover,
+.sit-light .likert-btn:focus-visible {
+  transform: translateY(-2px);
+  border-color: #1c1610;
+  background: #fbf5e6;
+}
+.sit-light .likert-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 #1c1610;
+}
+
+.sit-hint {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: #7a6f5e;
+  margin: 0;
+}
+
+@media (max-width: 380px) {
+  .sit-light .likert { gap: 8px; }
+  .sit-light .likert-btn { font-size: 13px; min-height: 58px; }
+}

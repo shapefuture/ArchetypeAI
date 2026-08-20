@@ -55,6 +55,7 @@ const UI = {
     ethicsGo: 'I understand — begin Descent I',
     descent: n => `Descent ${['I', 'II', 'III'][n]}`,
     itemOf: (i, n) => `${i} / ${n}`,
+    sitHint: 'Answer for the you of most days, not your best day.',
     somaticQ: 'Where do you feel this?',
     somaticSkip: 'Skip',
     breakTitle: n => `Descent ${['I', 'II', 'III'][n]} complete`,
@@ -90,6 +91,7 @@ const UI = {
     ethicsGo: 'Хорошо — начинаем Погружение I',
     descent: n => `Погружение ${['I', 'II', 'III'][n]}`,
     itemOf: (i, n) => `${i} / ${n}`,
+    sitHint: 'Отвечайте за себя обычного, а не в лучший день.',
     somaticQ: 'Где вы это чувствуете?',
     somaticSkip: 'Пропустить',
     breakTitle: n => `Погружение ${['I', 'II', 'III'][n]} завершено`,
@@ -109,6 +111,8 @@ const UI = {
     fsSave: 'Задать Полярную звезду',
   },
 };
+
+const LIKERT_EMOTES = ['🙅', '🤏', '🌗', '👋', '🎯'];
 
 const ZONE_LABELS: Record<'en' | 'ru', Record<string, string>> = {
   en: {
@@ -133,6 +137,7 @@ export class DescentPanelComponent implements OnDestroy {
   private readonly sanitizer = inject(DomSanitizer);
 
   readonly novaHtml = () => this.sanitizer.bypassSecurityTrustHtml(novaSvg());
+  readonly likertEmotes = LIKERT_EMOTES;
   private readonly translationService = inject(TranslationService);
 
   cancelled = output<void>();

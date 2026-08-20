@@ -7,11 +7,10 @@
 
 export type EyeKind = 'big' | 'wide' | 'dot' | 'lid' | 'squint' | 'star' | 'glasses';
 export type MouthKind = 'smile' | 'grin' | 'flat' | 'wavy' | 'grit' | 'ooh' | 'smirk';
-export type FamKind = 'manager' | 'firefighter' | 'exile' | 'resource';
 
 export interface StickerSpec {
   name: string;
-  fam: FamKind;
+  shape: string;
   color: string;
   glyph: { e: EyeKind; m: MouthKind };
 }
@@ -54,18 +53,43 @@ function mouth(kind: MouthKind): string {
   }
 }
 
-const BODY: Record<FamKind, string> = {
-  manager: `<rect x="16" y="18" width="68" height="64" rx="22"/>`,
-  firefighter: `<path d="M50 8C60 24 82 32 82 57a32 32 0 1 1-64 0C18 32 40 24 50 8Z"/>`,
-  exile: `<path d="M50 12c11 17 27 28 27 49a27 27 0 1 1-54 0c0-21 16-32 27-49Z"/>`,
-  resource: `<path d="M50 8l10.5 21.5L84 33 67 49.5 71.5 73 50 61.5 28.5 73 33 49.5 16 33l23.5-3.5Z"/>`,
+/**
+ * 18 unique body silhouettes — one per part, never repeated.
+ * The star shape is reserved for Nova (the mascot) and is never used
+ * for parts. All paths close inside the 100×100 viewBox and leave room
+ * for the face at roughly x∈[32,68], y∈[40,66].
+ */
+const SHAPES: Record<string, string> = {
+  // managers
+  taskmaster: `<rect x="16" y="18" width="68" height="64" rx="22"/>`, // wide id-card
+  inner_critic: `<rect x="24" y="10" width="52" height="78" rx="16"/>`, // tall ledger
+  pleaser: `<rect x="13" y="25" width="74" height="52" rx="26"/>`, // soft squircle
+  controller: `<path d="M50 11 85 31v38L50 89 15 69V31Z"/>`, // hex plate
+  analyst: `<path d="M18 50a32 32 0 0 1 64 0v26a11 11 0 0 1-11 11H29a11 11 0 0 1-11-11Z"/>`, // tank dome
+  hermit: `<path d="M26 89V54a24 24 0 0 1 48 0v35Z"/>`, // arch cave
+  bypasser: `<path d="M50 9 87 50 50 91 13 50Z"/>`, // tilted kite
+  // firefighters
+  numb: `<circle cx="50" cy="52" r="34"/>`, // blank coin
+  rebel: `<path d="M50 8 88 36 75 85H25L12 36Z"/>`, // jagged pentagon
+  charmer: `<path d="M50 14c13-9 33 1 33 19 0 21-19 33-33 47-14-14-33-26-33-47 0-18 20-28 33-19Z"/>`, // soft heart
+  // exiles
+  abandoned: `<path d="M50 12c11 17 27 28 27 49a27 27 0 1 1-54 0c0-21 16-32 27-49Z"/>`, // teardrop
+  ashamed: `<path d="M50 9c17 0 31 25 31 46a31 31 0 0 1-62 0c0-21 14-46 31-46Z"/>`, // drooping egg
+  frightened: `<path d="M50 13 88 85H12Z"/>`, // small alert triangle
+  unseen: `<path d="M62 12a38 38 0 1 0 0 76 44 44 0 0 1 0-76Z"/>`, // shy crescent
+  // resources — never stars
+  sage: `<path d="M50 9C79 26 85 58 50 91 15 58 21 26 50 9Z"/>`, // leaf
+  warrior: `<path d="M50 10 84 24v28c0 20-14 33-34 41-20-8-34-21-34-41V24Z"/>`, // shield
+  caregiver: `<path d="M50 87C27 69 13 55 13 38 13 24 25 15 37 15c6 0 11 3 13 7 2-4 7-7 13-7 12 0 24 9 24 23 0 17-14 31-37 49Z"/>`, // open heart
+  explorer: `<path d="M50 13a31 31 0 1 1-.1 0ZM44 70l6 15 6-15Z"/>`, // balloon + knot
 };
 
 export function sticker(p: StickerSpec): string {
   const g = p.glyph;
+  const body = SHAPES[p.shape] ?? SHAPES.taskmaster;
   return `<svg class="stk blinkeyes" viewBox="0 0 100 100" role="img" aria-label="${p.name}">
-  <g stroke-linejoin="round"><g fill="#fff" stroke="#fff" stroke-width="14">${BODY[p.fam]}</g>
-  <g fill="${p.color}" stroke="#1c1610" stroke-width="3.2">${BODY[p.fam]}</g></g>
+  <g stroke-linejoin="round"><g fill="#fff" stroke="#fff" stroke-width="14">${body}</g>
+  <g fill="${p.color}" stroke="#1c1610" stroke-width="3.2">${body}</g></g>
   <ellipse cx="36" cy="28" rx="10" ry="5" fill="#fff" opacity=".35" transform="rotate(-18 36 28)"/>
   ${eyes(g.e)}${mouth(g.m)}
   <circle cx="29" cy="56" r="4" fill="#fff" opacity=".45"/><circle cx="71" cy="56" r="4" fill="#fff" opacity=".45"/></svg>`;

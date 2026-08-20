@@ -75,7 +75,12 @@
   <!-- Somatic follow-up (§1.12: optional, skippable, one tap) -->
   @if (stage() === 'item' && pendingSomaticPart()) {
     <main class="descent-main">
-      <h2 class="item-text">{{ ui().somaticQ }}</h2>
+      <div class="qwrap">
+        <div class="qcardbig">
+          <span class="q-kicker">{{ ui().descent(descentIndex()) }} · {{ ui().itemOf(indexInDescent() + 1, descentSize) }}</span>
+          <p class="item-text">{{ ui().somaticQ }}</p>
+        </div>
+      </div>
       <div class="zone-grid">
         @for (zone of zones; track zone) {
           <button class="zone-btn" (click)="chooseZone(zone)">{{ zoneLabel(zone) }}</button>

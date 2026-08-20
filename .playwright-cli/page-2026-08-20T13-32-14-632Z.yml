@@ -1,0 +1,12 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - heading "Innerverse" [level=1] [ref=e11]
+    - paragraph [ref=e12]: познакомьтесь со всеми, кто вы есть.
+    - generic [ref=e13]:
+      - paragraph [ref=e14]: Полировка архетипических сфер...
+      - generic [ref=e15]: "|"
+    - paragraph [ref=e21]: Innerverse · relational engine
+  - generic [ref=e24]:
+    - generic [ref=e25]: "TS1005: ',' expected."
+    - generic [ref=e26]: src/app/core/data/exercises.ts:228:214
+    - generic [ref=e27]: Click outside, press Esc key, or fix the code to dismiss.

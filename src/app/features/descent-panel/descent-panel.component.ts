@@ -12,6 +12,8 @@ import {
   HostListener, OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer } from '@angular/platform-browser';
+import { novaSvg } from '../landing/stickers';
 import { TranslationService } from '../../../services/translation.service';
 import {
   LIKERT, buildDescents, buildItemSequence, itemText, isReverseKeyed,
@@ -128,6 +130,9 @@ const ZONE_LABELS: Record<'en' | 'ru', Record<string, string>> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DescentPanelComponent implements OnDestroy {
+  private readonly sanitizer = inject(DomSanitizer);
+
+  readonly novaHtml = () => this.sanitizer.bypassSecurityTrustHtml(novaSvg());
   private readonly translationService = inject(TranslationService);
 
   cancelled = output<void>();

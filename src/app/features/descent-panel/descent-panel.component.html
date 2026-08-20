@@ -25,6 +25,7 @@
   <!-- Ethics card (§3, mandatory onboarding — the single entry gate) -->
   @if (stage() === 'ethics') {
     <main class="descent-main">
+      <div class="nova-float" [innerHTML]="novaHtml()" aria-hidden="true"></div>
       <h1 class="headline">{{ ui().ethicsTitle }}</h1>
       @if (recalibrated()) {
         <aside class="recalibrated">{{ ui().recalibrated }}</aside>
@@ -82,6 +83,7 @@
   <!-- Break between sittings (continue immediately, or resume later) -->
   @if (stage() === 'break') {
     <main class="descent-main">
+      <div class="nova-float" [innerHTML]="novaHtml()" aria-hidden="true"></div>
       <h1 class="headline">{{ ui().breakTitle(descentIndex()) }}</h1>
       <p class="sub">{{ ui().breakSub }}</p>
       <div class="stars-summary" aria-hidden="true">

@@ -41,7 +41,7 @@ const UI = {
   en: {
     exit: 'Exit',
     ethicsTitle: 'Before you descend',
-    ethicsSub: 'The full battery: three sittings of 49 statements, one at a time. You can pause at any sitting — progress is kept on this device.',
+    ethicsSub: 'Three sittings of 49 statements. Pause after any one — progress is kept.',
     planTitle: 'What to expect',
     plan: [
       { name: 'Descent I', meta: '49 statements · ~10 min' },
@@ -50,7 +50,7 @@ const UI = {
     ],
     planPause: 'pause',
     ethicsWhy: 'Why three sittings? Attention fades — somewhere past the fiftieth statement, answers slide onto autopilot. Three short sittings keep you honest, and the pauses between them let what you saw settle.',
-    ethics1: 'This is a self-reflection tool grounded in the Internal Family Systems model, not a diagnosis or therapy.',
+    ethics1: 'A mirror, not a diagnosis · answers stay on this device',
     ethics2: 'Every part of you is welcome here. Nothing aims to delete or fix away any of you. You can stop at any time; anything can wait.',
     ethicsGo: 'I understand — begin Descent I',
     descent: n => `Descent ${['I', 'II', 'III'][n]}`,
@@ -76,7 +76,7 @@ const UI = {
   ru: {
     exit: 'Выйти',
     ethicsTitle: 'Перед погружением',
-    ethicsSub: 'Вас ждут три части по 49 утверждений — по одному на экран. Можно остановиться после любой части: прогресс сохранится на этом устройстве.',
+    ethicsSub: 'Три части по 49 утверждений. Можно остановиться после любой — прогресс сохранится.',
     planTitle: 'Как всё устроено',
     plan: [
       { name: 'Погружение I', meta: '49 утверждений · ~10 минут' },
@@ -85,7 +85,7 @@ const UI = {
     ],
     planPause: 'пауза',
     ethicsWhy: 'Почему три части? Внимание быстро притупляется: где-то после пятидесятого утверждения ответы начинаются «на автомате». Три короткие части помогают отвечать честно, а паузы между ними дают увиденному улечься.',
-    ethics1: 'Это инструмент самопознания, основанный на модели «Внутренние семейные системы». Это не диагностика и не терапия.',
+    ethics1: 'Зеркало, а не диагноз · ответы остаются на устройстве',
     ethics2: 'Каждая ваша часть здесь желанна: ничего не нужно «удалять» или «чинить». Вы можете остановиться в любой момент — всё подождёт.',
     ethicsGo: 'Хорошо — начинаем Погружение I',
     descent: n => `Погружение ${['I', 'II', 'III'][n]}`,

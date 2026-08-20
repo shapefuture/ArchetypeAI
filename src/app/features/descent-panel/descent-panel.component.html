@@ -26,32 +26,29 @@
   @if (stage() === 'ethics') {
     <main class="descent-main">
       <div class="nova-float" [innerHTML]="novaHtml()" aria-hidden="true"></div>
-      <h1 class="headline">{{ ui().ethicsTitle }}</h1>
       @if (recalibrated()) {
         <aside class="recalibrated">{{ ui().recalibrated }}</aside>
       }
-      <div class="ethics-card">
-        <p class="ethics-sub">{{ ui().ethicsSub }}</p>
-        <div class="plan-block">
-          <span class="plan-title">{{ ui().planTitle }}</span>
-          <div class="sittings-row">
-            @for (s of ui().plan; track $index; let last = $last) {
-              <div class="sitting">
-                <span class="sitting-name">{{ s.name }}</span>
-                <span class="sitting-meta">{{ s.meta }}</span>
-              </div>
-              @if (!last) { <span class="sitting-gap">✦ {{ ui().planPause }}</span> }
-            }
+      <h1 class="headline">{{ ui().ethicsTitle }}</h1>
+      <p class="sub">{{ ui().ethicsSub }}</p>
+      <span class="plan-title">{{ ui().planTitle }}</span>
+      <div class="sittings-row" role="list">
+        @for (s of ui().plan; track $index; let last = $last) {
+          <div class="sitting" role="listitem">
+            <span class="sitting-name">{{ s.name }}</span>
+            <span class="sitting-meta">{{ s.meta }}</span>
           </div>
-          <p class="ethics-why">{{ ui().ethicsWhy }}</p>
-        </div>
-        <p>{{ ui().ethics1 }}</p>
-        <p>{{ ui().ethics2 }}</p>
+          @if (!last) { <span class="sitting-gap" aria-hidden="true">✦</span> }
+        }
       </div>
       <div class="cta-column">
         <button class="primary-btn" (click)="acceptEthics()">{{ ui().ethicsGo }}</button>
       </div>
-      <p class="tiny">{{ ui().retakeNote }}</p>
+      <p class="tiny">{{ ui().ethics1 }}</p>
+      <details class="why">
+        <summary>{{ ui().planTitle }} — {{ ui().planPause }}?</summary>
+        <p>{{ ui().ethicsWhy }}</p>
+      </details>
     </main>
   }
 

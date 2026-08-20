@@ -69,19 +69,19 @@ const SHAPES: Record<string, string> = {
   hermit: `<path d="M26 89V54a24 24 0 0 1 48 0v35Z"/>`, // arch cave
   bypasser: `<path d="M50 9 87 50 50 91 13 50Z"/>`, // tilted kite
   // firefighters
-  numb: `<circle cx="50" cy="52" r="34"/>`, // blank coin
+  numb: `<path d="M50 8 C78 8 92 28 88 52 C85 76 68 92 50 92 C32 92 15 76 12 52 C8 28 22 8 50 8 Z"/>`, // soft blank blob (old design)
   rebel: `<path d="M50 8 88 36 75 85H25L12 36Z"/>`, // jagged pentagon
   charmer: `<path d="M50 14c13-9 33 1 33 19 0 21-19 33-33 47-14-14-33-26-33-47 0-18 20-28 33-19Z"/>`, // soft heart
   // exiles
   abandoned: `<path d="M50 12c11 17 27 28 27 49a27 27 0 1 1-54 0c0-21 16-32 27-49Z"/>`, // teardrop
   ashamed: `<path d="M50 9c17 0 31 25 31 46a31 31 0 0 1-62 0c0-21 14-46 31-46Z"/>`, // drooping egg
   frightened: `<path d="M50 13 88 85H12Z"/>`, // small alert triangle
-  unseen: `<path d="M62 12a38 38 0 1 0 0 76 44 44 0 0 1 0-76Z"/>`, // shy crescent
+  unseen: `<path d="M50 10 C82 10 94 38 86 62 C78 86 64 94 50 94 C36 94 22 86 14 62 C6 38 18 10 50 10 Z"/>`, // wide quiet blob (old design)
   // resources — never stars
   sage: `<path d="M50 9C79 26 85 58 50 91 15 58 21 26 50 9Z"/>`, // leaf
   warrior: `<path d="M50 10 84 24v28c0 20-14 33-34 41-20-8-34-21-34-41V24Z"/>`, // shield
   caregiver: `<path d="M50 87C27 69 13 55 13 38 13 24 25 15 37 15c6 0 11 3 13 7 2-4 7-7 13-7 12 0 24 9 24 23 0 17-14 31-37 49Z"/>`, // open heart
-  explorer: `<path d="M50 13a31 31 0 1 1-.1 0ZM44 70l6 15 6-15Z"/>`, // balloon + knot
+  explorer: `<path d="M50 10 Q82 28 82 50 Q82 82 50 92 Q18 82 18 50 Q18 28 50 10 Z"/>`, // wandering pebble (old design)
 };
 
 export function sticker(p: StickerSpec): string {

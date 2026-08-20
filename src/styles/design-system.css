@@ -933,3 +933,78 @@ body {
   color: var(--ink-main);
   background: rgba(74, 62, 53, 0.05);
 }
+
+/* =====================================================================
+   INNERVERSE APP SKIN — global override layer (reference: "inner verse.html")
+   Retints every surface built on the design-system tokens: assessment
+   battery, report, cabinet, coach, synastry, modals. Chrome follows the
+   reference's minimal skin (cream paper, ink outline, pop shadows,
+   Lilita display, Fraunces body); data-viz colors stay colorblind-safe.
+   ===================================================================== */
+:root {
+  /* paper — warm cream */
+  --paper-bg: #f3ead4;
+  --paper-panel: #fbf5e6;
+  --paper-viewport-top: #efe3c9;
+  --paper-viewport-bot: #e9dcbe;
+  --bg-card-layer-1: #ede2c6;
+  --bg-card-layer-2: #f3ead4;
+
+  /* ink — dark outline family */
+  --ink-main: #3a3229;
+  --ink-muted: #7a6f5e;
+  --ink-light: #c9bda6;
+
+  /* chrome accents — lemon primary, family-coded warmth */
+  --accent-yellow: #f7dd4a;
+  --accent-teal: #38afc9;
+  --accent-rose: #e5853d;
+
+  /* borders — ink outline */
+  --border-panel: 2px solid #1c1610;
+  --border-dashed: 2px dashed rgba(58, 50, 41, 0.35);
+  --border-sketchy: var(--border-panel);
+  --border-soft: 1.5px solid rgba(58, 50, 41, 0.3);
+
+  /* radii — calm reference geometry */
+  --radius-soft: 18px;
+  --radius-pill: 999px;
+  --radius-sketch-primary: 20px;
+  --radius-sketch-secondary: 20px;
+  --radius-sketchy: 20px;
+
+  /* shadows — sticker pop, only on tappables */
+  --shadow-float: 0 26px 60px rgba(24, 16, 6, 0.18);
+  --shadow-card-stack: 0 4px 0 #1c1610;
+  --shadow-card: 0 3px 0 #1c1610;
+  --shadow-card-sm: 0 2px 0 #1c1610;
+}
+
+body {
+  font-weight: 450;
+  line-height: 1.45;
+}
+
+/* reference buttons — pill, lemon, pop shadow */
+.btn-primary-cinematic {
+  background: var(--accent-yellow);
+  color: #1c1610;
+  border: 2px solid #1c1610;
+  border-radius: 999px;
+  box-shadow: 0 4px 0 #1c1610;
+  font-family: 'Lilita One', var(--font-sans);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.btn-primary-cinematic:hover { background: #f2d633; filter: none; }
+.btn-primary-cinematic:active { transform: translateY(3px); box-shadow: 0 1px 0 #1c1610; }
+
+.btn-secondary-cinematic {
+  background: transparent;
+  color: var(--ink-main);
+  border: 1.5px solid rgba(58, 50, 41, 0.3);
+  border-radius: 999px;
+  box-shadow: none;
+  font-family: var(--font-sans);
+}
+.btn-secondary-cinematic:hover { background: rgba(58, 50, 41, 0.06); color: var(--ink-main); }

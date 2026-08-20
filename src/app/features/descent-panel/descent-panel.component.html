@@ -1,4 +1,4 @@
-<div class="descent-viewport">
+<div class="descent-viewport" [class.sit-light]="stage() === 'item'">
   <div class="descent-bg" aria-hidden="true"></div>
 
   <header class="descent-header">
@@ -55,12 +55,20 @@
   <!-- One item per screen (§3.2) -->
   @if (stage() === 'item' && !pendingSomaticPart()) {
     <main class="descent-main" [class.leaving]="transitioning()">
-      <h2 class="item-text">{{ currentText() }}</h2>
+      <div class="qwrap">
+        <div class="qcardbig">
+          <span class="q-kicker">{{ ui().descent(descentIndex()) }} · {{ ui().itemOf(indexInDescent() + 1, descentSize) }}</span>
+          <p class="item-text">{{ currentText() }}</p>
+        </div>
+      </div>
       <div class="likert">
         @for (label of likert[lang()]; track $index) {
-          <button class="likert-btn" (click)="answer($index + 1)">{{ label }}</button>
+          <button class="likert-btn" (click)="answer($index + 1)">
+            <span class="em" aria-hidden="true">{{ likertEmotes[$index] }}</span>{{ label }}
+          </button>
         }
       </div>
+      <p class="sit-hint">{{ ui().sitHint }}</p>
     </main>
   }
 

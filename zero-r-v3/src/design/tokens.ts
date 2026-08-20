@@ -1,0 +1,1 @@
+export const COLORS={bg:"#14121A",ink:"rgba(255,255,255,.94)",muted:"rgba(255,255,255,.56)",panel:"rgba(255,255,255,.055)",border:"rgba(255,255,255,.095)",self:"#E8C77E",manager:"#7C93C9",firefighter:"#D97D6B",exile:"#9B8AC4"} as const;

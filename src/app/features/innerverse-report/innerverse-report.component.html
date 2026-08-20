@@ -1,4 +1,6 @@
 <article class="report">
+  <div class="starfield s1" aria-hidden="true"></div>
+  <div class="starfield s2" aria-hidden="true"></div>
 @if (profile(); as p) {
   <!-- 1 · Constellation headline -->
   <header class="report-header">
@@ -22,12 +24,16 @@
   </header>
 
   @if (p.crisis) {
-    <aside class="crisis">{{ ui().crisis }}</aside>
+    <aside class="crisis">
+      <span class="crisis-dot" aria-hidden="true"></span>
+      {{ ui().crisis }}
+    </aside>
   }
 
   <!-- 2 · Strength FIRST (§1.1 non-negotiable) -->
   <section class="strength-hero">
-    <h2>{{ ui().strongestResource }}</h2>
+    <p class="hero-kicker">{{ ui().strongestResource }}</p>
+    <div class="hero-avatar" [innerHTML]="stickerHtml(p.strongestResource.id)"></div>
     <p class="strength-name">{{ strongResourceName() }}</p>
     <p class="strength-sub">{{ ui().strongestResourceSub(strongResourceName()) }}</p>
   </section>
@@ -75,7 +81,7 @@
     </div>
   </section>
 
-  <!-- 4 · Parts by tier, flippable 4-layer cards -->
+  <!-- 4 · Parts by tier, flippable 4-layer collectible cards -->
   <section class="panel">
     <h2>{{ ui().partsByTier }}</h2>
     <p class="panel-sub">{{ ui().flipHint }}</p>
@@ -83,15 +89,22 @@
       @for (id of sortedParts(); track id) {
         <button class="part-card" [class.dominant]="p.parts[id].tier === 'dominant'"
                 [class.prominent]="p.parts[id].tier === 'prominent'"
+                [style.--fam]="partColor(id)"
                 (click)="cycleLayer(id)">
+          <span class="card-shine" aria-hidden="true"></span>
           <div class="part-top">
-            <span class="part-name">{{ partName(id) }}</span>
-            <span class="part-tier">{{ ui().tierNames[p.parts[id].tier] }}</span>
+            <div class="part-avatar" [innerHTML]="stickerHtml(id)"></div>
+            <div class="part-id">
+              <span class="part-name">{{ partName(id) }}</span>
+              <span class="part-tier">{{ ui().tierNames[p.parts[id].tier] }}</span>
+            </div>
           </div>
-          <span class="layer-label">{{ layerLabel(layerFor(id)) }}</span>
+          <span class="layer-chip">{{ layerLabel(layerFor(id)) }}</span>
           <p class="layer-text">{{ copyFor(id, layerFor(id)) }}</p>
-          <div class="t-bar"><div class="t-fill" [style.width.%]="((p.parts[id].T - 20) / 60) * 100"></div></div>
-          <span class="t-value">T {{ p.parts[id].T | number:'1.0-0' }}</span>
+          <div class="part-meta">
+            <div class="t-bar"><div class="t-fill" [style.width.%]="((p.parts[id].T - 20) / 60) * 100"></div></div>
+            <span class="t-value">T {{ p.parts[id].T | number:'1.0-0' }}</span>
+          </div>
         </button>
       }
     </div>
@@ -137,27 +150,31 @@
     }
   </section>
 
-  <!-- 7 · Coping stack -->
+  <!-- 7 · Coping stack — the descent -->
   <section class="panel">
     <h2>{{ ui().copingStack }}</h2>
     <ol class="stack">
       <li class="stack-level">
+        <span class="stack-step" aria-hidden="true"></span>
         <span class="stack-name">{{ p.subtypes[p.copingStack.l1].name }}</span>
       </li>
       @if (p.copingStack.l2; as l2) {
-        <li class="stack-fails">{{ ui().whenFails }}</li>
+        <li class="stack-fails"><span class="stack-fails-line" aria-hidden="true"></span>{{ ui().whenFails }}</li>
         <li class="stack-level">
+          <span class="stack-step" aria-hidden="true"></span>
           <span class="stack-name">{{ p.subtypes[l2].name }}</span>
         </li>
       }
       @if (p.copingStack.l3; as l3) {
-        <li class="stack-fails">{{ ui().whenFails }}</li>
+        <li class="stack-fails"><span class="stack-fails-line" aria-hidden="true"></span>{{ ui().whenFails }}</li>
         <li class="stack-level">
+          <span class="stack-step" aria-hidden="true"></span>
           <span class="stack-name">{{ p.subtypes[l3].name }}</span>
         </li>
       }
-      <li class="stack-fails">{{ ui().whenFails }}</li>
+      <li class="stack-fails"><span class="stack-fails-line" aria-hidden="true"></span>{{ ui().whenFails }}</li>
       <li class="stack-level floor">
+        <span class="stack-floor-glow" aria-hidden="true"></span>
         <span class="stack-name">{{ p.subtypes[p.copingStack.floor].name }}</span>
         <span class="stack-belief">“{{ exileBelief(p.copingStack.floor) }}”</span>
         <span class="stack-floor-label">{{ ui().floorLabel }}</span>

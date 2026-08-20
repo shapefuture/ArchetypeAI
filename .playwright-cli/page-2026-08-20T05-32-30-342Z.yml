@@ -1,0 +1,182 @@
+- generic [ref=f6e3]:
+  - region "top of page"
+  - generic [ref=f6e10]:
+    - banner [ref=f6e11]:
+      - generic [ref=f6e15]:
+        - generic:
+          - generic:
+            - generic "2022-pattern logo + wordmark.png" [ref=f6e16] [cursor=pointer]:
+              - link [ref=f6e17]:
+                - /url: https://www.thepattern.com
+                - img "The Pattern logo" [ref=f6e18]
+            - navigation "Site" [ref=f6e20]:
+              - list [ref=f6e21]:
+                - listitem [ref=f6e22]:
+                  - link "APP" [ref=f6e24] [cursor=pointer]:
+                    - /url: https://www.thepattern.com
+                - listitem [ref=f6e27]:
+                  - link "NATAL CHART" [ref=f6e29] [cursor=pointer]:
+                    - /url: https://www.thepattern.com/natalchart
+                - listitem [ref=f6e32]:
+                  - link "ABOUT US" [ref=f6e34] [cursor=pointer]:
+                    - /url: https://www.thepattern.com/about-us-1
+    - main [ref=f6e37]:
+      - generic [ref=f6e42]:
+        - generic:
+          - generic:
+            - generic:
+              - region "Slideshow" [ref=f6e47]:
+                - button "Previous" [ref=f6e48] [cursor=pointer]
+                - button "Next" [ref=f6e51] [cursor=pointer]
+                - generic [ref=f6e55]:
+                  - img "The Pattern is a personalized astrology app that helps you understand your personality, relationships, and the patterns shaping your life. Image of a Natal Wheel to introduce the Pattern" [ref=f6e60]
+                  - generic:
+                    - generic:
+                      - paragraph [ref=f6e61]:
+                        - generic [ref=f6e62]: THE PATTERN
+                      - paragraph [ref=f6e65]:
+                        - generic [ref=f6e66]: Understand Yourself on a Deeper Level
+                      - paragraph [ref=f6e70]:
+                        - generic [ref=f6e71]: The Pattern is a personalized astrology app that helps you understand the patterns shaping your life and influencing your relationships.
+                      - link "GET YOUR NATAL CHART" [ref=f6e74] [cursor=pointer]:
+                        - /url: https://www.thepattern.com/natalchart
+                - navigation "Slides" [ref=f6e77]:
+                  - list:
+                    - listitem:
+                      - link "The Pattern" [ref=f6e78] [cursor=pointer]:
+                        - /url: ./#comp-mp47aqvt
+                    - listitem:
+                      - link "Time Travel" [ref=f6e79] [cursor=pointer]:
+                        - /url: ./#comp-mp47ar5u1
+                    - listitem:
+                      - link "Slide 3" [ref=f6e80] [cursor=pointer]:
+                        - /url: ./#comp-mp47ar5v9
+                    - listitem:
+                      - link "Slide 4" [ref=f6e81] [cursor=pointer]:
+                        - /url: ./#comp-mp47c6mw
+              - generic [ref=f6e82]:
+                - generic:
+                  - generic:
+                    - paragraph [ref=f6e86]:
+                      - generic [ref=f6e87]: Download The Pattern
+                    - generic:
+                      - generic:
+                        - generic:
+                          - link "View in play store" [ref=f6e90] [cursor=pointer]:
+                            - /url: https://play.google.com/store/apps/details?id=com.thepattern.app&hl=en
+                          - link "View in app store" [ref=f6e96] [cursor=pointer]:
+                            - /url: https://itunes.apple.com/us/app/the-pattern/id1071085727?ls=1&mt=8
+              - generic [ref=f6e102]:
+                - generic:
+                  - generic:
+                    - heading "Your Natal Chart" [level=1] [ref=f6e106]
+                    - paragraph [ref=f6e109]:
+                      - generic [ref=f6e110]: The Pattern uses your birth chart information to give you deeply personal insights — without the complicated astrology language.
+                    - link "Get Your Natal Chart" [ref=f6e112] [cursor=pointer]:
+                      - /url: https://www.thepattern.com/natalchart
+                    - generic "Whole House Natal Wheel" [ref=f6e115] [cursor=pointer]:
+                      - link [ref=f6e116]:
+                        - /url: https://www.thepattern.com/natalchart
+                        - img "natal chart" [ref=f6e117]
+                    - link [ref=f6e119] [cursor=pointer]:
+                      - /url: https://www.thepattern.com/natalchart
+                      - img "natal chart form" [ref=f6e120]
+              - generic [ref=f6e126]:
+                - tablist [ref=f6e128]:
+                  - tab "Your Pattern" [selected] [ref=f6e129] [cursor=pointer]
+                  - tab "Your Bonds" [ref=f6e131] [cursor=pointer]
+                  - tab "Your Transits" [ref=f6e133] [cursor=pointer]
+                  - tab "Romantic Transits" [ref=f6e135] [cursor=pointer]
+                  - tab "Time-Travel" [ref=f6e137] [cursor=pointer]
+                  - tab "In-Depth" [ref=f6e139] [cursor=pointer]
+                  - tab "Shared Experienes" [ref=f6e141] [cursor=pointer]
+                - tabpanel "Your Pattern" [ref=f6e145]:
+                  - generic [ref=f6e146]:
+                    - generic:
+                      - generic:
+                        - heading "Your Pattern" [level=2] [ref=f6e147]
+                        - paragraph [ref=f6e150]:
+                          - generic [ref=f6e151]: Your Pattern is a unique combination of personality traits, based on your natal chart.
+                        - generic:
+                          - generic:
+                            - generic:
+                              - paragraph [ref=f6e154]:
+                                - generic [ref=f6e155]: DOWNLOAD THE PATTERN
+                              - link "View in play store" [ref=f6e159] [cursor=pointer]:
+                                - /url: https://play.google.com/store/apps/details?id=com.thepattern.app&hl=en
+                              - link "View in app store" [ref=f6e165] [cursor=pointer]:
+                                - /url: https://itunes.apple.com/us/app/the-pattern/id1071085727?ls=1&mt=8
+                        - generic:
+                          - paragraph [ref=f6e170]:
+                            - generic [ref=f6e171]: It offers deeper insight into yourself, your relationships, and your life.
+                          - paragraph [ref=f6e174]:
+                            - generic [ref=f6e175]: Understanding your Pattern can help you navigate life with greater self-awareness, compassion, and clarity.
+                        - generic:
+                          - generic:
+                            - generic:
+                              - img "The Pattern Time Travel feature showing personalized astrology transits for a selected date, including themes of authenticity" [ref=f6e180]
+                              - img "The Pattern app showing personalized astrology personality traits based on a birth chart, including insights about ambition," [ref=f6e193]
+                        - generic:
+                          - generic:
+                            - generic:
+                              - img "The Pattern Time Travel feature showing personalized astrology transits for a selected date, including themes of authenticity" [ref=f6e196]
+                              - img "The Pattern app displaying a personalized astrology insight that explores identity, self-discovery, and personal growth throu" [ref=f6e204]
+              - generic [ref=f6e205]:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - heading "What's Your Pattern? SUBSCRIBE TO OUR NEWSLETTER" [level=3] [ref=f6e210]:
+                            - generic [ref=f6e211]: What's Your Pattern?
+                            - generic [ref=f6e214]: SUBSCRIBE TO OUR NEWSLETTER
+                          - paragraph [ref=f6e217]:
+                            - generic [ref=f6e218]: Get insights and updates to help you get more out of The Pattern.
+    - contentinfo [ref=f6e226]:
+      - generic [ref=f6e232]:
+        - generic:
+          - generic:
+            - generic "2022-pattern logo + wordmark.png" [ref=f6e233] [cursor=pointer]:
+              - link [ref=f6e234]:
+                - /url: https://www.thepattern.com
+                - img "The Pattern logo" [ref=f6e235]
+            - paragraph [ref=f6e236]:
+              - generic [ref=f6e237]: When you understand your patterns, everything starts to shift.
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Download The Pattern App" [level=2] [ref=f6e240]
+                  - link "View in play store" [ref=f6e244] [cursor=pointer]:
+                    - /url: https://play.google.com/store/apps/details?id=com.thepattern.app&hl=en
+                  - link "View in app store" [ref=f6e250] [cursor=pointer]:
+                    - /url: https://itunes.apple.com/us/app/the-pattern/id1071085727?ls=1&mt=8
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph [ref=f6e256]:
+                    - link "Terms of Service" [ref=f6e258] [cursor=pointer]:
+                      - /url: https://www.thepattern.com/terms-of-service
+                  - paragraph [ref=f6e259]:
+                    - link "Privacy Policy" [ref=f6e261] [cursor=pointer]:
+                      - /url: https://www.thepattern.com/privacy-policy
+                  - paragraph [ref=f6e262]:
+                    - link "Contact & Help" [ref=f6e264] [cursor=pointer]:
+                      - /url: https://www.thepattern.com/contact-us
+                  - paragraph [ref=f6e265]:
+                    - link "FAQ" [ref=f6e267] [cursor=pointer]:
+                      - /url: https://thepattern.zendesk.com/hc/en-us
+                  - paragraph [ref=f6e268]:
+                    - link "Safety & Wellbeing" [ref=f6e269] [cursor=pointer]:
+                      - /url: https://www.thepattern.com/safety-wellness
+            - generic:
+              - generic:
+                - generic:
+                  - link "Instagram" [ref=f6e273] [cursor=pointer]:
+                    - /url: https://www.instagram.com/thepattern/
+                  - link "Twitter" [ref=f6e279] [cursor=pointer]:
+                    - /url: https://twitter.com/thepattern
+                  - link "Facebook" [ref=f6e285] [cursor=pointer]:
+                    - /url: https://www.facebook.com/thepatternapp/
+                  - link "Tik Tok" [ref=f6e291] [cursor=pointer]:
+                    - /url: https://www.tiktok.com/@thepattern
+  - region "bottom of page"

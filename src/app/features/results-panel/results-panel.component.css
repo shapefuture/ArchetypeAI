@@ -2,9 +2,9 @@
    RESULTS PANEL — Neo-Brutalist Design System
    ============================================ */
 
-/* Neo-serif font for headings */
+/* Serif identity — Fraunces (light token system), DM Serif fallback */
 :host {
-  --font-serif: 'DM Serif Display', Georgia, serif;
+  --font-serif: 'Fraunces', 'DM Serif Display', Georgia, serif;
 }
 
 /* Scroll container */
@@ -70,7 +70,7 @@
 }
 .results-scroll .prose li { margin-bottom: 0.4em; }
 .results-scroll .prose blockquote {
-  border-left: 3px solid #FF6B5B;
+  border-left: 3px solid #E1734B;
   padding-left: 1em;
   margin-left: 0;
   font-style: italic;

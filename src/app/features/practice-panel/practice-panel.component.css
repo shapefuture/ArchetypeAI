@@ -1,73 +1,154 @@
+/* ============================================================
+   PRACTICE — light minimal skin.
+   paper #F3EAD4 · card #FBF5E6 · deep #EDE2C6
+   ink #3A3229 · muted #7A6F5E · outline #1C1610 · lemon #F7DD4A
+   Bottom sheet on mobile, centered card >= 640px.
+   ============================================================ */
+
 .practice-overlay {
   position: fixed; inset: 0; z-index: 120;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(11, 11, 30, 0.75); backdrop-filter: blur(4px);
-  padding: 16px;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(20, 12, 30, 0.45);
+  padding: 0;
 }
 .practice-card {
-  width: min(560px, 94vw); max-height: 86dvh; overflow-y: auto;
-  background: #12122b; border: 1px solid rgba(236, 234, 246, 0.14);
-  border-radius: 20px; padding: 18px;
-  color: #eceaf6; font-family: var(--font-serif);
+  box-sizing: border-box;
+  width: min(560px, 100vw); max-height: calc(100dvh - 28px); overflow-y: auto;
+  background: #F3EAD4;
+  border-top: 2px solid #1C1610;
+  border-radius: 28px 28px 0 0;
+  padding: 10px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  color: #3A3229;
+  font-family: var(--font-serif, 'Fraunces', serif);
   display: flex; flex-direction: column; gap: 16px;
+  animation: practice-sheet-rise 0.32s cubic-bezier(0.34, 1.3, 0.64, 1) both;
 }
-.practice-head { display: flex; justify-content: space-between; align-items: center; }
-.practice-kicker { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(236, 234, 246, 0.5); }
-.practice-x { background: none; border: none; color: rgba(236, 234, 246, 0.5); font-size: 14px; cursor: pointer; }
+.practice-card::before {
+  content: ''; width: 44px; height: 5px; border-radius: 999px;
+  background: rgba(58, 50, 41, 0.14); margin: 4px auto 14px; flex-shrink: 0;
+}
+@keyframes practice-sheet-rise {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes practice-card-pop {
+  from { opacity: 0; transform: scale(0.94) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@media (min-width: 640px) {
+  .practice-overlay { align-items: center; padding: 24px; }
+  .practice-card {
+    border: 2px solid #1C1610; border-radius: 24px;
+    box-shadow: 0 26px 60px rgba(24, 16, 6, 0.25);
+    padding-bottom: 26px;
+    animation-name: practice-card-pop;
+  }
+  .practice-card::before { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .practice-card { animation: none; } }
 
-.today h2, .chapters h2 { margin: 0 0 8px; font-size: 15px; font-weight: 400; color: #f2e7c9; }
-.quiet { margin: 0; font-size: 14px; color: rgba(236, 234, 246, 0.6); }
+.practice-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.practice-kicker {
+  font-family: var(--font-serif, 'Fraunces', serif);
+  font-weight: 600; font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: #7A6F5E;
+}
+.practice-x {
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 1.5px solid rgba(58, 50, 41, 0.3); border-radius: 999px;
+  color: #7A6F5E; font-size: 14px; cursor: pointer;
+  transition: transform 0.06s ease, background-color 0.15s ease;
+}
+.practice-x:active { transform: scale(0.94); }
 
-.exercise.featured { border: 1px solid rgba(242, 231, 201, 0.35); background: rgba(242, 231, 201, 0.05); border-radius: 14px; padding: 12px; }
+.today h2, .chapters h2 {
+  margin: 0 0 8px;
+  font-family: 'Lilita One', var(--font-sans, sans-serif);
+  font-size: 15px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.04em;
+  color: #3A3229;
+}
+.quiet { margin: 0; font-size: 14px; font-style: italic; color: #7A6F5E; }
+
+/* today's featured suggestion */
+.exercise.featured {
+  border: 2px solid #1C1610; background: #FBF5E6;
+  border-radius: 28px; padding: 14px;
+  box-shadow: 0 5px 0 #1C1610;
+}
 .ex-row, .exercise-row {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;
-  width: 100%; background: none; border: none; color: #eceaf6;
-  font: inherit; text-align: left; cursor: pointer; padding: 4px 0;
+  width: 100%; background: none; border: none; color: #3A3229;
+  font: inherit; text-align: left; cursor: pointer; padding: 6px 0;
 }
-.ex-title { font-size: 15px; color: #f2e7c9; }
+.ex-title {
+  font-family: 'Lilita One', var(--font-sans, sans-serif);
+  font-size: 16px; text-transform: uppercase; letter-spacing: 0.02em; color: #3A3229;
+}
 .badge {
-  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-  padding: 3px 8px; border-radius: 999px; white-space: nowrap;
-  border: 1px solid rgba(236, 234, 246, 0.3); color: rgba(236, 234, 246, 0.7);
+  font-family: var(--font-serif, 'Fraunces', serif);
+  font-weight: 600; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 999px; white-space: nowrap;
+  border: 1.5px solid rgba(58, 50, 41, 0.3); color: #7A6F5E;
 }
-.badge.yellow { border-color: rgba(232, 201, 135, 0.6); color: #e8c987; }
-.badge.red { border-color: rgba(217, 138, 116, 0.6); color: #e0917d; }
-.ex-why { margin: 8px 0; font-size: 13.5px; color: rgba(236, 234, 246, 0.75); line-height: 1.5; }
-.ex-steps { margin: 6px 0; padding-left: 20px; font-size: 13.5px; line-height: 1.7; color: rgba(236, 234, 246, 0.9); }
-.ex-stop { margin: 8px 0 0; font-size: 12.5px; color: #e0917d; border-top: 1px solid rgba(217, 138, 116, 0.25); padding-top: 8px; }
+.badge.yellow { border-color: rgba(229, 143, 160, 0.8); color: #B04D00; }
+.badge.red { border-color: rgba(229, 143, 160, 0.8); color: #B04D00; }
+.ex-why { margin: 8px 0; font-size: 13.5px; font-style: italic; color: #7A6F5E; line-height: 1.55; }
+.ex-steps { margin: 6px 0; padding-left: 20px; font-size: 13.5px; line-height: 1.7; color: #3A3229; }
+.ex-stop {
+  margin: 8px 0 0; font-size: 12.5px; color: #B04D00;
+  border-top: 1.5px dashed rgba(58, 50, 41, 0.2); padding-top: 8px;
+}
 .done-btn {
-  font: inherit; font-size: 13px; margin-top: 10px; cursor: pointer;
-  padding: 8px 16px; border-radius: 999px;
-  border: 1px solid #f2e7c9; background: #f2e7c9; color: #1b1a2e;
+  font-family: 'Lilita One', var(--font-sans, sans-serif);
+  font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;
+  margin-top: 10px; cursor: pointer;
+  padding: 10px 18px; border-radius: 999px;
+  border: 2px solid #1C1610; background: #F7DD4A; color: #1C1610;
+  box-shadow: 0 4px 0 #1C1610;
+  transition: transform 0.06s ease, box-shadow 0.06s ease;
 }
+.done-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #1C1610; }
 
-.chapter { border-top: 1px solid rgba(236, 234, 246, 0.1); padding: 10px 0 4px; }
+.chapter { border-top: 1.5px solid rgba(58, 50, 41, 0.2); padding: 10px 0 4px; }
 .chapter.locked { opacity: 0.55; }
 .chapter-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
-.chapter-name { font-size: 14px; color: #f2e7c9; }
-.chapter-state { font-size: 11px; color: rgba(236, 234, 246, 0.5); }
-.chapter-state.ok { color: #a9d0b8; }
+.chapter-name {
+  font-family: var(--font-serif, 'Fraunces', serif);
+  font-weight: 600; font-size: 14px; color: #3A3229;
+}
+.chapter-state {
+  font-family: var(--font-serif, 'Fraunces', serif);
+  font-weight: 600; font-size: 11px; letter-spacing: 0.08em; color: #7A6F5E;
+}
+.chapter-state.ok { color: #46A29D; }
 .chapter-list { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
-.exercise-row span:first-child { font-size: 14px; }
-.exercise-row.done span:first-child { color: rgba(236, 234, 246, 0.5); text-decoration: line-through; }
-.exercise-body { padding: 4px 0 10px; border-bottom: 1px solid rgba(236, 234, 246, 0.08); }
-.ladder { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; border-top: 1px dashed rgba(236,234,246,0.15); padding-top: 8px; }
-.ladder-title { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(169,160,214,0.9); }
-.rung { display: flex; gap: 8px; align-items: center; font-size: 13px; color: rgba(236,234,246,0.55); }
-.rung.done { color: #eceaf6; }
+.exercise-row span:first-child { font-size: 14px; font-style: italic; }
+.exercise-row.done span:first-child { color: rgba(122, 111, 94, 0.7); text-decoration: line-through; }
+.exercise-body {
+  padding: 4px 0 10px;
+  border-bottom: 1.5px solid rgba(58, 50, 41, 0.12);
+}
+.ladder {
+  display: flex; flex-direction: column; gap: 4px; margin-top: 10px;
+  border-top: 1.5px dashed rgba(58, 50, 41, 0.25); padding-top: 8px;
+}
+.ladder-title {
+  font-family: var(--font-serif, 'Fraunces', serif);
+  font-weight: 600; font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: #7A6F5E;
+}
+.rung { display: flex; gap: 8px; align-items: center; font-size: 13px; font-style: italic; color: #7A6F5E; }
+.rung.done { color: #3A3229; }
 .rung.locked { opacity: 0.45; }
 .rung-dot { font-size: 9px; }
 .ifthen-input {
-  font: inherit; font-size: 13px; color: #eceaf6; padding: 8px;
-  background: rgba(236,234,246,0.05); border: 1px solid rgba(236,234,246,0.25); border-radius: 8px;
+  font-family: var(--font-serif, 'Fraunces', serif);
+  font-size: 13px; color: #3A3229; padding: 10px;
+  background: #FBF5E6; border: 1.5px solid rgba(58, 50, 41, 0.3); border-radius: 14px;
 }
-.rehearsal-timer { font-size: 18px; color: #f2e7c9; }
-.rung-note { font-size: 12px; font-style: italic; color: rgba(236,234,246,0.65); }
-
-/* UI micro-copy in the sans identity (Fraunces stays for content) */
-.practice-kicker { font-family: var(--font-sans); }
-.practice-x { font-family: var(--font-sans); }
-.badge { font-family: var(--font-sans); }
-.done-btn { font-family: var(--font-sans); }
-.ladder-title { font-family: var(--font-sans); }
-.chapter-state { font-family: var(--font-sans); }
+.ifthen-input:focus { outline: 3px solid #3A3229; outline-offset: 1px; }
+.rehearsal-timer {
+  font-family: 'Lilita One', var(--font-sans, sans-serif);
+  font-size: 18px; color: #3A3229;
+}
+.rung-note { font-size: 12px; font-style: italic; color: #7A6F5E; }

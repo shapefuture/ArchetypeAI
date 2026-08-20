@@ -331,3 +331,157 @@
   .rating-node { width: 48px; height: 48px; font-size: 16px; }
   .assessment-footer { padding: 24px; }
 }
+
+/* =====================================================================
+   INNERVERSE APP SKIN — the sitting screen, per the reference (.qcardbig +
+   .ans answers): cream statement card, Fraunces italic question, five
+   sticker-pill rating nodes with color-mix fills, hairline progress.
+   ===================================================================== */
+.assessment-viewport {
+  background: #f3ead4;
+}
+
+.assessment-bg .bg-gradient {
+  background: radial-gradient(circle at 12% 18%, rgba(255, 201, 49, 0.14), transparent 36%),
+    radial-gradient(circle at 88% 82%, rgba(242, 85, 141, 0.08), transparent 32%),
+    #f3ead4;
+}
+
+.assessment-header {
+  backdrop-filter: none;
+  background: transparent;
+  border-bottom: 0;
+}
+
+.minimal-back-btn {
+  color: #7a6f5e;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  font-size: 14px;
+}
+.minimal-back-btn svg { stroke: #7a6f5e; }
+
+.stage-text {
+  font-family: 'Lilita One', var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7a6f5e;
+}
+
+.ink-progress-track {
+  height: 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1.5px solid rgba(58, 50, 41, 0.3);
+  overflow: hidden;
+}
+.ink-progress-fill {
+  background: var(--accent-yellow);
+  border-right: 0;
+}
+
+.section-badge {
+  font-family: 'Lilita One', var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7a6f5e;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.question-container {
+  background: #fbf5e6;
+  border: 2.5px solid #1c1610;
+  border-radius: 28px;
+  box-shadow: 0 5px 0 #1c1610;
+  padding: clamp(22px, 6vw, 34px);
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.question-text-fluid {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(21px, 5.6vw, 26px);
+  line-height: 1.32;
+  letter-spacing: -0.01em;
+  color: #3a3229;
+}
+
+/* five answer pills — the reference .ans grid */
+.rating-options {
+  gap: 10px;
+}
+
+.rating-node {
+  min-height: 64px;
+  border-radius: 18px;
+  border: 2px solid #1c1610;
+  box-shadow: 0 3px 0 #1c1610;
+  background: #fbf5e6;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s;
+}
+
+.rating-node .node-num {
+  font-family: 'Lilita One', var(--font-sans);
+  font-size: 17px;
+  color: #3a3229;
+  z-index: 1;
+}
+
+.rating-node .node-ink-ring {
+  display: none;
+}
+
+.rating-node:nth-child(1) { background: color-mix(in srgb, #38afc9 12%, #fbf5e6); }
+.rating-node:nth-child(2) { background: color-mix(in srgb, #38afc9 26%, #fbf5e6); }
+.rating-node:nth-child(3) { background: #fbf5e6; }
+.rating-node:nth-child(4) { background: color-mix(in srgb, #e5853d 30%, #fbf5e6); }
+.rating-node:nth-child(5) { background: color-mix(in srgb, #e58fa6 36%, #fbf5e6); }
+
+.rating-node:hover { transform: translateY(-2px); }
+
+.rating-node:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 #1c1610;
+}
+
+.rating-node.node-selected {
+  background: var(--accent-yellow);
+  transform: translateY(3px);
+  box-shadow: 0 0 0 #1c1610;
+}
+.rating-node.node-selected .node-num { color: #1c1610; }
+
+.scale-guidance {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 13px;
+  color: #7a6f5e;
+}
+
+.nav-circle-btn {
+  border: 1.5px solid rgba(58, 50, 41, 0.3);
+  border-radius: 50%;
+  background: transparent;
+  color: #3a3229;
+  box-shadow: none;
+}
+.nav-circle-btn:not(:disabled):hover { background: rgba(58, 50, 41, 0.06); }
+.nav-circle-btn:disabled { opacity: 0.3; }
+
+.footer-hint {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 13.5px;
+  color: #7a6f5e;
+}
+
+@media (max-width: 480px) {
+  .rating-options { gap: 7px; }
+  .rating-node { min-height: 58px; }
+}

@@ -6,6 +6,12 @@
     </header>
 
     @if (!done()) {
+      <!-- progress star strip: 14 items, filled up to the current one -->
+      <div class="qs-stars" aria-hidden="true">
+        @for (star of stars14; track $index) {
+          <span [class.done]="$index < idx()"></span>
+        }
+      </div>
       <p class="qs-count">{{ idx() + 1 }} / 14</p>
       <h2 class="qs-item">{{ itemText() }}</h2>
       <div class="qs-likert">

@@ -1,0 +1,8 @@
+{
+  "name": "zero-r-parts-map-v3",
+  "main": "edge/worker.mjs",
+  "compatibility_date": "2026-08-01",
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  "durable_objects": { "bindings": [{ "name": "ZERO_AUTHORITY", "class_name": "ZeroAuthority" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ZeroAuthority"] }]
+}

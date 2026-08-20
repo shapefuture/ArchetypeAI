@@ -49,6 +49,8 @@ export class QuickScanPanelComponent {
 
   readonly parts = SHADOW_PARTS;
   readonly likert = LIKERT;
+  /** Presentational only: 14 slots for the progress star strip. */
+  readonly stars14 = new Array(14);
   readonly idx = signal(0);
   readonly answers = signal<number[]>(new Array(14).fill(0));
   readonly done = signal(false);

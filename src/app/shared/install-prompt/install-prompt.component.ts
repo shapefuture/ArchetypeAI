@@ -44,11 +44,10 @@ const UI = {
     @if (install.dialogOpen()) {
       <div class="ip-backdrop" (click)="install.dismiss()"></div>
       <div class="ip-sheet" role="dialog" aria-modal="true" aria-labelledby="ip-title">
+        <div class="ip-grip" aria-hidden="true"></div>
+
         <div class="ip-head">
           <div class="ip-icon" aria-hidden="true">✦</div>
-          <div class="ip-badge">
-            <span class="google-eyes"><span class="google-eye"></span><span class="google-eye"></span></span>
-          </div>
         </div>
 
         @if (install.isIos() && !install.canInstall()) {
@@ -65,99 +64,154 @@ const UI = {
 
         <div class="ip-actions">
           @if (!install.isIos() || install.canInstall()) {
-            <button class="sticker-btn ip-install" (click)="install.promptInstall()">
-              ⬇ {{ ui().install }}
+            <button class="ip-btn ip-install" (click)="install.promptInstall()">
+              {{ ui().install }}
             </button>
           }
-          <button class="ip-later" (click)="install.dismiss()">{{ ui().later }}</button>
+          <button class="ip-btn ip-later" (click)="install.dismiss()">{{ ui().later }}</button>
         </div>
       </div>
     }
   `,
   styles: [`
     :host { display: contents; }
+
+    /* ---------- scrim ---------- */
     .ip-backdrop {
       position: fixed; inset: 0; z-index: 300;
-      background: rgba(32, 26, 58, 0.45);
-      backdrop-filter: blur(3px);
+      background: rgba(20, 12, 30, 0.45);
       animation: ip-fade 0.25s ease both;
     }
+
+    /* ---------- bottom sheet ---------- */
     .ip-sheet {
       position: fixed; z-index: 301;
-      left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+      left: 50%; bottom: 0;
       transform: translateX(-50%);
-      width: min(400px, calc(100vw - 24px));
+      width: min(400px, 100vw);
       box-sizing: border-box;
-      background: var(--color-paper, #fbf3e3);
-      border: 3px solid var(--color-ink, #201a3a);
-      border-radius: 2rem;
-      box-shadow: 8px 8px 0 0 var(--color-ink, #201a3a);
-      padding: 22px 22px 18px;
+      background: #FBF5E6;
+      border-top: 2px solid #1C1610;
+      border-radius: 28px 28px 0 0;
+      padding: 10px 22px calc(22px + env(safe-area-inset-bottom, 0px));
       text-align: center;
-      animation: ip-rise 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation: ip-rise 0.4s cubic-bezier(0.34, 1.3, 0.64, 1) both;
     }
-    .ip-head { position: relative; width: fit-content; margin: 0 auto 12px; }
+    .ip-grip {
+      width: 44px; height: 5px;
+      border-radius: 999px;
+      background: rgba(58, 50, 41, 0.14);
+      margin: 4px auto 14px;
+    }
+
+    /* ---------- app icon tile ---------- */
+    .ip-head { width: fit-content; margin: 0 auto 12px; }
     .ip-icon {
       width: 64px; height: 64px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 32px;
-      background: var(--color-mustard, #ffc23c);
-      border: 3px solid var(--color-ink, #201a3a);
-      border-radius: 22%;
-      box-shadow: 4px 4px 0 0 var(--color-ink, #201a3a);
+      font-size: 30px;
+      color: #F7DD4A;
+      background: #181432;
+      border-radius: 13px;
     }
-    .ip-badge {
-      position: absolute; top: -10px; right: -16px;
-      background: #fffdf5;
-      border: 2px solid var(--color-ink, #201a3a);
-      border-radius: 999px;
-      padding: 4px 6px;
-      box-shadow: 2px 2px 0 0 var(--color-ink, #201a3a);
-    }
+
+    /* ---------- copy ---------- */
     .ip-title {
       margin: 0 0 6px;
-      font-family: var(--font-display, sans-serif);
-      font-size: 22px; font-weight: 600; color: var(--color-ink, #201a3a);
+      font-family: 'Lilita One', var(--font-sans, sans-serif);
+      font-size: 21px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+      color: #3A3229;
     }
     .ip-desc {
-      margin: 0 0 16px;
-      font-size: 14px; line-height: 1.5;
-      color: var(--color-ink-l, #4a3f6e);
+      margin: 0 0 18px;
+      font-family: var(--font-serif, 'Fraunces', serif);
+      font-style: italic;
+      font-size: 14px; line-height: 1.55;
+      color: #7A6F5E;
     }
+
+    /* ---------- iOS share-sheet steps ---------- */
     .ip-steps {
-      margin: 0 0 16px; padding: 0;
+      margin: 0 0 18px; padding: 0;
       list-style: none; text-align: left;
       display: flex; flex-direction: column; gap: 8px;
+      counter-reset: ip-step;
     }
     .ip-steps li {
-      font-size: 14px; color: var(--color-ink-l, #4a3f6e);
-      padding: 8px 12px;
-      background: rgba(255, 253, 245, 0.8);
-      border: 2px solid rgba(32, 26, 58, 0.25);
-      border-radius: 12px;
+      font-size: 14px; color: #3A3229;
+      padding: 10px 14px;
+      background: #EDE2C6;
+      border: 1.5px solid rgba(58, 50, 41, 0.3);
+      border-radius: 14px;
       counter-increment: ip-step;
     }
     .ip-steps li::before {
       content: counter(ip-step);
       display: inline-flex; align-items: center; justify-content: center;
-      width: 20px; height: 20px; margin-right: 8px;
-      font-family: var(--font-display, sans-serif);
+      width: 22px; height: 22px; margin-right: 10px;
+      font-family: 'Lilita One', var(--font-sans, sans-serif);
       font-size: 12px;
-      background: var(--color-sage, #46d8ae);
-      border: 2px solid var(--color-ink, #201a3a);
+      color: #1C1610;
+      background: #F7DD4A;
+      border: 2px solid #1C1610;
       border-radius: 999px;
+      vertical-align: middle;
     }
-    .ip-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .ip-install { min-width: 180px; background: var(--color-coral, #ff6b57); }
+
+    /* ---------- buttons (sticker physics) ---------- */
+    .ip-actions {
+      display: flex; flex-direction: column; align-items: stretch; gap: 10px;
+    }
+    .ip-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      box-sizing: border-box;
+      font-family: 'Lilita One', var(--font-sans, sans-serif);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-height: 52px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform 0.06s ease, box-shadow 0.06s ease;
+    }
+    .ip-install {
+      border: 2px solid #1C1610;
+      box-shadow: 0 4px 0 #1C1610;
+      background: #F7DD4A;
+      color: #1C1610;
+    }
+    .ip-install:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #1C1610;
+    }
     .ip-later {
-      background: none; border: none; cursor: pointer;
-      font-family: var(--font-display, sans-serif);
-      font-size: 13px; font-weight: 600;
-      color: var(--color-ink-l, #4a3f6e);
-      text-decoration: underline;
-      text-underline-offset: 4px;
-      padding: 6px 10px;
+      border: 1.5px solid rgba(58, 50, 41, 0.3);
+      background: transparent;
+      color: #7A6F5E;
+      min-height: 46px;
     }
+    .ip-later:active {
+      transform: scale(0.97);
+    }
+
+    /* ---------- centered card on wider screens ---------- */
+    @media (min-width: 640px) {
+      .ip-sheet {
+        bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        width: min(400px, calc(100vw - 48px));
+        border: 2px solid #1C1610;
+        border-radius: 24px;
+        box-shadow: 0 26px 60px rgba(24, 16, 6, 0.25);
+      }
+      .ip-grip { display: none; }
+      .ip-actions { align-items: center; }
+      .ip-install { min-width: 200px; }
+    }
+
     @keyframes ip-rise {
       from { opacity: 0; transform: translateX(-50%) translateY(30px) scale(0.95); }
       to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }

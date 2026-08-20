@@ -16,6 +16,30 @@ import { generateLinkCode } from '../../core/data/therapist-link';
 import { InnerverseConstellationComponent } from '../constellation/innerverse-constellation.component';
 import type { ScoredProfile } from '../../core/data/scoring-v2';
 import { attributionRatio } from '../../core/data/state-v2';
+import { sticker } from '../landing/stickers';
+import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
+
+/** Display-only sticker specs (shape/color/glyph mirror of landing IV_PARTS). */
+const PART_STICKERS: Record<string, { shape: string; color: string; glyph: { e: 'big' | 'wide' | 'dot' | 'lid' | 'squint' | 'star' | 'glasses'; m: 'smile' | 'grin' | 'flat' | 'wavy' | 'grit' | 'ooh' | 'smirk' }; fam: string }> = {
+  taskmaster: { shape: 'taskmaster', color: '#DE6A40', glyph: { e: 'lid', m: 'grit' }, fam: 'manager' },
+  inner_critic: { shape: 'inner_critic', color: '#C76B85', glyph: { e: 'squint', m: 'flat' }, fam: 'manager' },
+  pleaser: { shape: 'pleaser', color: '#EF8FA5', glyph: { e: 'big', m: 'smile' }, fam: 'manager' },
+  controller: { shape: 'controller', color: '#D5793B', glyph: { e: 'dot', m: 'flat' }, fam: 'manager' },
+  analyst: { shape: 'analyst', color: '#7BA3D0', glyph: { e: 'glasses', m: 'flat' }, fam: 'manager' },
+  hermit: { shape: 'hermit', color: '#8A87A8', glyph: { e: 'lid', m: 'smile' }, fam: 'manager' },
+  bypasser: { shape: 'bypasser', color: '#CDB32E', glyph: { e: 'big', m: 'smile' }, fam: 'manager' },
+  numb: { shape: 'numb', color: '#9AA3AC', glyph: { e: 'lid', m: 'flat' }, fam: 'firefighter' },
+  rebel: { shape: 'rebel', color: '#DE5F50', glyph: { e: 'star', m: 'grin' }, fam: 'firefighter' },
+  charmer: { shape: 'charmer', color: '#EF8FA5', glyph: { e: 'big', m: 'smirk' }, fam: 'firefighter' },
+  abandoned: { shape: 'abandoned', color: '#9865C5', glyph: { e: 'big', m: 'wavy' }, fam: 'exile' },
+  ashamed: { shape: 'ashamed', color: '#8E62B8', glyph: { e: 'lid', m: 'wavy' }, fam: 'exile' },
+  frightened: { shape: 'frightened', color: '#7A6FD1', glyph: { e: 'wide', m: 'ooh' }, fam: 'exile' },
+  unseen: { shape: 'unseen', color: '#8583C0', glyph: { e: 'dot', m: 'flat' }, fam: 'exile' },
+  sage: { shape: 'sage', color: '#2FA39E', glyph: { e: 'lid', m: 'smile' }, fam: 'resource' },
+  warrior: { shape: 'warrior', color: '#2E9967', glyph: { e: 'dot', m: 'grit' }, fam: 'resource' },
+  caregiver: { shape: 'caregiver', color: '#E97F63', glyph: { e: 'big', m: 'smile' }, fam: 'resource' },
+  explorer: { shape: 'explorer', color: '#3FA9B5', glyph: { e: 'star', m: 'smile' }, fam: 'resource' },
+};
 
 const TIER_ORDER: Record<Tier, number> = { dominant: 0, prominent: 1, present: 2, dormant: 3 };
 
@@ -184,6 +208,18 @@ export class InnerverseReportComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void { this.observer?.disconnect(); }
 
   private readonly translationService = inject(TranslationService);
+  private readonly sanitizer = inject(DomSanitizer);
+
+  /** Display-only: collectible sticker avatar for a part/resource id. */
+  stickerHtml(id: string): SafeHtml {
+    const spec = PART_STICKERS[id];
+    if (!spec) return this.sanitizer.bypassSecurityTrustHtml('');
+    return this.sanitizer.bypassSecurityTrustHtml(
+      sticker({ name: id, shape: spec.shape, color: spec.color, glyph: spec.glyph }));
+  }
+
+  /** Display-only: family accent color for a part id. */
+  partColor(id: string): string { return PART_STICKERS[id]?.color ?? '#EDD75C'; }
 
   /** model (not plain input) so hosts bind [profile] and tests can .set() it. */
   readonly profile = model.required<ScoredProfile>();

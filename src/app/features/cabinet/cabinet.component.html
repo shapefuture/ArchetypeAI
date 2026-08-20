@@ -1,61 +1,73 @@
-<section class="relative min-h-[100dvh] bg-paper px-4 md:px-8 py-24 border-b-[3px] border-ink">
-  <div class="max-w-4xl mx-auto">
-    <div class="flex items-start justify-between gap-4">
+<section class="cab">
+  <div class="cab-inner">
+
+    <!-- ===== Header ===== -->
+    <div class="cab-topbar">
       <div>
-        <div class="text-[10px] font-black uppercase tracking-[0.2em] text-ink-l">{{ t('personalCabinet', 'Personal cabinet') }}</div>
-        <h1 class="text-[clamp(2rem,4vw,3rem)] font-black neo-serif text-ink mt-2">{{ t('yourSpace', 'Your Space') }}</h1>
-        <p class="text-sm text-ink-l mt-2 leading-relaxed">
-          {{ t('yourSpaceSubtitle', 'Tasks, progress, retests, and your saved synastries — all in one place.') }}
-        </p>
+        <div class="cab-kicker">{{ t('personalCabinet', 'Personal cabinet') }}</div>
+        <h1 class="cab-h1">{{ t('yourSpace', 'Your Space') }}</h1>
+        <p class="cab-lede">{{ t('yourSpaceSubtitle', 'Tasks, progress, retests, and your saved synastries — all in one place.') }}</p>
       </div>
 
-      <button type="button"
-              class="px-3 py-2 rounded-xl border-2 border-ink bg-white shadow-[3px_3px_0_#1C1917] text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ink/5"
-              (click)="goBack.emit()">
+      <button type="button" class="cab-btn cab-btn--ghost cab-topbar__back" (click)="goBack.emit()">
         {{ t('back', 'Back') }}
       </button>
     </div>
 
     @if (!isLoggedIn()) {
-      <div class="mt-10 border-[3px] border-ink rounded-3xl bg-white shadow-[6px_6px_0_#1C1917] p-6">
-        <h3 class="text-lg font-black neo-serif text-ink">{{ t('loginPromptTitle', 'Log in to unlock your cabinet') }}</h3>
-        <p class="text-sm text-ink-l mt-2">{{ t('loginPromptSubtitle', 'Sign in to see saved history, tasks, and synastry reports.') }}</p>
-        <button type="button"
-                class="neo-btn mt-4 px-8 py-3 text-sm text-[#f6f3eb]"
-                (click)="openLogin.emit()">
-          <div class="neo-btn-shadow"></div>
-          <div class="neo-btn-body bg-ink"></div>
-          <span class="relative z-10">{{ t('loginCta', 'Login') }}</span>
+      <!-- ===== Logged-out nudge ===== -->
+      <div class="cab-card cab-cta">
+        <div class="cab-cta__emoji" aria-hidden="true">🔒</div>
+        <h3 class="cab-h3">{{ t('loginPromptTitle', 'Log in to unlock your cabinet') }}</h3>
+        <p class="cab-note">{{ t('loginPromptSubtitle', 'Sign in to see saved history, tasks, and synastry reports.') }}</p>
+        <button type="button" class="cab-btn cab-btn--primary cab-cta__btn" (click)="openLogin.emit()">
+          {{ t('loginCta', 'Login') }}
         </button>
       </div>
     } @else {
-      <div class="mt-10 grid md:grid-cols-2 gap-6">
-        <div class="border-[3px] border-ink rounded-3xl bg-white shadow-[6px_6px_0_#1C1917] p-6 md:col-span-2">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <div class="text-[10px] font-black uppercase tracking-[0.2em] text-ink-l">{{ t('progress', 'Progress') }}</div>
-              <div class="text-lg font-black neo-serif text-ink mt-1">{{ t('assessmentHistory', 'Assessment history') }}</div>
+      <div class="cab-grid">
+
+        <!-- ===== Hero progress card ===== -->
+        <div class="cab-card cab-hero">
+          <div class="cab-hero__row">
+            <div class="cab-avatar" aria-hidden="true">
+              {{ (user()?.email ? user()!.email!.charAt(0).toUpperCase() : '✦') }}
+            </div>
+            <div class="cab-hero__id">
+              <div class="cab-kicker">{{ t('progress', 'Progress') }}</div>
+              <div class="cab-hero__name">{{ user()?.email || t('yourSpace', 'Your Space') }}</div>
             </div>
             @if (loading()) {
-              <div class="text-[10px] font-black uppercase tracking-[0.2em] text-ink-l">{{ t('loading', 'Loading…') }}</div>
+              <div class="cab-chip cab-chip--loading">{{ t('loading', 'Loading…') }}</div>
             }
           </div>
 
-          @if (loadError()) {
-            <div class="mt-3 text-xs font-bold text-rose bg-rose/10 border border-rose/20 rounded-xl px-3 py-2">
-              {{ loadError() }}
+          <div class="cab-stats">
+            <div class="cab-stat">
+              <div class="cab-stat__emoji" aria-hidden="true">🧭</div>
+              <div class="cab-stat__num">{{ history().length }}</div>
+              <div class="cab-stat__label">{{ t('assessmentHistory', 'Assessment history') }}</div>
             </div>
+            <div class="cab-stat">
+              <div class="cab-stat__emoji" aria-hidden="true">💞</div>
+              <div class="cab-stat__num">{{ synastryReports().length }}</div>
+              <div class="cab-stat__label">{{ t('savedReports', 'Saved reports') }}</div>
+            </div>
+          </div>
+
+          @if (loadError()) {
+            <div class="cab-error" role="alert">{{ loadError() }}</div>
           }
 
           @if (history().length === 0) {
-            <div class="mt-4 text-sm text-ink-l">{{ t('historyEmpty', 'No history yet. After you save results, retests will appear here.') }}</div>
+            <p class="cab-note">{{ t('historyEmpty', 'No history yet. After you save results, retests will appear here.') }}</p>
           } @else {
-            <div class="mt-4 space-y-3">
-              <label class="block">
-                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-ink-l">{{ t('pickVersion', 'Pick a version') }}</div>
+            <div class="cab-picker">
+              <label class="cab-field">
+                <span class="cab-kicker">{{ t('pickVersion', 'Pick a version') }}</span>
                 <select
+                  class="cab-select"
                   [attr.aria-label]="t('pickVersionAria', 'Pick a saved assessment version')"
-                  class="mt-1 w-full px-3 py-2 rounded-xl border-2 border-ink bg-white text-ink text-sm font-bold focus:outline-none focus:ring-2 focus:ring-ink/30 cursor-pointer"
                   [value]="selectedHistoryId()"
                   (change)="onSelectVersion($any($event.target).value)">
                   @for (h of history(); track h.updatedAt) {
@@ -67,16 +79,12 @@
               </label>
 
               @if (selectedHistoryEntry(); as entry) {
-                <div class="mt-2 rounded-2xl border-2 border-ink/10 bg-paper/50 p-3">
-                  <div class="text-[10px] font-black uppercase tracking-[0.12em] text-ink-l">{{ t('selected', 'Selected') }}</div>
-                  <div class="text-[11px] font-black text-ink mt-1">
-                    {{ formatTs(($any(entry).createdAt || entry.updatedAt)) }}
-                  </div>
-                  <div class="text-[10px] font-bold text-ink-l mt-1 uppercase tracking-[0.12em]">
-                    {{ entry.scoringMethod }}
-                  </div>
+                <div class="cab-selected">
+                  <div class="cab-kicker">{{ t('selected', 'Selected') }}</div>
+                  <div class="cab-selected__ts">{{ formatTs(($any(entry).createdAt || entry.updatedAt)) }}</div>
+                  <div class="cab-chip">{{ entry.scoringMethod }}</div>
                   <button type="button"
-                          class="mt-3 w-full px-3 py-2 rounded-xl border-2 border-ink bg-ink text-white text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ink/90"
+                          class="cab-btn cab-btn--primary cab-selected__btn"
                           (click)="downloadSelectedHistoryBackup()">
                     {{ t('downloadVersionBackup', 'Download assessment answers') }}
                   </button>
@@ -84,47 +92,53 @@
               }
             </div>
           }
+
+          <div class="cab-hero__actions">
+            <button type="button" class="cab-btn cab-btn--primary" (click)="openUniverse.emit()">
+              {{ t('seeUniverse', 'See Universe') }}
+            </button>
+            <button type="button" class="cab-btn cab-btn--secondary" (click)="retakeTest.emit()">
+              {{ t('retakeTest', 'Retake test') }}
+            </button>
+          </div>
         </div>
 
         @if (isAdmin()) {
-          <div class="md:col-span-2 border-[3px] border-ink rounded-3xl bg-white shadow-[6px_6px_0_#1C1917] p-6">
-            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-ink-l">{{ t('admin', 'Admin') }}</div>
-            <div class="text-lg font-black neo-serif text-ink mt-1">{{ t('shareAdminAccess', 'Share admin access') }}</div>
-            <p class="text-sm text-ink-l mt-2">
-              {{ t('shareAdminAccessBody', 'Add another admin by email. (Convenience only — enforce security with Firebase rules + custom claims later.)') }}
-            </p>
+          <!-- ===== Admin: share access ===== -->
+          <div class="cab-card cab-section">
+            <div class="cab-kicker">{{ t('admin', 'Admin') }}</div>
+            <h2 class="cab-h2">{{ t('shareAdminAccess', 'Share admin access') }}</h2>
+            <p class="cab-note">{{ t('shareAdminAccessBody', 'Add another admin by email. (Convenience only — enforce security with Firebase rules + custom claims later.)') }}</p>
 
             @if (adminError()) {
-              <div class="mt-3 text-xs font-bold text-rose bg-rose/10 border border-rose/20 rounded-xl px-3 py-2">
-                {{ adminError() }}
-              </div>
+              <div class="cab-error" role="alert">{{ adminError() }}</div>
             }
 
-            <div class="mt-4 flex flex-col md:flex-row gap-3">
+            <div class="cab-inline-form">
               <input type="email"
-                     class="flex-1 px-3 py-2 rounded-xl border-2 border-ink/20 text-sm focus:border-ink outline-none"
+                     class="cab-input"
                      [placeholder]="t('adminEmailPlaceholder', 'Admin email')"
                      [value]="adminEmailInput()"
                      (input)="adminEmailInput.set(($any($event.target)).value)" />
               <button type="button"
-                      class="px-4 py-2 rounded-xl border-2 border-ink bg-ink text-white text-[11px] font-black uppercase tracking-[0.12em] hover:bg-ink/90 disabled:opacity-50"
+                      class="cab-btn cab-btn--primary cab-inline-form__btn"
                       [disabled]="adminBusy() || !adminEmailInput().trim()"
                       (click)="addAdminEmail()">
                 {{ t('addAdmin', 'Add admin') }}
               </button>
             </div>
 
-            <div class="mt-5 grid md:grid-cols-2 gap-3">
+            <div class="cab-chip-grid">
               @for (a of adminList(); track a.email) {
-                <div class="rounded-2xl border-2 border-ink/10 bg-paper/50 p-3 flex items-center justify-between gap-3">
-                  <div class="min-w-0">
-                    <div class="text-[11px] font-black text-ink break-all">{{ a.email }}</div>
-                    <div class="text-[10px] font-bold text-ink-l uppercase tracking-[0.12em] mt-1">
+                <div class="cab-collectible">
+                  <div class="cab-collectible__body">
+                    <div class="cab-collectible__title">{{ a.email }}</div>
+                    <div class="cab-collectible__meta">
                       {{ t('added', 'Added:') }} {{ formatTs(a.createdAt) }}
                     </div>
                   </div>
                   <button type="button"
-                          class="px-3 py-1.5 rounded-xl border-2 border-ink bg-white text-ink text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ink/5 disabled:opacity-50"
+                          class="cab-btn cab-btn--ghost cab-btn--sm"
                           [disabled]="adminBusy()"
                           (click)="removeAdminEmail(a.email)">
                     {{ t('remove', 'Remove') }}
@@ -136,45 +150,42 @@
         }
 
         @if (isAdmin()) {
-          <div class="md:col-span-2 border-[3px] border-ink rounded-3xl bg-white shadow-[6px_6px_0_#1C1917] p-6">
-            <div class="flex items-start justify-between gap-4">
+          <!-- ===== Admin: my clients ===== -->
+          <div class="cab-card cab-section">
+            <div class="cab-section__head">
               <div>
-                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-ink-l">{{ t('admin', 'Admin') }}</div>
-                <div class="text-lg font-black neo-serif text-ink mt-1">{{ t('myClients', 'My clients') }}</div>
-                <p class="text-sm text-ink-l mt-2 leading-relaxed">
-                  {{ t('myClientsBody', 'Clients who shared their User ID (UID) with you. View their latest assessment and keep private notes.') }}
-                </p>
+                <div class="cab-kicker">{{ t('admin', 'Admin') }}</div>
+                <h2 class="cab-h2">{{ t('myClients', 'My clients') }}</h2>
+                <p class="cab-note">{{ t('myClientsBody', 'Clients who shared their User ID (UID) with you. View their latest assessment and keep private notes.') }}</p>
               </div>
               @if (clientsBusy()) {
-                <div class="text-[10px] font-black uppercase tracking-[0.2em] text-ink-l">{{ t('loading', 'Loading…') }}</div>
+                <div class="cab-chip cab-chip--loading">{{ t('loading', 'Loading…') }}</div>
               }
             </div>
 
             @if (clientsError()) {
-              <div class="mt-3 text-xs font-bold text-rose bg-rose/10 border border-rose/20 rounded-xl px-3 py-2">
-                {{ clientsError() }}
-              </div>
+              <div class="cab-error" role="alert">{{ clientsError() }}</div>
             }
 
-            <div class="mt-5 border-t border-ink/10 pt-5">
-              <div class="text-[10px] font-black uppercase tracking-[0.2em] text-ink-l">{{ t('addClientByUid', 'Add client by User ID') }}</div>
-              <p class="text-xs text-ink-l mt-1 leading-relaxed">
+            <div class="cab-divider">
+              <div class="cab-kicker">{{ t('addClientByUid', 'Add client by User ID') }}</div>
+              <p class="cab-note cab-note--sm">
                 {{ t('addClientHint', "Paste the client's User ID (UID) below. You can also add their email so it's easier to identify them later.") }}
               </p>
 
-              <div class="mt-3 grid md:grid-cols-2 gap-3">
-                <label class="block">
-                  <div class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l">{{ t('clientUidLabel', 'Client User ID (UID)') }}</div>
+              <div class="cab-two-col">
+                <label class="cab-field">
+                  <span class="cab-kicker cab-kicker--sm">{{ t('clientUidLabel', 'Client User ID (UID)') }}</span>
                   <input type="text"
-                         class="mt-1 w-full px-3 py-2 rounded-xl border-2 border-ink/20 text-sm font-mono focus:border-ink outline-none"
+                         class="cab-input cab-input--mono"
                          [placeholder]="t('clientUidPlaceholder', 'e.g. aBcD1234XyZ')"
                          [value]="clientUidInput()"
                          (input)="onClientUidChange(($any($event.target)).value)" />
                 </label>
-                <label class="block">
-                  <div class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l">{{ t('clientEmailLabel', 'Client email (optional)') }}</div>
+                <label class="cab-field">
+                  <span class="cab-kicker cab-kicker--sm">{{ t('clientEmailLabel', 'Client email (optional)') }}</span>
                   <input type="email"
-                         class="mt-1 w-full px-3 py-2 rounded-xl border-2 border-ink/20 text-sm focus:border-ink outline-none"
+                         class="cab-input"
                          [placeholder]="t('clientEmailPlaceholder', 'client@example.com')"
                          [value]="clientEmailInput()"
                          (input)="onClientEmailChange(($any($event.target)).value)" />
@@ -182,19 +193,15 @@
               </div>
 
               @if (clientLookupInProgress(); as dir) {
-                <div class="mt-2 text-[10px] font-bold text-ink-l"
-                     aria-live="polite">
+                <div class="cab-lookup" aria-live="polite">
                   {{ t('clientLookupInProgress', 'Looking up…') }}
                 </div>
               } @else if (clientLookupError(); as err) {
-                <div class="mt-2 text-[10px] font-bold text-rose bg-rose/10 border border-rose/20 rounded-lg px-2 py-1"
-                     role="alert">
-                  {{ err }}
-                </div>
+                <div class="cab-error" role="alert">{{ err }}</div>
               }
 
               <button type="button"
-                      class="mt-3 px-4 py-2 rounded-xl border-2 border-ink bg-ink text-white text-[11px] font-black uppercase tracking-[0.12em] hover:bg-ink/90 disabled:opacity-50"
+                      class="cab-btn cab-btn--primary"
                       [disabled]="clientsBusy() || !clientUidInput().trim()"
                       (click)="addClientByUid()">
                 {{ t('addClient', 'Add client') }}
@@ -202,28 +209,29 @@
             </div>
 
             @if (myClients().length === 0) {
-              <div class="mt-5 border-t border-ink/10 pt-5">
-                <div class="rounded-2xl border-2 border-dashed border-ink/20 bg-paper/30 p-4">
-                  <div class="text-sm font-black text-ink">{{ t('noClients', 'No clients yet.') }}</div>
-                  <p class="text-xs text-ink-l mt-1 leading-relaxed">
+              <div class="cab-divider">
+                <div class="cab-empty">
+                  <div class="cab-empty__emoji" aria-hidden="true">🌱</div>
+                  <div class="cab-h3">{{ t('noClients', 'No clients yet.') }}</div>
+                  <p class="cab-note cab-note--sm">
                     {{ t('noClientsBody', "Share your User ID (UID) with the client, and ask them to share theirs with you — then add them here by UID.") }}
                   </p>
                 </div>
               </div>
             } @else {
-              <div class="mt-5 border-t border-ink/10 pt-5 grid gap-3">
+              <div class="cab-divider cab-clients">
                 @for (c of myClients(); track c.clientUid) {
-                  <div class="rounded-2xl border-2 border-ink/10 bg-paper/50 p-4">
-                    <div class="grid md:grid-cols-2 gap-4">
+                  <div class="cab-collectible cab-client">
+                    <div class="cab-two-col">
                       <div>
-                        <div class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l">{{ t('email', 'Email') }}</div>
-                        <div class="mt-1 text-sm font-bold text-ink break-all">{{ c.clientEmail || t('emailNone', 'None') }}</div>
+                        <div class="cab-kicker cab-kicker--sm">{{ t('email', 'Email') }}</div>
+                        <div class="cab-client__value">{{ c.clientEmail || t('emailNone', 'None') }}</div>
 
-                        <div class="mt-3 text-[9px] font-black uppercase tracking-[0.15em] text-ink-l">{{ t('clientUidLabel', 'Client User ID (UID)') }}</div>
-                        <div class="mt-1 font-mono text-[12px] font-black text-ink break-all">{{ c.clientUid }}</div>
+                        <div class="cab-kicker cab-kicker--sm cab-client__gap">{{ t('clientUidLabel', 'Client User ID (UID)') }}</div>
+                        <div class="cab-client__uid">{{ c.clientUid }}</div>
 
-                        <div class="mt-3 text-[9px] font-black uppercase tracking-[0.15em] text-ink-l">{{ t('clientLastAssessment', 'Last assessment:') }}</div>
-                        <div class="mt-1 text-sm font-bold text-ink">
+                        <div class="cab-kicker cab-kicker--sm cab-client__gap">{{ t('clientLastAssessment', 'Last assessment:') }}</div>
+                        <div class="cab-client__value">
                           @if (clientResults().get(c.clientUid); as r) {
                             {{ formatTs(($any(r).createdAt || r.updatedAt)) }}
                           } @else {
@@ -233,17 +241,17 @@
                       </div>
 
                       <div>
-                        <div class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l">{{ t('clientTaskLabel', 'Assigned task') }}</div>
+                        <div class="cab-kicker cab-kicker--sm">{{ t('clientTaskLabel', 'Assigned task') }}</div>
                         <textarea
                           rows="3"
-                          class="mt-1 w-full px-3 py-2 rounded-xl border-2 border-ink/20 text-sm focus:border-ink outline-none resize-y"
+                          class="cab-input cab-input--area"
                           [placeholder]="t('clientTaskPlaceholder', 'Task for this client (only you can see this)…')"
                           [value]="notesDraftValue(c)"
                           [attr.aria-label]="t('clientTaskLabel', 'Assigned task')"
                           (input)="onNotesDraftChange(c.clientUid, ($any($event.target)).value)"></textarea>
-                        <div class="mt-2 flex items-center justify-end gap-2">
+                        <div class="cab-client__save">
                           <button type="button"
-                                  class="px-3 py-1.5 rounded-xl border-2 border-ink bg-white text-ink text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ink/5 disabled:opacity-50"
+                                  class="cab-btn cab-btn--primary cab-btn--sm"
                                   [disabled]="savingNotesFor() === c.clientUid || !notesAreDirty(c)"
                                   (click)="saveNotes(c)">
                             @if (savingNotesFor() === c.clientUid) {
@@ -256,9 +264,9 @@
                       </div>
                     </div>
 
-                    <div class="mt-3 pt-3 border-t border-ink/10 flex flex-wrap items-center justify-end gap-2">
+                    <div class="cab-client__actions">
                       <button type="button"
-                              class="px-3 py-1.5 rounded-xl border-2 border-ink bg-ink text-white text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ink/90 disabled:opacity-50"
+                              class="cab-btn cab-btn--secondary cab-btn--sm"
                               [disabled]="!clientResults().get(c.clientUid) || downloadingReportFor() === c.clientUid"
                               [attr.aria-label]="t('downloadClientReportAria', 'Download this client\u2019s assessment answers as a .txt file')"
                               (click)="onDownloadClientReport(c)">
@@ -269,45 +277,45 @@
                         }
                       </button>
                       <button type="button"
-                              class="px-3 py-1.5 rounded-xl border-2 border-ink bg-mustard text-ink text-[10px] font-black uppercase tracking-[0.12em] hover:brightness-95 disabled:opacity-50"
+                              class="cab-btn cab-btn--primary cab-btn--sm"
                               [disabled]="!clientResults().get(c.clientUid)"
                               [attr.aria-label]="t('viewClientMatrixAria', 'View matrix (universe visualisation) for this client')"
                               (click)="onViewClientMatrix(c)">
                         {{ t('viewClientMatrix', 'View matrix') }}
                       </button>
                       <button type="button"
-                              class="px-3 py-1.5 rounded-xl border-2 border-ink bg-coral text-white text-[10px] font-black uppercase tracking-[0.12em] hover:brightness-95 disabled:opacity-50"
+                              class="cab-btn cab-btn--secondary cab-btn--sm"
                               [disabled]="!clientResults().get(c.clientUid)"
                               [attr.aria-label]="t('viewClientAiReportAria', 'View the AI-generated narrative report for this client')"
                               (click)="onViewClientAiReport(c)">
                         {{ t('viewClientAiReport', 'View AI report') }}
                       </button>
                       <button type="button"
-                              class="px-3 py-1.5 rounded-xl border-2 border-ink bg-white text-ink text-[10px] font-black uppercase tracking-[0.12em] hover:bg-ink/5 disabled:opacity-50"
+                              class="cab-btn cab-btn--ghost cab-btn--sm"
                               [disabled]="clientsBusy()"
                               (click)="removeClientFromList(c.clientUid)">
                         {{ t('removeClient', 'Remove') }}
                       </button>
                     </div>
 
-                    <div class="mt-3 pt-3 border-t border-ink/10">
-                      <div class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l">
+                    <div class="cab-client__history">
+                      <div class="cab-kicker cab-kicker--sm">
                         {{ t('clientAllAssessments', 'All assessments') }}
                       </div>
                       @if ((clientHistory().get(c.clientUid) || []).length === 0) {
-                        <div class="mt-1 text-[11px] text-ink-l">
+                        <div class="cab-note cab-note--sm">
                           {{ t('noAssessmentYet', "Client hasn't completed an assessment yet") }}
                         </div>
                       } @else {
-                        <ul class="mt-2 space-y-1.5">
+                        <ul class="cab-versions">
                           @for (h of clientHistory().get(c.clientUid) || []; track h.updatedAt) {
-                            <li class="flex items-center justify-between gap-2 text-[11px]">
-                              <div class="min-w-0">
-                                <div class="font-bold text-ink">{{ formatTs(($any(h).createdAt || h.updatedAt)) }}</div>
-                                <div class="text-ink-l uppercase tracking-[0.12em] text-[9px] mt-0.5">{{ h.scoringMethod }}</div>
+                            <li class="cab-version">
+                              <div class="cab-version__meta">
+                                <div class="cab-version__ts">{{ formatTs(($any(h).createdAt || h.updatedAt)) }}</div>
+                                <div class="cab-chip cab-chip--sm">{{ h.scoringMethod }}</div>
                               </div>
                               <button type="button"
-                                      class="px-2.5 py-1 rounded-lg border border-ink/30 bg-white text-ink text-[9px] font-black uppercase tracking-[0.12em] hover:bg-ink/5 disabled:opacity-50"
+                                      class="cab-btn cab-btn--ghost cab-btn--sm"
                                       [disabled]="!h"
                                       [attr.aria-label]="t('downloadVersionBackupAria', 'Download this version of the assessment answers as a .txt file')"
                                       (click)="onDownloadClientVersion(c, h)">

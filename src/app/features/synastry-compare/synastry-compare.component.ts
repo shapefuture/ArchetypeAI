@@ -131,9 +131,9 @@ export class SynastryCompareComponent {
     canvas.width = 720; canvas.height = 900;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.fillStyle = '#0b0b1e';
+    ctx.fillStyle = '#181432';
     ctx.fillRect(0, 0, 720, 900);
-    ctx.fillStyle = '#f2e7c9';
+    ctx.fillStyle = '#EDD75C';
     ctx.font = '26px Georgia';
     ctx.textAlign = 'center';
     ctx.fillText('Innerverse · Synastry', 360, 70);
@@ -143,7 +143,7 @@ export class SynastryCompareComponent {
     const values = [r.FRICTION, r.RESONANCE, r.BALANCE, r.SAFETY, r.GROWTH, r.NOURISH];
     const labels = this.ui().axes;
     const cx = 360, cy = 400, R = 200;
-    ctx.strokeStyle = 'rgba(236,234,246,0.25)';
+    ctx.strokeStyle = 'rgba(240,233,211,0.3)';
     ctx.beginPath();
     for (let i = 0; i <= 6; i++) {
       const a = -Math.PI / 2 + (i / 6) * Math.PI * 2;
@@ -159,21 +159,21 @@ export class SynastryCompareComponent {
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.closePath();
-    ctx.fillStyle = 'rgba(242,231,201,0.2)';
-    ctx.strokeStyle = '#f2e7c9';
+    ctx.fillStyle = 'rgba(237,215,92,0.2)';
+    ctx.strokeStyle = '#EDD75C';
     ctx.lineWidth = 2;
     ctx.fill(); ctx.stroke();
     ctx.font = '16px Georgia';
-    ctx.fillStyle = 'rgba(236,234,246,0.7)';
+    ctx.fillStyle = 'rgba(240,233,211,0.7)';
     labels.forEach((l, i) => {
       const a = -Math.PI / 2 + (i / 6) * Math.PI * 2;
       ctx.fillText(`${l} ${Math.round(values[i])}`, cx + Math.cos(a) * (R + 40), cy + Math.sin(a) * (R + 40));
     });
     ctx.font = '18px Georgia';
-    ctx.fillStyle = '#eceaf6';
+    ctx.fillStyle = '#F0E9D3';
     ctx.fillText(this.ui().dance + ': ' + r.dance, 360, 700);
     ctx.font = '13px Georgia';
-    ctx.fillStyle = 'rgba(236,234,246,0.4)';
+    ctx.fillStyle = 'rgba(240,233,211,0.4)';
     ctx.fillText('Innerverse — self-reflection, not diagnosis', 360, 860);
     const a = document.createElement('a');
     a.href = canvas.toDataURL('image/png');

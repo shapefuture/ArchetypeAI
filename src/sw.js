@@ -6,7 +6,7 @@
  *     content-hashed, so stale entries are simply never requested again)
  *   - Firebase/Firestore/API calls: always network (never cached)
  */
-const CACHE = 'innerverse-v2';
+const CACHE = 'innerverse-v3';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/firebase-messaging-sw.js'];
 
 self.addEventListener('install', (event) => {
@@ -38,16 +38,22 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/')) return;
 
-  // App navigations: network-first so updates land, cached shell offline.
+  // App navigations: cache-first with background refresh (zero-r pattern).
+  // Launch is instant from the cached shell — no network round trip on the
+  // interaction path — while a silent fetch updates the cache for the next
+  // launch. Offline falls back to the cached shell.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put('/', copy));
-          return response;
-        })
-        .catch(() => caches.match('/').then((r) => r || caches.match('/index.html'))),
+      caches.match('/').then((cached) => {
+        const refresh = fetch(request)
+          .then((response) => {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put('/', copy));
+            return response;
+          })
+          .catch(() => cached);
+        return cached || refresh;
+      }),
     );
     return;
   }

@@ -133,47 +133,46 @@
     <!-- Assessment Sign-up Gate (anonymous-only, before results are revealed) -->
     @case ('assessment-gate') {
       @if (showSavePrompt()) {
-        <div class="fixed inset-0 z-[200] flex items-center justify-center bg-ink/40 backdrop-blur-sm">
-          <div class="bg-white border-[3px] border-ink rounded-2xl p-6 max-w-sm mx-4 shadow-[8px_8px_0_#1C1917]">
+        <div class="gate-scrim">
+          <div class="gate-card" role="dialog" aria-modal="true">
             @if (!saveEmailForm()) {
-              <h3 class="text-lg font-black neo-serif text-ink">{{ translationService.t('savePromptTitle', 'universe') }}</h3>
-              <p class="text-sm text-ink-l mt-2 leading-relaxed">{{ translationService.t('savePromptDesc', 'universe') }}</p>
+              <h3 class="gate-title">{{ translationService.t('savePromptTitle', 'universe') }}</h3>
+              <p class="gate-body">{{ translationService.t('savePromptDesc', 'universe') }}</p>
               @if (authError()) {
-                <p class="text-xs text-rose mt-2 bg-rose/10 rounded-lg px-3 py-2">{{ authError() }}</p>
+                <p class="gate-error">{{ authError() }}</p>
               }
-              <div class="flex flex-col gap-2 mt-4">
-                <button class="w-full px-4 py-2.5 rounded-xl border-2 border-ink bg-ink text-white text-sm font-black uppercase tracking-wider hover:bg-ink/90 transition-colors"
+              <div class="gate-actions">
+                <button class="gate-btn gate-btn--primary"
                         (click)="signUpWithGoogle()">
                   {{ translationService.t('signInGoogle', 'universe') }}
                 </button>
-                <button class="w-full px-4 py-2.5 rounded-xl border-2 border-ink bg-white text-ink text-sm font-black uppercase tracking-wider hover:bg-ink/5 transition-colors"
+                <button class="gate-btn gate-btn--ghost"
                         (click)="saveEmailForm.set(true); authError.set(null)">
                   {{ translationService.t('signInEmail', 'universe') }}
                 </button>
-                <button class="w-full px-4 py-2.5 rounded-xl border-2 border-ink bg-sage/10 text-ink text-sm font-bold uppercase tracking-wider hover:bg-sage/20 transition-colors"
+                <button class="gate-btn gate-btn--ghost"
                         (click)="skipGateAndDownload()">
                   📁 {{ translationService.t('skipAndDownload', 'universe', 'Skip & download backup') }}
                 </button>
-                <button class="w-full px-4 py-2 rounded-xl text-ink-l text-xs font-bold hover:text-ink transition-colors"
+                <button class="gate-btn gate-btn--plain"
                         (click)="dismissSavePrompt()">
                   {{ translationService.t('skipSave', 'universe') }}
                 </button>
               </div>
             } @else {
-              <h3 class="text-lg font-black neo-serif text-ink">{{ translationService.t('signInEmail', 'universe') }}</h3>
+              <h3 class="gate-title">{{ translationService.t('signInEmail', 'universe') }}</h3>
               @if (authError()) {
-                <p class="text-xs text-rose mt-2 bg-rose/10 rounded-lg px-3 py-2">{{ authError() }}</p>
+                <p class="gate-error">{{ authError() }}</p>
               }
-              <form class="flex flex-col gap-2 mt-4" (ngSubmit)="signUpWithEmail(saveEmail, savePassword)">
+              <form class="gate-actions" (ngSubmit)="signUpWithEmail(saveEmail, savePassword)">
                 <input #saveEmail type="email" required [placeholder]="translationService.t('loginEmailPlaceholder', 'universe')"
-                       class="w-full px-3 py-2 rounded-lg border-2 border-ink/20 text-sm focus:border-ink outline-none">
+                       class="gate-input">
                 <input #savePassword type="password" required minlength="6" [placeholder]="translationService.t('loginPasswordPlaceholder', 'universe')"
-                       class="w-full px-3 py-2 rounded-lg border-2 border-ink/20 text-sm focus:border-ink outline-none">
-                <button type="submit"
-                        class="w-full px-4 py-2.5 rounded-xl border-2 border-ink bg-ink text-white text-sm font-black uppercase tracking-wider hover:bg-ink/90 transition-colors">
+                       class="gate-input">
+                <button type="submit" class="gate-btn gate-btn--primary">
                   {{ translationService.t('signInEmail', 'universe') }}
                 </button>
-                <button type="button" class="w-full px-4 py-2 rounded-xl text-ink-l text-xs font-bold hover:text-ink transition-colors"
+                <button type="button" class="gate-btn gate-btn--plain"
                         (click)="saveEmailForm.set(false); authError.set(null)">
                   {{ translationService.t('back', 'universe') }}
                 </button>
@@ -214,34 +213,30 @@
           (viewUniverse)="onResultsGoBack()">
         </app-results-panel>
       } @else if (specialistViewClientLoadError() === 'no-assessment') {
-        <div class="fixed inset-0 bg-paper flex flex-col items-center justify-center px-4">
-          <div class="max-w-md text-center">
-            <div class="text-5xl mb-4">📭</div>
-            <h2 class="text-2xl font-black neo-serif text-ink">{{ translationService.t('noAssessmentYet', 'cabinet', "Client hasn't completed an assessment yet") }}</h2>
-            <p class="text-sm text-ink-l mt-2">{{ specialistViewClientEmail() || specialistViewClientUid() }}</p>
-            <button type="button"
-                    class="mt-6 px-5 py-2.5 rounded-xl border-2 border-ink bg-ink text-white text-[11px] font-black uppercase tracking-[0.12em] hover:bg-ink/90"
-                    (click)="onResultsGoBack()">
+        <div class="fallback-state">
+          <div class="fallback-state__card">
+            <div class="fallback-state__glyph" aria-hidden="true">📭</div>
+            <h2 class="fallback-state__title">{{ translationService.t('noAssessmentYet', 'cabinet', "Client hasn't completed an assessment yet") }}</h2>
+            <p class="fallback-state__sub">{{ specialistViewClientEmail() || specialistViewClientUid() }}</p>
+            <button type="button" class="gate-btn gate-btn--primary" (click)="onResultsGoBack()">
               {{ translationService.t('backToCabinet', 'cabinet', 'Back to cabinet') }}
             </button>
           </div>
         </div>
       } @else if (specialistViewClientLoadError()) {
-        <div class="fixed inset-0 bg-paper flex flex-col items-center justify-center px-4">
-          <div class="max-w-md text-center">
-            <div class="text-5xl mb-4">⚠️</div>
-            <h2 class="text-2xl font-black neo-serif text-ink">{{ specialistViewClientLoadError() }}</h2>
-            <button type="button"
-                    class="mt-6 px-5 py-2.5 rounded-xl border-2 border-ink bg-ink text-white text-[11px] font-black uppercase tracking-[0.12em] hover:bg-ink/90"
-                    (click)="onResultsGoBack()">
+        <div class="fallback-state">
+          <div class="fallback-state__card">
+            <div class="fallback-state__glyph" aria-hidden="true">⚠️</div>
+            <h2 class="fallback-state__title">{{ specialistViewClientLoadError() }}</h2>
+            <button type="button" class="gate-btn gate-btn--primary" (click)="onResultsGoBack()">
               {{ translationService.t('backToCabinet', 'cabinet', 'Back to cabinet') }}
             </button>
           </div>
         </div>
       } @else {
-        <div class="fixed inset-0 bg-ink flex flex-col items-center justify-center">
-          <app-blob-character mood="thinking" color="rgba(255,255,255,0.4)" size="lg" [animate]="true"></app-blob-character>
-          <p class="text-white/90 font-black text-lg tracking-wide mt-8">{{ translationService.t('loadingMessage', 'assessment.results', 'Loading…') }}</p>
+        <div class="fallback-state">
+          <app-blob-character mood="thinking" color="rgba(58,50,41,0.35)" size="lg" [animate]="true"></app-blob-character>
+          <p class="fallback-state__loading">{{ translationService.t('loadingMessage', 'assessment.results', 'Loading…') }}</p>
         </div>
       }
     }
@@ -406,21 +401,17 @@
   }
 
   @if (initError() && appState() !== 'loading') {
-    <div class="fixed top-4 left-4 right-4 md:left-auto md:right-4 z-[1000] max-w-md bg-white border-2 border-ink rounded-2xl p-4 shadow-[6px_6px_0_#1C1917]">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-full bg-rose/15 text-rose border-2 border-rose flex items-center justify-center font-black shrink-0">!</div>
-        <div class="min-w-0 flex-1">
-          <p class="text-sm font-black text-ink">{{ translationService.t('universeErrorTitle', 'universe', 'Universe Error') }}</p>
-          <p class="text-xs text-ink-l leading-relaxed mt-1">{{ initError() }}</p>
-          <div class="flex flex-wrap gap-2 mt-3">
-            <button type="button"
-                    class="px-3 py-1.5 rounded-full border-2 border-ink text-[10px] font-black uppercase tracking-[0.08em] bg-ink text-white hover:bg-ink/90 transition-colors"
-                    (click)="enterUniverse()">
+    <div class="error-toast">
+      <div class="error-toast__row">
+        <div class="error-toast__badge" aria-hidden="true">!</div>
+        <div class="error-toast__body">
+          <p class="error-toast__title">{{ translationService.t('universeErrorTitle', 'universe', 'Universe Error') }}</p>
+          <p class="error-toast__msg">{{ initError() }}</p>
+          <div class="error-toast__actions">
+            <button type="button" class="gate-btn gate-btn--primary gate-btn--sm" (click)="enterUniverse()">
               {{ translationService.t('retryUniverse', 'universe', 'Try Universe Again') }}
             </button>
-            <button type="button"
-                    class="px-3 py-1.5 rounded-full border-2 border-ink text-[10px] font-black uppercase tracking-[0.08em] bg-white text-ink hover:bg-ink/5 transition-colors"
-                    (click)="dismissInitError()">
+            <button type="button" class="gate-btn gate-btn--ghost gate-btn--sm" (click)="dismissInitError()">
               {{ translationService.t('dismiss', 'universe', 'Dismiss') }}
             </button>
           </div>
@@ -430,53 +421,58 @@
   }
 
   @if (isLoginModalOpen()) {
-    <div class="fixed inset-0 z-[1200] flex items-center justify-center bg-ink/40 backdrop-blur-sm">
-      <div class="bg-white border-[3px] border-ink rounded-2xl p-6 max-w-md w-[calc(100vw-2rem)] shadow-[10px_10px_0_#1C1917]">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <h3 class="text-lg font-black neo-serif text-ink">{{ translationService.t('loginModalTitle', 'universe') }}</h3>
-            <p class="text-xs text-ink-l mt-1 leading-relaxed">
+    <div class="login-sheet-scrim">
+      <div class="login-sheet" role="dialog" aria-modal="true">
+        <div class="login-sheet__grip" aria-hidden="true"></div>
+
+        <div class="login-sheet__head">
+          <div class="login-sheet__title-wrap">
+            <div class="login-sheet__kicker" aria-hidden="true">✦ Innerverse</div>
+            <h3 class="login-sheet__title">{{ translationService.t('loginModalTitle', 'universe') }}</h3>
+            <p class="login-sheet__body">
               {{ translationService.t('loginModalBody', 'universe') }}
             </p>
           </div>
           <button type="button"
-                  class="h-9 w-9 rounded-xl border-2 border-ink bg-white text-ink font-black hover:bg-ink/5 transition-colors"
+                  class="login-sheet__close"
                   (click)="closeLoginModal()">
             ✕
           </button>
         </div>
 
         @if (loginError()) {
-          <div class="mt-3 text-xs font-bold text-rose bg-rose/10 border border-rose/20 rounded-xl px-3 py-2">
+          <div class="login-sheet__error" role="alert">
             {{ loginError() }}
           </div>
         }
 
-        <div class="mt-4 space-y-3">
+        <div class="login-sheet__content">
           <button type="button"
-                  class="w-full px-4 py-2.5 rounded-xl border-2 border-ink bg-ink text-white text-sm font-black uppercase tracking-wider hover:bg-ink/90 transition-colors disabled:opacity-50"
+                  class="login-btn login-btn--primary"
                   [disabled]="loginBusy()"
                   (click)="loginWithGoogleFromModal()">
             {{ translationService.t('continueWithGoogle', 'universe') }}
           </button>
 
-          <div class="rounded-xl border-2 border-ink/10 bg-paper/50 p-4">
-            <div class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l">{{ translationService.t('loginEmailPlaceholder', 'universe') }}</div>
-            <div class="mt-3 grid gap-2">
-              <input #loginEmail type="email" required [placeholder]="translationService.t('loginEmailPlaceholder', 'universe')"
-                     class="w-full px-3 py-2 rounded-lg border-2 border-ink/20 text-sm focus:border-ink outline-none" />
-              <input #loginPassword type="password" required minlength="6" [placeholder]="translationService.t('loginPasswordPlaceholder', 'universe')"
-                     class="w-full px-3 py-2 rounded-lg border-2 border-ink/20 text-sm focus:border-ink outline-none" />
+          <div class="login-sheet__divider" aria-hidden="true"><span></span></div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+          <div class="login-sheet__email-card">
+            <div class="login-sheet__kicker login-sheet__kicker--field">{{ translationService.t('loginEmailPlaceholder', 'universe') }}</div>
+            <div class="login-sheet__fields">
+              <input #loginEmail type="email" required [placeholder]="translationService.t('loginEmailPlaceholder', 'universe')"
+                     class="login-input" />
+              <input #loginPassword type="password" required minlength="6" [placeholder]="translationService.t('loginPasswordPlaceholder', 'universe')"
+                     class="login-input" />
+
+              <div class="login-sheet__switch-row">
                 <button type="button"
-                        class="px-4 py-2.5 rounded-xl border-2 border-ink bg-white text-ink text-[11px] font-black uppercase tracking-wider hover:bg-ink/5 transition-colors disabled:opacity-50"
+                        class="login-btn login-btn--primary login-btn--block"
                         [disabled]="loginBusy()"
                         (click)="loginSignInEmailFromModal(loginEmail, loginPassword)">
                   {{ translationService.t('signInCta', 'universe') }}
                 </button>
                 <button type="button"
-                        class="px-4 py-2.5 rounded-xl border-2 border-ink bg-mustard text-ink text-[11px] font-black uppercase tracking-wider hover:brightness-95 transition-colors disabled:opacity-50"
+                        class="login-btn login-btn--ghost login-btn--block"
                         [disabled]="loginBusy()"
                         (click)="loginCreateAccountEmailFromModal(loginEmail, loginPassword)">
                   {{ translationService.t('createAccountCta', 'universe') }}
@@ -485,9 +481,9 @@
             </div>
           </div>
 
-          <p class="text-[10px] text-ink-l leading-relaxed">
+          <div class="login-sheet__fineprint">
             {{ translationService.t('adminAccessNote', 'universe') }}
-          </p>
+          </div>
         </div>
       </div>
     </div>

@@ -1,11 +1,11 @@
 /* ============================================
    SYNASTRY PANEL — Full-Screen Scrollable Layout
-   Neo-Brutalist Design System
+   Light token system: Fraunces kickers + family colors
    ============================================ */
 
-/* Neo-serif font for headings */
+/* Serif identity — Fraunces (light token system) */
 :host {
-  --font-serif: 'DM Serif Display', Georgia, serif;
+  --font-serif: 'Fraunces', 'DM Serif Display', Georgia, serif;
 }
 
 /* Scroll container */
@@ -34,6 +34,38 @@
 /* Neo-serif utility */
 .neo-serif { font-family: var(--font-serif); }
 
+/* Section kickers — Fraunces 600 uppercase, letter-spaced */
+.synastry-scroll section > h4 {
+  font-family: var(--font-serif) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.16em !important;
+}
+
+/* Hero pair bridge — reads as a chemistry "vs" badge */
+.synastry-scroll section#hero .animate-pulse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid #1C1610;
+  border-radius: 999px;
+  background: #F7DD4A;
+  color: #1C1610;
+  box-shadow: 0 4px 0 #1C1610;
+  animation: synBridgePulse 2.6s ease-in-out infinite;
+}
+@keyframes synBridgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .synastry-scroll section#hero .animate-pulse { animation: none; }
+}
+
+/* Mobile bottom nav — pill chips */
+nav button { -webkit-tap-highlight-color: transparent; }
+
 /* Score bar animation */
 .synastry-scroll .score-fill-animated {
   animation: scoreGrow 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -42,27 +74,27 @@
   from { width: 0 !important; }
 }
 
-/* ===== DIAGNOSTIC BADGES ===== */
-/* Regulation patterns */
-.stable { background: rgba(56, 176, 0, 0.1); color: #2e8f00; }
-.flooding { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
-.shutdown { background: rgba(139, 92, 246, 0.12); color: #7c4ddb; }
+/* ===== DIAGNOSTIC BADGES — family-color tokens ===== */
+/* Regulation patterns: managers / firefighters / exiles */
+.stable { background: rgba(70, 162, 157, 0.12); color: #2E6B67; }
+.flooding { background: rgba(229, 143, 160, 0.15); color: #B04D00; }
+.shutdown { background: rgba(143, 99, 192, 0.12); color: #8F63C0; }
 
 /* Boundary styles */
-.rigid { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
-.porous { background: rgba(139, 92, 246, 0.12); color: #7c4ddb; }
-.flexible { background: rgba(56, 176, 0, 0.1); color: #2e8f00; }
+.rigid { background: rgba(229, 143, 160, 0.15); color: #B04D00; }
+.porous { background: rgba(143, 99, 192, 0.12); color: #8F63C0; }
+.flexible { background: rgba(70, 162, 157, 0.12); color: #2E6B67; }
 
 /* Dissociation levels */
-.high { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
-.low { background: rgba(139, 92, 246, 0.12); color: #7c4ddb; }
-.minimal { background: rgba(56, 176, 0, 0.1); color: #2e8f00; }
+.high { background: rgba(229, 143, 160, 0.15); color: #B04D00; }
+.low { background: rgba(143, 99, 192, 0.12); color: #8F63C0; }
+.minimal { background: rgba(70, 162, 157, 0.12); color: #2E6B67; }
 
 /* Coherence levels */
-.oscillating { background: rgba(157, 2, 8, 0.1); color: #9d0208; }
-.moderate { background: rgba(139, 92, 246, 0.12); color: #7c4ddb; }
-.significant { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
-.fragmented { background: rgba(244, 162, 97, 0.15); color: #c47a3a; }
+.oscillating { background: rgba(229, 143, 160, 0.12); color: #B04D00; }
+.moderate { background: rgba(143, 99, 192, 0.12); color: #8F63C0; }
+.significant { background: rgba(225, 115, 75, 0.15); color: #A64F28; }
+.fragmented { background: rgba(225, 115, 75, 0.15); color: #A64F28; }
 
 /* ===== PROSE (Markdown Narrative) ===== */
 .synastry-scroll .prose {
@@ -91,7 +123,7 @@
 }
 .synastry-scroll .prose li { margin-bottom: 0.4em; }
 .synastry-scroll .prose blockquote {
-  border-left: 3px solid var(--color-coral);
+  border-left: 3px solid var(--color-coral, #E1734B);
   padding-left: 1em;
   margin-left: 0;
   font-style: italic;

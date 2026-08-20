@@ -198,21 +198,25 @@ export function formatCoachClock(ms: number): string {
     </div>
   `,
   styles: [`
+    /* ============================================================
+       COACH PANEL — light minimal skin.
+       paper #F3EAD4 · card #FBF5E6 · deep #EDE2C6
+       ink #3A3229 · muted #7A6F5E · outline #1C1610 · lemon #F7DD4A
+       ============================================================ */
     .coach-panel {
       position: fixed;
       top: 0;
       right: 0;
       width: min(420px, 100dvw);
       height: 100dvh;
-      background: var(--paper-panel);
-      border-left: var(--border-sketchy);
-      box-shadow: var(--shadow-float);
+      background: #F3EAD4;
+      border-left: 2px solid #1C1610;
       display: flex;
       flex-direction: column;
       transform: translateX(calc(100% + var(--coach-offset, 0px)));
       transition: transform var(--duration-standard) var(--ease-storybook);
       z-index: var(--z-panel);
-      font-family: var(--font-sans);
+      font-family: var(--font-serif, 'Fraunces', serif);
       will-change: transform;
     }
 
@@ -225,81 +229,96 @@ export function formatCoachClock(ms: number): string {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px;
-      border-bottom: 2px solid var(--ink-light);
-      background: linear-gradient(135deg, var(--paper-panel) 0%, rgba(112, 161, 215, 0.1) 100%);
+      gap: 10px;
+      padding: 16px 18px;
+      border-bottom: 1.5px solid rgba(58, 50, 41, 0.2);
+      background: #FBF5E6;
     }
 
     .coach-panel__title {
       display: flex;
       align-items: center;
       gap: 12px;
+      min-width: 0;
     }
 
     .coach-panel__title-text {
-      font-family: var(--font-serif);
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--ink-main);
+      font-family: 'Lilita One', var(--font-sans, sans-serif);
+      font-size: 21px;
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: #3A3229;
       margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* Persona toggle pill — sits in the header between the title and the
-       close button. Always visible so users discover the affordance; the
-       active class inverts the colors so the *current* state (parts vs
-       general) reads at a glance without needing a separate label swap. */
+    /* Persona toggle pill — ghost pill by default, lemon when active.
+       Always visible so users discover the affordance; the active class
+       inverts the colors so the *current* state (parts vs general) reads
+       at a glance without needing a separate label swap. */
     .coach-panel__mode-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255, 255, 255, 0.6);
-      border: 2px solid var(--ink-main);
+      background: transparent;
+      border: 1.5px solid rgba(58, 50, 41, 0.3);
       border-radius: 999px;
-      padding: 4px 10px 4px 8px;
+      padding: 6px 12px 6px 10px;
       cursor: pointer;
-      font-family: var(--font-sans);
+      font-family: var(--font-serif, 'Fraunces', serif);
+      font-weight: 600;
       font-size: 11px;
-      font-weight: 700;
-      color: var(--ink-main);
-      letter-spacing: 0.02em;
+      color: #7A6F5E;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      transition: all var(--duration-quick) var(--ease-relational);
+      transition: transform 0.06s ease, border-color 0.15s ease, background-color 0.15s ease;
       flex-shrink: 0;
     }
 
     .coach-panel__mode-pill:hover {
-      transform: translateY(-1px);
-      background: rgba(112, 161, 215, 0.15);
-      box-shadow: var(--shadow-card-sm);
+      border-color: #1C1610;
+      color: #3A3229;
+    }
+
+    .coach-panel__mode-pill:active {
+      transform: scale(0.97);
     }
 
     .coach-panel__mode-pill:focus-visible {
-      outline: 3px solid rgba(112, 161, 215, 0.4);
+      outline: 3px solid rgba(58, 50, 41, 0.4);
       outline-offset: 2px;
     }
 
     .coach-panel__mode-pill--active {
-      background: var(--accent-blue);
-      color: white;
-      border-color: var(--accent-blue);
+      background: #F7DD4A;
+      color: #1C1610;
+      border: 2px solid #1C1610;
+      box-shadow: 0 4px 0 #1C1610;
     }
 
     .coach-panel__mode-pill--active:hover {
-      background: var(--accent-blue);
-      filter: brightness(1.05);
+      background: #F7DD4A;
+      color: #1C1610;
+    }
+
+    .coach-panel__mode-pill--active:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #1C1610;
     }
 
     .coach-panel__mode-pill-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--ink-light);
+      background: rgba(58, 50, 41, 0.4);
       transition: background var(--duration-quick) var(--ease-relational);
     }
 
     .coach-panel__mode-pill--active .coach-panel__mode-pill-dot {
-      background: white;
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+      background: #1C1610;
     }
 
     .coach-panel__mode-pill-label {
@@ -308,31 +327,37 @@ export function formatCoachClock(ms: number): string {
 
     .coach-panel__close {
       background: transparent;
-      border: none;
+      border: 1.5px solid rgba(58, 50, 41, 0.3);
+      border-radius: 999px;
+      width: 36px;
+      height: 36px;
       cursor: pointer;
-      padding: 8px;
-      border-radius: var(--radius-soft);
-      color: var(--ink-muted);
-      transition: all var(--duration-quick) var(--ease-relational);
+      padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: #7A6F5E;
+      flex-shrink: 0;
+      transition: transform 0.06s ease, color 0.15s ease, border-color 0.15s ease;
     }
 
     .coach-panel__close:hover {
-      background: rgba(74, 62, 53, 0.1);
-      color: var(--ink-main);
-      transform: scale(1.1);
+      color: #3A3229;
+      border-color: #1C1610;
+    }
+
+    .coach-panel__close:active {
+      transform: scale(0.94);
     }
 
     /* Messages */
     .coach-panel__messages {
       flex: 1;
       overflow-y: auto;
-      padding: 12px 16px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       scroll-behavior: smooth;
     }
 
@@ -360,59 +385,65 @@ export function formatCoachClock(ms: number): string {
       flex: 1;
       min-width: 0;
       max-width: 100%;
-      padding: 14px 18px;
-      border-radius: var(--radius-sketchy);
+      padding: 13px 16px;
+      border-radius: 20px;
       position: relative;
-      box-shadow: var(--shadow-card-sm);
     }
 
+    /* theirs: card bg + hairline */
     .coach-message__bubble--coach {
-      background: var(--paper-panel);
-      border: var(--border-sketchy);
+      background: #FBF5E6;
+      border: 1.5px solid rgba(58, 50, 41, 0.3);
       align-self: flex-start;
+      border-top-left-radius: 8px;
     }
 
+    /* yours: lemon tint, right-aligned */
     .coach-message__bubble--user {
-      background: rgba(112, 161, 215, 0.15);
-      border: 2px solid var(--accent-blue);
+      background: rgba(247, 221, 74, 0.38);
+      border: 1.5px solid rgba(58, 50, 41, 0.3);
       align-self: flex-end;
+      border-top-right-radius: 8px;
+      flex: 0 1 auto;
     }
 
     .coach-message__content {
-      font-family: var(--font-sans);
+      font-family: var(--font-serif, 'Fraunces', serif);
       font-size: 14px;
       line-height: 1.6;
-      color: var(--ink-main);
+      color: #3A3229;
       word-wrap: break-word;
     }
 
     .coach-message__bubble--coach .coach-message__content {
-      font-family: var(--font-serif);
       font-style: italic;
     }
 
     .coach-message__timestamp {
-      font-size: 11px;
-      color: var(--ink-light);
+      font-family: var(--font-serif, 'Fraunces', serif);
+      font-weight: 600;
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      color: #7A6F5E;
       margin-top: 8px;
       text-align: right;
-      font-weight: 600;
     }
 
     /* Suggestions */
     .coach-panel__suggestions {
-      padding: 16px 20px;
-      border-top: 2px solid var(--ink-light);
-      background: rgba(255, 255, 255, 0.3);
+      padding: 14px 18px;
+      border-top: 1.5px solid rgba(58, 50, 41, 0.2);
+      background: #EDE2C6;
     }
 
     .coach-panel__suggestions-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--ink-muted);
-      margin-bottom: 12px;
+      font-family: var(--font-serif, 'Fraunces', serif);
+      font-weight: 600;
+      font-size: 11px;
+      color: #7A6F5E;
+      margin-bottom: 10px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.16em;
     }
 
     .coach-panel__suggestions-chips {
@@ -421,35 +452,43 @@ export function formatCoachClock(ms: number): string {
       gap: 8px;
     }
 
+    /* suggestion chips render as ghost pills (paper-button internals
+       are neutralized here so the chips read as native pills) */
     .coach-panel__suggestions-chips app-paper-button {
+      font-family: var(--font-serif, 'Fraunces', serif);
       font-size: 13px;
-      padding: 8px 16px;
-      background: rgba(255, 249, 240, 0.8);
-      border: 2px solid var(--accent-blue);
-      transition: all var(--duration-quick) var(--ease-storybook);
+      padding: 9px 15px;
+      background: #FBF5E6;
+      border: 1.5px solid rgba(58, 50, 41, 0.3);
+      border-radius: 999px;
+      box-shadow: none;
+      color: #3A3229;
+      transition: transform 0.06s ease, border-color 0.15s ease, background-color 0.15s ease;
     }
 
     .coach-panel__suggestions-chips app-paper-button:hover {
-      transform: scale(1.05);
-      background: rgba(112, 161, 215, 0.15);
+      border-color: #1C1610;
+    }
+
+    .coach-panel__suggestions-chips app-paper-button:active {
+      transform: scale(0.97);
     }
 
     /* Input Area */
     .coach-panel__input {
-      padding: 16px 20px;
-      border-top: 2px solid var(--ink-light);
-      background: var(--paper-panel);
+      padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+      border-top: 1.5px solid rgba(58, 50, 41, 0.2);
+      background: #FBF5E6;
     }
 
     .coach-panel__input-wrapper {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: flex-end;
-      background: rgba(255, 255, 255, 0.5);
-      border: var(--border-sketchy);
-      border-radius: var(--radius-sketchy);
-      padding: 12px;
-      box-shadow: inset 0 2px 4px rgba(74, 62, 53, 0.05);
+      background: #F3EAD4;
+      border: 1.5px solid rgba(58, 50, 41, 0.3);
+      border-radius: 999px;
+      padding: 8px 8px 8px 16px;
     }
 
     .coach-panel__textarea {
@@ -457,19 +496,19 @@ export function formatCoachClock(ms: number): string {
       background: transparent;
       border: none;
       outline: none;
-      font-family: var(--font-sans);
+      font-family: var(--font-serif, 'Fraunces', serif);
       font-size: 14px;
       line-height: 1.5;
-      color: var(--ink-main);
+      color: #3A3229;
       resize: none;
       min-height: 24px;
       max-height: 120px;
       overflow-y: auto;
-      padding: 0;
+      padding: 6px 0;
     }
 
     .coach-panel__textarea::placeholder {
-      color: var(--ink-light);
+      color: rgba(122, 111, 94, 0.8);
       font-style: italic;
     }
 
@@ -478,17 +517,34 @@ export function formatCoachClock(ms: number): string {
     }
 
     .coach-panel__input-wrapper:focus-within {
-      box-shadow: inset 0 2px 4px rgba(74, 62, 53, 0.05), 0 0 0 3px rgba(112, 161, 215, 0.2);
+      border-color: #1C1610;
     }
 
+    /* pill send button — lemon, solid shadow */
     .coach-panel__send {
       flex-shrink: 0;
-      min-width: 40px;
-      height: 40px;
+      min-width: 44px;
+      height: 44px;
       padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: #F7DD4A;
+      border: 2px solid #1C1610;
+      border-radius: 999px;
+      box-shadow: 0 4px 0 #1C1610;
+      color: #1C1610;
+      transition: transform 0.06s ease, box-shadow 0.06s ease, opacity 0.15s ease;
+    }
+
+    .coach-panel__send:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #1C1610;
+    }
+
+    .coach-panel__send[disabled],
+    .coach-panel__send.disabled {
+      opacity: 0.45;
     }
 
     .coach-panel__send .paper-btn__icon {
@@ -506,7 +562,7 @@ export function formatCoachClock(ms: number): string {
     .typing-indicator__dot {
       width: 8px;
       height: 8px;
-      background: var(--ink-muted);
+      background: #7A6F5E;
       border-radius: 50%;
       animation: typing-bounce 1.4s ease-in-out infinite;
     }
@@ -573,17 +629,17 @@ export function formatCoachClock(ms: number): string {
     }
 
     .coach-panel__messages::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
+      background: rgba(58, 50, 41, 0.05);
       border-radius: 10px;
     }
 
     .coach-panel__messages::-webkit-scrollbar-thumb {
-      background: var(--ink-light);
+      background: rgba(58, 50, 41, 0.25);
       border-radius: 10px;
     }
 
     .coach-panel__messages::-webkit-scrollbar-thumb:hover {
-      background: var(--ink-muted);
+      background: rgba(58, 50, 41, 0.4);
     }
   `],
   animations: [

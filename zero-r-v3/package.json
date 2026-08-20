@@ -1,0 +1,13 @@
+{
+  "name":"zero-r-parts-map-v3",
+  "private":true,
+  "version":"3.1.0",
+  "type":"module",
+  "scripts":{
+    "typecheck":"tsc --noEmit",
+    "build":"bash ./scripts/build.sh",
+    "test":"node ./tests/run-tests.mjs",
+    "build:wasm":"bash ./scripts/build-wasm.sh"
+  },
+  "devDependencies":{"typescript":"^5.8.3"}
+}

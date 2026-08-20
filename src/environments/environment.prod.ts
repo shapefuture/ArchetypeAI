@@ -1,4 +1,6 @@
 export const environment = {
+  /** AI provider router (Cloudflare Worker; dev uses the local proxy). */
+  aiApiUrl: 'https://archetypeai-worker.wmobilas.workers.dev/api/ai',
   /** §3.8 Web Push: register the matching private key in Firebase Console →
    *  Cloud Messaging → Web Push certificates. Public key only, client-side. */
   vapidPublicKey: 'BNYK0YZFP3PukxpjhpLTie-DF22URLEeFM9TKxc0jt4wq5rsOItICLG_lbZHv9qhI1QSWMM_Wqbj7AAEyiXmbZI',

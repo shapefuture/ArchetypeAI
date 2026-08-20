@@ -1,6 +1,16 @@
 /// <reference types="@cloudflare/workers-types" />
 import { getMissingApiKeys } from './worker-helpers';
 
+
+const AI_CORS = {
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400',
+};
+function corsHeaders(request: Request): Record<string, string> {
+  return { ...AI_CORS, 'Access-Control-Allow-Origin': request.headers.get('Origin') ?? '*' };
+}
+
 const OPENROUTER_TIMEOUT_MS = 100_000; // 100s: Massive max duration to allow huge model output generation on free tier
 
 // Static-asset response headers (COOP / CORP) are configured in the
@@ -17,9 +27,16 @@ export default {
 
     // AI Provider Router with Parallel Racer
     if (url.pathname.startsWith('/api/ai')) {
-      if (request.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
+      // The app is served from Firebase Hosting; this worker is called
+      // cross-origin. Same GET-less preflight + permissive JSON CORS.
+      const cors = corsHeaders(request);
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: cors });
       }
+      if (request.method !== 'POST') {
+        return new Response('Method Not Allowed', { status: 405, headers: cors });
+      }
+      const jsonHeaders = { 'Content-Type': 'application/json', ...cors };
 
       // Fail fast with a clear, actionable error when secrets are missing.
       // Without this, every provider returns 401 and the user sees a generic
@@ -34,7 +51,7 @@ export default {
             `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. ` +
             `Set them with: wrangler secret put <KEY_NAME>`,
           missingKeys,
-        }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+        }), { status: 503, headers: jsonHeaders });
       }
 
       const body = await request.json() as AIRequest;
@@ -58,7 +75,7 @@ export default {
                 text: data.text,
                 provider: `Ollama/${model}`,
                 duration: 0
-              }), { headers: { 'Content-Type': 'application/json' } });
+              }), { headers: { 'Content-Type': 'application/json', ...corsHeaders(request) } });
             }
           } catch (ollamaErr) {
             console.warn(`[AI] Ollama/${model} failed: ${ollamaErr instanceof Error ? ollamaErr.message : ollamaErr}`);
@@ -75,14 +92,14 @@ export default {
           text: result.text,
           provider: result.provider,
           duration: result.duration
-        }), { 
-          headers: { 'Content-Type': 'application/json' } 
+        }), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(request) }
         });
       } catch (raceError) {
         console.error('[Racer] All providers failed:', raceError);
         return new Response(JSON.stringify({
           error: `All providers failed to respond. Details: ${raceError}`
-        }), { status: 502, headers: { 'Content-Type': 'application/json' } });
+        }), { status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders(request) } });
       }
     }
 

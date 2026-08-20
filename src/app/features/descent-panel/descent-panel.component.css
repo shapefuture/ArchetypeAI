@@ -544,3 +544,52 @@
 @media (prefers-reduced-motion: reduce) {
   .nova-float { animation: none; }
 }
+
+/* ---------- compact ceremony intro: button above the fold ---------- */
+.plan-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  width: min(440px, 94vw);
+}
+.plan-row .sitting {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 6px;
+  text-align: center;
+}
+.plan-row .sitting-meta { font-size: 9.5px; letter-spacing: 0.02em; }
+.plan-row .sitting-gap { align-self: center; color: #edd75c; font-size: 12px; }
+
+.descent-main .sub {
+  color: rgba(240, 233, 211, 0.88);
+  font-size: 16.5px;
+  max-width: 34ch;
+}
+.descent-main .tiny { color: rgba(240, 233, 211, 0.6); }
+.cta-column .primary-btn { min-height: 58px; font-size: 17px; }
+.descent-main > .plan-title {
+  display: block;
+  width: min(440px, 94vw);
+  text-align: left;
+  margin-bottom: -4px;
+}
+.descent-main > .plan-title { margin-bottom: -6px; }
+details.why {
+  width: min(440px, 94vw);
+  font-size: 12.5px;
+  color: rgba(240, 233, 211, 0.6);
+}
+details.why summary {
+  cursor: pointer;
+  list-style: none;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(240, 233, 211, 0.55);
+}
+details.why[open] summary { margin-bottom: 6px; }
+details.why p { margin: 0; font-style: italic; line-height: 1.5; }

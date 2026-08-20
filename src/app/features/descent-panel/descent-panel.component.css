@@ -764,3 +764,46 @@ details.why p { margin: 0; font-style: italic; line-height: 1.5; }
   .sit-light .likert { gap: 8px; }
   .sit-light .likert-btn { font-size: 13px; min-height: 58px; }
 }
+
+/* ---------- somatic follow-up in the sit language ---------- */
+.sit-light .zone-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: min(480px, 92vw);
+}
+.sit-light .zone-btn {
+  min-height: 62px;
+  border: 2px solid #1c1610;
+  border-radius: 18px;
+  background: #fbf5e6;
+  color: #3a3229;
+  font-family: 'Fraunces', var(--font-serif);
+  font-weight: 600;
+  font-size: 14.5px;
+  box-shadow: 0 3px 0 #1c1610;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.sit-light .zone-btn:nth-child(1) { background: color-mix(in srgb, #38afc9 14%, #fbf5e6); }
+.sit-light .zone-btn:nth-child(3) { background: color-mix(in srgb, #38afc9 7%, #fbf5e6); }
+.sit-light .zone-btn:nth-child(5) { background: color-mix(in srgb, #e5853d 10%, #fbf5e6); }
+.sit-light .zone-btn:nth-child(7) { background: color-mix(in srgb, #e5853d 16%, #fbf5e6); }
+.sit-light .zone-btn:nth-child(9) { background: color-mix(in srgb, #e58fa6 14%, #fbf5e6); }
+.sit-light .zone-btn:hover,
+.sit-light .zone-btn:focus-visible {
+  transform: translateY(-2px);
+  border-color: #1c1610;
+}
+.sit-light .zone-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 #1c1610;
+}
+.sit-light .secondary-btn {
+  border: 1.5px solid rgba(58, 50, 41, 0.3);
+  color: #7a6f5e;
+  border-radius: 999px;
+  background: transparent;
+}
+.sit-light .secondary-btn:hover { background: rgba(58, 50, 41, 0.06); color: #3a3229; }

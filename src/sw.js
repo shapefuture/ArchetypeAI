@@ -6,7 +6,8 @@
  *     content-hashed, so stale entries are simply never requested again)
  *   - Firebase/Firestore/API calls: always network (never cached)
  */
-const CACHE = 'innerverse-v3';
+// update-flow test rev B
+const CACHE = 'innerverse-v7';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/firebase-messaging-sw.js'];
 
 self.addEventListener('install', (event) => {

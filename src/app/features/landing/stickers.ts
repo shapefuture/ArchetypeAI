@@ -84,6 +84,98 @@ const SHAPES: Record<string, string> = {
   explorer: `<path d="M50 10 Q82 28 82 50 Q82 82 50 92 Q18 82 18 50 Q18 28 50 10 Z"/>`, // wandering pebble (old design)
 };
 
+/** All 18 available shape ids (for the customization picker + sky canvas). */
+export const SHAPE_IDS: string[] = Object.keys(SHAPES);
+
+/** Raw SHAPES map (canvas rendering builds Path2D from these strings). */
+export { SHAPES };
+
+export const EYE_KINDS: EyeKind[] = ['big', 'wide', 'dot', 'lid', 'squint', 'star', 'glasses'];
+export const MOUTH_KINDS: MouthKind[] = ['smile', 'grin', 'flat', 'wavy', 'grit', 'ooh', 'smirk'];
+
+/** 12 preset swatch colors for the look editor. */
+export const LOOK_COLORS: string[] = [
+  '#DE6A40', '#C76B85', '#EF8FA5', '#D5793B', '#CDB32E', '#7BA3D0',
+  '#8A87A8', '#9AA3AC', '#9865C5', '#2FA39E', '#2E9967', '#E97F63',
+];
+
+// ------------------------------------------------- look overrides + custom parts
+
+export interface PartLook {
+  shape: string;
+  color: string;
+  eye: string;
+  mouth: string;
+}
+
+export interface CustomPart {
+  id: string;
+  name: [string, string]; // [en, ru]
+  look: PartLook;
+  fam: string; // FamKind
+}
+
+const LOOKS_KEY = 'INNERVERSE_PART_LOOKS_V1';
+const CUSTOM_KEY = 'INNERVERSE_CUSTOM_PARTS_V1';
+
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key: string, value: unknown): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // storage unavailable — overrides just won't persist
+  }
+}
+
+/** Persisted per-part look overrides. */
+export function loadLooks(): Record<string, PartLook> {
+  return readJson<Record<string, PartLook>>(LOOKS_KEY, {});
+}
+
+export function saveLook(id: string, look: PartLook): Record<string, PartLook> {
+  const all = loadLooks();
+  all[id] = look;
+  writeJson(LOOKS_KEY, all);
+  return all;
+}
+
+export function resetLook(id: string): Record<string, PartLook> {
+  const all = loadLooks();
+  delete all[id];
+  writeJson(LOOKS_KEY, all);
+  return all;
+}
+
+/** User-created custom parts (display-only in the codex). */
+export function loadCustomParts(): CustomPart[] {
+  const v = readJson<CustomPart[]>(CUSTOM_KEY, []);
+  return Array.isArray(v) ? v : [];
+}
+
+export function saveCustomPart(part: CustomPart): CustomPart[] {
+  const all = loadCustomParts();
+  const i = all.findIndex((p) => p.id === part.id);
+  if (i >= 0) all[i] = part;
+  else all.push(part);
+  writeJson(CUSTOM_KEY, all);
+  return all;
+}
+
+export function deleteCustomPart(id: string): CustomPart[] {
+  const all = loadCustomParts().filter((p) => p.id !== id);
+  writeJson(CUSTOM_KEY, all);
+  return all;
+}
+
 export function sticker(p: StickerSpec): string {
   const g = p.glyph;
   const body = SHAPES[p.shape] ?? SHAPES.taskmaster;

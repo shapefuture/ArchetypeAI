@@ -89,7 +89,9 @@
         (reportRequested)="openInnerverse()"
         (checkinRequested)="openCheckin()"
         (practiceRequested)="openPractice()"
-        (synastryRequested)="openSynastry()">
+        (synastryRequested)="openSynastry()"
+        (coachRequested)="openCoachPanel()"
+        (subscribeRequested)="startSubscription()">
       </app-landing>
     }
 
@@ -475,7 +477,7 @@
   }
 
   <!-- Global Overlays -->
-  @if (appState() === 'universe') {
+  @if (appState() === 'universe' || appState() === 'intro') {
     <!-- AI Coach Panel (standalone) -->
     <app-coach-panel
       [isOpen]="isCoachPanelOpen()"

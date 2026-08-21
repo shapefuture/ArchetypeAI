@@ -108,12 +108,49 @@ export async function claimTherapistLink(
   return summary;
 }
 
-/** Therapist dashboard: all linked clients. */
-export async function linkedClients(therapistUid: string): Promise<TherapistClientSummary[]> {
+/**
+ * A therapist↔client link as the dashboard consumes it. `summary` is null for
+ * clients created through a booking (they shared access before any assessment
+ * summary existed); `archived` defaults to false and is toggled from the
+ * dashboard's «Архив» section.
+ */
+export interface LinkedClient {
+  clientUid: string;
+  clientEmail: string | null;
+  linkedAt: string;
+  archived: boolean;
+  summary: TherapistClientSummary | null;
+}
+
+/** Therapist dashboard: all linked clients (newest first, archive flag kept). */
+export async function linkedClients(therapistUid: string): Promise<LinkedClient[]> {
   const db = getFirestoreDb();
   const q = query(collection(db, 'therapistClients'), where('therapistUid', '==', therapistUid));
   const snap = await getDocs(q);
-  return snap.docs.map(d => d.data()['summary'] as TherapistClientSummary);
+  const clients = snap.docs.map(d => {
+    const data = d.data();
+    return {
+      clientUid: (data['clientUid'] as string) ?? '',
+      clientEmail: (data['clientEmail'] as string) ?? null,
+      linkedAt: (data['linkedAt'] as string) ?? '',
+      archived: (data['archived'] as boolean) ?? false,
+      summary: (data['summary'] as TherapistClientSummary | undefined) ?? null,
+    };
+  });
+  clients.sort((a, b) => (b.linkedAt || '').localeCompare(a.linkedAt || ''));
+  return clients;
+}
+
+/** Archive / restore a client from the therapist's dashboard. */
+export async function setClientArchived(
+  therapistUid: string, clientUid: string, archived: boolean,
+): Promise<void> {
+  const db = getFirestoreDb();
+  await setDoc(
+    doc(db, 'therapistClients', `${therapistUid}_${clientUid}`),
+    { archived },
+    { merge: true },
+  );
 }
 
 /** Therapist assigns an exercise. RED passes the gate ONLY here (§3B.1). */

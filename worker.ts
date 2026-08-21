@@ -3,12 +3,27 @@ import { getMissingApiKeys } from './worker-helpers';
 
 
 const AI_CORS = {
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Max-Age': '86400',
 };
 function corsHeaders(request: Request): Record<string, string> {
   return { ...AI_CORS, 'Access-Control-Allow-Origin': request.headers.get('Origin') ?? '*' };
+}
+
+/**
+ * Stripe secrets are OPTIONAL for the worker as a whole (the AI router does
+ * not need them) — only /api/stripe-* routes check this list and return 503
+ * with the missing names. Set with:
+ *   wrangler secret put STRIPE_SECRET_KEY
+ *   wrangler secret put STRIPE_PRICE_ID
+ */
+function getMissingStripeKeys(env: Env): string[] {
+  const required: Array<[string, string | undefined]> = [
+    ['STRIPE_SECRET_KEY', env.STRIPE_SECRET_KEY],
+    ['STRIPE_PRICE_ID', env.STRIPE_PRICE_ID],
+  ];
+  return required.filter(([, v]) => !v).map(([k]) => k);
 }
 
 const OPENROUTER_TIMEOUT_MS = 100_000; // 100s: Massive max duration to allow huge model output generation on free tier
@@ -103,6 +118,17 @@ export default {
       }
     }
 
+    // Stripe subscription checkout (Innerverse PWA). Like /api/ai, called
+    // cross-origin from Firebase Hosting — same permissive JSON CORS.
+    // Stripe keys are OPTIONAL for the worker as a whole (only these
+    // routes need them); missing keys → 503 with an actionable message.
+    if (url.pathname === '/api/stripe-checkout') {
+      return this.handleStripeCheckout(request, env);
+    }
+    if (url.pathname === '/api/stripe-verify') {
+      return this.handleStripeVerify(request, env);
+    }
+
     // Legacy Gemini endpoint
     if (url.pathname.startsWith('/api/gemini')) {
       return this.fetchGeminiRaw(request, env);
@@ -113,6 +139,136 @@ export default {
     // headers are applied via the `_headers` file (see the top of this
     // file for details).
     return env.ASSETS.fetch(request);
+  },
+
+  /**
+   * POST /api/stripe-checkout — create a Stripe Checkout Session
+   * (subscription mode) and return {url} for the client to redirect to.
+   *
+   * Body: { origin: string, email?: string, locale?: 'ru' | 'en' }
+   * Secrets required: STRIPE_SECRET_KEY, STRIPE_PRICE_ID
+   * (set with `wrangler secret put STRIPE_SECRET_KEY` / `... STRIPE_PRICE_ID`).
+   */
+  async handleStripeCheckout(request: Request, env: Env): Promise<Response> {
+    const cors = corsHeaders(request);
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: cors });
+    }
+    if (request.method !== 'POST') {
+      return new Response('Method Not Allowed', { status: 405, headers: cors });
+    }
+    const jsonHeaders = { 'Content-Type': 'application/json', ...cors };
+
+    // Same fail-fast pattern as /api/ai for missing secrets.
+    const missingKeys = getMissingStripeKeys(env);
+    if (missingKeys.length > 0) {
+      return new Response(JSON.stringify({
+        error:
+          `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. ` +
+          `Set them with: wrangler secret put <KEY_NAME>`,
+        missingKeys,
+      }), { status: 503, headers: jsonHeaders });
+    }
+
+    let body: { origin?: string; email?: string; locale?: string };
+    try {
+      body = await request.json() as typeof body;
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), { status: 400, headers: jsonHeaders });
+    }
+    const origin = body.origin || request.headers.get('Origin');
+    if (!origin) {
+      return new Response(JSON.stringify({
+        error: 'Missing "origin" in request body (used for success_url/cancel_url).',
+      }), { status: 400, headers: jsonHeaders });
+    }
+    const locale = body.locale === 'ru' ? 'ru' : 'en';
+
+    const params = new URLSearchParams();
+    params.set('mode', 'subscription');
+    params.set('line_items[0][price]', env.STRIPE_PRICE_ID!);
+    params.set('line_items[0][quantity]', '1');
+    params.set('success_url', `${origin}/?stripe=success&session_id={CHECKOUT_SESSION_ID}`);
+    params.set('cancel_url', `${origin}/?stripe=cancel`);
+    params.set('allow_promotion_codes', 'true');
+    params.set('locale', locale);
+    if (body.email) {
+      params.set('customer_email', body.email);
+    }
+
+    try {
+      const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+        },
+        body: params.toString(),
+      });
+      const session = await stripeRes.json() as any;
+      if (!stripeRes.ok || !session.url) {
+        return new Response(JSON.stringify({
+          error: `Stripe checkout session creation failed: ${session?.error?.message ?? stripeRes.status}`,
+        }), { status: 502, headers: jsonHeaders });
+      }
+      return new Response(JSON.stringify({ url: session.url }), { headers: jsonHeaders });
+    } catch (err) {
+      return new Response(JSON.stringify({
+        error: `Stripe checkout request failed: ${err instanceof Error ? err.message : err}`,
+      }), { status: 502, headers: jsonHeaders });
+    }
+  },
+
+  /**
+   * GET /api/stripe-verify?session_id=... — retrieve a Checkout Session and
+   * return {status, customer, subscription} so the client can mark the
+   * subscription active after a successful redirect.
+   */
+  async handleStripeVerify(request: Request, env: Env): Promise<Response> {
+    const cors = corsHeaders(request);
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: cors });
+    }
+    if (request.method !== 'GET') {
+      return new Response('Method Not Allowed', { status: 405, headers: cors });
+    }
+    const jsonHeaders = { 'Content-Type': 'application/json', ...cors };
+
+    const missingKeys = getMissingStripeKeys(env);
+    if (missingKeys.length > 0) {
+      return new Response(JSON.stringify({
+        error:
+          `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. ` +
+          `Set them with: wrangler secret put <KEY_NAME>`,
+        missingKeys,
+      }), { status: 503, headers: jsonHeaders });
+    }
+
+    const sessionId = new URL(request.url).searchParams.get('session_id');
+    if (!sessionId) {
+      return new Response(JSON.stringify({ error: 'Missing session_id query parameter' }), { status: 400, headers: jsonHeaders });
+    }
+
+    try {
+      const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
+        headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
+      });
+      const session = await stripeRes.json() as any;
+      if (!stripeRes.ok) {
+        return new Response(JSON.stringify({
+          error: `Stripe session retrieval failed: ${session?.error?.message ?? stripeRes.status}`,
+        }), { status: 502, headers: jsonHeaders });
+      }
+      return new Response(JSON.stringify({
+        status: session.status, // 'complete' | 'open' | 'expired'
+        customer: session.customer ?? null,
+        subscription: session.subscription ?? null,
+      }), { headers: jsonHeaders });
+    } catch (err) {
+      return new Response(JSON.stringify({
+        error: `Stripe verify request failed: ${err instanceof Error ? err.message : err}`,
+      }), { status: 502, headers: jsonHeaders });
+    }
   },
 
   async raceAI(payload: AIRequest, env: Env): Promise<{ text: string; provider: string; duration: number }> {
@@ -518,5 +674,9 @@ interface Env {
   OLLAMA_API_KEY: string;
   OPENROUTER_MODEL: string;
   AI_PROVIDER_DEFAULT: string;
+  /** Stripe subscription checkout (optional — only /api/stripe-* needs them).
+   *  Set with: wrangler secret put STRIPE_SECRET_KEY / STRIPE_PRICE_ID */
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_PRICE_ID?: string;
   ASSETS: Fetcher;
 }

@@ -176,5 +176,70 @@ service cloud.firestore {
       allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
     }
+    // ---------- session booking ----------
+    // therapists/{uid}: the therapist's availability (public read so clients
+    // can generate free slots; write by the owning therapist only).
+    match /therapists/{uid} {
+      allow read: if true;
+      allow write: if isOwner(uid);
+    }
+
+    // appointments/{id}: a client-created session request. Clients read/write
+    // only their own appointments; a therapist reads appointments where
+    // therapistUid == their uid and may update ONLY the status field
+    // (approve / decline). Nobody deletes — history is kept.
+    match /appointments/{id} {
+      allow read: if isSignedIn()
+        && (resource.data.clientUid == request.auth.uid
+            || resource.data.therapistUid == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.clientUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if isSignedIn()
+        && (
+          // therapist: status-only transition
+          (resource.data.therapistUid == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+          ||
+          // client: cancel their own booking (status-only)
+          (resource.data.clientUid == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+        );
+      allow delete: if false;
+    }
+
+    // clientShares/{therapistUid}_{clientUid}: booking grants the therapist
+    // read access to the client's profile/answers. Created by the client
+    // (source: 'booking'); readable by either side; removed only by the
+    // client who granted it.
+    match /clientShares/{docId} {
+      allow read: if isSignedIn()
+        && (resource.data.clientUid == request.auth.uid
+            || resource.data.therapistUid == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.clientUid == request.auth.uid
+        && request.resource.data.source == 'booking';
+      allow update, delete: if isSignedIn()
+        && resource.data.clientUid == request.auth.uid;
+    }
+
+    // therapistClients/{therapistUid}_{clientUid}: the therapist dashboard's
+    // linked-client list (the share mechanism reused by bookings so a booked
+    // client appears in «Мои клиенты» immediately). Docs are created either
+    // by the therapist claiming an invite code or by a client booking
+    // (clientUid == requester). The therapist may update (summary refresh,
+    // archive toggle); either side of the link may read.
+    match /therapistClients/{docId} {
+      allow read: if isSignedIn()
+        && (resource.data.therapistUid == request.auth.uid
+            || resource.data.clientUid == request.auth.uid);
+      allow create: if isSignedIn()
+        && (request.resource.data.therapistUid == request.auth.uid
+            || request.resource.data.clientUid == request.auth.uid);
+      allow update: if isSignedIn()
+        && resource.data.therapistUid == request.auth.uid;
+      allow delete: if isSignedIn()
+        && resource.data.therapistUid == request.auth.uid;
+    }
   }
 }

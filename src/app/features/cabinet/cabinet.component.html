@@ -103,6 +103,53 @@
           </div>
         </div>
 
+        <!-- ===== Мои записи (session bookings) ===== -->
+        <div class="cab-card cab-section">
+          <div class="cab-section__head">
+            <div>
+              <div class="cab-kicker">{{ copy().title }}</div>
+              <h2 class="cab-h2">{{ copy().title }}</h2>
+              <p class="cab-note">{{ copy().body }}</p>
+            </div>
+            @if (appointmentsLoading()) {
+              <div class="cab-chip cab-chip--loading">{{ t('loading', 'Loading…') }}</div>
+            }
+          </div>
+
+          <div class="cab-hero__actions">
+            <button type="button" class="cab-btn cab-btn--primary" (click)="bookingOpen.set(true)">
+              {{ copy().book }}
+            </button>
+          </div>
+
+          @if (appointments().length === 0) {
+            <p class="cab-note">{{ copy().empty }}</p>
+          } @else {
+            <ul class="cab-appointments">
+              @for (a of appointments(); track a.id) {
+                <li class="cab-appointment" [class.cab-appointment--done]="a.status !== 'pending' && a.status !== 'approved'">
+                  <span class="cab-appointment__dot"
+                        [class.cab-appointment__dot--pending]="a.status === 'pending'"
+                        [class.cab-appointment__dot--approved]="a.status === 'approved'"
+                        [class.cab-appointment__dot--cancelled]="a.status === 'declined' || a.status === 'cancelled'"
+                        aria-hidden="true"></span>
+                  <span class="cab-appointment__when">{{ a.start }} – {{ a.end.slice(11) }}</span>
+                  <span class="cab-appointment__who">{{ a.therapistEmail }}</span>
+                  <span class="cab-chip cab-chip--sm">{{ apptStatusLabel(a.status) }}</span>
+                  @if (a.status === 'pending' || a.status === 'approved') {
+                    <button type="button"
+                            class="cab-btn cab-btn--ghost cab-btn--sm"
+                            [disabled]="cancellingAppt() === a.id"
+                            (click)="cancelAppointment(a)">
+                      {{ copy().cancel }}
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
         @if (isAdmin()) {
           <!-- ===== Admin: share access ===== -->
           <div class="cab-card cab-section">
@@ -335,4 +382,12 @@
       </div>
     }
   </div>
+
+  <!-- Booking overlay (client side) -->
+  <app-booking-panel
+    [open]="bookingOpen()"
+    [user]="user()"
+    (closed)="bookingOpen.set(false)"
+    (booked)="onBooked()">
+  </app-booking-panel>
 </section>

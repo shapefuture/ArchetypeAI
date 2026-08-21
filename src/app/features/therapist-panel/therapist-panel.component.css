@@ -151,3 +151,75 @@
   font-size: 13px; font-style: italic; color: #3A3229;
 }
 .th-metrics-rule { margin: 4px 0 0; font-size: 12px; font-style: italic; color: #7A6F5E; line-height: 1.5; }
+
+/* ---------- §Booking: requests / availability / archive ---------- */
+.th-requests, .th-avail, .th-archive {
+  margin-top: 14px;
+}
+.th-request {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.th-request-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.th-request-actions {
+  display: flex;
+  gap: 8px;
+}
+.th-x-btn {
+  border: 1px solid rgba(0,0,0,0.2);
+  background: transparent;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.th-chip {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.2);
+}
+.th-chip--ok {
+  border-color: #7bc5a0;
+  background: rgba(123,197,160,0.2);
+}
+.th-avail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+.th-avail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.th-avail-day {
+  width: 32px;
+  font-weight: 700;
+}
+.th-avail-row input[type="time"] {
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+.th-archive summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  margin: 12px 0 6px;
+}
+.th-ok {
+  color: #2e6b4f;
+  font-size: 13px;
+  margin-left: 10px;
+}

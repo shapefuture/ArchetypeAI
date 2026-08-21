@@ -199,8 +199,7 @@
           } @else {
             <button class="btn ghost full" (click)="loginRequested.emit()">🔑&nbsp; {{ t('youSignIn') }}</button>
           }
-          <button class="btn ghost full" (click)="restoreLocalBackup.emit()">↩️&nbsp; {{ t('youRestore') }}</button>
-          <button class="btn ghost full" (click)="backupFileInput()?.nativeElement.click()">📤&nbsp; {{ t('youUpload') }}</button>
+          <button class="btn ghost full" (click)="backupFileInput()?.nativeElement.click()">↩️&nbsp; {{ t('youRestore') }}</button>
           <input type="file" #backupFileInput (change)="onBackupUpload($event)" accept=".json" style="display:none" />
           <button class="btn ghost full" (click)="therapistRequested.emit()">🧑‍⚕️&nbsp; {{ t('navTherapist') }}</button>
         </div>

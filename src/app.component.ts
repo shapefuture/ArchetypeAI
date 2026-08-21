@@ -1635,6 +1635,14 @@ export class AppComponent implements OnDestroy {
     input.value = ''; // Reset input
   }
 
+
+  private toastRestore(kind: 'innerverse' | 'assessment'): void {
+    const msg = this.translationService.getLanguage() === 'ru'
+      ? (kind === 'innerverse' ? 'Карта восстановлена' : 'Ответы восстановлены')
+      : (kind === 'innerverse' ? 'Map restored' : 'Answers restored');
+    try { alert(msg); } catch { /* non-interactive */ }
+  }
+
   onBackupUploaded(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -1644,6 +1652,20 @@ export class AppComponent implements OnDestroy {
       const content = e.target?.result as string;
       try {
         const parsed = JSON.parse(content);
+        // Innerverse map backup ({shadow, resources, self, validity}) —
+        // the file the report's "local copy" button downloads.
+        if (parsed && parsed.shadow && parsed.resources && parsed.self) {
+          localStorage.setItem('INNERVERSE_PROFILE_V1', JSON.stringify(parsed));
+          // Marker so the landing surfaces the map CTAs (the legacy restore
+          // parser ignores this format's missing fields safely).
+          if (!localStorage.getItem('ARCHETYPE_COMPLETED_BACKUP')) {
+            localStorage.setItem('ARCHETYPE_COMPLETED_BACKUP', '{}');
+          }
+          this.innerverseProfile.set(scoreProfile(parsed));
+          this.toastRestore('innerverse');
+          location.reload();
+          return;
+        }
         // Flexible: try to extract responses from any reasonable backup format
         let responses: number[] | null = null;
         let results: any = null;

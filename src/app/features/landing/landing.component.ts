@@ -223,7 +223,6 @@ export class LandingComponent implements OnDestroy {
   readonly exploreUniverse = output<void>();
   readonly langToggle = output<void>();
   readonly backupUpload = output<Event>();
-  readonly restoreLocalBackup = output<void>();
   readonly loginRequested = output<void>();
   readonly dashboardRequested = output<void>();
   readonly logoutRequested = output<void>();

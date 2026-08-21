@@ -159,26 +159,26 @@
     <ol class="stack">
       <li class="stack-level">
         <span class="stack-step" aria-hidden="true"></span>
-        <span class="stack-name">{{ p.subtypes[p.copingStack.l1].name }}</span>
+        <span class="stack-name">{{ headlineSubtype(p.copingStack.l1) }}</span>
       </li>
       @if (p.copingStack.l2; as l2) {
         <li class="stack-fails"><span class="stack-fails-line" aria-hidden="true"></span>{{ ui().whenFails }}</li>
         <li class="stack-level">
           <span class="stack-step" aria-hidden="true"></span>
-          <span class="stack-name">{{ p.subtypes[l2].name }}</span>
+          <span class="stack-name">{{ headlineSubtype(l2) }}</span>
         </li>
       }
       @if (p.copingStack.l3; as l3) {
         <li class="stack-fails"><span class="stack-fails-line" aria-hidden="true"></span>{{ ui().whenFails }}</li>
         <li class="stack-level">
           <span class="stack-step" aria-hidden="true"></span>
-          <span class="stack-name">{{ p.subtypes[l3].name }}</span>
+          <span class="stack-name">{{ headlineSubtype(l3) }}</span>
         </li>
       }
       <li class="stack-fails"><span class="stack-fails-line" aria-hidden="true"></span>{{ ui().whenFails }}</li>
       <li class="stack-level floor">
         <span class="stack-floor-glow" aria-hidden="true"></span>
-        <span class="stack-name">{{ p.subtypes[p.copingStack.floor].name }}</span>
+        <span class="stack-name">{{ headlineSubtype(p.copingStack.floor) }}</span>
         <span class="stack-belief">“{{ exileBelief(p.copingStack.floor) }}”</span>
         <span class="stack-floor-label">{{ ui().floorLabel }}</span>
       </li>

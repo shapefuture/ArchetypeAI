@@ -86,7 +86,11 @@
         (backupUpload)="onBackupUploaded($event)"
         (restoreLocalBackup)="restoreLocalBackup()"
         (quickScanRequested)="openQuickScan()"
-        (therapistRequested)="openTherapist()">
+        (therapistRequested)="openTherapist()"
+        (reportRequested)="openInnerverse()"
+        (checkinRequested)="openCheckin()"
+        (practiceRequested)="openPractice()"
+        (synastryRequested)="openSynastry()">
       </app-landing>
     }
 
@@ -354,33 +358,17 @@
     </app-quickscan-panel>
   }
 
-  <!-- Innerverse report shortcut (persistent after first descent) -->
-  @if (appState() === 'intro' && innerverseProfile(); as p) {
-    <button class="innerverse-pill" (click)="openInnerverse()">
-      <span class="innerverse-pill-star" aria-hidden="true">✦</span>
-      {{ p.headline.name }}
-    </button>
-  }
-
   @if (appState() === 'intro' && therapistOpen()) {
     <app-therapist-panel (closed)="closeTherapist()"></app-therapist-panel>
   }
 
   @if (appState() === 'intro' && innerverseProfile()) {
-    <button class="innerverse-pill innerverse-pill--synastry" (click)="openSynastry()">
-      <span class="innerverse-pill-star" aria-hidden="true">∞</span>
-      Synastry
-    </button>
     @if (synastryOpen()) {
       <app-synastry-compare (closed)="closeSynastry()"></app-synastry-compare>
     }
   }
 
   @if (appState() === 'intro' && innerverseProfile()) {
-    <button class="innerverse-pill innerverse-pill--practice" (click)="openPractice()">
-      <span class="innerverse-pill-star" aria-hidden="true">◈</span>
-      Practice
-    </button>
     @if (practiceOpen()) {
       <app-practice-panel
         [profile]="innerverseProfile()"
@@ -390,10 +378,6 @@
   }
 
   @if (appState() === 'intro' && innerverseProfile()) {
-    <button class="innerverse-pill innerverse-pill--checkin" (click)="openCheckin()">
-      <span class="innerverse-pill-star" aria-hidden="true">◐</span>
-      Daily check-in
-    </button>
     @if (checkinOpen()) {
       <app-checkin-panel
         [profile]="innerverseProfile()"

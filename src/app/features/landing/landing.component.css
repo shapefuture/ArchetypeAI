@@ -904,6 +904,13 @@ button {
   pointer-events: auto;
 }
 
+@media (min-width: 640px) {
+  .scrim {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+}
+
 .sheet {
   position: absolute;
   left: 0;
@@ -925,6 +932,41 @@ button {
 
 .sheet.on {
   transform: none;
+}
+
+/* Desktop: the sheet becomes a centered dialog card — a full-width
+   bottom sheet stretched across a desktop window looks broken. */
+@media (min-width: 640px) {
+  .sheet {
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    width: min(600px, 92vw);
+    max-height: min(780px, 88vh);
+    border: 2.5px solid var(--outline);
+    border-bottom: 2.5px solid var(--outline);
+    border-radius: 28px;
+    box-shadow: 0 26px 60px rgba(24, 16, 6, 0.25), 0 4px 0 var(--outline);
+    transform: translate(-50%, calc(-50% + 26px)) scale(0.98);
+    opacity: 0;
+  }
+  .sheet.on {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+  .sheet .body {
+    padding: 12px 26px 26px;
+  }
+  .ph-top {
+    align-items: flex-start;
+  }
+  .ph-top svg.stk {
+    width: 104px;
+  }
+  .ph-top h3 {
+    font-size: 30px;
+  }
 }
 
 .sheet .grip {

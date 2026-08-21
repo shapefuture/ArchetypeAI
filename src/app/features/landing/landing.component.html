@@ -183,6 +183,12 @@
         </div>
 
         <div class="you-btns">
+          @if (hasCompletedBackup()) {
+            <button class="btn full" (click)="reportRequested.emit()">🗺️&nbsp; {{ t('youReport') }}</button>
+            <button class="btn ghost full" (click)="checkinRequested.emit()">◐&nbsp; {{ t('youCheckin') }}</button>
+            <button class="btn ghost full" (click)="practiceRequested.emit()">◈&nbsp; {{ t('youPractice') }}</button>
+            <button class="btn ghost full" (click)="synastryRequested.emit()">∞&nbsp; {{ t('youSynastry') }}</button>
+          }
           <button class="btn full" (click)="installService.promptInstall()">📲&nbsp; {{ t('installAppCta') }}</button>
           <button class="btn ghost full" (click)="shareApp()">📤&nbsp; {{ t('youShare') }}</button>
           <button class="btn ghost full" (click)="quickScanRequested.emit()">✦&nbsp; {{ t('quickScanCta') }}</button>

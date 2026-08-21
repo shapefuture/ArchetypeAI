@@ -123,8 +123,29 @@
   <script>
     // PWA installability + offline shell. Skipped on the dev server so
     // hot reload is never served from cache.
+    //
+    // Update flow (the "never clear cookies again" contract):
+    //   register updateViaCache:none → browser always revalidates sw.js;
+    //   new sw.js installs → skipWaiting → activate → clients.claim →
+    //   controllerchange → ONE controlled reload → fresh shell + assets.
+    // First install also claims, so we only reload when a controller
+    // already existed at page load (an update, not the first visit).
     if ('serviceWorker' in navigator && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
+        const hadController = !!navigator.serviceWorker.controller;
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!hadController || reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
+        // Persistent PWA sessions never navigate; nudge the browser to
+        // check for a new worker when the app becomes visible and hourly.
+        const check = () => navigator.serviceWorker.getRegistration().then(r => r?.update()).catch(() => {});
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+        setInterval(check, 60 * 60 * 1000);
+      });
     }
   </script>
 </body>

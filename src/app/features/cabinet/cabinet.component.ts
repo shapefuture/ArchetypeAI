@@ -8,11 +8,44 @@ import { TranslationService } from '../../../services/translation.service';
 import { SpecialistClientService, ClientLink } from '../../../services/specialist-client.service';
 import { UserDirectoryService } from '../../../services/user-directory.service';
 import { ASSESSMENT_QUESTIONS, AssessmentQuestion } from '../../core/data/assessment-questions';
+import { BookingPanelComponent } from '../booking-panel/booking-panel.component';
+import {
+  myAppointments,
+  setAppointmentStatus,
+  type Appointment,
+  type AppointmentStatus,
+} from '../booking-panel/booking';
+
+/** «Мои записи» copy — RU-first, EN inline (translations.ts is off-limits). */
+const BOOKING_COPY = {
+  ru: {
+    title: 'Мои записи',
+    body: 'Сессии со специалистом: заявки, подтверждения и отмена.',
+    empty: 'Записей пока нет.',
+    book: 'Записаться к специалисту',
+    cancel: 'Отменить',
+    statusPending: 'ожидает',
+    statusApproved: 'подтверждена',
+    statusDeclined: 'отклонена',
+    statusCancelled: 'отменена',
+  },
+  en: {
+    title: 'My appointments',
+    body: 'Sessions with a therapist: requests, confirmations, and cancellations.',
+    empty: 'No appointments yet.',
+    book: 'Book a session',
+    cancel: 'Cancel',
+    statusPending: 'pending',
+    statusApproved: 'approved',
+    statusDeclined: 'declined',
+    statusCancelled: 'cancelled',
+  },
+};
 
 @Component({
   selector: 'app-cabinet',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BookingPanelComponent],
   templateUrl: './cabinet.component.html',
   styleUrls: ['./cabinet.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -119,6 +152,50 @@ export class CabinetComponent {
     return !!u && !u.isAnonymous;
   });
 
+  // ---------- «Мои записи» (session bookings) ----------
+  readonly appointments = signal<Appointment[]>([]);
+  readonly appointmentsLoading = signal(false);
+  readonly bookingOpen = signal(false);
+  readonly cancellingAppt = signal('');
+  readonly copy = computed(() => BOOKING_COPY[this.ts.getLanguage() === 'en' ? 'en' : 'ru'] as typeof BOOKING_COPY.ru);
+
+  async loadAppointments(uid: string): Promise<void> {
+    this.appointmentsLoading.set(true);
+    try {
+      this.appointments.set(await myAppointments(uid));
+    } catch {
+      this.appointments.set([]);
+    } finally {
+      this.appointmentsLoading.set(false);
+    }
+  }
+
+  apptStatusLabel(s: AppointmentStatus): string {
+    const c = this.copy();
+    if (s === 'pending') return c.statusPending;
+    if (s === 'approved') return c.statusApproved;
+    if (s === 'declined') return c.statusDeclined;
+    return c.statusCancelled;
+  }
+
+  async cancelAppointment(a: Appointment): Promise<void> {
+    const u = this.user();
+    if (!u) return;
+    this.cancellingAppt.set(a.id);
+    try {
+      await setAppointmentStatus(a.id, 'cancelled');
+      await this.loadAppointments(u.uid);
+    } finally {
+      this.cancellingAppt.set('');
+    }
+  }
+
+  onBooked(): void {
+    const u = this.user();
+    this.bookingOpen.set(false);
+    if (u && !u.isAnonymous) this.loadAppointments(u.uid);
+  }
+
   constructor() {
     // Keep the dropdown's selection in sync with the underlying list:
     //  - If the list is empty, clear the selection.
@@ -150,10 +227,13 @@ export class CabinetComponent {
         this.clientResults.set(new Map());
         this.clientHistory.set(new Map());
         this.notesDraft.set(new Map());
+        this.appointments.set([]);
+        this.bookingOpen.set(false);
         return;
       }
 
       this.refreshAll(u.uid, u.email);
+      this.loadAppointments(u.uid);
     });
   }
 

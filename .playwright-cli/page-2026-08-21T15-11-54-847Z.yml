@@ -1,0 +1,12 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - heading "Innerverse" [level=1] [ref=e11]
+    - paragraph [ref=e12]: познакомьтесь со всеми, кто вы есть.
+    - generic [ref=e13]:
+      - paragraph [ref=e14]: Калибровка космических струн...
+      - generic [ref=e15]: "|"
+    - paragraph [ref=e21]: Innerverse · relational engine
+  - generic [ref=e24]:
+    - generic [ref=e25]: "TS2339: Property 'stripeApiUrl' does not exist on type '{ aiApiUrl: string; vapidPublicKey: string; telemetryToCloud: boolean; production: boolean; firebase: { apiKey: string; authDomain: string; projectId: string; storageBucket: string; messagingSenderId: string; appId: string; }; }'."
+    - generic [ref=e26]: src/services/billing.service.ts:78:40
+    - generic [ref=e27]: Click outside, press Esc key, or fix the code to dismiss.

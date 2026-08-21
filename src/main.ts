@@ -1,6 +1,7 @@
 
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { AppComponent } from './app.component';
 import { AUTH_PORT } from './app/core/ports/auth.port';
 import { STORAGE_PORT } from './app/core/ports/storage.port';
@@ -10,6 +11,7 @@ import { FirebaseStorageAdapter } from './app/core/adapters/firebase-storage.ada
 bootstrapApplication(AppComponent, {
   providers: [
     provideZonelessChangeDetection(),
+    provideAnimationsAsync(),
     { provide: AUTH_PORT, useClass: FirebaseAuthAdapter },
     { provide: STORAGE_PORT, useClass: FirebaseStorageAdapter },
   ],

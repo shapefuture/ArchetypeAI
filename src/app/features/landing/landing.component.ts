@@ -25,7 +25,25 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TranslationService } from '../../../services/translation.service';
 import { InstallService } from '../../../services/install.service';
 import { PART_COPY } from '../../core/data/part-copy';
-import { sticker, novaSvg, type EyeKind, type MouthKind } from './stickers';
+import {
+  EYE_KINDS,
+  LOOK_COLORS,
+  MOUTH_KINDS,
+  SHAPES,
+  SHAPE_IDS,
+  deleteCustomPart,
+  loadCustomParts,
+  loadLooks,
+  novaSvg,
+  resetLook,
+  saveCustomPart,
+  saveLook,
+  sticker,
+  type CustomPart,
+  type EyeKind,
+  type MouthKind,
+  type PartLook,
+} from './stickers';
 
 type FamKind = 'manager' | 'firefighter' | 'exile' | 'resource';
 
@@ -226,6 +244,8 @@ export class LandingComponent implements OnDestroy {
   readonly loginRequested = output<void>();
   readonly dashboardRequested = output<void>();
   readonly logoutRequested = output<void>();
+  readonly coachRequested = output<void>();
+  readonly subscribeRequested = output<void>();
 
   // --- app router ---
   readonly screen = signal<'welcome' | 'sky' | 'codex' | 'you'>('welcome');
@@ -236,6 +256,24 @@ export class LandingComponent implements OnDestroy {
   readonly mxA = signal<string | null>(null);
   readonly mxB = signal<string | null>(null);
   readonly chemOut = signal<ChemOut | null>(null);
+
+  // --- customization (look overrides + custom parts, persisted locally) ---
+  readonly looks = signal<Record<string, PartLook>>(loadLooks());
+  readonly customParts = signal<CustomPart[]>(loadCustomParts());
+  readonly shapeIds = SHAPE_IDS;
+  readonly eyeKinds = EYE_KINDS;
+  readonly mouthKinds = MOUTH_KINDS;
+  readonly lookColors = LOOK_COLORS;
+
+  /** Draft state for the look/custom-part editor sheet (null = closed). */
+  readonly editId = signal<string | null>(null); // part id or 'new'
+  readonly draftShape = signal('');
+  readonly draftColor = signal('');
+  readonly draftEye = signal('');
+  readonly draftMouth = signal('');
+  readonly draftNameEn = signal('');
+  readonly draftNameRu = signal('');
+  readonly draftFam = signal<FamKind>('resource');
 
   // --- resume-in-progress (regression-guarded by landing.component.spec) ---
   readonly hasCompletedBackup = signal(false);
@@ -307,6 +345,8 @@ export class LandingComponent implements OnDestroy {
   }
 
   fam(id: string) {
+    const c = this.customPart(id);
+    if (c) return FAM[c.fam as FamKind] ?? FAM.resource;
     return FAM[P[id].fam];
   }
 
@@ -315,18 +355,64 @@ export class LandingComponent implements OnDestroy {
     return FAM[key];
   }
 
-  // --- svg (trusted, cached) ---
+  // --- svg (trusted, cached; cache key includes the current look override) ---
+  /** Effective look for a built-in part: override ?? part defaults. */
+  lookFor(id: string): PartLook {
+    const p = P[id];
+    const o = this.looks()[id];
+    if (o) return o;
+    return { shape: p.shape, color: p.color, eye: p.glyph.e, mouth: p.glyph.m };
+  }
+
   stickerHtml(id: string): SafeHtml {
-    const key = 'p:' + id;
+    const p = P[id];
+    if (!p) return this.customStickerHtml(id);
+    const look = this.lookFor(id);
+    const key = `p:${id}:${look.shape}|${look.color}|${look.eye}|${look.mouth}`;
     let v = this.svgCache.get(key);
     if (!v) {
-      const p = P[id];
       v = this.sanitizer.bypassSecurityTrustHtml(
-        sticker({ name: this.L(p.name), shape: p.shape, color: p.color, glyph: p.glyph }),
+        sticker({
+          name: this.L(p.name),
+          shape: look.shape,
+          color: look.color,
+          glyph: { e: look.eye as EyeKind, m: look.mouth as MouthKind },
+        }),
       );
       this.svgCache.set(key, v);
     }
     return v;
+  }
+
+  customPart(id: string): CustomPart | undefined {
+    return this.customParts().find((c) => c.id === id);
+  }
+
+  isCustom(id: string): boolean {
+    return !!this.customPart(id);
+  }
+
+  customStickerHtml(id: string): SafeHtml {
+    const c = this.customPart(id);
+    if (!c) return '';
+    return this.miniSticker(c.look.shape, c.look.color, c.look.eye, c.look.mouth, this.L(c.name));
+  }
+
+  /** Small helper for preview/shape-carousel stickers (trusted, cached). */
+  miniSticker(shape: string, color: string, eye: string, mouth: string, name: string): SafeHtml {
+    const key = `m:${shape}|${color}|${eye}|${mouth}`;
+    let v = this.svgCache.get(key);
+    if (!v) {
+      v = this.sanitizer.bypassSecurityTrustHtml(
+        sticker({ name, shape, color, glyph: { e: eye as EyeKind, m: mouth as MouthKind } }),
+      );
+      this.svgCache.set(key, v);
+    }
+    return v;
+  }
+
+  customName(id: string): string {
+    return this.L(this.customPart(id)?.name ?? ['', '']);
   }
 
   novaHtml(): SafeHtml {
@@ -339,7 +425,7 @@ export class LandingComponent implements OnDestroy {
   }
 
   partName(id: string): string {
-    return this.L(P[id].name);
+    return P[id] ? this.L(P[id].name) : this.customName(id);
   }
 
   /** PART_COPY layer for a shadow part (resources fall back to ''). */
@@ -372,7 +458,7 @@ export class LandingComponent implements OnDestroy {
   }
 
   axes(id: string): { key: string; label: string; v: number }[] {
-    const ax = P[id].ax;
+    const ax = P[id]?.ax ?? { ag: 0, te: 0, fo: 0, at: 0 };
     const labels: Record<string, [string, string]> = {
       ag: ['Agency', 'Драйв'],
       te: ['Heat', 'Накал'],
@@ -393,6 +479,102 @@ export class LandingComponent implements OnDestroy {
 
   openPart(id: string): void {
     this.sheetPart.set(id);
+  }
+
+  // --- look / custom-part editor ---
+  openEditor(id: string): void {
+    if (id === 'new') {
+      this.editId.set('new');
+      this.draftShape.set(SHAPE_IDS[0]);
+      this.draftColor.set(LOOK_COLORS[0]);
+      this.draftEye.set('dot');
+      this.draftMouth.set('smile');
+      this.draftNameEn.set('');
+      this.draftNameRu.set('');
+      this.draftFam.set('resource');
+      return;
+    }
+    this.editId.set(id);
+    const custom = this.customPart(id);
+    if (custom) {
+      this.draftShape.set(custom.look.shape);
+      this.draftColor.set(custom.look.color);
+      this.draftEye.set(custom.look.eye);
+      this.draftMouth.set(custom.look.mouth);
+      this.draftNameEn.set(custom.name[0]);
+      this.draftNameRu.set(custom.name[1]);
+      this.draftFam.set(custom.fam as FamKind);
+    } else {
+      const look = this.lookFor(id);
+      this.draftShape.set(look.shape);
+      this.draftColor.set(look.color);
+      this.draftEye.set(look.eye);
+      this.draftMouth.set(look.mouth);
+    }
+  }
+
+  closeEditor(): void {
+    this.editId.set(null);
+  }
+
+  draftLook(): PartLook {
+    return { shape: this.draftShape(), color: this.draftColor(), eye: this.draftEye(), mouth: this.draftMouth() };
+  }
+
+  saveEditor(): void {
+    const id = this.editId();
+    if (!id) return;
+    if (id === 'new') {
+      const en = this.draftNameEn().trim() || 'My part';
+      const ru = this.draftNameRu().trim() || 'Моя часть';
+      this.customParts.set(
+        saveCustomPart({
+          id: 'custom_' + Date.now().toString(36),
+          name: [en, ru],
+          look: this.draftLook(),
+          fam: this.draftFam(),
+        }),
+      );
+    } else if (this.isCustom(id)) {
+      const c = this.customPart(id)!;
+      this.customParts.set(
+        saveCustomPart({ ...c, name: [this.draftNameEn().trim() || c.name[0], this.draftNameRu().trim() || c.name[1]], look: this.draftLook(), fam: this.draftFam() }),
+      );
+    } else {
+      const p = P[id];
+      const d = this.draftLook();
+      const isDefault = d.shape === p.shape && d.color === p.color && d.eye === p.glyph.e && d.mouth === p.glyph.m;
+      this.looks.set(isDefault ? resetLook(id) : saveLook(id, d));
+    }
+    this.closeEditor();
+    if (this.sky.running) this.startSky(); // repaint stars with the new looks
+  }
+
+  resetEditor(): void {
+    const id = this.editId();
+    if (!id || id === 'new' || this.isCustom(id)) {
+      this.openEditor(id ?? 'new');
+      return;
+    }
+    const p = P[id];
+    this.looks.set(resetLook(id));
+    this.draftShape.set(p.shape);
+    this.draftColor.set(p.color);
+    this.draftEye.set(p.glyph.e);
+    this.draftMouth.set(p.glyph.m);
+    if (this.sky.running) this.startSky();
+  }
+
+  deleteEditorPart(): void {
+    const id = this.editId();
+    if (id && id !== 'new' && this.isCustom(id)) {
+      this.customParts.set(deleteCustomPart(id));
+      if (this.sheetPart() === id) this.closeSheet();
+    } else if (id && id !== 'new') {
+      this.looks.set(resetLook(id));
+    }
+    this.closeEditor();
+    if (this.sky.running) this.startSky();
   }
 
   closeSheet(): void {
@@ -700,21 +882,28 @@ export class LandingComponent implements OnDestroy {
       const dimmed = filter && filter !== s.fam;
       c.globalAlpha = dimmed ? 0.15 : 1;
 
+      const look = this.lookFor(s.p.id);
       const avg = s.p.ax.ag / 100 * 2.2;
       const rr = 9 + avg * 3 + Math.sin(t / 600 + s.tw) * 0.8;
       if (dark && !dimmed) {
-        c.shadowColor = s.p.color;
+        c.shadowColor = look.color;
         c.shadowBlur = 14;
       }
-      c.fillStyle = s.p.color;
-      c.strokeStyle = dark ? '#0A0818' : '#1c1610';
-      c.lineWidth = 2.2;
-      c.beginPath();
-      c.arc(pos.x, pos.y, rr, 0, 7);
-      c.fill();
-      c.stroke();
+      // mini-sticker: the part's true shape, filled with its current look color
+      const sc = (rr * 2) / 100;
+      c.save();
+      c.translate(pos.x - 50 * sc, pos.y - 50 * sc);
+      c.scale(sc, sc);
+      const path = this.shapePath2D(look.shape);
+      c.fillStyle = look.color;
+      c.fill(path);
       c.shadowBlur = 0;
-      // face
+      c.strokeStyle = dark ? '#0A0818' : '#1c1610';
+      c.lineWidth = 2.2 / sc;
+      c.lineJoin = 'round';
+      c.stroke(path);
+      c.restore();
+      // face dots per look
       c.fillStyle = '#1c1610';
       c.beginPath();
       c.arc(pos.x - rr * 0.32, pos.y - rr * 0.15, 1.7, 0, 7);
@@ -725,8 +914,18 @@ export class LandingComponent implements OnDestroy {
       c.strokeStyle = '#1c1610';
       c.lineWidth = 1.5;
       c.beginPath();
-      c.arc(pos.x, pos.y + rr * 0.18, rr * 0.32, 0.4, 2.7);
-      c.stroke();
+      if (look.mouth === 'ooh') {
+        c.fillStyle = '#1c1610';
+        c.ellipse(pos.x, pos.y + rr * 0.25, 2, 2.6, 0, 0, 7);
+        c.fill();
+      } else if (look.mouth === 'flat' || look.mouth === 'grit' || look.mouth === 'wavy') {
+        c.moveTo(pos.x - rr * 0.22, pos.y + rr * 0.25);
+        c.lineTo(pos.x + rr * 0.22, pos.y + rr * 0.25);
+        c.stroke();
+      } else {
+        c.arc(pos.x, pos.y + rr * 0.18, rr * 0.32, 0.4, 2.7);
+        c.stroke();
+      }
       if (s.p.ax.ag >= 85) this.spark(c, pos.x + rr + 5, pos.y - rr - 3, 3.4, ink);
       c.fillStyle = dark ? 'rgba(247,238,218,.85)' : 'rgba(42,28,16,.85)';
       c.font = '600 9.5px system-ui';
@@ -775,6 +974,26 @@ export class LandingComponent implements OnDestroy {
     c.font = '600 9px system-ui';
     c.textAlign = 'center';
     c.fillText(this.isEnglish() ? 'SELF ✦ YOU' : 'SELF ✦ ВЫ', x, y + r + 16);
+  }
+
+  private readonly pathCache = new Map<string, Path2D>();
+
+  /** Canvas Path2D for a sticker shape (parsed from the SVG markup in SHAPES). */
+  private shapePath2D(shape: string): Path2D {
+    let p2 = this.pathCache.get(shape);
+    if (!p2) {
+      const raw = SHAPES[shape] ?? SHAPES.taskmaster;
+      const d = raw.match(/d="([^"]+)"/);
+      if (d) {
+        p2 = new Path2D(d[1]);
+      } else {
+        const num = (attr: string) => parseFloat(raw.match(new RegExp(attr + '="([\\d.]+)"'))![1]);
+        p2 = new Path2D();
+        p2.roundRect(num('x'), num('y'), num('width'), num('height'), num('rx'));
+      }
+      this.pathCache.set(shape, p2);
+    }
+    return p2;
   }
 
   private spark(c: CanvasRenderingContext2D, x: number, y: number, r: number, col: string): void {

@@ -591,3 +591,49 @@
   .cab-hero { grid-column: 1 / -1; }
   .cab-section { grid-column: 1 / -1; }
 }
+
+/* ===== Мои записи (session bookings) ===== */
+.cab-appointments {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cab-appointment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+}
+.cab-appointment--done {
+  opacity: 0.65;
+}
+.cab-appointment__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.25);
+  flex: none;
+}
+.cab-appointment__dot--pending {
+  background: #d99a2b; /* amber */
+}
+.cab-appointment__dot--approved {
+  background: #3f8f5f; /* green */
+}
+.cab-appointment__dot--cancelled {
+  background: #b3261e; /* red */
+}
+.cab-appointment__when {
+  font-weight: 700;
+  font-size: 13px;
+}
+.cab-appointment__who {
+  color: rgba(0,0,0,0.6);
+  font-size: 13px;
+}

@@ -76,8 +76,20 @@
         @if (codexTab() === 'parts') {
           <div class="codexgrid">
             @for (p of parts; track p.id) {
-              <button class="pcard" (click)="openPart(p.id)" [innerHTML]="stickerHtml(p.id)"></button>
+              <div class="pcardwrap">
+                <button class="pcard" (click)="openPart(p.id)" [innerHTML]="stickerHtml(p.id)"></button>
+                <button class="editchip" (click)="openEditor(p.id)" [attr.aria-label]="t('editTitle')">✎</button>
+              </div>
             }
+            @for (c of customParts(); track c.id) {
+              <div class="pcardwrap">
+                <button class="pcard" (click)="openPart(c.id)" [innerHTML]="customStickerHtml(c.id)"></button>
+                <button class="editchip" (click)="openEditor(c.id)" [attr.aria-label]="t('editTitle')">✎</button>
+              </div>
+            }
+            <button class="pcard addcard" (click)="openEditor('new')">
+              <span class="plus">＋</span><span class="tiny">{{ t('editAddCard') }}</span>
+            </button>
           </div>
           <p class="kicker" style="margin:18px 0 8px">{{ t('codexCrests') }}</p>
           <div class="cresti">
@@ -183,12 +195,27 @@
         </div>
 
         <div class="you-btns">
-          @if (hasCompletedBackup()) {
-            <button class="btn full" (click)="reportRequested.emit()">🗺️&nbsp; {{ t('youReport') }}</button>
-            <button class="btn ghost full" (click)="checkinRequested.emit()">◐&nbsp; {{ t('youCheckin') }}</button>
-            <button class="btn ghost full" (click)="practiceRequested.emit()">◈&nbsp; {{ t('youPractice') }}</button>
-            <button class="btn ghost full" (click)="synastryRequested.emit()">∞&nbsp; {{ t('youSynastry') }}</button>
+          <button class="btn full" [disabled]="!hasCompletedBackup()"
+                  [style.opacity]="hasCompletedBackup() ? '1' : '.5'"
+                  [style.pointer-events]="hasCompletedBackup() ? 'auto' : 'none'"
+                  (click)="reportRequested.emit()">🗺️&nbsp; {{ t('youReport') }}</button>
+          <button class="btn ghost full" [disabled]="!hasCompletedBackup()"
+                  [style.opacity]="hasCompletedBackup() ? '1' : '.5'"
+                  [style.pointer-events]="hasCompletedBackup() ? 'auto' : 'none'"
+                  (click)="checkinRequested.emit()">◐&nbsp; {{ t('youCheckin') }}</button>
+          <button class="btn ghost full" [disabled]="!hasCompletedBackup()"
+                  [style.opacity]="hasCompletedBackup() ? '1' : '.5'"
+                  [style.pointer-events]="hasCompletedBackup() ? 'auto' : 'none'"
+                  (click)="practiceRequested.emit()">◈&nbsp; {{ t('youPractice') }}</button>
+          <button class="btn ghost full" [disabled]="!hasCompletedBackup()"
+                  [style.opacity]="hasCompletedBackup() ? '1' : '.5'"
+                  [style.pointer-events]="hasCompletedBackup() ? 'auto' : 'none'"
+                  (click)="synastryRequested.emit()">∞&nbsp; {{ t('youSynastry') }}</button>
+          @if (!hasCompletedBackup()) {
+            <p class="tiny lockedhint">{{ t('youLockedHint') }}</p>
           }
+          <button class="btn ghost full" (click)="coachRequested.emit()">🤖&nbsp; {{ t('youCoach') }}</button>
+          <button class="btn ghost full" (click)="subscribeRequested.emit()">✦&nbsp; {{ t('youSubscribe') }}</button>
           <button class="btn full" (click)="installService.promptInstall()">📲&nbsp; {{ t('installAppCta') }}</button>
           <button class="btn ghost full" (click)="shareApp()">📤&nbsp; {{ t('youShare') }}</button>
           <button class="btn ghost full" (click)="quickScanRequested.emit()">✦&nbsp; {{ t('quickScanCta') }}</button>
@@ -219,13 +246,19 @@
             <div>
               <span class="famchip" [style.background]="fam(sp).hex">{{ fam(sp).em }} {{ L(fam(sp).n) }}</span>
               <h3 class="display">{{ partName(sp) }}</h3>
-              <p class="poem small" style="font-size:14px">“{{ partFace(sp) }}”</p>
+              @if (isCustom(sp)) {
+                <p class="poem small" style="font-size:14px">{{ t('customNote') }}</p>
+              } @else {
+                <p class="poem small" style="font-size:14px">“{{ partFace(sp) }}”</p>
+              }
             </div>
           </div>
-          <p style="font-size:14.5px; line-height:1.5">{{ partNeed(sp) }}</p>
+          @if (!isCustom(sp)) {
+            <p style="font-size:14.5px; line-height:1.5">{{ partNeed(sp) }}</p>
+          }
           <div class="gc">
-            <div class="card"><b style="color:var(--lime)">✦ {{ t('sheetGift') }}</b><p>{{ partSuperpower(sp) }}</p></div>
-            <div class="card"><b style="color:var(--red)">✧ {{ t('sheetCost') }}</b><p>{{ partShadow(sp) }}</p></div>
+            <div class="card"><b style="color:var(--lime)">✦ {{ t('sheetGift') }}</b><p>{{ isCustom(sp) ? '—' : partSuperpower(sp) }}</p></div>
+            <div class="card"><b style="color:var(--red)">✧ {{ t('sheetCost') }}</b><p>{{ isCustom(sp) ? '—' : partShadow(sp) }}</p></div>
           </div>
           <p class="kicker" style="margin-bottom:8px">{{ t('sheetAxes') }}</p>
           <div class="axes">
@@ -233,10 +266,85 @@
               <div class="axis"><span>{{ a.label }}</span><div class="meter"><i [style.width]="a.v + '%'"></i></div><span>{{ a.v }}</span></div>
             }
           </div>
-          <div class="card practice"><b>🌱 {{ t('sheetPractice') }}</b><p>{{ partPractice(sp) }}</p></div>
+          <div class="card practice"><b>🌱 {{ t('sheetPractice') }}</b><p>{{ isCustom(sp) ? '—' : partPractice(sp) }}</p></div>
           <div style="display:flex; gap:9px; margin-top:14px">
-            <button class="btn full mini" (click)="openChemFromSheet(sp)">⚗️ {{ t('codexSegChem') }}</button>
+            @if (!isCustom(sp)) {
+              <button class="btn full mini" (click)="openChemFromSheet(sp)">⚗️ {{ t('codexSegChem') }}</button>
+            }
             <button class="btn ghost mini" (click)="closeSheet()" style="min-width:64px">✕</button>
+          </div>
+        </div>
+      </div>
+    }
+    <!-- ================= LOOK / CUSTOM-PART EDITOR SHEET ================= -->
+    <div class="scrim" [class.on]="!!editId()" (click)="closeEditor()"></div>
+    @if (editId(); as eid) {
+      <div class="sheet" [class.on]="!!editId()" role="dialog" aria-modal="true">
+        <div class="grip"></div>
+        <div class="body">
+          <h3 class="display" style="font-size:22px; margin:2px 0 10px">
+            {{ (eid === 'new' || isCustom(eid)) ? t('editTitleNew') : t('editTitle') }}
+          </h3>
+
+          <div class="editpreview" [innerHTML]="miniSticker(draftShape(), draftColor(), draftEye(), draftMouth(), draftNameRu() || draftNameEn() || t('editTitleNew'))"></div>
+
+          <p class="kicker" style="margin:12px 0 6px">{{ t('editShape') }}</p>
+          <div class="shapecarousel">
+            @for (s of shapeIds; track s) {
+              <button class="shapecell" [class.on]="draftShape() === s" (click)="draftShape.set(s)"
+                      [innerHTML]="miniSticker(s, draftColor(), draftEye(), draftMouth(), '')"></button>
+            }
+          </div>
+
+          <p class="kicker" style="margin:12px 0 6px">{{ t('editColor') }}</p>
+          <div class="swatchrow">
+            @for (col of lookColors; track col) {
+              <button class="swatch" [class.on]="draftColor().toLowerCase() === col.toLowerCase()"
+                      [style.background]="col" (click)="draftColor.set(col)"></button>
+            }
+            <input class="swatchinput" type="color" [value]="draftColor()"
+                   (input)="draftColor.set($any($event.target).value)" aria-label="color picker" />
+          </div>
+
+          <p class="kicker" style="margin:12px 0 6px">{{ t('editEyes') }}</p>
+          <div class="pickerrow">
+            @for (e of eyeKinds; track e) {
+              <button class="shapecell" [class.on]="draftEye() === e" (click)="draftEye.set(e)"
+                      [innerHTML]="miniSticker(draftShape(), draftColor(), e, draftMouth(), '')"></button>
+            }
+          </div>
+
+          <p class="kicker" style="margin:12px 0 6px">{{ t('editMouth') }}</p>
+          <div class="pickerrow">
+            @for (m of mouthKinds; track m) {
+              <button class="shapecell" [class.on]="draftMouth() === m" (click)="draftMouth.set(m)"
+                      [innerHTML]="miniSticker(draftShape(), draftColor(), draftEye(), m, '')"></button>
+            }
+          </div>
+
+          @if (eid === 'new' || isCustom(eid)) {
+            <p class="kicker" style="margin:12px 0 6px">{{ t('editNameRu') }}</p>
+            <input class="nameinput" type="text" [value]="draftNameRu()" (input)="draftNameRu.set($any($event.target).value)" />
+            <p class="kicker" style="margin:12px 0 6px">{{ t('editNameEn') }}</p>
+            <input class="nameinput" type="text" [value]="draftNameEn()" (input)="draftNameEn.set($any($event.target).value)" />
+            <p class="kicker" style="margin:12px 0 6px">{{ t('editFamily') }}</p>
+            <div class="seg">
+              <button [class.on]="draftFam() === 'manager'" (click)="draftFam.set('manager')">{{ t('famManagers') }}</button>
+              <button [class.on]="draftFam() === 'firefighter'" (click)="draftFam.set('firefighter')">{{ t('famFirefighters') }}</button>
+              <button [class.on]="draftFam() === 'exile'" (click)="draftFam.set('exile')">{{ t('famExiles') }}</button>
+              <button [class.on]="draftFam() === 'resource'" (click)="draftFam.set('resource')">{{ t('famResources') }}</button>
+            </div>
+          }
+
+          <div style="display:flex; gap:9px; margin-top:16px; flex-wrap:wrap">
+            <button class="btn full mini" (click)="saveEditor()">💾 {{ t('editSave') }}</button>
+            @if (eid !== 'new') {
+              <button class="btn ghost mini" (click)="resetEditor()">↺ {{ t('editReset') }}</button>
+            }
+            @if (eid !== 'new' && isCustom(eid)) {
+              <button class="btn ghost mini" (click)="deleteEditorPart()">🗑 {{ t('editDelete') }}</button>
+            }
+            <button class="btn ghost mini" (click)="closeEditor()" style="min-width:64px">✕</button>
           </div>
         </div>
       </div>

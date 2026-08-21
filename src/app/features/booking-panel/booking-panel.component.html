@@ -1,0 +1,100 @@
+@if (open()) {
+  <div class="bk-overlay" (click)="close()">
+    <div class="bk-sheet" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="bk-head">
+        <span class="bk-title">{{ ui().title }}</span>
+        <button type="button" class="bk-x" (click)="close()" [attr.aria-label]="ui().close">✕</button>
+      </header>
+
+      @if (success()) {
+        <p class="bk-ok">{{ ui().done }}</p>
+      } @else if (!user() || user()!.isAnonymous) {
+        <p class="bk-error">{{ ui().loginFirst }}</p>
+      } @else {
+        @if (error()) {
+          <p class="bk-error" role="alert">{{ error() }}</p>
+        }
+
+        <!-- Step 1: therapist -->
+        @if (step() === 'therapist') {
+          <section class="bk-step">
+            <h3 class="bk-step__title">{{ ui().stepTherapist }}</h3>
+            <label class="bk-field">
+              <span>{{ ui().therapistEmail }}</span>
+              <input type="email"
+                     class="bk-input"
+                     [value]="therapistEmail()"
+                     (input)="therapistEmail.set($any($event.target).value)"
+                     (keyup.enter)="find()" />
+            </label>
+            <button type="button"
+                    class="bk-btn bk-btn--primary"
+                    [disabled]="finding() || !therapistEmail().trim()"
+                    (click)="find()">
+              {{ finding() ? ui().busy : ui().find }}
+            </button>
+          </section>
+        }
+
+        <!-- Step 2: date -->
+        @if (step() === 'date') {
+          <section class="bk-step">
+            <h3 class="bk-step__title">{{ ui().stepDate }} — {{ ui().pickDate }}</h3>
+            <div class="bk-chips">
+              @for (d of days(); track d) {
+                <button type="button"
+                        class="bk-chip"
+                        [class.bk-chip--active]="dateISO() === d"
+                        (click)="pickDate(d)">
+                  {{ formatDate(d) }}
+                </button>
+              }
+            </div>
+            <button type="button" class="bk-btn bk-btn--ghost" (click)="back()">{{ ui().back }}</button>
+          </section>
+        }
+
+        <!-- Step 3: slot -->
+        @if (step() === 'slot') {
+          <section class="bk-step">
+            <h3 class="bk-step__title">{{ ui().stepSlot }} — {{ formatDate(dateISO()) }}, {{ ui().pickSlot }}</h3>
+            @if (loadingSlots()) {
+              <p class="bk-quiet">{{ ui().busy }}</p>
+            } @else if (slots().length === 0) {
+              <p class="bk-quiet">{{ ui().noSlots }}</p>
+            } @else {
+              <div class="bk-chips">
+                @for (s of slots(); track s) {
+                  <button type="button"
+                          class="bk-chip"
+                          [class.bk-chip--active]="slot() === s"
+                          (click)="pickSlot(s)">
+                    {{ formatSlot(s) }}
+                  </button>
+                }
+              </div>
+            }
+            <button type="button" class="bk-btn bk-btn--ghost" (click)="back()">{{ ui().back }}</button>
+          </section>
+        }
+
+        <!-- Confirm -->
+        @if (step() === 'confirm') {
+          <section class="bk-step">
+            <h3 class="bk-step__title">{{ formatDate(dateISO()) }} · {{ formatSlot(slot()) }} ({{ slotLength() }} {{ ui().slotMinutes }})</h3>
+            <p class="bk-quiet">{{ resolvedTherapist()?.email }}</p>
+            <div class="bk-actions">
+              <button type="button" class="bk-btn bk-btn--ghost" (click)="back()">{{ ui().back }}</button>
+              <button type="button"
+                      class="bk-btn bk-btn--primary"
+                      [disabled]="submitting()"
+                      (click)="confirm()">
+                {{ submitting() ? ui().busy : ui().confirm }}
+              </button>
+            </div>
+          </section>
+        }
+      }
+    </div>
+  </div>
+}

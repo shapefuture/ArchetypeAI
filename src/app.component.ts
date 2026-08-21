@@ -38,6 +38,7 @@ import { CoachPanelComponent, CoachMessage, formatCoachClock } from './app/featu
 
 import { AUTH_PORT, User } from './app/core/ports/auth.port';
 import { STORAGE_PORT, AssessmentData } from './app/core/ports/storage.port';
+import { BillingService } from './services/billing.service';
 
 
 
@@ -1914,6 +1915,23 @@ export class AppComponent implements OnDestroy {
     this.visualizationService.flyToArchetype(archetype);
   }
 
+
+  // Open the AI coach overlay from the intro (landing) state - mounted in the
+  // global overlay block gated on appState() === universe || intro.
+  private readonly billing = inject(BillingService);
+
+  openCoachPanel(): void { this.isCoachPanelOpen.set(true); }
+
+  async startSubscription(): Promise<void> {
+    const u = this.currentUser();
+    try {
+      await this.billing.startCheckout(u?.email ?? undefined);
+    } catch (err) {
+      console.warn('[Billing] checkout failed:', err);
+      const ru = this.translationService.getLanguage() === 'ru';
+      try { alert(ru ? 'Оплата пока недоступна. Попробуйте позже.' : 'Checkout is not available yet. Please try again later.'); } catch { /* non-interactive */ }
+    }
+  }
 
   toggleCoachPanel(): void {
     this.isCoachPanelOpen.update((v) => !v);

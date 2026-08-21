@@ -1197,3 +1197,142 @@ button {
     margin-inline: auto;
   }
 }
+
+/* ---------------- look editor + custom parts ---------------- */
+
+.pcardwrap {
+  position: relative;
+}
+
+.editchip {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.6px solid var(--ink, #1c1610);
+  background: color-mix(in srgb, var(--paper, #fff) 82%, transparent);
+  color: var(--ink, #1c1610);
+  font-size: 12px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.editchip:active {
+  transform: scale(.92);
+}
+
+.pcard.addcard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 2px dashed color-mix(in srgb, currentColor 45%, transparent);
+  min-height: 104px;
+}
+
+.pcard.addcard .plus {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.editpreview {
+  display: grid;
+  place-items: center;
+  margin: 4px 0 2px;
+}
+
+.editpreview svg.stk {
+  width: 108px;
+  height: 108px;
+}
+
+.shapecarousel {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
+}
+
+.pickerrow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.shapecell {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: color-mix(in srgb, var(--paper, #fff) 65%, transparent);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  scroll-snap-align: start;
+  padding: 2px;
+}
+
+.shapecell.on {
+  border-color: var(--lime, #2FA39E);
+}
+
+.shapecell svg.stk {
+  width: 100%;
+  height: 100%;
+}
+
+.swatchrow {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--ink, #1c1610);
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch.on {
+  outline: 2.5px solid var(--lime, #2FA39E);
+  outline-offset: 2px;
+}
+
+.swatchinput {
+  width: 34px;
+  height: 28px;
+  border: 1.6px solid var(--ink, #1c1610);
+  border-radius: 9px;
+  background: transparent;
+  padding: 1px;
+  cursor: pointer;
+}
+
+.nameinput {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1.6px solid var(--ink, #1c1610);
+  background: color-mix(in srgb, var(--paper, #fff) 82%, transparent);
+  font: inherit;
+  color: inherit;
+}
+
+.lockedhint {
+  width: 100%;
+  text-align: center;
+  opacity: .6;
+  margin: -2px 0 2px;
+}

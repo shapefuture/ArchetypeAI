@@ -12,7 +12,9 @@
     </button>
     <p class="kicker">{{ ui().constellationOf }}</p>
     <h1 class="constellation-name">{{ headlineName() }}</h1>
-    <p class="constellation-essay">{{ headlineEssay() }}</p>
+    @for (para of essayParas(); track $index) {
+      <p class="constellation-essay">{{ para }}</p>
+    }
     <p class="constellation-pair">
       {{ headlineSubtype(p.headline.protector) }}
       {{ ui().and }}
@@ -53,7 +55,7 @@
     <div class="radar-grid">
       @for (q of qualities; track q) {
         <div class="radar-row">
-          <span class="radar-label">{{ q }}</span>
+          <span class="radar-label">{{ qualityLabel(q) }}</span>
           <div class="radar-track">
             <div class="radar-fill" [style.width.%]="((p.selfRadar[q] - 20) / 60) * 100"></div>
           </div>
@@ -131,6 +133,7 @@
   <!-- 6 · Complexes -->
   <section class="panel">
     <h2>{{ ui().complexes }}</h2>
+    <p class="panel-sub">{{ ui().complexesSub }}</p>
     @if (activeComplexDefs().length === 0) {
       <p class="panel-sub">{{ ui().noComplexes }}</p>
     }
@@ -188,7 +191,7 @@
       <h2>{{ ui().needs }}</h2>
       <p class="panel-sub">{{ ui().needsSub }}</p>
       <div class="need-card">
-        <span class="need-name">{{ hunger.need }}</span>
+        <span class="need-name">{{ needLabel(hunger.need) }}</span>
         <p class="need-practice">{{ needPractice()[hunger.need] }}</p>
       </div>
     </section>
@@ -197,11 +200,12 @@
   <!-- 9 · Resource bands -->
   <section class="panel">
     <h2>{{ ui().resources }}</h2>
+    <p class="panel-sub">{{ ui().resourcesSub }}</p>
     <div class="resource-list">
       @for (r of RESOURCES; track r) {
         @let band = resourceBand(r);
         <div class="resource-row">
-          <span class="resource-name">{{ r }}</span>
+          <span class="resource-name">{{ resName(r) }}</span>
           <div class="t-bar"><div class="t-fill gold" [style.width.%]="((p.resources[r].T - 20) / 60) * 100"></div></div>
           <span class="resource-band" [class.hyper]="p.resources[r].band === 'hyper'"
                 [class.hypo]="p.resources[r].band === 'hypo'">{{ band.band }}</span>
@@ -213,39 +217,51 @@
     </div>
   </section>
 
-  <!-- Continuation: save / cabinet / practice / specialist after the map -->
+  <!-- Continuation: signed out = exactly two choices (account | local file);
+       cabinet / practice / specialist unlock with an account -->
   <section class="panel continue-panel">
     <h2>{{ ui().continueTitle }}</h2>
-    <p class="panel-sub">{{ ui().continueSub }}</p>
-    <div class="continue-grid">
-      <div class="continue-card">
-        <h3>{{ ui().saveTitle }}</h3>
-        <p>{{ ui().saveDesc }}</p>
-        <button class="continue-btn" (click)="saveRequested.emit()">{{ ui().saveCta }}</button>
+    @if (signedIn()) {
+      <p class="panel-sub">{{ ui().signedInSub }}</p>
+      <div class="continue-grid">
+        <div class="continue-card">
+          <h3>{{ ui().cabinetTitle }}</h3>
+          <p>{{ ui().cabinetDesc }}</p>
+          <button class="continue-btn" (click)="cabinetRequested.emit()">{{ ui().cabinetCta }}</button>
+        </div>
+        <div class="continue-card">
+          <h3>{{ ui().practiceTitle }}</h3>
+          <p>{{ ui().practiceDesc }}</p>
+          <button class="continue-btn" (click)="practiceRequested.emit()">{{ ui().practiceCta }}</button>
+        </div>
+        <div class="continue-card">
+          <h3>{{ ui().specialistTitle }}</h3>
+          <p>{{ ui().specialistDesc }}</p>
+          <button class="continue-btn" (click)="toggleCode()">{{ ui().specialistCta }}</button>
+          @if (codeShown()) {
+            <div class="code-box">
+              <span class="code-value">{{ specialistCode() }}</span>
+              <button class="code-copy" (click)="copyCode()">{{ codeCopied() ? ui().copied : '⧉' }}</button>
+            </div>
+            <span class="code-hint">{{ ui().specialistCodeHint }}</span>
+          }
+        </div>
       </div>
-      <div class="continue-card">
-        <h3>{{ ui().cabinetTitle }}</h3>
-        <p>{{ ui().cabinetDesc }}</p>
-        <button class="continue-btn" (click)="cabinetRequested.emit()">{{ ui().cabinetCta }}</button>
+    } @else {
+      <p class="panel-sub">{{ ui().continueSub }}</p>
+      <div class="continue-grid continue-grid--duo">
+        <div class="continue-card continue-card--primary">
+          <h3>{{ ui().saveTitle }}</h3>
+          <p>{{ ui().saveDesc }}</p>
+          <button class="continue-btn" (click)="saveRequested.emit()">{{ ui().saveCta }}</button>
+        </div>
+        <div class="continue-card">
+          <h3>{{ ui().localTitle }}</h3>
+          <p>{{ ui().localDesc }}</p>
+          <button class="continue-btn continue-btn--ghost" (click)="backupRequested.emit()">{{ ui().localCta }}</button>
+        </div>
       </div>
-      <div class="continue-card">
-        <h3>{{ ui().practiceTitle }}</h3>
-        <p>{{ ui().practiceDesc }}</p>
-        <button class="continue-btn" (click)="practiceRequested.emit()">{{ ui().practiceCta }}</button>
-      </div>
-      <div class="continue-card">
-        <h3>{{ ui().specialistTitle }}</h3>
-        <p>{{ ui().specialistDesc }}</p>
-        <button class="continue-btn" (click)="toggleCode()">{{ ui().specialistCta }}</button>
-        @if (codeShown()) {
-          <div class="code-box">
-            <span class="code-value">{{ specialistCode() }}</span>
-            <button class="code-copy" (click)="copyCode()">{{ codeCopied() ? ui().copied : '⧉' }}</button>
-          </div>
-          <span class="code-hint">{{ ui().specialistCodeHint }}</span>
-        }
-      </div>
-    </div>
+    }
   </section>
 
   <footer class="report-footer">{{ ui().ethics }}</footer>

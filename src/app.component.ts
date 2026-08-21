@@ -1431,6 +1431,23 @@ export class AppComponent implements OnDestroy {
     }
   }
 
+  /** Report: download the innerverse profile as a local backup file. */
+  downloadInnerverseBackup(): void {
+    try {
+      const raw = localStorage.getItem('INNERVERSE_PROFILE_V1');
+      if (!raw) return;
+      const blob = new Blob([raw], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const el = document.createElement('a');
+      el.href = url;
+      el.download = `innerverse_map_${new Date().toISOString().slice(0, 10)}.json`;
+      el.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.warn('[Report] Local backup failed:', err);
+    }
+  }
+
   /** Combined "skip and download" action — skip the gate AND save a local copy. */
   skipGateAndDownload(): void {
     this.downloadAssessmentBackupFromGate();

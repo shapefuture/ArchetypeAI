@@ -3,7 +3,7 @@
  * Strength-first: the strongest resource leads before any shadow content.
  * No global verdicts; every insight card ends in something behavioral (§3C.8).
  */
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, computed, inject, model, output, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, computed, inject, input, model, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import {
@@ -11,7 +11,7 @@ import {
   type ShadowPartId, type Tier, type Need,
 } from '../../core/data/parts';
 import { PART_COPY, LAYERS, type LayerKey } from '../../core/data/part-copy';
-import { constellationName, constellationEssay, subtypeName, resourceName, COMPLEX_COPY_RU, polarizationName as polName } from '../../core/data/constellation-copy';
+import { constellationName, constellationEssay, subtypeName, resourceName, COMPLEX_COPY_RU, polarizationName as polName, PART_NAME_RU } from '../../core/data/constellation-copy';
 import { generateLinkCode } from '../../core/data/therapist-link';
 import { InnerverseConstellationComponent } from '../constellation/innerverse-constellation.component';
 import type { ScoredProfile } from '../../core/data/scoring-v2';
@@ -57,15 +57,17 @@ const UI = {
     polarizations: 'Polarizations · two protectors deadlocked',
     polarizationSub: 'Both councillors are holding the floor at once.',
     complexes: 'Active storylines',
+    complexesSub: 'A storyline is a repeating plot woven from several parts. These are the ones speaking now.',
     complexBelief: 'The sentence that runs this storyline',
     complexExperiment: 'This week\'s micro-experiment',
-    noComplexes: 'No storyline is gripping right now. Your complexes run quiet.',
+    noComplexes: 'The storylines are silent — no complex is active right now.',
     copingStack: 'Your coping stack · how the system escalates',
     whenFails: 'when that fails…',
     floorLabel: 'at the floor',
     needs: 'What your system is asking for',
     needsSub: 'Your loudest unmet need right now.',
     resources: 'Resources · bands',
+    resourcesSub: 'Every resource has a range: blocked, healthy, or overused. The bar shows where it sits today.',
     band: { hypo: 'blocked', healthy: 'healthy', hyper: 'overused' },
     leak: r => `tips into ${r} — the leak is drawn on your constellation`,
     burden: 'System burden',
@@ -80,11 +82,15 @@ const UI = {
     ethics: 'This is a self-reflection tool grounded in the Internal Family Systems model, not a diagnosis or therapy.',
     crisis: 'Today\'s result is heavy. If it stirs more than it settles, crisis resources are one tap away in Settings.',
     back: 'Back',
-    continueTitle: 'Continue your journey',
-    continueSub: 'The map is yours — these keep it alive.',
-    saveTitle: 'Save your map',
-    saveDesc: 'Register so your map, check-ins and practice travel with you across devices.',
-    saveCta: 'Create account / sign in',
+    continueTitle: 'What happens next',
+    continueSub: 'Two ways to keep the map. Everything else opens once you have an account.',
+    saveTitle: 'Save to your account',
+    saveDesc: 'An account keeps the map, check-ins and practice with you on any device.',
+    saveCta: 'Create account',
+    localTitle: 'Keep a local copy',
+    localDesc: 'A file with your answers and map. Stored on this device; you can restore it later.',
+    localCta: 'Download the copy',
+    signedInSub: 'Your account is open — the full journey continues here.',
     cabinetTitle: 'Your personal cabinet',
     cabinetDesc: 'Your dashboard: results, backups, linked specialists.',
     cabinetCta: 'Open cabinet',
@@ -100,30 +106,32 @@ const UI = {
     complexTierNames: { active: 'active', gripping: 'gripping' } as Record<string, string>,
   },
   ru: {
-    report: 'Ваш Внутренний Космос',
+    report: 'Ваша внутренняя вселенная',
     constellationOf: 'Созвездие',
     and: 'и',
     strongestResource: 'Ваш сильнейший ресурс ведёт',
-    strongestResourceSub: r => `Ваш «${r}» включён. Всё ниже — погода вокруг него. Сначала силы, всегда.`,
+    strongestResourceSub: r => `Ресурс «${r}» сейчас включён. Всё, что ниже, — погода вокруг него. Силы показываем первыми.`,
     selfEnergy: 'Энергия Self',
-    radar: 'Радар Self · 8 качеств (ориентировочно, не диагностика)',
+    radar: 'Радар Self · 8 качеств (ориентировочный взгляд)',
     partsByTier: 'Ваши части — от громких к тихим',
     flipHint: 'нажмите на карточку: лицо → потребность → тень → суперсила',
     polarizations: 'Поляризации · два защитника в тупике',
-    polarizationSub: 'Оба советчика одновременно держат слово.',
+    polarizationSub: 'Оба советчика говорят одновременно — и не слышат друг друга.',
     complexes: 'Активные сюжетные линии',
-    complexBelief: 'Фраза, которая ведёт эту линию',
-    complexExperiment: 'Микро-эксперимент этой недели',
-    noComplexes: 'Сейчас ни одна линия не держит вас. Комплексы тихи.',
-    copingStack: 'Ваша стратегия совладания · как система эскалирует',
-    whenFails: 'когда это не срабатывает…',
+    complexesSub: 'Сюжет — повторяющаяся история, которую вместе ведут несколько частей. Здесь показаны те, что звучат сейчас.',
+    complexBelief: 'Фраза, которая ведёт этот сюжет',
+    complexExperiment: 'Микро-эксперимент недели',
+    noComplexes: 'Сюжеты молчат: ни один комплекс сейчас не активен.',
+    copingStack: 'Стратегия совладания · как система наращивает обороты',
+    whenFails: 'когда это перестаёт работать…',
     floorLabel: 'на дне',
     needs: 'О чём просит ваша система',
-    needsSub: 'Ваша самая громкая неудовлетворённая потребность сейчас.',
+    needsSub: 'Самая громкая неудовлетворённая потребность сейчас.',
     resources: 'Ресурсы · диапазоны',
+    resourcesSub: 'У каждого ресурса есть диапазон состояний: заблокирован, здоров, перегружен. Полоска показывает, где он сегодня.',
     band: { hypo: 'заблокирован', healthy: 'здоров', hyper: 'перегружен' },
-    leak: r => `переливается в «${r}» — дуга перелива отражена на созвездии`,
-    burden: 'Нагрузка системы',
+    leak: r => `переливается в «${r}» — дуга перелива показана на созвездии`,
+    burden: 'Нагрузка на систему',
     vane: 'Флюгер языка · сущность ↔ поведение (ориентировочно)',
     vaneEssence: 'язык сущности', vaneBehavior: 'язык поведения',
     vaneEmpty: 'Со временем запечатанные выводы нарисуют этот флюгер.',
@@ -132,28 +140,44 @@ const UI = {
       secure: 'Скорее надёжная', anxious: 'Скорее тревожная', avoidant: 'Скорее избегающая',
       disorganized: 'Смешанная (тревога + избегание)',
     },
-    ethics: 'Это инструмент саморефлексии на основе модели «Внутренние семейные системы», а не диагностика и не терапия.',
-    crisis: 'Сегодняшний результат тяжёлый. Если он поднимает больше, чем успокаивает, — ресурсы поддержки в одном нажатии в настройках.',
+    ethics: 'Инструмент саморефлексии на основе модели внутренних семейных систем (IFS). За диагностикой и терапией обращайтесь к специалисту.',
+    crisis: 'Сегодняшний результат тяжёлый. Если он поднимает больше, чем успокаивает, — ресурсы поддержки ждут в настройках, одно нажатие.',
     back: 'Назад',
-    continueTitle: 'Продолжите путь',
-    continueSub: 'Карта ваша — эти шаги не дадут ей замолчать.',
-    saveTitle: 'Сохраните карту',
-    saveDesc: 'Зарегистрируйтесь — карта, чек-ины и практика будут с вами на любом устройстве.',
-    saveCta: 'Создать аккаунт / войти',
+    continueTitle: 'Что дальше',
+    continueSub: 'Два способа сохранить карту. Остальное откроется вместе с аккаунтом.',
+    saveTitle: 'Сохранить в аккаунте',
+    saveDesc: 'Аккаунт хранит карту, чек-ины и практику и переносит их на любое устройство.',
+    saveCta: 'Создать аккаунт',
+    localTitle: 'Локальная копия',
+    localDesc: 'Файл с ответами и картой остаётся на устройстве. Его можно восстановить в любой момент.',
+    localCta: 'Скачать копию',
+    signedInSub: 'Аккаунт открыт — продолжайте путь здесь.',
     cabinetTitle: 'Личный кабинет',
-    cabinetDesc: 'Ваша панель: результаты, резервные копии, связанные специалисты.',
+    cabinetDesc: 'Панель с результатами, копиями и вашими специалистами.',
     cabinetCta: 'Открыть кабинет',
-    practiceTitle: 'Начните ежедневную практику',
-    practiceDesc: 'Путь из пяти глав — по одной мягкой практике за раз.',
+    practiceTitle: 'Ежедневная практика',
+    practiceDesc: 'Пять глав пути — по одной мягкой практике за раз.',
     practiceCta: 'Открыть практику',
     specialistTitle: 'Глубокая сессия со специалистом',
-    specialistDesc: 'Передайте этот код своему терапевту или коучу — он увидит вашу карту в своей панели.',
+    specialistDesc: 'Передайте код терапевту или коучу — он увидит карту в своей панели.',
     specialistCta: 'Показать мой код',
-    specialistCodeHint: 'Продиктуйте код специалисту или отправьте любым способом.',
+    specialistCodeHint: 'Продиктуйте код специалисту или отправьте сообщением.',
     copied: 'Скопировано!',
     tierNames: { dormant: 'дремлет', present: 'присутствует', prominent: 'заметна', dominant: 'держит слово' } as Record<Tier, string>,
     complexTierNames: { active: 'активен', gripping: 'сжимает' } as Record<string, string>,
   },
+};
+
+
+const RU_SUBTYPE_HAS = /[А-Яа-яЁё]/;
+
+const NEED_RU: Record<string, string> = {
+  safety: 'Безопасность', love: 'Близость', worth: 'Ценность', autonomy: 'Самостоятельность',
+  belonging: 'Принадлежность', meaning: 'Смысл', joy: 'Радость',
+};
+const QUALITY_RU: Record<string, string> = {
+  calm: 'Спокойствие', clarity: 'Ясность', compassion: 'Сострадание', curiosity: 'Любопытство',
+  confidence: 'Уверенность', courage: 'Смелость', creativity: 'Творчество', connectedness: 'Связанность',
 };
 
 const NEED_PRACTICE: Record<'en' | 'ru', Record<Need, string>> = {
@@ -223,6 +247,8 @@ export class InnerverseReportComponent implements AfterViewInit, OnDestroy {
 
   /** model (not plain input) so hosts bind [profile] and tests can .set() it. */
   readonly profile = model.required<ScoredProfile>();
+  readonly signedIn = input(false);
+  readonly backupRequested = output<void>();
   back = output<void>();
   saveRequested = output<void>();
   cabinetRequested = output<void>();
@@ -258,6 +284,7 @@ export class InnerverseReportComponent implements AfterViewInit, OnDestroy {
   readonly ui = computed(() => UI[this.lang()] as typeof UI.en);
   readonly needPractice = computed(() => NEED_PRACTICE[this.lang()]);
   readonly qualities = SELF_QUALITIES;
+  readonly RESOURCES = RESOURCES;
 
   /** Bilingual headline + subtype names (constellation-copy.ts). */
   readonly headlineName = computed(() =>
@@ -269,7 +296,28 @@ export class InnerverseReportComponent implements AfterViewInit, OnDestroy {
     const sub = p.subtypes[id];
     return subtypeName(id, sub.slug, sub.name, this.lang() as 'en' | 'ru');
   }
-  partName(id: ShadowPartId): string { return this.headlineSubtype(id); }
+  partName(id: ShadowPartId): string {
+    const base = this.headlineSubtype(id);
+    if (this.lang() === 'ru' && !RU_SUBTYPE_HAS.test(base)) {
+      return PART_NAME_RU[id] ?? base;
+    }
+    return base;
+  }
+  resName(r: string): string {
+    return resourceName(r as never, this.lang() as 'en' | 'ru');
+  }
+  needLabel(need: string): string { return this.lang() === 'ru' ? NEED_RU[need] ?? need : need; }
+  qualityLabel(q: string): string { return this.lang() === 'ru' ? QUALITY_RU[q] ?? q : q; }
+  /** Long essays read best as a few short paragraphs. */
+  readonly essayParas = computed(() => {
+    const essay = this.headlineEssay();
+    const sentences = essay.match(/[^.!?]+[.!?]+\s*/g) ?? [essay];
+    const paras: string[] = [];
+    for (let i = 0; i < sentences.length; i += 3) {
+      paras.push(sentences.slice(i, i + 3).join('').trim());
+    }
+    return paras;
+  });
   polarizationName(en: string): string { return polName(en, this.lang() as 'en' | 'ru'); }
   strongResourceName(): string {
     return resourceName(this.profile().strongestResource.id, this.lang() as 'en' | 'ru');

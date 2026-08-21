@@ -455,6 +455,8 @@ button {
   display: grid;
   place-items: center;
   overflow: hidden;
+  /* keep the satellites clear of the status-bar / notch strip */
+  padding-top: calc(24px + var(--sat));
 }
 
 .hero-sky .bignova {

@@ -122,10 +122,12 @@
       @if (innerverseProfile(); as p) {
         <app-innerverse-report
           [profile]="p"
+          [signedIn]="!!currentUser() && !currentUser()?.isAnonymous"
           (back)="onInnerverseBack()"
           (saveRequested)="openLoginModal()"
           (cabinetRequested)="openCabinet()"
-          (practiceRequested)="onInnerverseBack(); openPractice()">
+          (practiceRequested)="onInnerverseBack(); openPractice()"
+          (backupRequested)="downloadInnerverseBackup()">
         </app-innerverse-report>
       }
     }

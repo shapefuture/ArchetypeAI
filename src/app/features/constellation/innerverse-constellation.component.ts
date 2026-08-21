@@ -13,6 +13,8 @@ import {
   AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy,
   computed, inject, model, viewChild,
 } from '@angular/core';
+
+const safeR = (v: number) => Math.max(0.1, v);
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { buildLayout, starAt, type Star } from '../../core/data/constellation-layout';
@@ -121,7 +123,7 @@ export class InnerverseConstellationComponent implements AfterViewInit, OnDestro
       const tw = this.reducedMotion ? 0.5 : 0.35 + 0.35 * Math.sin(tSec * 0.8 + d.phase);
       ctx.fillStyle = `rgba(236,234,246,${0.05 * d.depth * tw + 0.02})`;
       ctx.beginPath();
-      ctx.arc(x, y, px(d.size), 0, Math.PI * 2);
+      ctx.arc(x, y, safeR(px(d.size)), 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
@@ -134,7 +136,7 @@ export class InnerverseConstellationComponent implements AfterViewInit, OnDestro
       ctx.strokeStyle = ring === 'resource'
         ? `rgba(232,201,135,${0.07 * reveal})`
         : `rgba(236,234,246,${0.05 * reveal})`;
-      ctx.arc(px(0.5), px(0.5), px(RING_RADIUS[ring] * reveal), 0, Math.PI * 2);
+      ctx.arc(px(0.5), px(0.5), safeR(px(RING_RADIUS[ring] * reveal)), 0, Math.PI * 2);
       ctx.stroke();
     }
     ctx.restore();
@@ -195,7 +197,7 @@ export class InnerverseConstellationComponent implements AfterViewInit, OnDestro
     glow.addColorStop(1, 'rgba(242,231,201,0)');
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(px(0.5), px(0.5), selfR * 2.4 * breathe, 0, Math.PI * 2);
+    ctx.arc(px(0.5), px(0.5), safeR(selfR * 2.4 * breathe), 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
@@ -230,12 +232,12 @@ export class InnerverseConstellationComponent implements AfterViewInit, OnDestro
     nsGlow.addColorStop(1, 'rgba(242,231,201,0)');
     ctx.fillStyle = nsGlow;
     ctx.beginPath();
-    ctx.arc(px(ns.x), px(ns.y), nsR * 5, 0, Math.PI * 2);
+    ctx.arc(px(ns.x), px(ns.y), safeR(nsR * 5), 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     ctx.fillStyle = `rgba(242,231,201,${nsAlpha})`;
     ctx.beginPath();
-    ctx.arc(px(ns.x), px(ns.y), nsR, 0, Math.PI * 2);
+    ctx.arc(px(ns.x), px(ns.y), safeR(nsR), 0, Math.PI * 2);
     ctx.fill();
     if (ns.bright) {
       ctx.strokeStyle = 'rgba(242,231,201,0.12)';
@@ -262,7 +264,7 @@ export class InnerverseConstellationComponent implements AfterViewInit, OnDestro
       halo.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = halo;
       ctx.beginPath();
-      ctx.arc(px(p.x), px(p.y), r * 3.2, 0, Math.PI * 2);
+      ctx.arc(px(p.x), px(p.y), safeR(r * 3.2), 0, Math.PI * 2);
       ctx.fill();
 
       // cross-flare: four-spike star cross on prominent/dominant parts
@@ -286,13 +288,13 @@ export class InnerverseConstellationComponent implements AfterViewInit, OnDestro
       // hot core
       ctx.fillStyle = '#fffdf6';
       ctx.beginPath();
-      ctx.arc(px(p.x), px(p.y), r * 0.42, 0, Math.PI * 2);
+      ctx.arc(px(p.x), px(p.y), safeR(r * 0.42), 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
       ctx.fillStyle = st.color;
       ctx.beginPath();
-      ctx.arc(px(p.x), px(p.y), r, 0, Math.PI * 2);
+      ctx.arc(px(p.x), px(p.y), safeR(r), 0, Math.PI * 2);
       ctx.fill();
     });
 

@@ -129,6 +129,20 @@ const RU_ESSAY: Record<string, string> = {
 };
 
 /** Russian subtype names, keyed `${family}:${slug}`. */
+
+
+const BASE_OF_FAMILY: Record<string, string> = {
+  manager: 'taskmaster', firefighter: 'numb', exile: 'abandoned', resource: 'sage',
+};
+
+export const PART_NAME_RU: Record<string, string> = {
+  taskmaster: 'Деятель', inner_critic: 'Внутренний критик', pleaser: 'Угодник',
+  controller: 'Контролёр', analyst: 'Аналитик', hermit: 'Отшельник', bypasser: 'Обходчик',
+  numb: 'Онемение', rebel: 'Бунтарь', charmer: 'Обаяшка',
+  abandoned: 'Брошенный', ashamed: 'Стыдящийся', frightened: 'Напуганный', unseen: 'Незамеченный',
+  sage: 'Мудрец', warrior: 'Воин', caregiver: 'Заботник', explorer: 'Исследователь',
+};
+
 const RU_SUBTYPE: Record<string, string> = {
   // taskmaster
   'taskmaster:striver': 'Стремящийся',
@@ -421,7 +435,9 @@ export function constellationEssay(def: ConstellationDef, lang: Lang): string {
 }
 
 export function subtypeName(family: string, slug: string, en: string, lang: Lang): string {
-  return lang === 'ru' ? RU_SUBTYPE[`${family}:${slug}`] ?? en : en;
+  if (lang !== 'ru') return en;
+  const baseId = BASE_OF_FAMILY[family];
+  return RU_SUBTYPE[`${family}:${slug}`] ?? (baseId ? PART_NAME_RU[baseId] ?? en : en);
 }
 
 /** Resource display names (report strength-first section). */

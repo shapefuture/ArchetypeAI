@@ -652,3 +652,51 @@
   .card-shine { display: none; }
   .part-card, .ghost-btn, .continue-btn { transition: none; }
 }
+
+/* ---------- essay typography: paragraphs, not a slab ---------- */
+.constellation-essay {
+  max-width: 46ch;
+  margin: 0 auto;
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: rgba(240, 233, 211, 0.78);
+  text-wrap: pretty;
+}
+.constellation-essay + .constellation-essay { margin-top: 10px; }
+.constellation-essay:first-of-type::first-letter {
+  font-family: 'Lilita One', var(--font-sans);
+  font-size: 34px;
+  line-height: 0.85;
+  float: left;
+  margin: 3px 8px 0 0;
+  color: #edd75c;
+}
+
+/* ---------- continue: exactly two choices, account first ---------- */
+.continue-grid--duo {
+  grid-template-columns: 1fr;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.continue-card--primary {
+  border: 2px solid rgba(247, 221, 74, 0.55);
+  background: oklch(26% 0.05 285);
+}
+.continue-card--primary .continue-btn {
+  align-self: stretch;
+  text-align: center;
+  font-family: 'Lilita One', var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 0 oklch(8% 0.03 275);
+}
+.continue-btn--ghost {
+  background: transparent;
+  color: #f0e9d3;
+  border: 1.5px solid rgba(240, 233, 211, 0.45);
+  box-shadow: none;
+}
+.continue-btn--ghost:active { transform: translateY(2px); background: rgba(240, 233, 211, 0.08); }
+
+/* section subs breathe */
+.panel .panel-sub { max-width: 48ch; }

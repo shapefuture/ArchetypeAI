@@ -244,10 +244,10 @@ export class LandingComponent implements OnDestroy {
   readonly guardLinks = GUARD_LINKS;
   readonly famKeys: FamKind[] = ['manager', 'firefighter', 'exile', 'resource'];
   readonly welcomeSatellites: { id: string; left: string; top: string; delay: string }[] = [
-    { id: 'taskmaster', left: '8%', top: '16%', delay: '.9s' },
-    { id: 'rebel', left: '74%', top: '10%', delay: '1.3s' },
-    { id: 'abandoned', left: '12%', top: '62%', delay: '1.7s' },
-    { id: 'sage', left: '76%', top: '58%', delay: '.5s' },
+    { id: 'taskmaster', left: '8%', top: '26%', delay: '.9s' },
+    { id: 'rebel', left: '74%', top: '20%', delay: '1.3s' },
+    { id: 'abandoned', left: '12%', top: '68%', delay: '1.7s' },
+    { id: 'sage', left: '76%', top: '64%', delay: '.5s' },
   ];
 
   readonly skyCanvas = viewChild<ElementRef<HTMLCanvasElement>>('skyCanvas');

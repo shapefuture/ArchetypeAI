@@ -927,7 +927,7 @@ button {
   right: 0;
   bottom: 0;
   z-index: 61;
-  max-height: 82%;
+  max-height: 92%;
   background: var(--card);
   border: 2px solid var(--outline);
   border-bottom: 0;
@@ -1251,36 +1251,54 @@ button {
   line-height: 1;
 }
 
+.edithead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 2px 0 4px;
+}
+
+.edithead__col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .editpreview {
   display: grid;
   place-items: center;
-  margin: 4px 0 2px;
+  flex: none;
+  margin: 0;
 }
 
 .editpreview svg.stk {
-  width: 108px;
-  height: 108px;
+  width: 68px;
+  height: 68px;
 }
 
 .shapecarousel {
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
   scroll-snap-type: x mandatory;
 }
 
 .pickerrow {
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
 }
 
 .shapecell {
   flex: 0 0 auto;
-  width: 54px;
-  height: 54px;
-  border-radius: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   border: 2px solid transparent;
   background: color-mix(in srgb, var(--paper, #fff) 65%, transparent);
   display: grid;
@@ -1301,18 +1319,20 @@ button {
 
 .swatchrow {
   display: flex;
-  gap: 7px;
-  flex-wrap: wrap;
+  gap: 6px;
+  overflow-x: auto;
   align-items: center;
+  padding-bottom: 4px;
 }
 
 .swatch {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: 2px solid var(--ink, #1c1610);
   cursor: pointer;
   padding: 0;
+  flex: none;
 }
 
 .swatch.on {
@@ -1328,6 +1348,7 @@ button {
   background: transparent;
   padding: 1px;
   cursor: pointer;
+  flex: none;
 }
 
 .nameinput {

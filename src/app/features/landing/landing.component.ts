@@ -214,6 +214,17 @@ export class LandingComponent implements OnDestroy {
   // --- app router ---
   readonly screen = signal<'welcome' | 'sky' | 'codex' | 'you'>('welcome');
   readonly codexTab = signal<'parts' | 'chem'>('parts');
+  /** Codex family filter ('' = all) — driven by the crest chips. */
+  readonly codexFam = signal<FamKind | ''>('');
+  /** Codex grid rosters, filtered by the active crest. */
+  readonly codexBuilt = computed(() => {
+    const fam = this.codexFam();
+    return fam ? this.parts.filter(p => p.fam === fam) : this.parts;
+  });
+  readonly codexCustom = computed(() => {
+    const fam = this.codexFam();
+    return fam ? this.customParts().filter(c => c.fam === fam) : this.customParts();
+  });
   readonly sheetPart = signal<string | null>(null);
   readonly famFilter = signal<FamKind | ''>('');
   readonly dark = signal(false);

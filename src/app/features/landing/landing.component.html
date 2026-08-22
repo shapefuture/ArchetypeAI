@@ -75,15 +75,21 @@
 
         @if (codexTab() === 'parts') {
           <div class="codexgrid">
-            @for (p of parts; track p.id) {
+            @for (p of codexBuilt(); track p.id) {
               <div class="pcardwrap">
-                <button class="pcard" (click)="openPart(p.id)" [innerHTML]="stickerHtml(p.id)"></button>
+                <button class="pcard" (click)="openPart(p.id)">
+                  <span [innerHTML]="stickerHtml(p.id)"></span>
+                  <b>{{ L(p.name) }}</b>
+                </button>
                 <button class="editchip" (click)="openEditor(p.id)" [attr.aria-label]="t('editTitle')">✎</button>
               </div>
             }
-            @for (c of customParts(); track c.id) {
+            @for (c of codexCustom(); track c.id) {
               <div class="pcardwrap">
-                <button class="pcard" (click)="openPart(c.id)" [innerHTML]="customStickerHtml(c.id)"></button>
+                <button class="pcard" (click)="openPart(c.id)">
+                  <span [innerHTML]="customStickerHtml(c.id)"></span>
+                  <b>{{ L(c.name) }}</b>
+                </button>
                 <button class="editchip" (click)="openEditor(c.id)" [attr.aria-label]="t('editTitle')">✎</button>
               </div>
             }
@@ -92,19 +98,16 @@
             </button>
           </div>
           <p class="kicker" style="margin:18px 0 8px">{{ t('codexCrests') }}</p>
-          <div class="cresti">
+          <div class="famcrests">
             @for (famKey of famKeys; track famKey) {
-              <span class="crest">
+              <button class="famcrest" [class.on]="codexFam() === famKey"
+                      (click)="codexFam.set(codexFam() === famKey ? '' : famKey)"
+                      [attr.aria-pressed]="codexFam() === famKey">
                 <span class="dot" [style.background]="famMeta(famKey).hex"></span>
-                {{ famMeta(famKey).em }} {{ L(famMeta(famKey).n) }} · {{ famCount(famKey) }}
-              </span>
+                <span class="famcrest__name">{{ famMeta(famKey).em }} {{ L(famMeta(famKey).n) }} · {{ famCount(famKey) }}</span>
+                <span class="famcrest__line">{{ L(famMeta(famKey).line) }}</span>
+              </button>
             }
-          </div>
-          <div class="lens" style="margin-top:14px">
-            <li>{{ L(famMeta('manager').line) }}</li>
-            <li>{{ L(famMeta('firefighter').line) }}</li>
-            <li>{{ L(famMeta('exile').line) }}</li>
-            <li>{{ L(famMeta('resource').line) }}</li>
           </div>
         } @else {
           <h3 class="display" style="font-size:24px; margin:16px 0 4px">{{ t('chemTitle') }}</h3>

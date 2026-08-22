@@ -644,30 +644,63 @@ button {
   line-height: 1.15;
 }
 
-.cresti {
-  display: flex;
+.famcrests {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-top: 14px;
-  flex-wrap: wrap;
+  margin-top: 8px;
 }
 
-.crest {
+.famcrest {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 2px solid var(--outline);
+  background: var(--card);
+  box-shadow: 0 2px 0 var(--outline);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease;
+}
+
+.famcrest:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--outline);
+}
+
+.famcrest__name {
+  display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  border: 1.5px solid var(--hair2);
-  background: var(--card);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--ink);
 }
 
-.crest .dot {
+.famcrest__line {
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--ink3);
+}
+
+.famcrest.on {
+  background: color-mix(in srgb, var(--lemon) 34%, var(--card));
+}
+
+.famcrest .dot {
   width: 11px;
   height: 11px;
   border-radius: 50%;
   border: 2px solid var(--outline);
+  flex: none;
+}
+
+@media (max-width: 480px) {
+  .famcrests { grid-template-columns: 1fr; }
 }
 
 /* ---------- chemistry lab ---------- */
@@ -766,29 +799,6 @@ button {
 .verdict {
   font-size: clamp(24px, 6.6vw, 30px);
   margin: 2px 0 6px;
-}
-
-.lens {
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.lens li {
-  font-size: 13px;
-  color: var(--ink2);
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-}
-
-.lens li::before {
-  content: '✦';
-  color: var(--pink);
-  font-size: 11px;
 }
 
 /* ---------- you ---------- */

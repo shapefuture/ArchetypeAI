@@ -255,3 +255,19 @@
   .kawaii-float, .kawaii-float-slow, .kawaii-twinkle, .google-eye::after { animation: none; }
   .sticker-btn, .wobbly-card, .iv-dock { transition: none; }
 }
+
+/* ---------- injected sticker sizing (global on purpose) ----------
+   Sticker SVGs rendered through [innerHTML] (codex cards, part sheet,
+   look editor, chemistry slots) never receive Angular's _ngcontent
+   scoping attribute, so per-component descendant rules like
+   `.pcard svg.stk` silently never match them. These unscoped twins
+   of those rules keep every injected sticker at its intended size. */
+.pcard svg.stk { width: 56px; height: 56px; }
+.mx-slot svg.stk { width: 56px; height: 56px; }
+.mx-pick svg.stk { width: 46px; height: 46px; }
+.ph-top svg.stk { width: 86px; flex: none; }
+.editpreview svg.stk { width: 108px; height: 108px; }
+.shapecell svg.stk { width: 100%; height: 100%; }
+@media (min-width: 640px) {
+  .ph-top svg.stk { width: 104px; }
+}

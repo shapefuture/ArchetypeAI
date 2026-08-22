@@ -1,115 +1,122 @@
-<div class="descent-viewport" [class.sit-light]="stage() === 'item'">
+<!-- INNERVERSE — The Descents, in the sticker-storybook skin
+     (reference: "inner verse.html" #s-sit / .card / .btn system). -->
+<div class="descent-viewport">
   <div class="descent-bg" aria-hidden="true"></div>
 
-  <header class="descent-header">
-    <button class="ghost-btn" (click)="goBack()" aria-label="Exit">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      <span>{{ ui().exit }}</span>
-    </button>
-    @if (stage() === 'item') {
-      <div class="stage-indicator">
-        <span class="stage-text">{{ ui().descent(descentIndex()) }} · {{ ui().itemOf(indexInDescent() + 1, descentSize) }}</span>
-        <div class="star-track" aria-hidden="true">
-          @for (i of sequence.slice(descentIndex() * 49, descentIndex() * 49 + 49); track $index) {
-            <span class="star" [class.lit]="$index < answeredInDescent()"></span>
+  <!-- Shared top bar for the ceremony screens (the item stage has its own sit-top) -->
+  @if (stage() !== 'item') {
+    <header class="hud">
+      <button class="iconbtn" type="button" (click)="goBack()" aria-label="{{ ui().exit }}">✕</button>
+      <span class="hud-brand">Innerverse</span>
+    </header>
+  }
+
+  <!-- One item per screen (§3.2) — mirrors the reference s-sit structure -->
+  @if (stage() === 'item') {
+    <div class="pad sit">
+      <div class="sit-top">
+        <button class="iconbtn" type="button" (click)="goBack()" aria-label="{{ ui().exit }}">✕</button>
+        <div class="starstrip" aria-hidden="true">
+          @for (s of sequence.slice(0, 12); track $index) {
+            <span class="slot" [class.lit]="$index * 49 < answeredInDescent() * 12">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2 14.5 8.6 21.5 9 16 13.3 17.9 20.1 12 16.2 6.1 20.1 8 13.3 2.5 9 9.5 8.6Z"/>
+              </svg>
+            </span>
           }
         </div>
+        <span class="chip"><span class="em" aria-hidden="true">✦</span>{{ litStars() }}</span>
       </div>
-    } @else {
-      <div class="stage-indicator"><span class="stage-text">Innerverse</span></div>
-    }
-  </header>
+
+      @if (!pendingSomaticPart()) {
+        <main class="sit-stage">
+          <div class="qwrap">
+            <div class="qcardbig" [class.fling]="transitioning()" [class.enter]="!transitioning()">
+              <span class="kicker">{{ ui().descent(descentIndex()) }} · {{ ui().itemOf(indexInDescent() + 1, descentSize) }}</span>
+              <p class="item-text">{{ currentText() }}</p>
+            </div>
+          </div>
+          <div class="likert">
+            @for (label of likert[lang()]; track $index) {
+              <button class="likert-btn" type="button" (click)="answer($index + 1)">
+                <span class="em" aria-hidden="true">{{ likertEmotes[$index] }}</span>{{ label }}
+              </button>
+            }
+          </div>
+          <p class="tiny hint">{{ ui().sitHint }}</p>
+        </main>
+      } @else {
+        <!-- Somatic follow-up (§1.12): bottom sheet with sticker chips -->
+        <div class="sheetwrap" role="dialog" [attr.aria-label]="ui().somaticQ">
+          <div class="scrim" aria-hidden="true"></div>
+          <div class="sheet">
+            <span class="grip" aria-hidden="true"></span>
+            <span class="kicker">{{ ui().descent(descentIndex()) }} · {{ ui().itemOf(indexInDescent() + 1, descentSize) }}</span>
+            <p class="sheet-q">{{ ui().somaticQ }}</p>
+            <div class="zone-grid">
+              @for (zone of zones; track zone) {
+                <button class="zone-btn" type="button" (click)="chooseZone(zone)">{{ zoneLabel(zone) }}</button>
+              }
+            </div>
+            <button class="skip-link" type="button" (click)="skipZone()">{{ ui().somaticSkip }}</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
 
   <!-- Ethics card (§3, mandatory onboarding — the single entry gate) -->
   @if (stage() === 'ethics') {
-    <main class="descent-main">
-      <div class="nova-float" [innerHTML]="novaHtml()" aria-hidden="true"></div>
-      @if (recalibrated()) {
-        <aside class="recalibrated">{{ ui().recalibrated }}</aside>
-      }
-      <h1 class="headline">{{ ui().ethicsTitle }}</h1>
-      <p class="sub">{{ ui().ethicsSub }}</p>
-      <span class="plan-title">{{ ui().planTitle }}</span>
-      <div class="sittings-row" role="list">
-        @for (s of ui().plan; track $index; let last = $last) {
-          <div class="sitting" role="listitem">
-            <span class="sitting-name">{{ s.name }}</span>
-            <span class="sitting-meta">{{ s.meta }}</span>
-          </div>
-          @if (!last) { <span class="sitting-gap" aria-hidden="true">✦</span> }
+    <main class="descent-main scroll">
+      <div class="gate-card">
+        <div class="nova-float" [innerHTML]="novaHtml()" aria-hidden="true"></div>
+        @if (recalibrated()) {
+          <aside class="recalibrated">{{ ui().recalibrated }}</aside>
         }
-      </div>
-      <div class="cta-column">
-        <button class="primary-btn" (click)="acceptEthics()">{{ ui().ethicsGo }}</button>
-      </div>
-      <p class="tiny">{{ ui().ethics1 }}</p>
-      <details class="why">
-        <summary>{{ ui().planTitle }} — {{ ui().planPause }}?</summary>
-        <p>{{ ui().ethicsWhy }}</p>
-      </details>
-    </main>
-  }
-
-  <!-- One item per screen (§3.2) -->
-  @if (stage() === 'item' && !pendingSomaticPart()) {
-    <main class="descent-main" [class.leaving]="transitioning()">
-      <div class="qwrap">
-        <div class="qcardbig">
-          <span class="q-kicker">{{ ui().descent(descentIndex()) }} · {{ ui().itemOf(indexInDescent() + 1, descentSize) }}</span>
-          <p class="item-text">{{ currentText() }}</p>
+        <h1 class="headline">{{ ui().ethicsTitle }}</h1>
+        <p class="sub">{{ ui().ethicsSub }}</p>
+        <span class="kicker">{{ ui().planTitle }}</span>
+        <div class="sittings-row" role="list">
+          @for (s of ui().plan; track $index; let last = $last) {
+            <div class="sitting" role="listitem">
+              <span class="sitting-name">{{ s.name }}</span>
+              <span class="sitting-meta">{{ s.meta }}</span>
+            </div>
+            @if (!last) { <span class="sitting-gap" aria-hidden="true">✦</span> }
+          }
         </div>
-      </div>
-      <div class="likert">
-        @for (label of likert[lang()]; track $index) {
-          <button class="likert-btn" (click)="answer($index + 1)">
-            <span class="em" aria-hidden="true">{{ likertEmotes[$index] }}</span>{{ label }}
-          </button>
-        }
-      </div>
-      <p class="sit-hint">{{ ui().sitHint }}</p>
-    </main>
-  }
-
-  <!-- Somatic follow-up (§1.12: optional, skippable, one tap) -->
-  @if (stage() === 'item' && pendingSomaticPart()) {
-    <main class="descent-main">
-      <div class="qwrap">
-        <div class="qcardbig">
-          <span class="q-kicker">{{ ui().descent(descentIndex()) }} · {{ ui().itemOf(indexInDescent() + 1, descentSize) }}</span>
-          <p class="item-text">{{ ui().somaticQ }}</p>
+        <div class="cta-column">
+          <button class="primary-btn" type="button" (click)="acceptEthics()">{{ ui().ethicsGo }}</button>
         </div>
+        <p class="tiny">{{ ui().ethics1 }}</p>
+        <details class="why">
+          <summary>{{ ui().planTitle }} — {{ ui().planPause }}?</summary>
+          <p>{{ ui().ethicsWhy }}</p>
+        </details>
       </div>
-      <div class="zone-grid">
-        @for (zone of zones; track zone) {
-          <button class="zone-btn" (click)="chooseZone(zone)">{{ zoneLabel(zone) }}</button>
-        }
-      </div>
-      <button class="secondary-btn" (click)="skipZone()">{{ ui().somaticSkip }}</button>
     </main>
   }
 
   <!-- Break between sittings (continue immediately, or resume later) -->
   @if (stage() === 'break') {
-    <main class="descent-main">
-      <div class="nova-float" [innerHTML]="novaHtml()" aria-hidden="true"></div>
-      <h1 class="headline">{{ ui().breakTitle(descentIndex()) }}</h1>
-      <p class="sub">{{ ui().breakSub }}</p>
-      <div class="stars-summary" aria-hidden="true">
-        {{ litStars() }} / 147
+    <main class="descent-main scroll">
+      <div class="gate-card">
+        <div class="nova-float" [innerHTML]="novaHtml()" aria-hidden="true"></div>
+        <h1 class="headline">{{ ui().breakTitle(descentIndex()) }}</h1>
+        <p class="sub">{{ ui().breakSub }}</p>
+        <span class="chip chip-stars" aria-hidden="true"><span class="em">✦</span>{{ litStars() }} / 147</span>
+        <div class="cta-column">
+          <button class="primary-btn" type="button" (click)="resumeFromBreak()">{{ ui().breakResume(descentIndex()) }}</button>
+          <button class="secondary-btn" type="button" (click)="leaveFromBreak()">{{ ui().breakLater }}</button>
+        </div>
+        <p class="tiny">{{ ui().retakeNote }}</p>
       </div>
-      <div class="cta-column">
-        <button class="primary-btn" (click)="resumeFromBreak()">{{ ui().breakResume(descentIndex()) }}</button>
-        <button class="secondary-btn" (click)="leaveFromBreak()">{{ ui().breakLater }}</button>
-      </div>
-      <p class="tiny">{{ ui().retakeNote }}</p>
     </main>
   }
 
   <!-- Future Self — the North Star (§3D.2): asked once, at the end of Descent III -->
   @if (stage() === 'future-self') {
-    <main class="descent-main future-self-main">
+    <main class="descent-main scroll">
       <h1 class="headline">{{ ui().fsTitle }}</h1>
       <p class="sub">{{ ui().fsSub }}</p>
       <div class="fs-form">
@@ -122,16 +129,19 @@
         }
       </div>
       <div class="cta-column">
-        <button class="primary-btn" [disabled]="!futureSelfValid()" (click)="saveFutureSelf()">
+        <button class="primary-btn" type="button" [disabled]="!futureSelfValid()" (click)="saveFutureSelf()">
           {{ ui().fsSave }}
         </button>
-        <button class="secondary-btn" (click)="skipFutureSelf()">{{ ui().fsSkip }}</button>
+        <button class="secondary-btn" type="button" (click)="skipFutureSelf()">{{ ui().fsSkip }}</button>
       </div>
     </main>
   }
 
   @if (stage() === 'complete') {
     <main class="descent-main">
+      <svg class="done-star" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2 14.5 8.6 21.5 9 16 13.3 17.9 20.1 12 16.2 6.1 20.1 8 13.3 2.5 9 9.5 8.6Z"/>
+      </svg>
       <h1 class="headline">{{ ui().breakResume(2) }}</h1>
     </main>
   }

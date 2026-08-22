@@ -250,6 +250,15 @@ export class LandingComponent implements OnDestroy {
   readonly draftNameRu = signal('');
   readonly draftFam = signal<FamKind>('resource');
 
+  /** One visible name field for custom parts — the value is mirrored into
+   *  both locale slots so codex/sky show it regardless of app language. */
+  readonly editorName = computed(() => this.draftNameRu() || this.draftNameEn());
+
+  setEditorName(v: string): void {
+    this.draftNameRu.set(v);
+    this.draftNameEn.set(v);
+  }
+
   // --- resume-in-progress (regression-guarded by landing.component.spec) ---
   readonly hasCompletedBackup = signal(false);
   readonly hasInProgressBackup = signal(false);

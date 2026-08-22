@@ -266,7 +266,7 @@
 .mx-slot svg.stk { width: 56px; height: 56px; }
 .mx-pick svg.stk { width: 46px; height: 46px; }
 .ph-top svg.stk { width: 86px; flex: none; }
-.editpreview svg.stk { width: 108px; height: 108px; }
+.editpreview svg.stk { width: 68px; height: 68px; }
 .shapecell svg.stk { width: 100%; height: 100%; }
 @media (min-width: 640px) {
   .ph-top svg.stk { width: 104px; }

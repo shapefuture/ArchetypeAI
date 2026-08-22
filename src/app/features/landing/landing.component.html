@@ -277,59 +277,63 @@
       <div class="sheet" [class.on]="!!editId()" role="dialog" aria-modal="true">
         <div class="grip"></div>
         <div class="body">
-          <h3 class="display" style="font-size:22px; margin:2px 0 10px">
-            {{ (eid === 'new' || isCustom(eid)) ? t('editTitleNew') : t('editTitle') }}
-          </h3>
-
-          <div class="editpreview" [innerHTML]="miniSticker(draftShape(), draftColor(), draftEye(), draftMouth(), draftNameRu() || draftNameEn() || t('editTitleNew'))"></div>
-
-          <p class="kicker" style="margin:12px 0 6px">{{ t('editShape') }}</p>
-          <div class="shapecarousel">
-            @for (s of shapeIds; track s) {
-              <button class="shapecell" [class.on]="draftShape() === s" (click)="draftShape.set(s)"
-                      [innerHTML]="miniSticker(s, draftColor(), draftEye(), draftMouth(), '')"></button>
+        <div class="edithead">
+          <div class="editpreview" [innerHTML]="miniSticker(draftShape(), draftColor(), draftEye(), draftMouth(), editorName() || t('editTitleNew'))"></div>
+          <div class="edithead__col">
+            <h3 class="display" style="font-size:20px; margin:0 0 8px">
+              {{ (eid === 'new' || isCustom(eid)) ? t('editTitleNew') : t('editTitle') }}
+            </h3>
+            @if (eid === 'new' || isCustom(eid)) {
+              <input class="nameinput" type="text" [value]="editorName()"
+                     [placeholder]="isEnglish() ? 'Name' : 'Название'"
+                     (input)="setEditorName($any($event.target).value)" />
             }
           </div>
+        </div>
 
-          <p class="kicker" style="margin:12px 0 6px">{{ t('editColor') }}</p>
-          <div class="swatchrow">
-            @for (col of lookColors; track col) {
-              <button class="swatch" [class.on]="draftColor().toLowerCase() === col.toLowerCase()"
-                      [style.background]="col" (click)="draftColor.set(col)"></button>
-            }
-            <input class="swatchinput" type="color" [value]="draftColor()"
-                   (input)="draftColor.set($any($event.target).value)" aria-label="color picker" />
-          </div>
-
-          <p class="kicker" style="margin:12px 0 6px">{{ t('editEyes') }}</p>
-          <div class="pickerrow">
-            @for (e of eyeKinds; track e) {
-              <button class="shapecell" [class.on]="draftEye() === e" (click)="draftEye.set(e)"
-                      [innerHTML]="miniSticker(draftShape(), draftColor(), e, draftMouth(), '')"></button>
-            }
-          </div>
-
-          <p class="kicker" style="margin:12px 0 6px">{{ t('editMouth') }}</p>
-          <div class="pickerrow">
-            @for (m of mouthKinds; track m) {
-              <button class="shapecell" [class.on]="draftMouth() === m" (click)="draftMouth.set(m)"
-                      [innerHTML]="miniSticker(draftShape(), draftColor(), draftEye(), m, '')"></button>
-            }
-          </div>
-
-          @if (eid === 'new' || isCustom(eid)) {
-            <p class="kicker" style="margin:12px 0 6px">{{ t('editNameRu') }}</p>
-            <input class="nameinput" type="text" [value]="draftNameRu()" (input)="draftNameRu.set($any($event.target).value)" />
-            <p class="kicker" style="margin:12px 0 6px">{{ t('editNameEn') }}</p>
-            <input class="nameinput" type="text" [value]="draftNameEn()" (input)="draftNameEn.set($any($event.target).value)" />
-            <p class="kicker" style="margin:12px 0 6px">{{ t('editFamily') }}</p>
-            <div class="seg">
-              <button [class.on]="draftFam() === 'manager'" (click)="draftFam.set('manager')">{{ t('famManagers') }}</button>
-              <button [class.on]="draftFam() === 'firefighter'" (click)="draftFam.set('firefighter')">{{ t('famFirefighters') }}</button>
-              <button [class.on]="draftFam() === 'exile'" (click)="draftFam.set('exile')">{{ t('famExiles') }}</button>
-              <button [class.on]="draftFam() === 'resource'" (click)="draftFam.set('resource')">{{ t('famResources') }}</button>
-            </div>
+        <p class="kicker" style="margin:10px 0 6px">{{ t('editShape') }}</p>
+        <div class="shapecarousel">
+          @for (s of shapeIds; track s) {
+            <button class="shapecell" [class.on]="draftShape() === s" (click)="draftShape.set(s)"
+                    [innerHTML]="miniSticker(s, draftColor(), draftEye(), draftMouth(), '')"></button>
           }
+        </div>
+
+        <p class="kicker" style="margin:10px 0 6px">{{ t('editColor') }}</p>
+        <div class="swatchrow">
+          @for (col of lookColors; track col) {
+            <button class="swatch" [class.on]="draftColor().toLowerCase() === col.toLowerCase()"
+                    [style.background]="col" (click)="draftColor.set(col)"></button>
+          }
+          <input class="swatchinput" type="color" [value]="draftColor()"
+                 (input)="draftColor.set($any($event.target).value)" aria-label="color picker" />
+        </div>
+
+        <p class="kicker" style="margin:10px 0 6px">{{ t('editEyes') }}</p>
+        <div class="pickerrow">
+          @for (e of eyeKinds; track e) {
+            <button class="shapecell" [class.on]="draftEye() === e" (click)="draftEye.set(e)"
+                    [innerHTML]="miniSticker(draftShape(), draftColor(), e, draftMouth(), '')"></button>
+          }
+        </div>
+
+        <p class="kicker" style="margin:10px 0 6px">{{ t('editMouth') }}</p>
+        <div class="pickerrow">
+          @for (m of mouthKinds; track m) {
+            <button class="shapecell" [class.on]="draftMouth() === m" (click)="draftMouth.set(m)"
+                    [innerHTML]="miniSticker(draftShape(), draftColor(), draftEye(), m, '')"></button>
+          }
+        </div>
+
+        @if (eid === 'new' || isCustom(eid)) {
+          <p class="kicker" style="margin:10px 0 6px">{{ t('editFamily') }}</p>
+          <div class="seg">
+            <button [class.on]="draftFam() === 'manager'" (click)="draftFam.set('manager')">{{ t('famManagers') }}</button>
+            <button [class.on]="draftFam() === 'firefighter'" (click)="draftFam.set('firefighter')">{{ t('famFirefighters') }}</button>
+            <button [class.on]="draftFam() === 'exile'" (click)="draftFam.set('exile')">{{ t('famExiles') }}</button>
+            <button [class.on]="draftFam() === 'resource'" (click)="draftFam.set('resource')">{{ t('famResources') }}</button>
+          </div>
+        }
 
           <div style="display:flex; gap:9px; margin-top:16px; flex-wrap:wrap">
             <button class="btn full mini" (click)="saveEditor()">💾 {{ t('editSave') }}</button>

@@ -16,6 +16,12 @@ import {
   type AppointmentStatus,
 } from '../booking-panel/booking';
 
+/** Scoring-method chip copy — RU-first, EN inline (translations.ts is off-limits). */
+const SCORING_COPY: Record<string, { ru: string; en: string }> = {
+  deterministic: { ru: 'точный расчёт', en: 'deterministic' },
+  fallback: { ru: 'ИИ-режим', en: 'AI mode' },
+};
+
 /** «Мои записи» copy — RU-first, EN inline (translations.ts is off-limits). */
 const BOOKING_COPY = {
   ru: {
@@ -320,6 +326,13 @@ export class CabinetComponent {
     } catch {
       return ts;
     }
+  }
+
+  /** Human label for the scoringMethod chip ('deterministic' | 'fallback'). */
+  scoringLabel(method?: string): string {
+    const lang = this.ts.getLanguage() === 'en' ? 'en' : 'ru';
+    const entry = method ? SCORING_COPY[method] : undefined;
+    return entry ? entry[lang] : (method ?? '');
   }
 
   /**

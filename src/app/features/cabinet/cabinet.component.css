@@ -277,14 +277,25 @@
   padding: 14px 16px;
 }
 
+.cab-selected__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .cab-selected__ts {
   font-family: 'Lilita One', var(--font-sans, sans-serif);
   font-size: 13px;
   color: #3A3229;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
-.cab-selected__btn { margin-top: 12px; }
+.cab-selected__btn {
+  margin-top: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
 
 /* ---------- inputs ---------- */
 
@@ -537,14 +548,15 @@
 }
 
 .cab-client__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 8px;
   margin-top: 16px;
   padding-top: 14px;
   border-top: 1.5px dashed rgba(58, 50, 41, 0.2);
 }
+
+.cab-client__actions .cab-btn { width: 100%; }
 
 .cab-client__history {
   margin-top: 14px;
@@ -561,11 +573,13 @@
 }
 
 .cab-version {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
 }
+
+.cab-version__meta { min-width: 0; display: grid; gap: 5px; justify-items: start; }
 
 .cab-version__ts {
   font-size: 12.5px;
@@ -573,9 +587,12 @@
   color: #3A3229;
 }
 
-.cab-version__meta { min-width: 0; }
-
 /* ---------- responsive ---------- */
+
+@media (max-width: 480px) {
+  .cab-version { grid-template-columns: 1fr; }
+  .cab-version .cab-btn { width: 100%; }
+}
 
 @media (min-width: 640px) {
   .cab { padding-left: 24px; padding-right: 24px; }

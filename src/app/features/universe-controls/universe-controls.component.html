@@ -126,9 +126,10 @@
           @for(cluster of visualizationService.allClusters(); track cluster.id) {
             <div class="cluster-row"
                  [class.active]="activeClusterFilters().has(cluster.id)"
+                 [title]="clusterTooltip(cluster.id)"
                  (click)="toggleClusterFilter(cluster.id)">
               <div class="cluster-dot" [style.background-color]="getClusterColor(cluster.id)"></div>
-              <span class="cluster-name">{{ translationService.t(cluster.id, 'universe.clusterNames') }}</span>
+              <span class="cluster-name">{{ clusterName(cluster.id) }}</span>
               @if(activeClusterFilters().has(cluster.id)) {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="cluster-check">
                   <polyline points="20 6 9 17 4 12"></polyline>

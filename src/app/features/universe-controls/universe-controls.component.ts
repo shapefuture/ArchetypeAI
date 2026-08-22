@@ -5,6 +5,52 @@ import { VisualizationService, Archetype, DimensionalExpressions } from '../../.
 import { GeminiService } from '../../../services/gemini.service';
 import { SearchBoxComponent } from '../../shared/components/search-box/search-box.component';
 
+/** Inline RU/EN copy for the four IFS families (translations.ts is legacy-only). */
+const CLUSTER_COPY = {
+  ru: {
+    managers: 'Менеджеры',
+    firefighters: 'Пожарные',
+    exiles: 'Изгнанники',
+    resources: 'Ресурсы',
+  },
+  en: {
+    managers: 'Managers',
+    firefighters: 'Firefighters',
+    exiles: 'Exiles',
+    resources: 'Resources',
+  },
+} as const;
+
+const CLUSTER_DESC_COPY = {
+  ru: {
+    managers: 'Заранее удерживают порядок, чтобы плохой день так и не наступил.',
+    firefighters: 'Прибегают мгновенно, когда внутри уже горит.',
+    exiles: 'Несут юную боль, спрятанную от повседневной жизни.',
+    resources: 'Выращенные силы, на которые может опереться Self.',
+  },
+  en: {
+    managers: 'Keep order preemptively so the bad day never arrives.',
+    firefighters: 'Arrive the moment something inside catches fire.',
+    exiles: 'Carry the young pain hidden from daily life.',
+    resources: 'Grown strengths the Self can lean on.',
+  },
+} as const;
+
+const CLUSTER_COLORS: { [key: string]: string } = {
+  managers: '#E1734B',
+  firefighters: '#E58FA0',
+  exiles: '#8F63C0',
+  resources: '#46A29D',
+  // legacy/AI-generated clusters keep their old palette
+  gift_archetypes: 'var(--cluster-gift)',
+  control_shadows: 'var(--cluster-control)',
+  emotional_storm_shadows: 'var(--cluster-storm)',
+  avoidant_intellectual_shadows: 'var(--cluster-avoidant)',
+  anxious_connection_shadows: 'var(--cluster-anxious)',
+  seductive_avoidance_shadows: 'var(--cluster-seductive)',
+  disorganized_attachment_shadows: 'var(--cluster-disorganized)',
+};
+
 
 @Component({
   selector: 'app-universe-controls',
@@ -92,14 +138,26 @@ export class UniverseControlsComponent {
   }
 
   get clusterTooltips(): { [key: string]: string } {
+    const lang = this.translationService.getLanguage() === 'en' ? 'en' : 'ru';
     return {
-      gift_archetypes: this.translationService.t('gift_archetypes', 'universe.clusterDescs'),
-      control_shadows: this.translationService.t('control_shadows', 'universe.clusterDescs'),
-      emotional_storm_shadows: this.translationService.t('emotional_storm_shadows', 'universe.clusterDescs'),
-      avoidant_intellectual_shadows: this.translationService.t('avoidant_intellectual_shadows', 'universe.clusterDescs'),
-      anxious_connection_shadows: this.translationService.t('anxious_connection_shadows', 'universe.clusterDescs'),
-      seductive_avoidance_shadows: this.translationService.t('seductive_avoidance_shadows', 'universe.clusterDescs')
+      managers: CLUSTER_DESC_COPY[lang].managers,
+      firefighters: CLUSTER_DESC_COPY[lang].firefighters,
+      exiles: CLUSTER_DESC_COPY[lang].exiles,
+      resources: CLUSTER_DESC_COPY[lang].resources,
     };
+  }
+
+  /** Inline family label for a cluster id (legacy ids fall back to translations). */
+  clusterName(clusterId: string): string {
+    const lang = this.translationService.getLanguage() === 'en' ? 'en' : 'ru';
+    const copy = CLUSTER_COPY[lang] as Record<string, string>;
+    return copy[clusterId] ?? this.translationService.t(clusterId, 'universe.clusterNames');
+  }
+
+  clusterTooltip(clusterId: string): string {
+    const lang = this.translationService.getLanguage() === 'en' ? 'en' : 'ru';
+    const copy = CLUSTER_DESC_COPY[lang] as Record<string, string>;
+    return copy[clusterId] ?? this.translationService.t(clusterId, 'universe.clusterDescs');
   }
 
   // Dimension Mappings
@@ -130,16 +188,7 @@ export class UniverseControlsComponent {
   }
 
   getClusterColor(clusterId: string): string {
-    const clusterColors: { [key: string]: string } = {
-      gift_archetypes: 'var(--cluster-gift)',
-      control_shadows: 'var(--cluster-control)',
-      emotional_storm_shadows: 'var(--cluster-storm)',
-      avoidant_intellectual_shadows: 'var(--cluster-avoidant)',
-      anxious_connection_shadows: 'var(--cluster-anxious)',
-      seductive_avoidance_shadows: 'var(--cluster-seductive)',
-      disorganized_attachment_shadows: 'var(--cluster-disorganized)'
-    };
-    return clusterColors[clusterId] || 'var(--ink-main)';
+    return CLUSTER_COLORS[clusterId] || 'var(--ink-main)';
   }
 
   onCreationInput(event: Event): void {

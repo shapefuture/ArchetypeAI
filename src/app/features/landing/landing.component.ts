@@ -27,6 +27,7 @@ import { InstallService } from '../../../services/install.service';
 import { PART_COPY } from '../../core/data/part-copy';
 import {
   EYE_KINDS,
+  IV_PARTS,
   LOOK_COLORS,
   MOUTH_KINDS,
   SHAPES,
@@ -41,50 +42,13 @@ import {
   sticker,
   type CustomPart,
   type EyeKind,
+  type FamKind,
+  type IvPart,
   type MouthKind,
   type PartLook,
 } from './stickers';
 
-type FamKind = 'manager' | 'firefighter' | 'exile' | 'resource';
-
 // ---------------------------------------------------------------- data
-
-interface IvPart {
-  id: string;
-  fam: FamKind;
-  shape: string;
-  color: string;
-  glyph: { e: EyeKind; m: MouthKind };
-  ax: { ag: number; te: number; fo: number; at: number };
-  name: [string, string];
-  short: [string, string];
-}
-
-/** The real 18-part roster — family colors, faces and axes from the reference. */
-const IV_PARTS: IvPart[] = [
-  // Managers — preemptive order-keepers
-  { id: 'taskmaster', fam: 'manager', color: '#DE6A40', glyph: { e: 'lid', m: 'grit' }, shape: 'taskmaster', ax: { ag: 82, te: 60, fo: 78, at: 30 }, name: ['The Taskmaster', 'Деятель'], short: ['Taskmaster', 'Деятель'] },
-  { id: 'inner_critic', fam: 'manager', color: '#C76B85', glyph: { e: 'squint', m: 'flat' }, shape: 'inner_critic', ax: { ag: 55, te: 40, fo: 85, at: 45 }, name: ['The Inner Critic', 'Внутренний критик'], short: ['Critic', 'Критик'] },
-  { id: 'pleaser', fam: 'manager', color: '#EF8FA5', glyph: { e: 'big', m: 'smile' }, shape: 'pleaser', ax: { ag: 45, te: 70, fo: 55, at: 88 }, name: ['The Pleaser', 'Угодник'], short: ['Pleaser', 'Угодник'] },
-  { id: 'controller', fam: 'manager', color: '#D5793B', glyph: { e: 'dot', m: 'flat' }, shape: 'controller', ax: { ag: 75, te: 50, fo: 90, at: 40 }, name: ['The Controller', 'Контролёр'], short: ['Controller', 'Контролёр'] },
-  { id: 'analyst', fam: 'manager', color: '#7BA3D0', glyph: { e: 'glasses', m: 'flat' }, shape: 'analyst', ax: { ag: 50, te: 25, fo: 88, at: 35 }, name: ['The Analyst', 'Аналитик'], short: ['Analyst', 'Аналитик'] },
-  { id: 'hermit', fam: 'manager', color: '#8A87A8', glyph: { e: 'lid', m: 'smile' }, shape: 'hermit', ax: { ag: 40, te: 20, fo: 70, at: 25 }, name: ['The Hermit', 'Отшельник'], short: ['Hermit', 'Отшельник'] },
-  { id: 'bypasser', fam: 'manager', color: '#CDB32E', glyph: { e: 'big', m: 'smile' }, shape: 'bypasser', ax: { ag: 48, te: 45, fo: 50, at: 40 }, name: ['The Bypasser', 'Обходчик'], short: ['Bypasser', 'Обходчик'] },
-  // Firefighters — reactive extinguishers
-  { id: 'numb', fam: 'firefighter', color: '#9AA3AC', glyph: { e: 'lid', m: 'flat' }, shape: 'numb', ax: { ag: 30, te: 15, fo: 45, at: 20 }, name: ['The Numb', 'Онемение'], short: ['Numb', 'Онемение'] },
-  { id: 'rebel', fam: 'firefighter', color: '#DE5F50', glyph: { e: 'star', m: 'grin' }, shape: 'rebel', ax: { ag: 88, te: 85, fo: 35, at: 30 }, name: ['The Rebel', 'Бунтарь'], short: ['Rebel', 'Бунтарь'] },
-  { id: 'charmer', fam: 'firefighter', color: '#EF8FA5', glyph: { e: 'big', m: 'smirk' }, shape: 'charmer', ax: { ag: 65, te: 80, fo: 50, at: 75 }, name: ['The Charmer', 'Обаяшка'], short: ['Charmer', 'Обаяшка'] },
-  // Exiles — the young carriers
-  { id: 'abandoned', fam: 'exile', color: '#9865C5', glyph: { e: 'big', m: 'wavy' }, shape: 'abandoned', ax: { ag: 25, te: 55, fo: 30, at: 92 }, name: ['The Abandoned One', 'Брошенный'], short: ['Abandoned', 'Брошенный'] },
-  { id: 'ashamed', fam: 'exile', color: '#8E62B8', glyph: { e: 'lid', m: 'wavy' }, shape: 'ashamed', ax: { ag: 20, te: 40, fo: 35, at: 85 }, name: ['The Ashamed One', 'Стыдящийся'], short: ['Ashamed', 'Стыд'] },
-  { id: 'frightened', fam: 'exile', color: '#7A6FD1', glyph: { e: 'wide', m: 'ooh' }, shape: 'frightened', ax: { ag: 22, te: 60, fo: 28, at: 90 }, name: ['The Frightened One', 'Напуганный'], short: ['Frightened', 'Напуганный'] },
-  { id: 'unseen', fam: 'exile', color: '#8583C0', glyph: { e: 'dot', m: 'flat' }, shape: 'unseen', ax: { ag: 28, te: 35, fo: 40, at: 80 }, name: ['The Unseen One', 'Незамеченный'], short: ['Unseen', 'Незамеченный'] },
-  // Resources — the grown strengths
-  { id: 'sage', fam: 'resource', color: '#2FA39E', glyph: { e: 'lid', m: 'smile' }, shape: 'sage', ax: { ag: 60, te: 30, fo: 75, at: 45 }, name: ['The Sage', 'Мудрец'], short: ['Sage', 'Мудрец'] },
-  { id: 'warrior', fam: 'resource', color: '#2E9967', glyph: { e: 'dot', m: 'grit' }, shape: 'warrior', ax: { ag: 90, te: 55, fo: 80, at: 35 }, name: ['The Warrior', 'Воин'], short: ['Warrior', 'Воин'] },
-  { id: 'caregiver', fam: 'resource', color: '#E97F63', glyph: { e: 'big', m: 'smile' }, shape: 'caregiver', ax: { ag: 55, te: 75, fo: 60, at: 82 }, name: ['The Caregiver', 'Заботник'], short: ['Caregiver', 'Заботник'] },
-  { id: 'explorer', fam: 'resource', color: '#3FA9B5', glyph: { e: 'star', m: 'smile' }, shape: 'explorer', ax: { ag: 78, te: 65, fo: 55, at: 40 }, name: ['The Explorer', 'Исследователь'], short: ['Explorer', 'Исследователь'] },
-];
 
 const P = Object.fromEntries(IV_PARTS.map((p) => [p.id, p])) as Record<string, IvPart>;
 

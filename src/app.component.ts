@@ -1465,6 +1465,28 @@ export class AppComponent implements OnDestroy {
     this.dismissSavePrompt();
   }
 
+  /** Universe HUD «download copy»: save the innerverse map when present,
+   *  otherwise the raw assessment responses; explain when there is no data. */
+  downloadBackup(): void {
+    if (localStorage.getItem('INNERVERSE_PROFILE_V1')) {
+      this.downloadInnerverseBackup();
+      return;
+    }
+    if (this.assessmentResponses() && this.assessmentResponses().length > 0) {
+      this.downloadAssessmentBackupFromGate();
+      return;
+    }
+    const ru = this.translationService.getLanguage() === 'ru';
+    try { alert(ru ? 'Пока нечего сохранять — сначала пройдите погружение.' : 'Nothing to save yet — complete a descent first.'); } catch { /* non-interactive */ }
+  }
+
+  /** Universe HUD «synastry»: leave the universe, then open synastry
+   *  (or the descent funnel when no map exists yet). */
+  onOpenSynastry(): void {
+    this.onUniverseBack();
+    this.openSynastry();
+  }
+
   async generateShareCode(): Promise<void> {
     const user = this.currentUser();
     if (!user || this.assessmentResponses().length === 0) return;

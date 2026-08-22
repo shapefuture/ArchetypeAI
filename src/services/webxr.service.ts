@@ -8,6 +8,14 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { TranslationService } from './translation.service';
+import {
+  IV_PARTS,
+  loadLooks,
+  sticker,
+  type EyeKind,
+  type IvPart,
+  type MouthKind,
+} from '../app/features/landing/stickers';
 import { gsap } from 'gsap';
 
 
@@ -29,6 +37,10 @@ export interface Archetype {
   coreBelief: string;
   attracts: string;
   integratedForm?: string;
+  /** Sticker character (satellite labels): body shape id from the part system. */
+  shape?: string;
+  /** Sticker character (satellite labels): eye + mouth glyph kinds. */
+  glyph?: { e: EyeKind; m: MouthKind };
 }
 
 export interface Dimension {
@@ -53,370 +65,247 @@ const DIMENSIONS_DATA: { [key: string]: { min: number, max: number, labels: { hy
 const DIMENSION_KEYS = Object.keys(DIMENSIONS_DATA);
 const POSITION_SCALE = 10;
 
-const ALL_ARCHETYPES: Archetype[] = [
-    // 4 GIFT ARCHETYPES
-    {
-        id: "the_sovereign",
-        name: "The Sovereign",
-        coordinates: [-0.2, 0.1, -0.1, -0.1],
-        color: "#4A90E2",
-        size: 0.8,
-        symbol: "💎",
-        cluster: "gift_archetypes",
-        quality: "Clarity & Precision",
-        description: "Master of context-appropriate expression",
-        coreBelief: "I am the source of my experience. My internal state creates my external reality.",
-        attracts: "Other sovereign beings for co-creation and conscious relationship",
-        invitation: "To balance clarity with compassion and control with surrender",
-        shadow: "Can become rigid or controlling when threatened"
-    },
-    {
-        id: "the_relational_fluent",
-        name: "The Relational Fluent",
-        coordinates: [0.3, 0.2, 0.2, 0.1],
-        color: "#00B4D8",
-        size: 0.85,
-        symbol: "🌊",
-        cluster: "gift_archetypes",
-        quality: "Adaptability & Flow",
-        description: "Flows seamlessly between connection and autonomy",
-        coreBelief: "Connection and autonomy are a dance, not a conflict. I can move between them with grace.",
-        attracts: "Partners who value both deep intimacy and healthy independence",
-        invitation: "To maintain core self while flowing with relational currents",
-        shadow: "Can lose center in turbulent relationships"
-    },
-    {
-        id: "the_embodied_wisdom",
-        name: "The Embodied Wisdom",
-        coordinates: [0.1, 0.4, 0.3, -0.2],
-        color: "#FF6B6B",
-        size: 0.9,
-        symbol: "🎨",
-        cluster: "gift_archetypes",
-        quality: "Grounded Presence & Emotional Intelligence",
-        description: "Grounded presence with emotional intelligence",
-        coreBelief: "My body is an intelligent guide. True knowing comes from integrating mind, heart, and gut.",
-        attracts: "Those ready for deep, present intimacy beyond surface connection",
-        invitation: "To trust bodily wisdom while maintaining healthy energetic boundaries",
-        shadow: "Can become overwhelmed by others' emotional states"
-    },
-    {
-        id: "the_creative_synthesis",
-        name: "The Creative Synthesis",
-        coordinates: [-0.1, 0.3, -0.2, 0.2],
-        color: "#38B000",
-        size: 0.75,
-        symbol: "🌳",
-        cluster: "gift_archetypes",
-        quality: "Generative Innovation",
-        description: "Innovates relational patterns from center",
-        coreBelief: "All parts of me are valuable. By integrating my shadows and gifts, I create new possibilities.",
-        attracts: "Collaborators who see challenges as creative opportunities",
-        invitation: "To balance innovation with appreciation for what already works",
-        shadow: "Can over-complicate simple relationships"
-    },
-    // 20 SHADOW ARCHETYPES
-    {
-        id: "the_tyrant",
-        name: "The Tyrant",
-        coordinates: [-0.9, -0.8, -0.9, -0.7],
-        color: "#6A040F",
-        size: 0.6,
-        symbol: "⚔️",
-        cluster: "control_shadows",
-        wound: "Hyper-control, cannot receive",
-        coreBelief: "The world is unsafe. I must control everything and everyone to protect myself.",
-        shadow: "Domination & Rigidity",
-        invitation: "To release control and learn to receive",
-        attracts: "Rebels who challenge their power or The Doormat who submit to it",
-        integratedForm: "Tyrant → Guardian → Sovereign"
-    },
-    {
-        id: "the_perfectionist",
-        name: "The Perfectionist",
-        coordinates: [-0.8, -0.7, -0.8, 0.6],
-        color: "#6D6875",
-        size: 0.55,
-        symbol: "⚙️",
-        cluster: "control_shadows",
-        wound: "Rigid control masking deep insecurity",
-        coreBelief: "I am only valuable if I am flawless. My mistakes are proof of my unworthiness.",
-        shadow: "Paralyzing Self-Criticism",
-        invitation: "To embrace 'good enough' and the beauty of imperfection",
-        attracts: "Critics who mirror their inner judge, or partners they feel they can 'fix'",
-        integratedForm: "Perfectionist → Analyst → Creative Synthesis"
-    },
-    {
-        id: "the_guardian",
-        name: "The Guardian",
-        coordinates: [-0.7, -0.6, 0.7, -0.8],
-        color: "#1B9AAA",
-        size: 0.65,
-        symbol: "🏹",
-        cluster: "control_shadows",
-        wound: "Protective but emotionally unavailable",
-        coreBelief: "Love means protecting others from pain, even if it means walling off my own heart.",
-        shadow: "Emotional Unavailability",
-        invitation: "To find safety in vulnerability and authentic connection",
-        attracts: "People who feel unsafe or need rescuing, reinforcing their protector role",
-        integratedForm: "Guardian → Anchor → Sovereign"
-    },
-    {
-        id: "the_sentinel",
-        name: "The Sentinel",
-        coordinates: [-0.6, -0.4, 0.9, -0.9],
-        color: "#7F8C8D",
-        size: 0.6,
-        symbol: "🛡️",
-        cluster: "control_shadows",
-        wound: "Over-protects others while remaining emotionally distant",
-        coreBelief: "Confuses protection with love - if I keep everyone safe, I don't have to feel my own vulnerability.",
-        shadow: "Strategic Distance",
-        invitation: "To learn that vulnerability is the gateway to true intimacy",
-        attracts: "Partners who need constant protection, validating their defensive posture",
-        integratedForm: "Sentinel → Embodied Wisdom"
-    },
-    {
-        id: "the_tempest",
-        name: "The Tempest",
-        coordinates: [-0.9, 0.9, -0.8, -0.6],
-        color: "#9D0208",
-        size: 0.95,
-        symbol: "🌋",
-        cluster: "emotional_storm_shadows",
-        wound: "Volcanic emotions with intimacy avoidance",
-        coreBelief: "My emotions are overwhelming and dangerous. I must push people away before I destroy them.",
-        shadow: "Reactive Emotionality",
-        invitation: "To find the ground within the storm and respond with intention",
-        attracts: "Calm, avoidant partners they try to provoke, or anxious partners who fuel drama",
-        integratedForm: "Tempest → Wild → Embodied Wisdom"
-    },
-    {
-        id: "the_destroyer",
-        name: "The Destroyer",
-        coordinates: [-0.95, 0.95, -0.9, 0.8],
-        color: "#DC2F02",
-        size: 1.0,
-        symbol: "🔥",
-        cluster: "emotional_storm_shadows",
-        wound: "Uncontained emotional fire",
-        coreBelief: "If I feel threatened or abandoned, I must burn everything to the ground to regain power.",
-        shadow: "Uncontrolled Destruction",
-        invitation: "To channel intense energy into creative, not destructive, acts",
-        attracts: "Partners who trigger abandonment wounds, creating self-fulfilling destruction",
-        integratedForm: "Destroyer → Creative Synthesis"
-    },
-    {
-        id: "the_crusader",
-        name: "The Crusader",
-        coordinates: [-0.8, 0.8, 0.7, -0.5],
-        color: "#D00000",
-        size: 0.85,
-        symbol: "⚔️",
-        cluster: "emotional_storm_shadows",
-        wound: "Fights for causes to avoid intimacy",
-        coreBelief: "Focusing on a grand cause allows me to avoid the terrifying vulnerability of personal intimacy.",
-        shadow: "Externalized Purpose",
-        invitation: "To find a cause worthy of passion within one's own heart",
-        attracts: "Followers for their cause, or partners willing to take backseat to mission",
-        integratedForm: "Crusader → Relational Fluent"
-    },
-    {
-        id: "the_rebel",
-        name: "The Rebel",
-        coordinates: [-0.9, 0.5, -0.9, 0.3],
-        color: "#7209B7",
-        size: 0.75,
-        symbol: "⚡",
-        cluster: "emotional_storm_shadows",
-        wound: "Rejects all structure and authority, including healthy boundaries",
-        coreBelief: "All rules are prisons. If I conform in any way, I lose myself completely.",
-        shadow: "Chronic Opposition",
-        invitation: "To distinguish between oppressive control and healthy structure",
-        attracts: "Controllers they can rebel against, or followers who admire their defiance",
-        integratedForm: "Rebel → Creative Synthesis"
-    },
-    {
-        id: "the_ghost",
-        name: "The Ghost",
-        coordinates: [0.9, -0.9, -0.9, -0.8],
-        color: "#B8B8B8",
-        size: 0.5,
-        symbol: "👻",
-        cluster: "avoidant_intellectual_shadows",
-        wound: "Complete emotional withdrawal",
-        coreBelief: "To be seen is to be annihilated. The only safety is in complete invisibility.",
-        shadow: "Radical Unavailability",
-        invitation: "To risk being seen in one's true form, even if it feels unsafe",
-        attracts: "Anxious partners who chase them, reinforcing need to disappear",
-        integratedForm: "Ghost → Ice Queen → Oracle"
-    },
-    {
-        id: "the_ice_queen",
-        name: "The Ice Queen",
-        coordinates: [0.8, -0.95, -0.8, -0.9],
-        color: "#A8DADC",
-        size: 0.45,
-        symbol: "❄️",
-        cluster: "avoidant_intellectual_shadows",
-        wound: "Complete emotional shutdown and isolation",
-        coreBelief: "Feelings are weakness. I built these walls of ice to protect a heart that feels too much.",
-        shadow: "Frozen Heart",
-        invitation: "To allow the first crack in the ice and feel the warmth of connection",
-        attracts: "Passionate partners who try to 'melt' them, confirming emotions are invasive",
-        integratedForm: "Ice Queen → Embodied Wisdom"
-    },
-    {
-        id: "the_analyst",
-        name: "The Analyst",
-        coordinates: [0.7, -0.8, 0.5, -0.6],
-        color: "#4CC9F0",
-        size: 0.55,
-        symbol: "🔍",
-        cluster: "avoidant_intellectual_shadows",
-        wound: "Over-analysis prevents authentic experience",
-        coreBelief: "Life is a problem to be solved from a safe distance, not a mystery to be lived.",
-        shadow: "Detached Observation",
-        invitation: "To step into the river of life instead of just studying it from the bank",
-        attracts: "Emotional partners they can study like fascinating alien species",
-        integratedForm: "Analyst → Sage → Creative Synthesis"
-    },
-    {
-        id: "the_anxious_intellectual",
-        name: "The Anxious Intellectual",
-        coordinates: [0.8, -0.7, -0.8, 0.7],
-        color: "#C77DFF",
-        size: 0.6,
-        symbol: "🧠",
-        cluster: "avoidant_intellectual_shadows",
-        wound: "Over-analysis with fear of being seen",
-        coreBelief: "If I can just think my way through my feelings, I can avoid the messiness of actually feeling them.",
-        shadow: "Analysis Paralysis",
-        invitation: "To drop from the mind into the feeling body",
-        attracts: "Emotional partners they can analyze, or intellectuals avoiding embodiment",
-        integratedForm: "Anxious Intellectual → Embodied Wisdom"
-    },
-    {
-        id: "the_martyr",
-        name: "The Martyr",
-        coordinates: [0.6, 0.5, 0.9, 0.8],
-        color: "#457B9D",
-        size: 0.65,
-        symbol: "✝️",
-        cluster: "anxious_connection_shadows",
-        wound: "Complete self-abandonment",
-        coreBelief: "My needs don't matter. My worth comes from sacrificing myself for others.",
-        shadow: "Resentful Self-Sacrifice",
-        invitation: "To honor one's own needs as sacred",
-        attracts: "Narcissists, Tyrants, or 'Takers' who exploit their generosity",
-        integratedForm: "Martyr → Weaver → Relational Fluent"
-    },
-    {
-        id: "the_people_pleaser",
-        name: "The People Pleaser",
-        coordinates: [0.9, 0.3, 0.9, 0.9],
-        color: "#9B5DE5",
-        size: 0.7,
-        symbol: "😊",
-        cluster: "anxious_connection_shadows",
-        wound: "Seeks validation through constant accommodation",
-        coreBelief: "I must agree with everyone and meet their needs to be loved. My true self is unlovable.",
-        shadow: "Identity Loss",
-        invitation: "To disappoint someone today and survive the experience",
-        attracts: "Demanding partners who take advantage of their lack of boundaries",
-        integratedForm: "People Pleaser → Anchor → Sovereign"
-    },
-    {
-        id: "the_sensitive_soul",
-        name: "The Sensitive Soul",
-        coordinates: [0.9, 0.8, 0.8, 0.9],
-        color: "#FF5D8F",
-        size: 0.85,
-        symbol: "🌸",
-        cluster: "anxious_connection_shadows",
-        wound: "Absorbs emotions but fears engulfment",
-        coreBelief: "I feel everything so deeply that I have no skin. Other people's emotions overwhelm and define me.",
-        shadow: "Emotional Sponging",
-        invitation: "To build energetic boundaries that honor both self and other",
-        attracts: "Emotionally chaotic partners they absorb, or stoic partners they try to 'open up'",
-        integratedForm: "Sensitive Soul → Embodied Wisdom"
-    },
-    {
-        id: "the_chameleon",
-        name: "The Chameleon",
-        coordinates: [0.95, 0.4, 0.85, 0.7],
-        color: "#27AE60",
-        size: 0.65,
-        symbol: "🦎",
-        cluster: "anxious_connection_shadows",
-        wound: "Over-adapts to others, losing core identity",
-        coreBelief: "My authentic self is unlovable. I must become what others want me to be.",
-        shadow: "Shape-Shifting",
-        invitation: "To discover which relationships survive self-revelation",
-        attracts: "Partners with strong personalities who don't know the real them",
-        integratedForm: "Chameleon → Relational Fluent"
-    },
-    {
-        id: "the_enchantress",
-        name: "The Enchantress",
-        coordinates: [0.9, 0.7, -0.7, -0.8],
-        color: "#FF006E",
-        size: 0.8,
-        symbol: "🔮",
-        cluster: "seductive_avoidance_shadows",
-        wound: "Magnetic attraction with commitment avoidance",
-        coreBelief: "I can attract anyone, but if they get too close, they will see I am not enough. I must leave first.",
-        shadow: "Seduction & Abandonment",
-        invitation: "To stay and witness the beauty that unfolds after the initial chase",
-        attracts: "Partners who love the chase, reinforcing pattern of intense beginnings and abrupt endings",
-        integratedForm: "Enchantress → Siren → Relational Fluent"
-    },
-    {
-        id: "the_black_widow",
-        name: "The Black Widow",
-        coordinates: [0.8, 0.6, -0.8, -0.7],
-        color: "#6A040F",
-        size: 0.6,
-        symbol: "🕷️",
-        cluster: "seductive_avoidance_shadows",
-        wound: "Uses sexuality as weapon",
-        coreBelief: "Authentic connection is impossible, so I must use seduction and manipulation to get needs met.",
-        shadow: "Manipulative Intimacy",
-        invitation: "To discover the power of authentic, non-transactional connection",
-        attracts: "Partners easily controlled by charm and sexuality, but ultimately disposable",
-        integratedForm: "Black Widow → Sovereign"
-    },
-    {
-        id: "the_trickster",
-        name: "The Trickster",
-        coordinates: [0.7, 0.8, 0.6, -0.6],
-        color: "#F39C12",
-        size: 0.7,
-        symbol: "🃏",
-        cluster: "seductive_avoidance_shadows",
-        wound: "Uses humor and chaos to avoid authentic connection",
-        coreBelief: "If I keep everything light and entertaining, no one will notice how terrified I am of real intimacy.",
-        shadow: "Deflective Humor",
-        invitation: "To trust that being authentic won't lead to rejection",
-        attracts: "Partners who enjoy the entertainment but never know the real person",
-        integratedForm: "Trickster → Creative Synthesis"
-    },
-    {
-        id: "the_siren",
-        name: "The Siren",
-        coordinates: [0.85, 0.75, 0.5, -0.5],
-        color: "#9A48D0",
-        size: 0.75,
-        symbol: "🧜‍♀️",
-        cluster: "seductive_avoidance_shadows",
-        wound: "Creates intense attraction but cannot sustain depth",
-        coreBelief: "My power is in the mystery and the chase. If I let someone truly know me, the magic will disappear.",
-        shadow: "Magnetic Superficiality",
-        invitation: "To discover that true magic lives in sustained intimacy, not just initial attraction",
-        attracts: "Partners addicted to the high of pursuit but unprepared for real relationship",
-        integratedForm: "Siren → Embodied Wisdom"
-    }
-];
+// --- THE 18-PART SYSTEM (source of truth: IV_PARTS in landing/stickers.ts) ---
+
+/** The part the genesis animation anchors on (the calm center of the map). */
+const GENESIS_ANCHOR_ID = 'sage';
+
+type ClusterId = 'managers' | 'firefighters' | 'exiles' | 'resources';
+
+/** Family palette + inline RU/EN names (translations.ts is legacy-only). */
+const FAMILY_META: Record<ClusterId, { ru: string; en: string; color: string }> = {
+  managers: { ru: 'Менеджеры', en: 'Managers', color: '#E1734B' },
+  firefighters: { ru: 'Пожарные', en: 'Firefighters', color: '#E58FA0' },
+  exiles: { ru: 'Изгнанники', en: 'Exiles', color: '#8F63C0' },
+  resources: { ru: 'Ресурсы', en: 'Resources', color: '#46A29D' },
+};
+
+const CLUSTER_BY_FAM: Record<string, ClusterId> = {
+  manager: 'managers',
+  firefighter: 'firefighters',
+  exile: 'exiles',
+  resource: 'resources',
+};
+
+/** Satellite visual mass per family. */
+const SIZE_BY_FAM: Record<string, number> = {
+  manager: 0.75,
+  firefighter: 0.7,
+  exile: 0.6,
+  resource: 0.8,
+};
+
+const PART_SYMBOL: Record<string, string> = {
+  taskmaster: '📋', inner_critic: '🧐', pleaser: '🤝', controller: '🎛', analyst: '🔍',
+  hermit: '🕯', bypasser: '🌫', numb: '🧊', rebel: '⚡', charmer: '💫',
+  abandoned: '🕊', ashamed: '🥀', frightened: '👻', unseen: '🫥',
+  sage: '🦉', warrior: '⚔️', caregiver: '🤲', explorer: '🧭',
+};
+
+/** Plain RU one-liners per part (managers keep order, firefighters react, exiles carry the young pain, resources are the grown strengths). */
+interface PartUniverseCopy {
+  description: string;
+  coreBelief: string;
+  invitation: string;
+  quality?: string;
+  shadow: string;
+  wound?: string;
+  attracts: string;
+}
+
+const PART_COPY: Record<string, PartUniverseCopy> = {
+  // managers
+  taskmaster: {
+    description: 'Заранее раскладывает день по задачам и держит всё под контролем, чтобы неприятности не застали врасплох.',
+    coreBelief: 'Пока я выполняю и контролирую дела, всё идёт как надо.',
+    invitation: 'Разрешить себе одну спокойную паузу и спросить, что для вас важнее скорости.',
+    quality: 'Дисциплина и доведение дел до конца.',
+    shadow: 'Отдых воспринимается как потеря времени, а усталость скрывается до последнего.',
+    wound: 'Боится, что без пользы и результатов его не будут ценить.',
+    attracts: 'Людей и задачи, где ценят надёжность и результат.',
+  },
+  inner_critic: {
+    description: 'Заранее подмечает ошибки и слабые места, чтобы вас никто не раскритиковал со стороны.',
+    coreBelief: 'Если я буду строгим, вы не ошибётесь и вас не отвергнут.',
+    invitation: 'Спросить его, чего он опасается, и поблагодарить за заботу.',
+    quality: 'Требовательность и внимание к деталям.',
+    shadow: 'Любое усилие обесценивается, и остаётся чувство, что вы всегда недостаточно хороши.',
+    wound: 'Запомнил моменты, когда ошибки стоили любви и одобрения.',
+    attracts: 'Задачи, где важны точность и высокое качество.',
+  },
+  pleaser: {
+    description: 'Предвосхищает чужие желания и заранее сглаживает конфликты до того, как они начнутся.',
+    coreBelief: 'Меня примут, только пока я удобен.',
+    invitation: 'Один раз сказать честное «нет» и заметить, что отношения это выдержали.',
+    quality: 'Чуткость к настроению и потребностям людей.',
+    shadow: 'Собственные потребности откладываются так надолго, что перестают замечаться.',
+    wound: 'Усвоил, что любовь нужно заслуживать удобством.',
+    attracts: 'Людей, которым нужна поддержка и внимание.',
+  },
+  controller: {
+    description: 'Продумывает сценарии заранее и держит рычаги управления в своих руках.',
+    coreBelief: 'Если я всё предусмотрю, ничего плохого не случится.',
+    invitation: 'Доверить кому-то часть дел и выдержать небольшую неопределённость.',
+    quality: 'Холодная голова и готовность к любому развитию событий.',
+    shadow: 'Близким не хватает воздуха, а доверие заменяется инструкциями.',
+    wound: 'Живёт с ощущением, что одна ошибка в планировании обернётся катастрофой.',
+    attracts: 'Ситуации, где нужен порядок и ясные правила.',
+  },
+  analyst: {
+    description: 'Раскладывает переживания по полочкам и изучает их с безопасного расстояния.',
+    coreBelief: 'Пока я понимаю происходящее, я в безопасности.',
+    invitation: 'Назвать чувство одним словом до того, как объяснять его причины.',
+    quality: 'Ясное мышление и умение замечать закономерности.',
+    shadow: 'Понимание уходит в бесконечный анализ, а сами чувства остаются в стороне.',
+    wound: 'Когда-то понять происходящее было единственным способом почувствовать опору.',
+    attracts: 'Сложные вопросы без готовых ответов.',
+  },
+  hermit: {
+    description: 'Сокращает контакты до минимума и бережёт покой, пока мир не станет безопаснее.',
+    coreBelief: 'Наедине с собой меня хотя бы никто не ранит.',
+    invitation: 'Выбрать одного человека и сделать маленький шаг навстречу.',
+    quality: 'Умение быть с собой и ценить тишину.',
+    shadow: 'Расстояние до людей растёт, и близость начинает пугать.',
+    wound: 'Помнит, что близость стоила слишком много сил или боли.',
+    attracts: 'Тишину, уединённые занятия и спокойных людей.',
+  },
+  bypasser: {
+    description: 'Быстро переключает внимание на приятное, чтобы тяжёлое осталось позади.',
+    coreBelief: 'Если не задерживаться на плохом, оно пройдёт само.',
+    invitation: 'Дать трудному чувству одну минуту честного внимания.',
+    quality: 'Лёгкость и умение вывести ситуацию из тяжёлого настроения.',
+    shadow: 'Нерешённые вопросы накапливаются и возвращаются в самый неподходящий момент.',
+    wound: 'Когда-то тяжесть была настолько велика, что спасало только переключение.',
+    attracts: 'Лёгкие разговоры и приятные поводы отвлечься.',
+  },
+  // firefighters
+  numb: {
+    description: 'Когда боль подступает слишком близко, выключает чувствительность.',
+    coreBelief: 'Если перестать чувствовать, станет терпимо.',
+    invitation: 'Раз в день тихо спрашивать себя, что я чувствую на самом деле.',
+    quality: 'Способность действовать там, где выносить чувства невозможно.',
+    shadow: 'Вместе с болью притупляются радость и желания.',
+    wound: 'Вынес столько, что чувствительность пришлось отключить.',
+    attracts: 'Ситуации, где можно остаться в стороне от сильных эмоций.',
+  },
+  rebel: {
+    description: 'Вспыхивает против правил и давления, как только чувствует попытку подчинить.',
+    coreBelief: 'Любое правило пытается меня переделать.',
+    invitation: 'Выбрать правило, которое служит его собственной цели.',
+    quality: 'Смелость идти против общего мнения.',
+    shadow: 'Ломает планы и отношения, которые на самом деле важны.',
+    wound: 'Помнит, что свободу приходилось отвоёвывать.',
+    attracts: 'Ситуации с жёсткими правилами и авторитетами.',
+  },
+  charmer: {
+    description: 'Включает обаяние на полную, когда чувствует, что теряет внимание или расположение.',
+    coreBelief: 'Пока я нравлюсь, меня не отвергнут.',
+    invitation: 'Показать одному человеку что-то неотшлифованное и настоящее.',
+    quality: 'Лёгкость в общении и умение разрядить напряжение.',
+    shadow: 'Представление требует всё больше сил, а настоящая близость так и не начинается.',
+    wound: 'Уверен, что без яркой подачи интереса к нему будет мало.',
+    attracts: 'Внимание, восхищение и тёплые компании.',
+  },
+  // exiles
+  abandoned: {
+    description: 'Хранит память о моментах, когда поддержка была нужна больше всего, а рядом никого не оказалось.',
+    coreBelief: 'Те, кого я люблю, в конце концов уходят.',
+    invitation: 'Побыть рядом с ним и не торопить доверие.',
+    quality: 'Способность к глубокой привязанности.',
+    shadow: 'Страх потери заставляет цепляться или уходить первым.',
+    wound: 'Одиночество в самый трудный час.',
+    attracts: 'Отношения, где тепло нужно постоянно подтверждать.',
+  },
+  ashamed: {
+    description: 'Несёт ощущение, что с ним что-то не так, и старается занимать как можно меньше места.',
+    coreBelief: 'Если меня увидят по-настоящему, меня отвергнут.',
+    invitation: 'Показать одному безопасному человеку что-то незаконченное и настоящее.',
+    quality: 'Внимательность к людям и словам.',
+    shadow: 'Целые области жизни прячутся даже от близких.',
+    wound: 'Опыт, когда его видели только с плохой стороны.',
+    attracts: 'Взгляды и оценки, которые легко принять на свой счёт.',
+  },
+  frightened: {
+    description: 'Замечает угрозу там, где другие видят обычные вещи.',
+    coreBelief: 'Опасность всегда может оказаться рядом.',
+    invitation: 'Сделать один маленький шаг в пугающее и вернуться в безопасное место.',
+    quality: 'Способность замечать опасность раньше других.',
+    shadow: 'Жизнь сужается до самого безопасного маршрута.',
+    wound: 'Ранний опыт, когда мир был непредсказуемым.',
+    attracts: 'Перемены и неожиданные новости.',
+  },
+  unseen: {
+    description: 'Привык оставаться в тени и не ждать к себе интереса.',
+    coreBelief: 'Меня всё равно не заметят.',
+    invitation: 'Сказать в группе одно честное предложение и дать ему прозвучать.',
+    quality: 'Наблюдательность и внимание к другим.',
+    shadow: 'Таланты остаются в тени, а присутствие проходит незамеченным.',
+    wound: 'Опыт, когда его присутствие не имело значения.',
+    attracts: 'Компании, в которых легко остаться незамеченным.',
+  },
+  // resources
+  sage: {
+    description: 'Смотрит на ситуацию спокойно и видит её целиком.',
+    coreBelief: 'Ответы на большинство вопросов уже есть внутри меня.',
+    invitation: 'Перед трудным решением спросить его, что здесь важнее всего.',
+    quality: 'Спокойствие и широта взгляда.',
+    shadow: 'Иногда объясняет чувства вместо того, чтобы просто побыть рядом.',
+    attracts: 'Спокойные и глубокие разговоры.',
+  },
+  warrior: {
+    description: 'Чётко определяет границы и защищает то, что важно.',
+    coreBelief: 'Я могу за себя постоять.',
+    invitation: 'Сказать тёплое и твёрдое «нет» одному человеку.',
+    quality: 'Решительность и верность своим границам.',
+    shadow: 'Иногда переходит в атаку там, где хватило бы простого отказа.',
+    attracts: 'Честные договорённости и прямые разговоры.',
+  },
+  caregiver: {
+    description: 'Замечает чужие потребности и даёт тепло, не ведя счёта.',
+    coreBelief: 'Забота делает отношения настоящими.',
+    invitation: 'Подарить один час такой же заботы себе.',
+    quality: 'Щедрость и умение поддержать.',
+    shadow: 'Собственные потребности остаются на последнем месте.',
+    attracts: 'Людей, которым нужна забота и участие.',
+  },
+  explorer: {
+    description: 'Тянется к новому и спокойно относится к незнакомым маршрутам.',
+    coreBelief: 'Новое всегда даёт больше, чем привычное.',
+    invitation: 'Выбрать одно незнакомое дело и попробовать его просто так.',
+    quality: 'Любопытство и готовность пробовать.',
+    shadow: 'Бросает начатое, как только исчезает новизна.',
+    attracts: 'Новые места, идеи и людей.',
+  },
+};
+
+/** One universe archetype per IFS part: 0..100 axes → -1..1 coordinates. */
+function partToArchetype(p: IvPart): Archetype {
+  return {
+    id: p.id,
+    name: p.name[1], // RU-first; language switching falls back to this name
+    coordinates: [
+      (p.ax.ag - 50) / 50,
+      (p.ax.te - 50) / 50,
+      (p.ax.fo - 50) / 50,
+      (p.ax.at - 50) / 50,
+    ],
+    color: p.color,
+    size: SIZE_BY_FAM[p.fam] ?? 0.7,
+    symbol: PART_SYMBOL[p.id] ?? '✦',
+    cluster: CLUSTER_BY_FAM[p.fam],
+    shape: p.shape,
+    glyph: p.glyph,
+    ...(PART_COPY[p.id] ?? {
+      description: p.name[1],
+      coreBelief: p.name[1],
+      invitation: p.name[1],
+      shadow: p.name[1],
+      attracts: p.name[1],
+    }),
+  };
+}
+
+const ALL_ARCHETYPES: Archetype[] = IV_PARTS.map(partToArchetype);
 
 // --- SHADERS FOR QUANTUM SHELLS - ZEN THEME ---
 const ANXIOUS_SHELL = { // Energetic, reaching
@@ -598,43 +487,30 @@ const ILLUSTRATED_BLOB_SHADER = {
 
 
 // --- INTELLIGENT RELATIONAL MAP ---
+// Guard pairs (manager ↔ exile) plus same-family resonances, keyed by part id.
 const RELATIONAL_MAP: { [key: string]: string[] } = {
-  // Gift Archetypes (attract other integrated patterns)
-  the_sovereign: ["the_relational_fluent", "the_embodied_wisdom", "the_creative_synthesis"],
-  the_relational_fluent: ["the_sovereign", "the_embodied_wisdom", "the_creative_synthesis"],
-  the_embodied_wisdom: ["the_sovereign", "the_relational_fluent", "the_creative_synthesis"],
-  the_creative_synthesis: ["the_sovereign", "the_relational_fluent", "the_embodied_wisdom"],
-
-  // --- Shadow Dynamics ---
-  // Cluster 1: Control Shadows
-  the_tyrant: ["the_rebel", "the_people_pleaser", "the_martyr"], // Attracts rebels and submissives ("Doormat")
-  the_perfectionist: ["the_perfectionist", "the_tyrant", "the_people_pleaser", "the_anxious_intellectual"], // Attracts critics and people to "fix"
-  the_guardian: ["the_sensitive_soul", "the_people_pleaser", "the_martyr"], // Attracts those who need rescuing
-  the_sentinel: ["the_sensitive_soul", "the_martyr"], // Attracts those needing constant protection
-
-  // Cluster 2: Emotional Storm Shadows
-  the_tempest: ["the_ice_queen", "the_ghost", "the_analyst", "the_sensitive_soul"], // Provokes calm/avoidant, fuels anxious
-  the_destroyer: ["the_enchantress", "the_ghost", "the_siren"], // Triggers abandonment wounds with avoidant types
-  the_crusader: ["the_people_pleaser", "the_chameleon", "the_martyr"], // Attracts followers
-  the_rebel: ["the_tyrant", "the_guardian", "the_perfectionist", "the_people_pleaser"], // Rebels against controllers, attracts followers
-
-  // Cluster 3: Avoidant Intellectual Shadows
-  the_ghost: ["the_people_pleaser", "the_sensitive_soul", "the_martyr"], // Chased by anxious partners
-  the_ice_queen: ["the_tempest", "the_destroyer", "the_siren", "the_enchantress"], // Attracts passionate partners who try to "melt" them
-  the_analyst: ["the_tempest", "the_sensitive_soul"], // Studies emotional partners
-  the_anxious_intellectual: ["the_tempest", "the_analyst", "the_ice_queen"], // Attracts emotional partners to analyze or other intellectuals
-
-  // Cluster 4: Anxious Connection Shadows
-  the_martyr: ["the_tyrant", "the_black_widow", "the_destroyer"], // Exploited by takers/narcissists
-  the_people_pleaser: ["the_tyrant", "the_crusader", "the_perfectionist"], // Attracts demanding partners
-  the_sensitive_soul: ["the_tempest", "the_destroyer", "the_ice_queen", "the_guardian", "the_analyst"], // Absorbs chaos, tries to open up stoics
-  the_chameleon: ["the_tyrant", "the_sovereign", "the_crusader"], // Attracts strong personalities
-
-  // Cluster 5: Seductive Avoidance Shadows
-  the_enchantress: ["the_rebel", "the_trickster", "the_crusader"], // Attracts partners who love the chase
-  the_black_widow: ["the_people_pleaser", "the_martyr"], // Controls and disposes of partners
-  the_trickster: ["the_people_pleaser", "the_chameleon", "the_sensitive_soul"], // Attracts an audience, not partners
-  the_siren: ["the_rebel", "the_crusader", "the_tempest"], // Addicted to pursuit
+  // managers
+  taskmaster: ['rebel', 'caregiver', 'inner_critic'],
+  inner_critic: ['ashamed', 'sage', 'taskmaster'],
+  pleaser: ['abandoned', 'warrior', 'charmer'],
+  controller: ['frightened', 'explorer', 'rebel'],
+  analyst: ['unseen', 'frightened', 'sage'],
+  hermit: ['abandoned', 'explorer', 'numb'],
+  bypasser: ['ashamed', 'numb', 'charmer'],
+  // firefighters
+  numb: ['frightened', 'abandoned', 'caregiver'],
+  rebel: ['controller', 'taskmaster', 'warrior'],
+  charmer: ['unseen', 'pleaser', 'bypasser'],
+  // exiles
+  abandoned: ['pleaser', 'hermit', 'numb'],
+  ashamed: ['inner_critic', 'bypasser', 'caregiver'],
+  frightened: ['controller', 'analyst', 'sage'],
+  unseen: ['analyst', 'charmer', 'caregiver'],
+  // resources
+  sage: ['inner_critic', 'frightened', 'analyst'],
+  warrior: ['pleaser', 'rebel', 'controller'],
+  caregiver: ['taskmaster', 'numb', 'ashamed'],
+  explorer: ['controller', 'hermit', 'bypasser'],
 };
 
 function coordDistance(a: Archetype, b: Archetype): number {
@@ -649,7 +525,7 @@ export function buildDynamicRelationalIds(source: Archetype, archetypes: Archety
       id: a.id,
       score: coordDistance(source, a)
         - (a.cluster && source.cluster && a.cluster === source.cluster ? 0.75 : 0)
-        - (a.cluster === 'gift_archetypes' ? 0.2 : 0),
+        - (a.cluster === 'resources' ? 0.2 : 0),
     }))
     .sort((a, b) => a.score - b.score)
     .map(a => a.id);
@@ -684,7 +560,10 @@ export class VisualizationService {
     const clusters = new Set(this.allArchetypes().map(a => a.cluster).filter(Boolean) as string[]);
     return Array.from(clusters).map(id => ({
       id,
-      name: this.translationService.t(id, 'universe.clusterNames')
+      // The four IFS families have inline RU/EN names; anything else
+      // (e.g. AI-generated clusters) falls back to the legacy translations.
+      name: FAMILY_META[id as ClusterId]?.[lang === 'en' ? 'en' : 'ru']
+        ?? this.translationService.t(id, 'universe.clusterNames')
     }));
   });
   
@@ -784,7 +663,9 @@ export class VisualizationService {
         if (group) {
           const label = group.getObjectByName('archetypeLabel');
           if (label) {
-            (label as any).element.textContent = this.translationService.getArchetypeField(archetype.id, 'name', archetype.name);
+            // Update only the name chip — the sticker markup must survive
+            const nameEl = (group.userData.labelNameEl as HTMLElement | undefined) ?? (label as any).element;
+            nameEl.textContent = this.translationService.getArchetypeField(archetype.id, 'name', archetype.name);
           }
           // Update shader colors
           const mesh = group.getObjectByName('blobMesh') as THREE.Mesh;
@@ -909,8 +790,8 @@ export class VisualizationService {
     const centerY = 128;
     const baseRadius = 100;
 
-    // Color based on cluster
-    const auraColor = archetype.cluster === 'gift_archetypes' ? '#0072B2' : '#D55E00';
+    // Color based on family
+    const auraColor = (FAMILY_META as Record<string, { color: string }>)[archetype.cluster ?? '']?.color ?? '#D5793B';
 
     // Multiple sketchy circles for hand-drawn effect
     ctx.strokeStyle = auraColor;
@@ -1765,8 +1646,8 @@ export class VisualizationService {
 
     // Pre-calculate initial opacity to match what updateExplorationVisuals will set on first frame
     // This prevents the "vibrant → bleak" flash when entering the universe
-    const isGift = archetype.cluster === 'gift_archetypes';
-    const initialHighlight = isGift ? 0.5 : 0.0;
+    const isResource = archetype.cluster === 'resources';
+    const initialHighlight = isResource ? 0.5 : 0.0;
     const initialOpacity = 0.3 + initialHighlight * 0.7; // matches updateExplorationVisuals formula
 
     const material = new THREE.MeshStandardMaterial({
@@ -1785,26 +1666,53 @@ export class VisualizationService {
     mesh.name = 'blobMesh';
     group.add(mesh);
 
-    // Add floating label
+    // Add floating label: the part's real sticker character over a solid cream name chip
     const labelDiv = document.createElement('div');
     labelDiv.className = 'archetype-label';
-    labelDiv.textContent = this.translationService.getArchetypeField(archetype.id, 'name', archetype.name);
-    labelDiv.style.color = '#4a3e35'; // --ink-main
-    labelDiv.style.backgroundColor = 'rgba(253, 251, 246, 0.9)';
-    labelDiv.style.backdropFilter = 'blur(8px)';
-    labelDiv.style.border = '1px solid rgba(74, 62, 53, 0.15)';
-    labelDiv.style.borderRadius = '12px';
-    labelDiv.style.padding = '4px 12px';
-    labelDiv.style.fontFamily = "'Fraunces', serif";
-    labelDiv.style.fontSize = '14px';
-    labelDiv.style.fontWeight = '700';
-    labelDiv.style.pointerEvents = 'none'; // CRITICAL: Ensure labels don't block clicks
+    labelDiv.style.display = 'flex';
+    labelDiv.style.flexDirection = 'column';
+    labelDiv.style.alignItems = 'center';
+    labelDiv.style.gap = '2px';
+    labelDiv.style.pointerEvents = 'none'; // CRITICAL: Ensure labels don't block clicks (re-enabled when visible)
     labelDiv.style.userSelect = 'none';
-    labelDiv.style.boxShadow = '0 4px 12px rgba(74, 62, 53, 0.12)';
-    labelDiv.style.whiteSpace = 'nowrap';
     labelDiv.style.opacity = '0';
     labelDiv.style.transform = 'translateY(-10px) scale(0.9)';
     labelDiv.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+    const look = this.effectiveLook(archetype);
+    const stickerHost = document.createElement('div');
+    stickerHost.className = 'archetype-label__sticker';
+    stickerHost.style.width = '44px';
+    stickerHost.style.height = '44px';
+    stickerHost.style.pointerEvents = 'none';
+    stickerHost.innerHTML = sticker({
+      name: archetype.name,
+      shape: look.shape,
+      color: look.color,
+      glyph: { e: look.eye, m: look.mouth },
+    });
+    const stickerSvg = stickerHost.querySelector('svg');
+    if (stickerSvg) {
+      stickerSvg.style.width = '100%';
+      stickerSvg.style.height = '100%';
+      stickerSvg.style.display = 'block';
+    }
+
+    const nameChip = document.createElement('span');
+    nameChip.className = 'archetype-label__name';
+    nameChip.textContent = this.translationService.getArchetypeField(archetype.id, 'name', archetype.name);
+    nameChip.style.backgroundColor = '#FBF5E6'; // solid cream — no translucent pill bleeding outside the sticker
+    nameChip.style.border = '1.5px solid #1C1610';
+    nameChip.style.borderRadius = '999px';
+    nameChip.style.padding = '2px 9px';
+    nameChip.style.fontFamily = "'Fraunces', serif";
+    nameChip.style.fontSize = '12px';
+    nameChip.style.fontWeight = '700';
+    nameChip.style.color = '#1C1610';
+    nameChip.style.whiteSpace = 'nowrap';
+    nameChip.style.pointerEvents = 'none';
+    labelDiv.appendChild(stickerHost);
+    labelDiv.appendChild(nameChip);
 
     const label = new CSS2DObject(labelDiv);
     label.position.set(0, baseScale + 0.8, 0); // Position above the blob
@@ -1838,7 +1746,8 @@ export class VisualizationService {
       jiggle: 0,
       mesh,
       shadow,
-      label
+      label,
+      labelNameEl: nameChip
     };
 
     // Create aura
@@ -1848,17 +1757,36 @@ export class VisualizationService {
     group.add(aura);
     group.userData.aura = aura;
 
-    const isSovereign = archetype.id === "the_sovereign";
-    // isGift is already declared above
+    const isAnchor = archetype.id === GENESIS_ANCHOR_ID;
+    // isResource is already declared above
 
-    if (isAnimated && !isSovereign) {
-      group.position.set(isGift ? 0 : (Math.random() - 0.5) * 5, isGift ? 0 : (Math.random() - 0.5) * 5, isGift ? 0 : (Math.random() - 0.5) * 5);
+    if (isAnimated && !isAnchor) {
+      group.position.set(isResource ? 0 : (Math.random() - 0.5) * 5, isResource ? 0 : (Math.random() - 0.5) * 5, isResource ? 0 : (Math.random() - 0.5) * 5);
       material.opacity = 0;
     } else {
       group.position.copy(targetPosition);
     }
 
     return group;
+  }
+
+  /** Effective sticker look for a part: persisted user override ?? part defaults. */
+  private effectiveLook(archetype: Archetype): { shape: string; color: string; eye: EyeKind; mouth: MouthKind } {
+    const override = loadLooks()[archetype.id];
+    if (override) {
+      return {
+        shape: override.shape,
+        color: override.color,
+        eye: override.eye as EyeKind,
+        mouth: override.mouth as MouthKind,
+      };
+    }
+    return {
+      shape: archetype.shape ?? 'taskmaster',
+      color: archetype.color,
+      eye: archetype.glyph?.e ?? 'dot',
+      mouth: archetype.glyph?.m ?? 'smile',
+    };
   }
   
   private animate = (): void => {
@@ -1942,8 +1870,8 @@ export class VisualizationService {
 
     // Animate archetype meshes
     this.archetypeObjects.forEach(group => {
-      const isSovereign = group.userData.archetype.id === "the_sovereign";
-      if (!isSovereign) {
+      const isAnchor = group.userData.archetype.id === GENESIS_ANCHOR_ID;
+      if (!isAnchor) {
         group.position.lerp(group.userData.targetPosition, eased * 0.1);
 
         const mesh = group.getObjectByName('blobMesh') as THREE.Mesh;
@@ -2064,7 +1992,7 @@ export class VisualizationService {
 
         highlightScore = scoreSum / totalExpressionMag;
       } else {
-        highlightScore = (archetype.cluster === 'gift_archetypes') ? 0.5 : 0.0;
+        highlightScore = (archetype.cluster === 'resources') ? 0.5 : 0.0;
       }
       highlightScore = Math.max(highlightScore, (isSelected || isFirstCompare) ? 1.0 : 0.0);
 
@@ -2221,7 +2149,7 @@ export class VisualizationService {
           const auraSprite = aura.children[0] as THREE.Sprite;
           if (auraSprite) {
             const auraMat = auraSprite.material as THREE.SpriteMaterial;
-            const auraColor = archetype.cluster === 'gift_archetypes' ? '#0072B2' : '#D55E00';
+            const auraColor = (FAMILY_META as Record<string, { color: string }>)[archetype.cluster ?? '']?.color ?? '#D5793B';
             auraMat.color.set(auraColor);
             auraMat.opacity = 0.4 + pulse * 0.5;
             const auraScale = finalScale * 2.2 + pulse * 0.3;
@@ -2395,6 +2323,13 @@ export class VisualizationService {
         div.className = 'focus-tag';
         div.textContent = this.translationService.getArchetypeField(focused.id, 'name', focused.name);
         div.style.color = focused.color;
+        div.style.backgroundColor = '#FBF5E6'; // solid cream chip — no translucent backdrop
+        div.style.border = '1.5px solid #1C1610';
+        div.style.borderRadius = '999px';
+        div.style.padding = '3px 10px';
+        div.style.fontFamily = "'Fraunces', serif";
+        div.style.fontSize = '12px';
+        div.style.fontWeight = '700';
         this.focusTag = new CSS2DObject(div);
         obj.add(this.focusTag);
         setTimeout(() => {
@@ -2528,10 +2463,16 @@ export class VisualizationService {
     }
   };
 
+  /** True for the WebGL canvas, a satellite label (sticker or name chip), or a focus tag. */
+  private isUniversePointerTarget(target: EventTarget | null): boolean {
+    if (!(target instanceof Element)) return false;
+    if (target === this.renderer?.domElement) return true;
+    return !!target.closest('.archetype-label, .focus-tag');
+  }
+
   private onPointerDown = (e: PointerEvent) => {
     // Check if the click is on the canvas or an element that should allow pass-through
-    const target = e.target as HTMLElement;
-    if (target !== this.renderer.domElement && !target.classList.contains('archetype-label') && !target.classList.contains('focus-tag')) {
+    if (!this.isUniversePointerTarget(e.target)) {
       return;
     }
     this.isPointerDown = true;
@@ -2540,8 +2481,7 @@ export class VisualizationService {
   }
 
   private onPointerMove = (e: PointerEvent) => {
-    const target = e.target as HTMLElement;
-    const isCanvasOrLabel = target === this.renderer.domElement || target.classList.contains('archetype-label') || target.classList.contains('focus-tag');
+    const isCanvasOrLabel = this.isUniversePointerTarget(e.target);
     
     if (this.isPointerDown && !this.isDragging) {
       if (this.pointerDownPosition.distanceTo(new THREE.Vector2(e.clientX, e.clientY)) > this.dragThreshold) {
@@ -2559,8 +2499,7 @@ export class VisualizationService {
   }
 
   private onPointerUp = (e: PointerEvent) => {
-    const target = e.target as HTMLElement;
-    const isCanvasOrLabel = target === this.renderer.domElement || target.classList.contains('archetype-label') || target.classList.contains('focus-tag');
+    const isCanvasOrLabel = this.isUniversePointerTarget(e.target);
 
     if (this.isPointerDown && !this.isDragging && isCanvasOrLabel) {
       this.pointer.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1);

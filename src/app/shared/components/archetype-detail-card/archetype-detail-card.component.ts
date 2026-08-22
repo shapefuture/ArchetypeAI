@@ -463,6 +463,12 @@ export class ArchetypeDetailCardComponent implements OnInit {
     if (!this.archetype) return [];
 
     const clusterColors: { [key: string]: string[] } = {
+      // The four IFS families
+      managers: ['#E1734B', '#D5793B'],
+      firefighters: ['#E58FA0', '#DE5F50'],
+      exiles: ['#8F63C0', '#7A6FD1'],
+      resources: ['#46A29D', '#2FA39E'],
+      // legacy/AI-generated clusters keep their old ribbons
       gift_archetypes: ['#0072B2', '#009E73'],
       control_shadows: ['#0072B2', '#D55E00'],
       emotional_storm_shadows: ['#D55E00', '#CC79A7'],
@@ -471,12 +477,23 @@ export class ArchetypeDetailCardComponent implements OnInit {
       seductive_avoidance_shadows: ['#CC79A7', '#E69F00']
     };
 
-    return clusterColors[this.archetype.cluster || 'gift_archetypes'] || ['#0072B2', '#009E73'];
+    return clusterColors[this.archetype.cluster || ''] || ['#0072B2', '#009E73'];
   });
 
   // Format cluster name for display
   readonly formattedCluster = computed(() => {
     if (!this.archetype?.cluster) return '';
+    // The four IFS families have inline RU/EN labels
+    const familyNames: { [key: string]: [string, string] } = {
+      managers: ['Managers', 'Менеджеры'],
+      firefighters: ['Firefighters', 'Пожарные'],
+      exiles: ['Exiles', 'Изгнанники'],
+      resources: ['Resources', 'Ресурсы'],
+    };
+    const inline = familyNames[this.archetype.cluster];
+    if (inline) {
+      return this.translationService.getLanguage() === 'en' ? inline[0] : inline[1];
+    }
     // Let the translation service handle it, or format raw if missing
     const tCluster = this.translationService.t(this.archetype.cluster, 'universe.clusterNames');
     if (tCluster && tCluster !== this.archetype.cluster) {

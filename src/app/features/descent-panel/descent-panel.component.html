@@ -6,7 +6,7 @@
   <!-- Shared top bar for the ceremony screens (the item stage has its own sit-top) -->
   @if (stage() !== 'item') {
     <header class="hud">
-      <button class="iconbtn" type="button" (click)="goBack()" aria-label="{{ ui().exit }}">✕</button>
+      <button class="iconbtn" type="button" (click)="exitDescent()" aria-label="{{ ui().exit }}">✕</button>
       <span class="hud-brand">Innerverse</span>
     </header>
   }
@@ -15,7 +15,8 @@
   @if (stage() === 'item') {
     <div class="pad sit">
       <div class="sit-top">
-        <button class="iconbtn" type="button" (click)="goBack()" aria-label="{{ ui().exit }}">✕</button>
+        <button class="iconbtn" type="button" (click)="goBack()"
+                [disabled]="itemIndex() === 0" aria-label="{{ ui().back }}">←</button>
         <div class="starstrip" aria-hidden="true">
           @for (s of sequence.slice(0, 12); track $index) {
             <span class="slot" [class.lit]="$index * 49 < answeredInDescent() * 12">
@@ -26,6 +27,7 @@
           }
         </div>
         <span class="chip"><span class="em" aria-hidden="true">✦</span>{{ litStars() }}</span>
+        <button class="iconbtn" type="button" (click)="exitDescent()" aria-label="{{ ui().exit }}">✕</button>
       </div>
 
       @if (!pendingSomaticPart()) {

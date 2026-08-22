@@ -40,6 +40,7 @@ interface Persisted {
 const UI = {
   en: {
     exit: 'Exit',
+    back: 'Previous statement',
     ethicsTitle: 'Before you descend',
     ethicsSub: 'Three sittings of 49 statements. Pause after any one — progress is kept.',
     planTitle: 'What to expect',
@@ -76,6 +77,7 @@ const UI = {
   },
   ru: {
     exit: 'Выйти',
+    back: 'Предыдущее утверждение',
     ethicsTitle: 'Перед погружением',
     ethicsSub: 'Три части по 49 утверждений. Можно остановиться после любой — прогресс сохранится.',
     planTitle: 'Как всё устроено',
@@ -286,12 +288,18 @@ export class DescentPanelComponent implements OnDestroy {
     this.cancelled.emit();
   }
 
+  /** Previous statement only — never exits the flow (that's exitDescent). */
   goBack(): void {
-    if (this.stage() === 'item' && this.itemIndex() > 0) {
+    if (this.stage() !== 'item') return;
+    if (this.itemIndex() > 0) {
       this.itemIndex.update(i => i - 1);
       this.persist();
-      return;
     }
+  }
+
+  /** Leave the descent entirely — progress is already persisted per answer. */
+  exitDescent(): void {
+    this.persist();
     this.cancelled.emit();
   }
 

@@ -117,6 +117,8 @@
   transition: transform 0.15s var(--spring);
 }
 .iconbtn:active { transform: scale(0.9) rotate(-6deg); }
+.iconbtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.iconbtn:disabled:active { transform: none; }
 
 .chip {
   display: inline-flex;

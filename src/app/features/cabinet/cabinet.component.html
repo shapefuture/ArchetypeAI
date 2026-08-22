@@ -72,7 +72,7 @@
                   (change)="onSelectVersion($any($event.target).value)">
                   @for (h of history(); track h.updatedAt) {
                     <option [value]="h.updatedAt">
-                      {{ formatTs(($any(h).createdAt || h.updatedAt)) }} — {{ h.scoringMethod }}
+                      {{ formatTs(($any(h).createdAt || h.updatedAt)) }} — {{ scoringLabel(h.scoringMethod) }}
                     </option>
                   }
                 </select>
@@ -80,9 +80,11 @@
 
               @if (selectedHistoryEntry(); as entry) {
                 <div class="cab-selected">
-                  <div class="cab-kicker">{{ t('selected', 'Selected') }}</div>
+                  <div class="cab-selected__head">
+                    <span class="cab-kicker">{{ t('selected', 'Selected') }}</span>
+                    <span class="cab-chip cab-chip--sm">{{ scoringLabel(entry.scoringMethod) }}</span>
+                  </div>
                   <div class="cab-selected__ts">{{ formatTs(($any(entry).createdAt || entry.updatedAt)) }}</div>
-                  <div class="cab-chip">{{ entry.scoringMethod }}</div>
                   <button type="button"
                           class="cab-btn cab-btn--primary cab-selected__btn"
                           (click)="downloadSelectedHistoryBackup()">
@@ -359,7 +361,7 @@
                             <li class="cab-version">
                               <div class="cab-version__meta">
                                 <div class="cab-version__ts">{{ formatTs(($any(h).createdAt || h.updatedAt)) }}</div>
-                                <div class="cab-chip cab-chip--sm">{{ h.scoringMethod }}</div>
+                                <div class="cab-chip cab-chip--sm">{{ scoringLabel(h.scoringMethod) }}</div>
                               </div>
                               <button type="button"
                                       class="cab-btn cab-btn--ghost cab-btn--sm"

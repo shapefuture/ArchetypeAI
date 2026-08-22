@@ -730,14 +730,21 @@ export class AppComponent implements OnDestroy {
 
   openInnerverse(): void {
     if (this.innerverseProfile()) this.appState.set('innerverse');
+    else this.startDescent();
   }
 
   readonly checkinOpen = signal(false);
-  openCheckin(): void { this.checkinOpen.set(true); }
+  openCheckin(): void {
+    if (this.innerverseProfile()) this.checkinOpen.set(true);
+    else this.startDescent();
+  }
   closeCheckin(): void { this.checkinOpen.set(false); }
 
   readonly practiceOpen = signal(false);
-  openPractice(): void { this.practiceOpen.set(true); }
+  openPractice(): void {
+    if (this.innerverseProfile()) this.practiceOpen.set(true);
+    else this.startDescent();
+  }
   closePractice(): void { this.practiceOpen.set(false); }
 
   readonly quickScanOpen = signal(false);
@@ -749,7 +756,10 @@ export class AppComponent implements OnDestroy {
   closeTherapist(): void { this.therapistOpen.set(false); }
 
   readonly synastryOpen = signal(false);
-  openSynastry(): void { this.synastryOpen.set(true); }
+  openSynastry(): void {
+    if (this.innerverseProfile()) this.synastryOpen.set(true);
+    else this.startDescent();
+  }
   closeSynastry(): void { this.synastryOpen.set(false); }
 
   toggleLanguage(): void {

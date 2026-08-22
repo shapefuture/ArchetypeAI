@@ -195,21 +195,13 @@
         </div>
 
         <div class="you-btns">
-          <button class="btn full" [disabled]="!hasCompletedBackup()"
-                  [style.opacity]="hasCompletedBackup() ? '1' : '.5'"
-                  [style.pointer-events]="hasCompletedBackup() ? 'auto' : 'none'"
+          <button class="btn full"
                   (click)="reportRequested.emit()">🗺️&nbsp; {{ t('youReport') }}</button>
-          <button class="btn ghost full" [disabled]="!hasCompletedBackup()"
-                  [style.opacity]="hasCompletedBackup() ? '1' : '.5'"
-                  [style.pointer-events]="hasCompletedBackup() ? 'auto' : 'none'"
+          <button class="btn ghost full"
                   (click)="checkinRequested.emit()">◐&nbsp; {{ t('youCheckin') }}</button>
-          <button class="btn ghost full" [disabled]="!hasCompletedBackup()"
-                  [style.opacity]="hasCompletedBackup() ? '1' : '.5'"
-                  [style.pointer-events]="hasCompletedBackup() ? 'auto' : 'none'"
+          <button class="btn ghost full"
                   (click)="practiceRequested.emit()">◈&nbsp; {{ t('youPractice') }}</button>
-          <button class="btn ghost full" [disabled]="!hasCompletedBackup()"
-                  [style.opacity]="hasCompletedBackup() ? '1' : '.5'"
-                  [style.pointer-events]="hasCompletedBackup() ? 'auto' : 'none'"
+          <button class="btn ghost full"
                   (click)="synastryRequested.emit()">∞&nbsp; {{ t('youSynastry') }}</button>
           @if (!hasCompletedBackup()) {
             <p class="tiny lockedhint">{{ t('youLockedHint') }}</p>

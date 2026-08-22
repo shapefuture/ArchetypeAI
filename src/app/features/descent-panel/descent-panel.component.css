@@ -1,809 +1,617 @@
-/* Innerverse Descents — deep indigo cosmos, warm glows (§3) */
+/* =====================================================================
+   INNERVERSE — The Descents · sticker storybook skin (light, paper)
+   Mirrors the reference design ("inner verse.html"): cream paper, ink
+   2px outlines, lemon primary, pop shadows, Lilita One display type,
+   Fraunces italic statements. No dark backgrounds anywhere.
+   ===================================================================== */
 .descent-viewport {
+  /* tokens (from the reference :root) */
+  --paper: #F5EEDD;
+  --paper2: #EDE2C6;
+  --card: #FBF5E6;
+  --ink: #332A1F;
+  --ink2: #5C5142;
+  --ink3: #857A69;
+  --outline: #1C1610;
+  --lemon: #F7DD4A;
+  --cyan: oklch(64% 0.11 188);
+  --orange: oklch(64% 0.19 32);
+  --pink: oklch(74% 0.15 12);
+  --pop: 0 3px 0 #1C1610;
+  --pop2: 0 4px 0 #1C1610;
+  --spring: cubic-bezier(0.34, 1.45, 0.4, 1);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: #0b0b1e;
-  color: #eceaf6;
-  font-family: var(--font-serif);
   overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+  font-size: 16px;
 }
 
+.descent-viewport button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.descent-viewport :focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* faint constellation on paper (reference .app::before) */
 .descent-bg {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(94, 84, 168, 0.28), transparent 60%),
-    radial-gradient(ellipse 60% 40% at 90% 110%, rgba(242, 231, 201, 0.07), transparent 60%),
-    #0b0b1e;
+  z-index: 0;
   pointer-events: none;
+  opacity: 0.5;
+  background:
+    radial-gradient(2px 2px at 12% 18%, rgba(28, 22, 16, 0.22) 50%, transparent 51%),
+    radial-gradient(2px 2px at 78% 9%, rgba(28, 22, 16, 0.18) 50%, transparent 51%),
+    radial-gradient(2px 2px at 90% 62%, rgba(28, 22, 16, 0.2) 50%, transparent 51%),
+    radial-gradient(2px 2px at 8% 80%, rgba(28, 22, 16, 0.18) 50%, transparent 51%),
+    radial-gradient(2px 2px at 55% 92%, rgba(28, 22, 16, 0.2) 50%, transparent 51%);
 }
 
-.descent-header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
+/* ---------- shared type ---------- */
+.kicker {
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+.tiny {
+  font-size: 11.5px;
+  color: var(--ink3);
+  line-height: 1.4;
+  margin: 0;
+}
+.headline {
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 0.98;
+  font-size: clamp(26px, 7.2vw, 34px);
+  color: var(--ink);
+  margin: 0;
+  max-width: 22ch;
+  text-wrap: balance;
+}
+.sub {
+  font-size: 15.5px;
+  color: var(--ink2);
+  max-width: 36ch;
+  margin: 0;
+  line-height: 1.5;
 }
 
-.ghost-btn {
+/* ---------- sticker primitives (reference .iconbtn / .chip) ---------- */
+.iconbtn {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  border: 2px solid var(--outline);
+  box-shadow: 0 2px 0 var(--outline);
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--ink);
+  transition: transform 0.15s var(--spring);
+}
+.iconbtn:active { transform: scale(0.9) rotate(-6deg); }
+
+.chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: none;
-  border: none;
-  color: rgba(236, 234, 246, 0.55);
-  font: inherit;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 2px solid var(--outline);
+  box-shadow: 0 2px 0 var(--outline);
+  font-weight: 700;
   font-size: 13px;
-  cursor: pointer;
-  padding: 6px;
+  white-space: nowrap;
 }
-.ghost-btn svg { width: 14px; height: 14px; }
-.ghost-btn:hover { color: #eceaf6; }
+.chip .em { font-size: 14px; }
+.chip-stars { font-family: 'Lilita One', system-ui, sans-serif; letter-spacing: 0.04em; padding: 8px 14px; }
 
-.stage-indicator { text-align: right; }
-.stage-text {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(236, 234, 246, 0.6);
-}
-
-.star-track {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  justify-content: flex-end;
-  margin-top: 6px;
-  max-width: 46vw;
-}
-.star {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: rgba(236, 234, 246, 0.14);
-}
-.star.lit {
-  background: #f2e7c9;
-  box-shadow: 0 0 6px rgba(242, 231, 201, 0.7);
-}
-
-.descent-main {
+/* ---------- top bars ---------- */
+.hud {
   position: relative;
-  z-index: 2;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(14px + var(--sat)) 20px 6px;
+}
+.hud-brand {
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.pad {
+  position: relative;
+  z-index: 1;
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: calc(14px + var(--sat)) 20px calc(16px + var(--sab));
+}
+
+/* ---------- item stage (reference #s-sit) ---------- */
+.sit-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.starstrip {
+  flex: 1;
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  min-width: 0;
+}
+.starstrip .slot {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 23px;
+  display: flex;
+  justify-content: center;
+  transition: transform 0.35s var(--spring);
+}
+.starstrip .slot.lit { animation: popstar 0.5s var(--spring); }
+.starstrip svg {
+  display: block;
+  width: 100%;
+  max-width: 21px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  opacity: 0.9;
+}
+.starstrip path {
+  fill: none;
+  stroke: rgba(51, 42, 31, 0.32);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-dasharray: 3 2.2;
+}
+.starstrip .slot.lit path {
+  fill: #F7DD4A;
+  stroke: #1C1610;
+  stroke-dasharray: none;
+}
+@keyframes popstar {
+  0% { transform: scale(0.2) rotate(-40deg); }
+  70% { transform: scale(1.35) rotate(8deg); }
+  100% { transform: scale(1); }
+}
+
+.sit-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* statement card (reference .qcardbig) */
+.qwrap { perspective: 900px; width: 100%; display: flex; justify-content: center; }
+.qcardbig {
+  background: var(--card);
+  border: 2.5px solid var(--outline);
+  border-radius: 28px;
+  box-shadow: 0 5px 0 var(--outline);
+  padding: 26px 22px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 14px;
   text-align: center;
-  padding: 0 22px 10vh;
-  gap: 18px;
+  width: 100%;
+  max-width: 480px;
+  will-change: transform, opacity;
 }
-
-.headline {
-  font-size: clamp(26px, 6vw, 40px);
-  font-weight: 400;
-  max-width: 22ch;
-  margin: 0;
-  line-height: 1.25;
+.qcardbig.fling { animation: fling 0.28s cubic-bezier(0.5, 0, 0.9, 0.4) forwards; }
+@keyframes fling {
+  to { transform: translateX(120%) rotate(9deg); opacity: 0; }
 }
-
-.sub {
-  font-size: 15px;
-  color: rgba(236, 234, 246, 0.65);
-  max-width: 44ch;
-  margin: 0;
-  line-height: 1.6;
+.qcardbig.enter { animation: enterq 0.45s var(--spring); }
+@keyframes enterq {
+  0% { transform: translateX(-60%) rotate(-6deg) scale(0.9); opacity: 0; }
+  100% { transform: none; opacity: 1; }
 }
-
-.tiny { font-size: 11px; color: rgba(236, 234, 246, 0.35); }
-.scan-count { font-size: 12px; letter-spacing: 0.2em; color: rgba(236, 234, 246, 0.45); }
-
 .item-text {
-  font-size: clamp(20px, 4.6vw, 30px);
-  font-weight: 400;
-  max-width: 26ch;
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(21px, 5.9vw, 25px);
+  line-height: 1.32;
+  letter-spacing: -0.01em;
   margin: 0;
-  line-height: 1.45;
-  animation: itemIn 0.15s ease-out;
-}
-.descent-main.leaving .item-text { opacity: 0.35; }
-@keyframes itemIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
+  max-width: 26ch;
 }
 
-/* Thumb-reach Likert: large targets near the bottom edge */
+/* answers — 2-col sticker grid with a warm tint ramp (reference .ans) */
 .likert {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: min(480px, 92vw);
-  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: min(480px, 100%);
+  margin: 0 auto;
 }
 .likert-btn {
-  font: inherit;
+  min-height: 62px;
+  border-radius: 18px;
+  border: 2px solid var(--outline);
+  box-shadow: var(--pop);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 8px;
+  font-family: 'Lilita One', system-ui, sans-serif;
   font-size: 15px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(236, 234, 246, 0.14);
-  background: rgba(236, 234, 246, 0.045);
-  color: #eceaf6;
-  cursor: pointer;
-  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
-}
-.likert-btn:hover, .likert-btn:focus-visible {
-  background: rgba(242, 231, 201, 0.1);
-  border-color: rgba(242, 231, 201, 0.45);
-  transform: translateY(-1px);
-  outline: none;
-}
-
-.cta-column { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-.primary-btn, .secondary-btn {
-  font: inherit;
-  font-size: 16px;
-  padding: 14px 26px;
-  border-radius: 999px;
-  cursor: pointer;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-align: center;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.primary-btn {
-  border: 1px solid #f2e7c9;
-  background: #f2e7c9;
-  color: #1b1a2e;
+.likert-btn .em { font-size: 19px; }
+.likert-btn:nth-child(2) { background: color-mix(in srgb, var(--cyan) 20%, var(--card)); }
+.likert-btn:nth-child(3) { background: color-mix(in srgb, var(--orange) 22%, var(--card)); }
+.likert-btn:nth-child(4) { background: color-mix(in srgb, var(--orange) 34%, var(--card)); }
+.likert-btn:nth-child(5) {
+  grid-column: 1 / -1;
+  background: color-mix(in srgb, var(--pink) 38%, var(--card));
 }
-.primary-btn:hover { transform: translateY(-1px); box-shadow: 0 0 24px rgba(242, 231, 201, 0.35); }
-.secondary-btn {
-  border: 1px solid rgba(236, 234, 246, 0.25);
-  background: none;
-  color: rgba(236, 234, 246, 0.8);
-}
-.secondary-btn:hover { border-color: rgba(236, 234, 246, 0.6); color: #eceaf6; }
+.likert-btn:hover { transform: translateY(-2px); }
+.likert-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--outline); }
 
-.ethics-card {
-  border: 1px solid rgba(242, 231, 201, 0.25);
-  border-radius: 16px;
-  padding: 20px 22px;
-  max-width: 46ch;
-  background: rgba(242, 231, 201, 0.04);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.ethics-card p { margin: 0; font-size: 15px; line-height: 1.6; color: rgba(236, 234, 246, 0.85); }
+.hint { text-align: center; }
 
-/* "What to expect" — the three-sitting plan, so the shape of the journey
- * is known before the first statement. */
-.plan-block {
+/* ---------- somatic follow-up: bottom sheet ---------- */
+.sheetwrap {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px;
-  border: 1px solid rgba(242, 231, 201, 0.16);
-  border-radius: 12px;
-  background: rgba(13, 13, 36, 0.35);
+  justify-content: flex-end;
+  pointer-events: none;
 }
-.plan-title {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(242, 231, 201, 0.6);
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 22, 16, 0.28);
+  animation: fadein 0.3s ease;
 }
-.sittings-row {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.sitting {
+@keyframes fadein { from { opacity: 0; } }
+.sheet {
+  pointer-events: auto;
+  position: relative;
+  background: var(--card);
+  border: 2.5px solid var(--outline);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -3px 0 var(--outline);
+  padding: 10px 20px calc(20px + var(--sab));
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 10px 14px;
-  border: 1px solid rgba(236, 234, 246, 0.18);
-  border-radius: 10px;
-  background: rgba(236, 234, 246, 0.05);
+  align-items: center;
+  gap: 14px;
+  animation: sheetup 0.45s var(--spring);
+}
+@keyframes sheetup { from { transform: translateY(105%); } }
+.grip {
+  width: 44px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(51, 42, 31, 0.2);
+  margin-bottom: 2px;
+}
+.sheet-q {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(21px, 5.9vw, 25px);
+  line-height: 1.32;
+  letter-spacing: -0.01em;
+  margin: 0;
   text-align: center;
 }
-.sitting-name { font-family: var(--font-serif); font-size: 15px; color: #f2e7c9; }
-.sitting-meta { font-size: 11px; letter-spacing: 0.04em; color: rgba(236, 234, 246, 0.55); }
-.sitting-gap {
-  align-self: center;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: rgba(236, 234, 246, 0.4);
-  white-space: nowrap;
-}
-.ethics-why {
-  font-size: 13px !important;
-  line-height: 1.55 !important;
-  color: rgba(236, 234, 246, 0.6) !important;
-  font-style: italic;
-}
-
 .zone-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
-  width: min(420px, 90vw);
+  width: 100%;
+  max-width: 480px;
 }
 .zone-btn {
-  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 2px solid var(--outline);
+  box-shadow: 0 2px 0 var(--outline);
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
   font-size: 14px;
-  padding: 12px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(236, 234, 246, 0.18);
-  background: rgba(236, 234, 246, 0.05);
-  color: #eceaf6;
-  cursor: pointer;
+  color: var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.zone-btn:hover { border-color: rgba(242, 231, 201, 0.5); }
-
-.stars-summary { font-size: 13px; color: rgba(242, 231, 201, 0.7); letter-spacing: 0.2em; }
-
-@media (prefers-reduced-motion: reduce) {
-  .item-text { animation: none; }
-  .likert-btn, .primary-btn, .secondary-btn { transition: none; }
-}
-
-.recalibrated {
-  font-size: 13px;
-  line-height: 1.55;
-  max-width: 44ch;
-  color: #ecc8bc;
-  border: 1px solid rgba(217, 138, 116, 0.45);
-  background: rgba(217, 138, 116, 0.07);
-  border-radius: 12px;
-  padding: 12px 14px;
-}
-.ethics-sub {
-  color: #f2e7c9;
+.zone-btn:hover { transform: translateY(-2px); }
+.zone-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--outline); }
+.skip-link {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink2);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 6px;
 }
 
-.future-self-main { gap: 14px; overflow-y: auto; }
-.fs-form { display: flex; flex-direction: column; gap: 10px; width: min(560px, 94vw); }
-.fs-q { display: flex; flex-direction: column; gap: 6px; text-align: left; font-size: 14px; color: rgba(236, 234, 246, 0.8); }
-.fs-q textarea {
-  font: inherit; font-size: 14px; color: #eceaf6; padding: 10px;
-  background: rgba(236, 234, 246, 0.05); border: 1px solid rgba(236, 234, 246, 0.2);
-  border-radius: 10px; resize: vertical;
+/* ---------- ceremony screens (ethics / break / future-self / complete) ---------- */
+.descent-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+  padding: 8px 20px calc(24px + var(--sab));
 }
-.primary-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
+.descent-main.scroll { overflow-y: auto; justify-content: flex-start; padding-top: 14px; }
 
-/* UI micro-copy in the sans identity (Fraunces stays for content) */
-.stage-text { font-family: var(--font-sans); }
-.star { font-family: var(--font-sans); }
-.ghost-btn { font-family: var(--font-sans); }
-.tiny { font-family: var(--font-sans); }
-.stars-summary { font-family: var(--font-sans); }
-/* =====================================================================
-   INNERVERSE APP SKIN — night ceremony language (reference #s-reveal /
-   #s-sit on #181432): twinkle starfield, gold Lilita kickers, cream
-   ghost pills, lemon primary with ink outline and pop shadow.
-   ===================================================================== */
-.descent-viewport {
-  background: #181432;
-  color: #f0e9d3;
-}
-
-.descent-bg {
-  background:
-    radial-gradient(2px 2px at 15% 25%, rgba(255, 255, 255, 0.7) 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 80% 15%, rgba(255, 255, 255, 0.55) 50%, transparent 51%),
-    radial-gradient(2px 2px at 70% 75%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 30% 85%, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
-    radial-gradient(2px 2px at 90% 45%, rgba(255, 255, 255, 0.45) 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 45% 60%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
-    #181432;
-  animation: iv-twinkle 3s ease-in-out infinite alternate;
-}
-@keyframes iv-twinkle { from { opacity: 0.45; } to { opacity: 1; } }
-
-.stage-text {
-  font-family: 'Lilita One', var(--font-sans);
-  letter-spacing: 0.22em;
-  color: #edd75c;
-}
-
-.ghost-btn {
-  color: rgba(240, 233, 211, 0.6);
-  font-family: var(--font-sans);
-}
-.ghost-btn:hover { color: #f0e9d3; }
-
-.star {
-  width: 7px;
-  height: 7px;
-  border-radius: 2px;
-  transform: rotate(45deg);
-  background: rgba(240, 233, 211, 0.14);
-}
-.star.lit {
-  background: #edd75c;
-  box-shadow: none;
-}
-
-.headline {
-  font-family: 'Lilita One', var(--font-sans);
-  text-transform: uppercase;
-  line-height: 0.98;
-  letter-spacing: 0.015em;
-}
-
-.item-text {
-  font-style: italic;
-  letter-spacing: -0.01em;
-  color: #f7eeda;
-}
-
-.sub { color: rgba(240, 233, 211, 0.65); }
-.tiny { color: rgba(240, 233, 211, 0.4); }
-
-/* Likert — cream ghost pills on night (reference .btn.ghost on #s-reveal) */
-.likert-btn {
-  border: 1.5px solid rgba(240, 233, 211, 0.4);
-  background: transparent;
-  color: #f0e9d3;
-  border-radius: 999px;
-  min-height: 54px;
-  padding: 12px 20px;
-  font-family: var(--font-sans);
-}
-.likert-btn:hover,
-.likert-btn:focus-visible {
-  background: rgba(240, 233, 211, 0.08);
-  border-color: rgba(240, 233, 211, 0.6);
-  transform: translateY(-1px);
-}
-.likert-btn:active {
-  background: var(--accent-yellow);
-  border-color: #1c1610;
-  color: #1c1610;
-  transform: translateY(3px);
-}
-
-/* primary — lemon with ink outline + night pop shadow (reference) */
-.primary-btn {
-  background: var(--accent-yellow);
-  color: #1c1610;
-  border: 2px solid #1c1610;
-  box-shadow: 0 4px 0 oklch(8% 0.03 275);
-  font-family: 'Lilita One', var(--font-sans);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.primary-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 0 oklch(8% 0.03 275);
-  background: var(--accent-yellow);
-}
-.primary-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 oklch(8% 0.03 275); }
-
-.secondary-btn {
-  border: 1.5px solid rgba(240, 233, 211, 0.4);
-  background: transparent;
-  color: #f0e9d3;
-  border-radius: 999px;
-}
-.secondary-btn:hover {
-  border-color: rgba(240, 233, 211, 0.7);
-  color: #f0e9d3;
-  background: rgba(240, 233, 211, 0.06);
-}
-
-.ethics-card {
-  border: 1.5px solid rgba(240, 233, 211, 0.3);
-  border-radius: 24px;
-  background: oklch(22% 0.048 280);
-}
-.ethics-card p { color: rgba(240, 233, 211, 0.85); }
-.ethics-sub { color: #edd75c; }
-
-.plan-block {
-  border: 1.5px solid rgba(240, 233, 211, 0.22);
-  border-radius: 20px;
-  background: oklch(22% 0.048 280);
-}
-.plan-title {
-  font-family: 'Lilita One', var(--font-sans);
-  color: #edd75c;
-  letter-spacing: 0.18em;
-}
-.sitting {
-  border: 1.5px solid rgba(240, 233, 211, 0.25);
-  border-radius: 16px;
-  background: rgba(240, 233, 211, 0.04);
-}
-.sitting-name { color: #edd75c; }
-.sitting-meta { color: rgba(240, 233, 211, 0.55); }
-
-.zone-btn {
-  border: 1.5px solid rgba(240, 233, 211, 0.3);
-  border-radius: 16px;
-  background: transparent;
-  color: #f0e9d3;
-}
-.zone-btn:hover { border-color: #edd75c; background: rgba(240, 233, 211, 0.06); }
-
-.stars-summary { color: #edd75c; letter-spacing: 0.18em; }
-
-.recalibrated {
-  color: #f0c9bc;
-  border: 1.5px solid rgba(229, 143, 166, 0.45);
-  background: rgba(229, 143, 166, 0.08);
-  border-radius: 16px;
-}
-
-.fs-q textarea {
-  background: rgba(240, 233, 211, 0.05);
-  border: 1.5px solid rgba(240, 233, 211, 0.3);
-  border-radius: 14px;
-  color: #f0e9d3;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .descent-bg { animation: none; }
-}
-
-/* =====================================================================
-   CEREMONY PASS 2 — the intro/break screens get the full treatment:
-   Nova mascot, a VISIBLE starfield, gold display headline, bordered
-   cards with real contrast. (The first pass only re-tinted; users
-   rightly read that as "not redesigned".)
-   ===================================================================== */
-.descent-bg {
-  background:
-    radial-gradient(2.5px 2.5px at 12% 18%, rgba(255, 255, 255, 0.85) 50%, transparent 51%),
-    radial-gradient(2px 2px at 82% 12%, rgba(255, 255, 255, 0.7) 50%, transparent 51%),
-    radial-gradient(2.5px 2.5px at 72% 78%, rgba(255, 255, 255, 0.65) 50%, transparent 51%),
-    radial-gradient(2px 2px at 28% 86%, rgba(255, 255, 255, 0.75) 50%, transparent 51%),
-    radial-gradient(2.5px 2.5px at 92% 44%, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
-    radial-gradient(2px 2px at 45% 62%, rgba(255, 255, 255, 0.7) 50%, transparent 51%),
-    radial-gradient(2px 2px at 8% 55%, rgba(255, 255, 255, 0.55) 50%, transparent 51%),
-    radial-gradient(2.5px 2.5px at 60% 30%, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
-    radial-gradient(2px 2px at 35% 8%, rgba(255, 255, 255, 0.65) 50%, transparent 51%),
-    radial-gradient(2px 2px at 95% 70%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
-    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(94, 84, 168, 0.28), transparent 60%),
-    #181432;
+.gate-card {
+  width: min(460px, 100%);
+  margin: auto 0;
+  background: var(--card);
+  border: 2px solid var(--outline);
+  border-radius: 22px;
+  box-shadow: var(--pop2);
+  padding: 22px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
 }
 
 .nova-float {
-  width: 96px;
-  margin: 0 auto 6px;
+  width: 84px;
+  margin: 0 auto;
   animation: novaFloaty 3.4s ease-in-out infinite;
-  filter: drop-shadow(0 8px 0 rgba(10, 8, 24, 0.6));
 }
-.nova-float svg { width: 96px; height: 96px; display: block; }
+.nova-float svg { width: 84px; height: 84px; display: block; }
 @keyframes novaFloaty {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
 
-.headline {
-  font-family: 'Lilita One', var(--font-sans);
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  line-height: 0.98;
-  color: #edd75c;
-  text-wrap: balance;
-}
-
-.ethics-card {
-  text-align: left;
-  padding: 22px 22px 20px;
-  gap: 12px;
-  max-width: 52ch;
-}
-.ethics-card p { font-family: var(--font-serif); font-style: italic; font-size: 15.5px; }
-.ethics-sub {
-  font-family: 'Lilita One', var(--font-sans) !important;
-  font-style: normal !important;
-  font-size: 13px !important;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.plan-block { padding: 16px; gap: 12px; }
-.plan-title { font-size: 12px; }
-.sitting {
-  min-width: 96px;
-  padding: 12px 14px;
-  gap: 5px;
-  border-width: 1.5px;
-  box-shadow: 0 3px 0 oklch(8% 0.03 275);
-}
-.sitting-name {
-  font-family: 'Lilita One', var(--font-sans);
-  font-size: 15px;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-.sitting-gap { color: #edd75c; }
-
-.ethics-why { color: rgba(240, 233, 211, 0.68) !important; }
-
-.cta-column { width: min(420px, 92vw); margin-top: 6px; }
-.cta-column .primary-btn { width: 100%; }
-.cta-column .secondary-btn { width: 100%; }
-
-.stars-summary {
-  font-family: 'Lilita One', var(--font-sans);
-  font-size: 15px;
-  color: #edd75c;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nova-float { animation: none; }
-}
-
-/* ---------- compact ceremony intro: button above the fold ---------- */
-.plan-row {
+/* the plan rows — small storybook cards */
+.sittings-row {
   display: flex;
   align-items: stretch;
   justify-content: center;
   gap: 8px;
-  width: min(440px, 94vw);
+  width: 100%;
+  flex-wrap: wrap;
 }
-.plan-row .sitting {
-  flex: 1;
+.sitting {
+  flex: 1 1 100px;
   min-width: 0;
-  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 8px;
+  background: var(--card);
+  border: 2px solid var(--outline);
+  border-radius: 16px;
+  box-shadow: var(--pop);
   text-align: center;
 }
-.plan-row .sitting-meta { font-size: 9.5px; letter-spacing: 0.02em; }
-.plan-row .sitting-gap { align-self: center; color: #edd75c; font-size: 12px; }
+.sitting-name {
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.sitting-meta { font-size: 11px; line-height: 1.35; color: var(--ink3); }
+.sitting-gap { align-self: center; font-size: 12px; color: var(--ink3); }
 
-.descent-main .sub {
-  color: rgba(240, 233, 211, 0.88);
-  font-size: 16.5px;
-  max-width: 34ch;
+/* buttons (reference .btn / .btn.ghost) */
+.cta-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
 }
-.descent-main .tiny { color: rgba(240, 233, 211, 0.6); }
-.cta-column .primary-btn { min-height: 58px; font-size: 17px; }
-.descent-main > .plan-title {
-  display: block;
-  width: min(440px, 94vw);
-  text-align: left;
-  margin-bottom: -4px;
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 12px 22px;
+  border-radius: 19px;
+  background: var(--lemon);
+  color: #1C1610;
+  border: 2px solid var(--outline);
+  box-shadow: var(--pop2);
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.2s ease;
 }
-.descent-main > .plan-title { margin-bottom: -6px; }
+.primary-btn:hover:not(:disabled) { transform: translateY(-2px); }
+.primary-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--outline); }
+.primary-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 10px 20px;
+  border-radius: 19px;
+  background: var(--card);
+  border: 2px solid var(--outline);
+  box-shadow: var(--pop);
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.secondary-btn:hover { transform: translateY(-2px); }
+.secondary-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--outline); }
+
+.recalibrated {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--pink) 16%, var(--card));
+  border: 2px solid var(--outline);
+  border-radius: 14px;
+  padding: 10px 14px;
+  max-width: 40ch;
+}
+
 details.why {
-  width: min(440px, 94vw);
+  width: 100%;
+  max-width: 40ch;
   font-size: 12.5px;
-  color: rgba(240, 233, 211, 0.6);
+  color: var(--ink3);
 }
-details.why summary {
+.why summary {
   cursor: pointer;
   list-style: none;
   text-decoration: underline dotted;
   text-underline-offset: 3px;
+  font-family: 'Lilita One', system-ui, sans-serif;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(240, 233, 211, 0.55);
+  color: var(--ink3);
 }
-details.why[open] summary { margin-bottom: 6px; }
-details.why p { margin: 0; font-style: italic; line-height: 1.5; }
-
-/* =====================================================================
-   ITEM STAGE — reference sit-screen treatment: the statement lives in
-   a big outlined night card (qcardbig), answers are graded sticker
-   pills with pop shadows, progress is a visible gold star strip.
-   ===================================================================== */
-.descent-main .item-text {
-  background: oklch(22% 0.048 280);
-  border: 2.5px solid rgba(240, 233, 211, 0.35);
-  border-radius: 28px;
-  box-shadow: 0 5px 0 rgba(10, 8, 24, 0.85);
-  padding: clamp(22px, 6vw, 30px) clamp(18px, 5vw, 26px);
-  max-width: 30ch;
-  font-size: clamp(21px, 5.6vw, 25px);
-  color: #f7eeda;
-  text-shadow: 0 1px 0 rgba(10, 8, 24, 0.5);
+.why p {
+  margin: 6px 0 0;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ink2);
 }
 
-.likert-btn {
-  border: 1.5px solid rgba(240, 233, 211, 0.55);
-  box-shadow: 0 3px 0 rgba(10, 8, 24, 0.9);
-  font-weight: 600;
-}
-.likert-btn:nth-child(1) { background: color-mix(in srgb, #38afc9 24%, transparent); }
-.likert-btn:nth-child(2) { background: color-mix(in srgb, #38afc9 8%, transparent); }
-.likert-btn:nth-child(3) { background: transparent; }
-.likert-btn:nth-child(4) { background: color-mix(in srgb, #e5853d 22%, transparent); }
-.likert-btn:nth-child(5) { background: color-mix(in srgb, #e58fa6 28%, transparent); }
-.likert-btn:hover,
-.likert-btn:focus-visible {
-  transform: translateY(-2px);
-  border-color: rgba(240, 233, 211, 0.8);
-}
-
-.star-track { gap: 4px; max-width: 52vw; }
-.star {
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  transform: rotate(45deg);
-  background: rgba(240, 233, 211, 0.22);
-}
-.star.lit {
-  background: #edd75c;
-  box-shadow: 0 0 6px rgba(237, 215, 92, 0.55);
-  animation: starPop 0.5s var(--ease-storybook, ease);
-}
-@keyframes starPop {
-  0% { transform: rotate(45deg) scale(0.2); }
-  70% { transform: rotate(45deg) scale(1.35); }
-  100% { transform: rotate(45deg) scale(1); }
-}
-
-.ghost-btn { color: rgba(240, 233, 211, 0.75); font-weight: 600; }
-.stage-text { font-size: 11px; }
-
-@media (prefers-reduced-motion: reduce) {
-  .star.lit { animation: none; }
-}
-
-/* =====================================================================
-   SIT STAGE — the reference's LIGHT sitting screen. The test itself
-   happens on cream paper with an ink-outlined statement card and a
-   2-column emoji answer grid; only ceremonies stay night.
-   ===================================================================== */
-.descent-viewport.sit-light {
-  background: #f3ead4;
-  color: #3a3229;
-}
-.sit-light .descent-bg {
-  background:
-    radial-gradient(2px 2px at 12% 18%, rgba(58, 50, 41, 0.22) 50%, transparent 51%),
-    radial-gradient(2px 2px at 78% 9%, rgba(58, 50, 41, 0.18) 50%, transparent 51%),
-    radial-gradient(2px 2px at 90% 62%, rgba(58, 50, 41, 0.2) 50%, transparent 51%),
-    radial-gradient(2px 2px at 8% 80%, rgba(58, 50, 41, 0.18) 50%, transparent 51%),
-    radial-gradient(2px 2px at 55% 92%, rgba(58, 50, 41, 0.2) 50%, transparent 51%),
-    radial-gradient(circle at 12% 18%, rgba(255, 201, 49, 0.16), transparent 36%),
-    #f3ead4;
-}
-.sit-light .ghost-btn { color: #7a6f5e; }
-.sit-light .ghost-btn svg { stroke: #7a6f5e; }
-.sit-light .stage-text { color: #7a6f5e; }
-.sit-light .star { background: rgba(58, 50, 41, 0.16); }
-.sit-light .star.lit { background: #e9b90f; box-shadow: none; }
-
-.qwrap { perspective: 900px; width: 100%; display: flex; justify-content: center; }
-.qcardbig {
-  background: #fbf5e6;
-  border: 2.5px solid #1c1610;
-  border-radius: 28px;
-  box-shadow: 0 5px 0 #1c1610;
-  padding: clamp(22px, 6vw, 28px) clamp(18px, 5vw, 24px);
-  min-height: 200px;
+/* ---------- future self: storybook question cards ---------- */
+.fs-form {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 14px;
-  max-width: 480px;
+  gap: 12px;
+  width: min(460px, 100%);
+}
+.fs-q {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink2);
+  background: var(--card);
+  border: 2px solid var(--outline);
+  border-radius: 18px;
+  box-shadow: var(--pop);
+  padding: 14px 16px;
+}
+.fs-q textarea {
+  display: block;
+  box-sizing: border-box;
   width: 100%;
+  background: var(--card);
+  border: 1.5px solid rgba(51, 42, 31, 0.3);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #332A1F;
+  resize: vertical;
 }
-.q-kicker {
-  font-family: 'Lilita One', var(--font-sans);
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #7a6f5e;
-}
-.sit-light .item-text {
-  background: none;
-  border: 0;
-  box-shadow: none;
-  padding: 0;
-  border-radius: 0;
-  max-width: none;
-  color: #3a3229;
-  text-shadow: none;
-  font-size: clamp(21px, 5.6vw, 24px);
+.fs-q textarea:focus-visible {
+  outline: 3px solid #332A1F;
+  outline-offset: 1px;
 }
 
-/* answers: 2-column emoji grid (5th spans) */
-.sit-light .likert {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  width: min(480px, 92vw);
+/* ---------- complete ---------- */
+.done-star {
+  width: 108px;
+  height: 108px;
+  animation: heropop 0.8s var(--spring);
+  filter: drop-shadow(0 5px 0 rgba(28, 22, 16, 0.9));
 }
-.sit-light .likert-btn {
-  min-height: 62px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 2px solid #1c1610;
-  border-radius: 18px;
-  background: #fbf5e6;
-  color: #3a3229;
-  font-family: 'Fraunces', var(--font-serif);
-  font-weight: 600;
-  font-size: 14.5px;
-  text-align: center;
-  padding: 10px 8px;
+.done-star path {
+  fill: #F7DD4A;
+  stroke: #1C1610;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
 }
-.sit-light .likert-btn .em { font-size: 19px; }
-.sit-light .likert-btn:nth-child(5) { grid-column: 1 / -1; }
-.sit-light .likert-btn:nth-child(1) { background: color-mix(in srgb, #38afc9 20%, #fbf5e6); }
-.sit-light .likert-btn:nth-child(2) { background: color-mix(in srgb, #38afc9 10%, #fbf5e6); }
-.sit-light .likert-btn:nth-child(4) { background: color-mix(in srgb, #e5853d 14%, #fbf5e6); }
-.sit-light .likert-btn:nth-child(5) { background: color-mix(in srgb, #e58fa6 22%, #fbf5e6); }
-.sit-light .likert-btn:hover,
-.sit-light .likert-btn:focus-visible {
-  transform: translateY(-2px);
-  border-color: #1c1610;
-  background: #fbf5e6;
-}
-.sit-light .likert-btn:active {
-  transform: translateY(3px);
-  box-shadow: 0 0 0 #1c1610;
+@keyframes heropop {
+  0% { transform: scale(0.2) rotate(-25deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(6deg); }
+  100% { transform: scale(1); }
 }
 
-.sit-hint {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 13px;
-  color: #7a6f5e;
-  margin: 0;
-}
-
+/* ---------- small screens & reduced motion ---------- */
 @media (max-width: 380px) {
-  .sit-light .likert { gap: 8px; }
-  .sit-light .likert-btn { font-size: 13px; min-height: 58px; }
+  .likert { gap: 8px; }
+  .likert-btn { font-size: 13.5px; min-height: 58px; }
+  .sit-top { gap: 8px; }
+  .gate-card { padding: 18px 14px 16px; }
 }
 
-/* ---------- somatic follow-up in the sit language ---------- */
-.sit-light .zone-grid {
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  width: min(480px, 92vw);
+@media (prefers-reduced-motion: reduce) {
+  .descent-viewport *,
+  .descent-viewport *::before,
+  .descent-viewport *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
-.sit-light .zone-btn {
-  min-height: 62px;
-  border: 2px solid #1c1610;
-  border-radius: 18px;
-  background: #fbf5e6;
-  color: #3a3229;
-  font-family: 'Fraunces', var(--font-serif);
-  font-weight: 600;
-  font-size: 14.5px;
-  box-shadow: 0 3px 0 #1c1610;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.sit-light .zone-btn:nth-child(1) { background: color-mix(in srgb, #38afc9 14%, #fbf5e6); }
-.sit-light .zone-btn:nth-child(3) { background: color-mix(in srgb, #38afc9 7%, #fbf5e6); }
-.sit-light .zone-btn:nth-child(5) { background: color-mix(in srgb, #e5853d 10%, #fbf5e6); }
-.sit-light .zone-btn:nth-child(7) { background: color-mix(in srgb, #e5853d 16%, #fbf5e6); }
-.sit-light .zone-btn:nth-child(9) { background: color-mix(in srgb, #e58fa6 14%, #fbf5e6); }
-.sit-light .zone-btn:hover,
-.sit-light .zone-btn:focus-visible {
-  transform: translateY(-2px);
-  border-color: #1c1610;
-}
-.sit-light .zone-btn:active {
-  transform: translateY(3px);
-  box-shadow: 0 0 0 #1c1610;
-}
-.sit-light .secondary-btn {
-  border: 1.5px solid rgba(58, 50, 41, 0.3);
-  color: #7a6f5e;
-  border-radius: 999px;
-  background: transparent;
-}
-.sit-light .secondary-btn:hover { background: rgba(58, 50, 41, 0.06); color: #3a3229; }

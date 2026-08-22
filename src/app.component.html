@@ -252,53 +252,38 @@
       <!-- Main Universe Canvas -->
       <canvas #canvas class="absolute top-0 left-0 w-full h-full z-0"></canvas>
 
-      <!-- Loading Overlay -->
+      <!-- Loading Overlay (storybook splash) -->
       @if (universeLoading()) {
-        <div class="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-ink overflow-hidden">
-          <!-- Orbiting dots -->
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-[300px] h-[300px] md:w-[400px] md:h-[400px] rounded-full border border-white/[0.04] animate-[spin_30s_linear_infinite]">
-              <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-coral/60"></div>
-              <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1.5 h-1.5 rounded-full bg-mustard/60"></div>
-              <div class="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-lavender/60"></div>
+        <div class="uv-load" role="status">
+          <!-- Dashed orbit ring + floating constellation accent -->
+          <div class="uv-load__orbit" aria-hidden="true">
+            <div class="uv-load__ring"></div>
+            <div class="uv-load__accent">
+              <svg class="uv-load__glyph" viewBox="0 0 64 64" fill="none">
+                <line x1="32" y1="12" x2="12" y2="48" stroke="#1C1610" stroke-opacity="0.35" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <line x1="32" y1="12" x2="52" y2="48" stroke="#1C1610" stroke-opacity="0.35" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <line x1="12" y1="48" x2="52" y2="48" stroke="#1C1610" stroke-opacity="0.35" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <line x1="32" y1="36" x2="32" y2="12" stroke="#1C1610" stroke-opacity="0.22" stroke-width="1.5"/>
+                <line x1="32" y1="36" x2="12" y2="48" stroke="#1C1610" stroke-opacity="0.22" stroke-width="1.5"/>
+                <line x1="32" y1="36" x2="52" y2="48" stroke="#1C1610" stroke-opacity="0.22" stroke-width="1.5"/>
+                <circle class="uv-load__star" cx="32" cy="12" r="4.5" fill="#F7DD4A" stroke="#1C1610" stroke-width="1.5"/>
+                <circle class="uv-load__star" cx="12" cy="48" r="4" fill="#E5853D" stroke="#1C1610" stroke-width="1.5"/>
+                <circle class="uv-load__star" cx="52" cy="48" r="4" fill="#EE7F72" stroke="#1C1610" stroke-width="1.5"/>
+                <circle class="uv-load__star" cx="32" cy="36" r="3.5" fill="#332A1F"/>
+              </svg>
             </div>
           </div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-[180px] h-[180px] md:w-[240px] md:h-[240px] rounded-full border border-white/[0.06] animate-[spin_20s_linear_infinite_reverse]">
-              <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-sage/60"></div>
-              <div class="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-sky/60"></div>
-            </div>
-          </div>
 
-          <!-- Center constellation -->
-          <div class="relative z-10 flex flex-col items-center">
-            <!-- Constellation glyph -->
-            <svg class="w-16 h-16 mb-6" viewBox="0 0 64 64" fill="none">
-              <circle cx="32" cy="12" r="4" fill="#FB923C" class="animate-pulse"/>
-              <circle cx="12" cy="48" r="3.5" fill="#C4B5FD" class="animate-pulse" style="animation-delay:0.3s"/>
-              <circle cx="52" cy="48" r="3.5" fill="#7BC5A0" class="animate-pulse" style="animation-delay:0.6s"/>
-              <circle cx="32" cy="36" r="3" fill="#7DD3FC" class="animate-pulse" style="animation-delay:0.15s"/>
-              <line x1="32" y1="12" x2="12" y2="48" stroke="white" stroke-opacity="0.12" stroke-width="1" stroke-dasharray="3 3"/>
-              <line x1="32" y1="12" x2="52" y2="48" stroke="white" stroke-opacity="0.12" stroke-width="1" stroke-dasharray="3 3"/>
-              <line x1="12" y1="48" x2="52" y2="48" stroke="white" stroke-opacity="0.12" stroke-width="1" stroke-dasharray="3 3"/>
-              <line x1="32" y1="36" x2="32" y2="12" stroke="white" stroke-opacity="0.08" stroke-width="1"/>
-              <line x1="32" y1="36" x2="12" y2="48" stroke="white" stroke-opacity="0.08" stroke-width="1"/>
-              <line x1="32" y1="36" x2="52" y2="48" stroke="white" stroke-opacity="0.08" stroke-width="1"/>
-            </svg>
+          <h2 class="uv-load__logo">INNERVERSE</h2>
+          <p class="uv-load__phrase">{{ currentLoadingPhrase() }}<span class="uv-load__cursor" aria-hidden="true">_</span></p>
 
-            <!-- Phrase with typewriter feel -->
-            <p class="text-white/70 text-xs md:text-sm font-black uppercase tracking-[0.2em] font-mono animate-pulse">
-              {{ currentLoadingPhrase() }}<span class="animate-ping">_</span>
-            </p>
-
-            <!-- Progress dots -->
-            <div class="flex gap-2 mt-6">
-              <div class="w-1.5 h-1.5 rounded-full bg-coral animate-bounce" style="animation-delay:0s"></div>
-              <div class="w-1.5 h-1.5 rounded-full bg-mustard animate-bounce" style="animation-delay:0.15s"></div>
-              <div class="w-1.5 h-1.5 rounded-full bg-sage animate-bounce" style="animation-delay:0.3s"></div>
-              <div class="w-1.5 h-1.5 rounded-full bg-lavender animate-bounce" style="animation-delay:0.45s"></div>
-              <div class="w-1.5 h-1.5 rounded-full bg-sky animate-bounce" style="animation-delay:0.6s"></div>
-            </div>
+          <!-- Progress dots: lemon/ink sticker dots -->
+          <div class="uv-load__dots" aria-hidden="true">
+            <span class="is-lemon" style="animation-delay:0s"></span>
+            <span class="is-ink" style="animation-delay:0.12s"></span>
+            <span class="is-lemon" style="animation-delay:0.24s"></span>
+            <span class="is-ink" style="animation-delay:0.36s"></span>
+            <span class="is-lemon" style="animation-delay:0.48s"></span>
           </div>
         </div>
       }
@@ -325,7 +310,7 @@
           </app-archetype-detail-card>
         } @else if (secondComparisonArchetype(); as second) {
           <!-- Side-by-side comparison would need a different layout, for now we keep the side panel logic -->
-          <div class="fixed top-0 right-0 h-full flex z-40">
+          <div class="absolute top-0 right-0 h-full flex z-40">
             <app-archetype-detail-card
               class="border-r border-white/10"
               [archetype]="firstComparisonArchetype()!"

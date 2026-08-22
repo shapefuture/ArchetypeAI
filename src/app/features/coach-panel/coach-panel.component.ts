@@ -5,7 +5,6 @@ import { trigger, style, animate, transition } from '@angular/animations';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { BlobCharacterComponent } from '../../shared/components/blob-character/blob-character.component';
-import { PaperButtonComponent } from '../../shared/components/paper-button/paper-button.component';
 import { TranslationService } from '../../../services/translation.service';
 
 /**
@@ -56,265 +55,324 @@ export function formatCoachClock(ms: number): string {
 @Component({
   selector: 'app-coach-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, BlobCharacterComponent, PaperButtonComponent],
+  imports: [CommonModule, FormsModule, BlobCharacterComponent],
   template: `
     <div
-      class="coach-panel"
-      [class.coach-panel--open]="isOpen"
-      [style.--coach-offset.px]="coachOffsetPx">
-      <!-- Header -->
-      <div class="coach-panel__header">
-        <div class="coach-panel__title">
-          <app-blob-character
-            [color]="'#70a1d7'"
-            [size]="'sm'"
-            [mood]="coachMood"
-            [name]="t('characterName')"
-            [animate]="true"
-            [noHover]="true">
-          </app-blob-character>
-          <h2 class="coach-panel__title-text">{{ t('title') }}</h2>
+      class="coach-overlay"
+      [class.coach-overlay--open]="isOpen"
+      (click)="close.emit()">
+      <!--
+        Bottom sheet — near-full height, capped to the phone-stage width
+        (min(430px, 100vw), centered) so it stays glued to the centered
+        app stage on desktop instead of detaching to the viewport edge.
+        Tapping the scrim closes, mirroring the quickscan/landing sheets.
+      -->
+      <section
+        class="coach-panel"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="t('title')"
+        [class.coach-panel--open]="isOpen"
+        (click)="$event.stopPropagation()">
+        <div class="coach-panel__grip" aria-hidden="true"></div>
+
+        <!-- Header -->
+        <div class="coach-panel__header">
+          <div class="coach-panel__title">
+            <app-blob-character
+              [color]="'#F7DD4A'"
+              [size]="'sm'"
+              [mood]="coachMood"
+              [animate]="true"
+              [noHover]="true">
+            </app-blob-character>
+            <h2 class="coach-panel__title-text">{{ t('title') }}</h2>
+          </div>
+          <!--
+            Persona toggle. The pill flips between "general" coaching tone and
+            the IFS-aware Parts Dialogue mode. [mode] is owned by the parent
+            (AppComponent) so the model routing + welcome reset can be
+            orchestrated centrally; the panel just reflects state and emits
+            toggle requests.
+          -->
+          <button
+            type="button"
+            class="coach-panel__mode-pill"
+            [class.coach-panel__mode-pill--active]="mode === 'parts'"
+            [attr.aria-label]="t('partsDialoguePillAria', 'universe')"
+            [attr.aria-pressed]="mode === 'parts'"
+            [title]="mode === 'parts' ? t('partsDialogueExitHint', 'universe') : ''"
+            (click)="modeToggle.emit()">
+            <span class="coach-panel__mode-pill-dot" aria-hidden="true"></span>
+            <span class="coach-panel__mode-pill-label">{{ t('partsDialogue', 'universe') }}</span>
+          </button>
+          <button class="coach-panel__close" (click)="close.emit()" [attr.aria-label]="t('closeAria')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
         </div>
-        <!--
-          Persona toggle. The pill flips between "general" coaching tone and
-          the IFS-aware Parts Dialogue mode. [mode] is owned by the parent
-          (AppComponent) so the model routing + welcome reset can be
-          orchestrated centrally; the panel just reflects state and emits
-          toggle requests.
-        -->
-        <button
-          type="button"
-          class="coach-panel__mode-pill"
-          [class.coach-panel__mode-pill--active]="mode === 'parts'"
-          [attr.aria-label]="t('partsDialoguePillAria', 'universe')"
-          [attr.aria-pressed]="mode === 'parts'"
-          [title]="mode === 'parts' ? t('partsDialogueExitHint', 'universe') : ''"
-          (click)="modeToggle.emit()">
-          <span class="coach-panel__mode-pill-dot" aria-hidden="true"></span>
-          <span class="coach-panel__mode-pill-label">{{ t('partsDialogue', 'universe') }}</span>
-        </button>
-        <button class="coach-panel__close" (click)="close.emit()" [attr.aria-label]="t('closeAria')">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
 
-      <!-- Messages Area -->
-      <div class="coach-panel__messages" #messagesContainer>
-        @for (message of messages; track message.id) {
-          <div class="coach-message coach-message--{{ message.role }}" [@messageEnter]>
+        <!-- Messages Area -->
+        <div class="coach-panel__messages" #messagesContainer>
+          @for (message of messages; track message.id) {
+            <div class="coach-message coach-message--{{ message.role }}" [@messageEnter]>
 
-            <!-- Coach Message -->
-            @if (message.role === 'coach') {
+              <!-- Coach Message -->
+              @if (message.role === 'coach') {
+                <div class="coach-message__avatar">
+                  <app-blob-character
+                    [color]="'#F7DD4A'"
+                    [size]="'sm'"
+                    [mood]="message.coachMood || 'neutral'"
+                    [animate]="true"
+                    [noHover]="true">
+                  </app-blob-character>
+                </div>
+                <div class="coach-message__bubble coach-message__bubble--coach">
+                  <div class="coach-message__content prose-storybook" [innerHTML]="formatMessage(message.content)"></div>
+                  <div class="coach-message__timestamp">{{ message.timestamp }}</div>
+                </div>
+              }
+
+              <!-- User Message -->
+              @if (message.role === 'user') {
+                <div class="coach-message__bubble coach-message__bubble--user">
+                  <div class="coach-message__content">{{ message.content }}</div>
+                  <div class="coach-message__timestamp">{{ message.timestamp }}</div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Typing Indicator -->
+          @if (isTyping) {
+            <div class="coach-message coach-message--coach" [@typingIndicator]>
               <div class="coach-message__avatar">
                 <app-blob-character
-                  [color]="'#70a1d7'"
+                  [color]="'#F7DD4A'"
                   [size]="'sm'"
-                  [mood]="message.coachMood || 'neutral'"
+                  [mood]="'thinking'"
                   [animate]="true"
                   [noHover]="true">
                 </app-blob-character>
               </div>
               <div class="coach-message__bubble coach-message__bubble--coach">
-                <div class="coach-message__content prose-storybook" [innerHTML]="formatMessage(message.content)"></div>
-                <div class="coach-message__timestamp">{{ message.timestamp }}</div>
+                <div class="typing-indicator">
+                  <span class="typing-indicator__dot"></span>
+                  <span class="typing-indicator__dot"></span>
+                  <span class="typing-indicator__dot"></span>
+                </div>
               </div>
-            }
-
-            <!-- User Message -->
-            @if (message.role === 'user') {
-              <div class="coach-message__bubble coach-message__bubble--user">
-                <div class="coach-message__content">{{ message.content }}</div>
-                <div class="coach-message__timestamp">{{ message.timestamp }}</div>
-              </div>
-            }
-          </div>
-        }
-
-        <!-- Typing Indicator -->
-        @if (isTyping) {
-          <div class="coach-message coach-message--coach" [@typingIndicator]>
-            <div class="coach-message__avatar">
-              <app-blob-character
-                [color]="'#70a1d7'"
-                [size]="'sm'"
-                [mood]="'thinking'"
-                [animate]="true"
-                [noHover]="true">
-              </app-blob-character>
             </div>
-            <div class="coach-message__bubble coach-message__bubble--coach">
-              <div class="typing-indicator">
-                <span class="typing-indicator__dot"></span>
-                <span class="typing-indicator__dot"></span>
-                <span class="typing-indicator__dot"></span>
-              </div>
+          }
+        </div>
+
+        <!-- Suggested Questions -->
+        @if (showSuggestions && suggestedQuestions.length > 0) {
+          <div class="coach-panel__suggestions">
+            <div class="coach-panel__suggestions-label">{{ t('suggestedQuestionsLabel') }}</div>
+            <div class="coach-panel__suggestions-chips">
+              @for (suggestion of suggestedQuestions; track suggestion.id) {
+                <button type="button" class="coach-panel__chip" (click)="selectSuggestion(suggestion.text)">
+                  {{ suggestion.text }}
+                </button>
+              }
             </div>
           </div>
         }
-      </div>
 
-      <!-- Suggested Questions -->
-      @if (showSuggestions && suggestedQuestions.length > 0) {
-        <div class="coach-panel__suggestions">
-          <div class="coach-panel__suggestions-label">{{ t('suggestedQuestionsLabel') }}</div>
-          <div class="coach-panel__suggestions-chips">
-            @for (suggestion of suggestedQuestions; track suggestion.id) {
-              <app-paper-button
-                [sketchy]="true"
-                [size]="'sm'"
-                (clicked)="selectSuggestion(suggestion.text)">
-                {{ suggestion.text }}
-              </app-paper-button>
-            }
+        <!-- Input Area -->
+        <div class="coach-panel__input">
+          <div class="coach-panel__input-row">
+            <div class="coach-panel__input-wrapper">
+              <textarea
+                #messageInput
+                class="coach-panel__textarea"
+                [placeholder]="mode === 'parts' ? t('partsModePlaceholder') : t('inputPlaceholder')"
+                [(ngModel)]="userInput"
+                (keydown.enter)="handleEnter($event)"
+                (input)="adjustTextareaHeight()"
+                rows="1"
+                [attr.aria-label]="t('inputAria')"></textarea>
+            </div>
+            <button
+              type="button"
+              class="coach-panel__send"
+              [disabled]="!userInput.trim() || isSending"
+              [attr.aria-label]="t('sendAria')"
+              (click)="sendMessage()">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 19V5M5 12l7-7 7 7"/>
+              </svg>
+            </button>
           </div>
         </div>
-      }
-
-      <!-- Input Area -->
-      <div class="coach-panel__input">
-        <div class="coach-panel__input-wrapper">
-          <textarea
-            #messageInput
-            class="coach-panel__textarea"
-            [placeholder]="mode === 'parts' ? t('partsModePlaceholder') : t('inputPlaceholder')"
-            [(ngModel)]="userInput"
-            (keydown.enter)="handleEnter($event)"
-            (input)="adjustTextareaHeight()"
-            rows="1"
-            [attr.aria-label]="t('inputAria')"></textarea>
-          <app-paper-button
-            class="coach-panel__send"
-            [sketchy]="true"
-            [size]="'sm'"
-            [disabled]="!userInput.trim() || isSending"
-            [icon]="'→'"
-            [ariaLabel]="t('sendAria')"
-            (clicked)="sendMessage()">
-          </app-paper-button>
-        </div>
-      </div>
+      </section>
     </div>
   `,
   styles: [`
     /* ============================================================
-       COACH PANEL — light minimal skin.
+       COACH PANEL — cream storybook bottom sheet.
        paper #F3EAD4 · card #FBF5E6 · deep #EDE2C6
-       ink #3A3229 · muted #7A6F5E · outline #1C1610 · lemon #F7DD4A
+       ink #332A1F · ink3 #857A69 · outline #1C1610 · lemon #F7DD4A
+       Rises over a scrim, capped to the phone-stage width so it stays
+       glued to the centered app stage on desktop.
        ============================================================ */
-    .coach-panel {
+    .coach-overlay {
       position: fixed;
-      top: 0;
-      right: 0;
-      width: min(420px, 100dvw);
-      height: 100dvh;
-      background: #F3EAD4;
-      border-left: 2px solid #1C1610;
+      inset: 0;
+      z-index: var(--z-panel, 30);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(20, 12, 30, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .coach-overlay--open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Desktop: shrink the overlay's content box to the phone-stage
+       geometry (stage is min(900px, 95dvh) tall, vertically centered) so
+       the sheet docks to the stage's bottom edge, not the viewport's. */
+    @media (min-width: 520px) {
+      .coach-overlay {
+        padding-top: calc((100dvh - min(900px, 95dvh)) / 2);
+        padding-bottom: calc((100dvh - min(900px, 95dvh)) / 2);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+      }
+    }
+
+    /* Sheet */
+    .coach-panel {
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      transform: translateX(calc(100% + var(--coach-offset, 0px)));
-      transition: transform var(--duration-standard) var(--ease-storybook);
-      z-index: var(--z-panel);
+      width: min(430px, 100vw);
+      height: 88%;
+      background: #FBF5E6;
+      border: 2.5px solid #1C1610;
+      border-bottom: 0;
+      border-radius: 28px 28px 0 0;
+      box-shadow: 0 -3px 0 #1C1610;
+      transform: translateY(105%);
+      transition: transform 0.45s var(--ease-storybook, cubic-bezier(0.34, 1.45, 0.4, 1));
       font-family: var(--font-serif, 'Fraunces', serif);
+      color: #332A1F;
       will-change: transform;
     }
 
     .coach-panel--open {
-      transform: translateX(var(--coach-offset, 0px));
+      transform: translateY(0);
+    }
+
+    /* Desktop: the sheet sits flush inside the rounded stage, so close
+       its bottom edge instead of leaving it open like a phone sheet. */
+    @media (min-width: 520px) {
+      .coach-panel {
+        border-bottom: 2.5px solid #1C1610;
+        border-radius: 28px 28px 30px 30px;
+      }
+    }
+
+    .coach-panel__grip {
+      flex: none;
+      width: 44px;
+      height: 5px;
+      border-radius: 4px;
+      background: rgba(28, 22, 16, 0.18);
+      margin: 10px auto 2px;
     }
 
     /* Header */
     .coach-panel__header {
+      flex: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      padding: 16px 18px;
-      border-bottom: 1.5px solid rgba(58, 50, 41, 0.2);
+      padding: 8px 12px 12px 16px;
       background: #FBF5E6;
+      border-bottom: 2px solid #1C1610;
     }
 
     .coach-panel__title {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      flex: 1;
       min-width: 0;
     }
 
     .coach-panel__title-text {
       font-family: 'Lilita One', var(--font-sans, sans-serif);
-      font-size: 21px;
+      font-size: 19px;
       font-weight: 400;
       text-transform: uppercase;
       letter-spacing: 0.02em;
-      color: #3A3229;
+      color: #332A1F;
       margin: 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    /* Persona toggle pill — ghost pill by default, lemon when active.
-       Always visible so users discover the affordance; the active class
-       inverts the colors so the *current* state (parts vs general) reads
-       at a glance without needing a separate label swap. */
+    /* Persona toggle — sticker chip: card bg + outline, lemon when the
+       IFS Parts Dialogue mode is on. Always visible so users discover
+       the affordance; the active class inverts the colors so the
+       *current* state (parts vs general) reads at a glance without
+       needing a separate label swap. */
     .coach-panel__mode-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: transparent;
-      border: 1.5px solid rgba(58, 50, 41, 0.3);
+      background: #FBF5E6;
+      border: 2px solid #1C1610;
       border-radius: 999px;
-      padding: 6px 12px 6px 10px;
+      box-shadow: 0 2px 0 #1C1610;
+      padding: 7px 12px 7px 10px;
       cursor: pointer;
       font-family: var(--font-serif, 'Fraunces', serif);
-      font-weight: 600;
+      font-weight: 700;
       font-size: 11px;
-      color: #7A6F5E;
+      color: #857A69;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      transition: transform 0.06s ease, border-color 0.15s ease, background-color 0.15s ease;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.2s ease, color 0.2s ease;
       flex-shrink: 0;
     }
 
     .coach-panel__mode-pill:hover {
-      border-color: #1C1610;
-      color: #3A3229;
+      color: #332A1F;
     }
 
     .coach-panel__mode-pill:active {
-      transform: scale(0.97);
+      transform: translateY(2px);
+      box-shadow: 0 0 0 #1C1610;
     }
 
     .coach-panel__mode-pill:focus-visible {
-      outline: 3px solid rgba(58, 50, 41, 0.4);
+      outline: 3px solid rgba(28, 22, 16, 0.4);
       outline-offset: 2px;
     }
 
     .coach-panel__mode-pill--active {
       background: #F7DD4A;
       color: #1C1610;
-      border: 2px solid #1C1610;
-      box-shadow: 0 4px 0 #1C1610;
-    }
-
-    .coach-panel__mode-pill--active:hover {
-      background: #F7DD4A;
-      color: #1C1610;
-    }
-
-    .coach-panel__mode-pill--active:active {
-      transform: translateY(3px);
-      box-shadow: 0 1px 0 #1C1610;
     }
 
     .coach-panel__mode-pill-dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: rgba(58, 50, 41, 0.4);
-      transition: background var(--duration-quick) var(--ease-relational);
+      background: #857A69;
+      transition: background var(--duration-quick, 300ms) var(--ease-relational, ease);
     }
 
     .coach-panel__mode-pill--active .coach-panel__mode-pill-dot {
@@ -325,39 +383,38 @@ export function formatCoachClock(ms: number): string {
       white-space: nowrap;
     }
 
+    /* Close — sticker iconbtn */
     .coach-panel__close {
-      background: transparent;
-      border: 1.5px solid rgba(58, 50, 41, 0.3);
-      border-radius: 999px;
-      width: 36px;
-      height: 36px;
-      cursor: pointer;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #7A6F5E;
+      width: 42px;
+      height: 42px;
       flex-shrink: 0;
-      transition: transform 0.06s ease, color 0.15s ease, border-color 0.15s ease;
-    }
-
-    .coach-panel__close:hover {
-      color: #3A3229;
-      border-color: #1C1610;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      cursor: pointer;
+      background: #FBF5E6;
+      border: 2px solid #1C1610;
+      border-radius: 14px;
+      box-shadow: 0 2px 0 #1C1610;
+      color: #332A1F;
+      transition: transform 0.15s var(--ease-storybook, cubic-bezier(0.34, 1.45, 0.4, 1));
     }
 
     .coach-panel__close:active {
-      transform: scale(0.94);
+      transform: scale(0.9) rotate(-6deg);
     }
 
     /* Messages */
     .coach-panel__messages {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
-      padding: 16px;
+      overscroll-behavior: contain;
+      padding: 16px 14px;
       display: flex;
       flex-direction: column;
       gap: 14px;
+      background: #F3EAD4;
       scroll-behavior: smooth;
     }
 
@@ -377,41 +434,39 @@ export function formatCoachClock(ms: number): string {
 
     .coach-message__avatar {
       flex-shrink: 0;
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
     }
 
     .coach-message__bubble {
-      flex: 1;
-      min-width: 0;
-      max-width: 100%;
-      padding: 13px 16px;
-      border-radius: 20px;
+      padding: 12px 15px;
+      border-radius: 18px;
+      border: 2px solid #1C1610;
       position: relative;
     }
 
-    /* theirs: card bg + hairline */
+    /* theirs: card sticker, sharper corner toward the coach */
     .coach-message__bubble--coach {
+      flex: 1;
+      min-width: 0;
       background: #FBF5E6;
-      border: 1.5px solid rgba(58, 50, 41, 0.3);
-      align-self: flex-start;
-      border-top-left-radius: 8px;
+      border-top-left-radius: 7px;
     }
 
-    /* yours: lemon tint, right-aligned */
+    /* yours: lemon tint, sharper corner toward the user */
     .coach-message__bubble--user {
-      background: rgba(247, 221, 74, 0.38);
-      border: 1.5px solid rgba(58, 50, 41, 0.3);
-      align-self: flex-end;
-      border-top-right-radius: 8px;
       flex: 0 1 auto;
+      max-width: 85%;
+      align-self: flex-end;
+      background: color-mix(in srgb, #F7DD4A 38%, #FBF5E6);
+      border-top-right-radius: 7px;
     }
 
     .coach-message__content {
       font-family: var(--font-serif, 'Fraunces', serif);
-      font-size: 14px;
-      line-height: 1.6;
-      color: #3A3229;
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: #332A1F;
       word-wrap: break-word;
     }
 
@@ -422,25 +477,26 @@ export function formatCoachClock(ms: number): string {
     .coach-message__timestamp {
       font-family: var(--font-serif, 'Fraunces', serif);
       font-weight: 600;
-      font-size: 10.5px;
-      letter-spacing: 0.08em;
-      color: #7A6F5E;
-      margin-top: 8px;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: #857A69;
+      margin-top: 6px;
       text-align: right;
     }
 
-    /* Suggestions */
+    /* Suggestions — sticker chips */
     .coach-panel__suggestions {
-      padding: 14px 18px;
-      border-top: 1.5px solid rgba(58, 50, 41, 0.2);
+      flex: none;
+      padding: 12px 14px 14px;
       background: #EDE2C6;
+      border-top: 2px solid #1C1610;
     }
 
     .coach-panel__suggestions-label {
       font-family: var(--font-serif, 'Fraunces', serif);
       font-weight: 600;
       font-size: 11px;
-      color: #7A6F5E;
+      color: #857A69;
       margin-bottom: 10px;
       text-transform: uppercase;
       letter-spacing: 0.16em;
@@ -452,43 +508,59 @@ export function formatCoachClock(ms: number): string {
       gap: 8px;
     }
 
-    /* suggestion chips render as ghost pills (paper-button internals
-       are neutralized here so the chips read as native pills) */
-    .coach-panel__suggestions-chips app-paper-button {
+    .coach-panel__chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #FBF5E6;
+      border: 2px solid #1C1610;
+      box-shadow: 0 2px 0 #1C1610;
       font-family: var(--font-serif, 'Fraunces', serif);
       font-size: 13px;
-      padding: 9px 15px;
-      background: #FBF5E6;
-      border: 1.5px solid rgba(58, 50, 41, 0.3);
-      border-radius: 999px;
-      box-shadow: none;
-      color: #3A3229;
-      transition: transform 0.06s ease, border-color 0.15s ease, background-color 0.15s ease;
+      font-weight: 600;
+      color: #332A1F;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.2s ease;
     }
 
-    .coach-panel__suggestions-chips app-paper-button:hover {
-      border-color: #1C1610;
+    .coach-panel__chip:hover {
+      background: color-mix(in srgb, #F7DD4A 30%, #FBF5E6);
     }
 
-    .coach-panel__suggestions-chips app-paper-button:active {
-      transform: scale(0.97);
+    .coach-panel__chip:active {
+      transform: translateY(2px);
+      box-shadow: 0 0 0 #1C1610;
     }
 
-    /* Input Area */
+    /* Input Area — paper2 bar, rounded field, round lemon send */
     .coach-panel__input {
-      padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
-      border-top: 1.5px solid rgba(58, 50, 41, 0.2);
-      background: #FBF5E6;
+      flex: none;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+      background: #EDE2C6;
+      border-top: 2px solid #1C1610;
+    }
+
+    .coach-panel__input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
     }
 
     .coach-panel__input-wrapper {
+      flex: 1;
+      min-width: 0;
       display: flex;
-      gap: 10px;
-      align-items: flex-end;
-      background: #F3EAD4;
-      border: 1.5px solid rgba(58, 50, 41, 0.3);
+      align-items: center;
+      background: #FBF5E6;
+      border: 2px solid rgba(28, 22, 16, 0.35);
       border-radius: 999px;
-      padding: 8px 8px 8px 16px;
+      padding: 12px 16px;
+      transition: border-color 0.15s ease;
+    }
+
+    .coach-panel__input-wrapper:focus-within {
+      border-color: #1C1610;
     }
 
     .coach-panel__textarea {
@@ -497,44 +569,36 @@ export function formatCoachClock(ms: number): string {
       border: none;
       outline: none;
       font-family: var(--font-serif, 'Fraunces', serif);
-      font-size: 14px;
-      line-height: 1.5;
-      color: #3A3229;
+      font-size: 15px;
+      line-height: 1.45;
+      color: #332A1F;
       resize: none;
-      min-height: 24px;
+      min-height: 22px;
       max-height: 120px;
       overflow-y: auto;
-      padding: 6px 0;
+      padding: 0;
     }
 
     .coach-panel__textarea::placeholder {
-      color: rgba(122, 111, 94, 0.8);
+      color: #857A69;
       font-style: italic;
+      opacity: 0.85;
     }
 
-    .coach-panel__textarea:focus {
-      outline: none;
-    }
-
-    .coach-panel__input-wrapper:focus-within {
-      border-color: #1C1610;
-    }
-
-    /* pill send button — lemon, solid shadow */
     .coach-panel__send {
       flex-shrink: 0;
-      min-width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
       padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      cursor: pointer;
       background: #F7DD4A;
-      border: 2px solid #1C1610;
-      border-radius: 999px;
+      border: 2.5px solid #1C1610;
+      border-radius: 50%;
       box-shadow: 0 4px 0 #1C1610;
       color: #1C1610;
-      transition: transform 0.06s ease, box-shadow 0.06s ease, opacity 0.15s ease;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.15s ease;
     }
 
     .coach-panel__send:active {
@@ -542,14 +606,9 @@ export function formatCoachClock(ms: number): string {
       box-shadow: 0 1px 0 #1C1610;
     }
 
-    .coach-panel__send[disabled],
-    .coach-panel__send.disabled {
+    .coach-panel__send:disabled {
       opacity: 0.45;
-    }
-
-    .coach-panel__send .paper-btn__icon {
-      font-size: 20px;
-      margin: 0;
+      cursor: default;
     }
 
     /* Typing Indicator */
@@ -562,7 +621,7 @@ export function formatCoachClock(ms: number): string {
     .typing-indicator__dot {
       width: 8px;
       height: 8px;
-      background: #7A6F5E;
+      background: #857A69;
       border-radius: 50%;
       animation: typing-bounce 1.4s ease-in-out infinite;
     }
@@ -580,36 +639,10 @@ export function formatCoachClock(ms: number): string {
       }
     }
 
-    /* Animations */
-    @keyframes messageSlideIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    @keyframes typingPulse {
-      0%, 100% {
-        opacity: 0.6;
-      }
-      50% {
-        opacity: 1;
-      }
-    }
-
     /* Responsive */
     @media (max-width: 480px) {
-      .coach-panel {
-        width: 100%;
-        height: 100dvh;
-      }
-
-      .coach-message__bubble {
-        max-width: calc(100% - 60px);
+      .coach-message__bubble--user {
+        max-width: calc(100% - 64px);
       }
 
       .coach-panel__mode-pill-label {
@@ -629,17 +662,17 @@ export function formatCoachClock(ms: number): string {
     }
 
     .coach-panel__messages::-webkit-scrollbar-track {
-      background: rgba(58, 50, 41, 0.05);
+      background: rgba(28, 22, 16, 0.05);
       border-radius: 10px;
     }
 
     .coach-panel__messages::-webkit-scrollbar-thumb {
-      background: rgba(58, 50, 41, 0.25);
+      background: rgba(28, 22, 16, 0.25);
       border-radius: 10px;
     }
 
     .coach-panel__messages::-webkit-scrollbar-thumb:hover {
-      background: rgba(58, 50, 41, 0.4);
+      background: rgba(28, 22, 16, 0.4);
     }
   `],
   animations: [
@@ -667,9 +700,10 @@ export class CoachPanelComponent implements AfterViewInit, OnChanges {
   @Input() showSuggestions = true;
   @Input() coachMood: 'neutral' | 'happy' | 'excited' | 'thinking' = 'neutral';
   /**
-   * Pixel offset to slide the panel left by, so it doesn't visually pile up
-   * on top of `ArchetypeDetailCardComponent` (also fixed top:0; right:0;
-   * width: 480px). Set to 480 (or your detail-card width) when both are open.
+   * Pixel offset the legacy viewport-fixed right drawer used to dodge
+   * `ArchetypeDetailCardComponent` (fixed top:0; right:0; width: 480px).
+   * Retained for API compatibility — the bottom-sheet skin is a centered
+   * modal overlay, so the value no longer affects layout.
    */
   @Input() coachOffsetPx: number = 0;
   /**

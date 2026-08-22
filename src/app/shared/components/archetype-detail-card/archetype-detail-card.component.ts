@@ -12,15 +12,13 @@ import { TranslationService } from '../../../../services/translation.service';
 
   template: `
     <div class="side-panel-wrapper" [class.panel-open]="archetype">
-      <div class="card-layer cl-2"></div>
-      <div class="card-layer cl-1"></div>
       <div class="card-main custom-scrollbar">
         <div class="ribbons">
           @for (color of ribbonColors(); track color) {
             <div class="ribbon" [style.background-color]="color"></div>
           }
         </div>
-        
+
         <button class="panel-close-btn" (click)="close.emit()" aria-label="Close details">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
             <path d="M18 6L6 18M6 6l12 12"/>
@@ -37,7 +35,7 @@ import { TranslationService } from '../../../../services/translation.service';
               [animate]="true">
             </app-blob-character>
           </div>
-          
+
           <div class="title-block">
             <h2 class="panel-title">{{ translationService.getArchetypeField(archetype.id, 'name', archetype.name) }}</h2>
             <div class="panel-subtitle-row">
@@ -56,7 +54,7 @@ import { TranslationService } from '../../../../services/translation.service';
           </p>
         </section>
 
-        <!-- Dimensional Profile (Ink Bars) -->
+        <!-- Dimensional Profile (stat meters) -->
         <section class="profile-section">
           <h3 class="section-label">{{ translationService.t('dimensionalSignature', 'assessment.results') || 'Dimensional Profile' }}</h3>
           <div class="ink-bars">
@@ -67,8 +65,8 @@ import { TranslationService } from '../../../../services/translation.service';
                   <span class="ink-bar-percent">{{ dimension.value }}%</span>
                 </div>
                 <div class="attr-track">
-                  <div class="attr-fill" 
-                       [style.width.%]="dimension.value" 
+                  <div class="attr-fill"
+                       [style.width.%]="dimension.value"
                        [style.background-color]="dimension.color">
                   </div>
                 </div>
@@ -109,110 +107,111 @@ import { TranslationService } from '../../../../services/translation.service';
     </div>
   `,
   styles: [`
+    /* ============================================================
+       ARCHETYPE DETAIL CARD — storybook sheet
+       card #FBF5E6 · paper2 #EDE2C6 · outline #1C1610
+       ink #332A1F · ink2 #5C5142 · ink3 #7A6F5E · lemon #F7DD4A
+       ============================================================ */
     :host {
+      position: absolute;
+      inset: 0;
       display: block;
-      height: 100dvh;
+      pointer-events: none;
+      z-index: 30;
     }
 
     .side-panel-wrapper {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 480px;
-      height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      z-index: var(--z-panel);
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      bottom: 14px;
+      width: min(440px, calc(100vw - 28px));
+      pointer-events: auto;
       transform: translateX(120%);
-      transition: transform 0.6s var(--ease-storybook);
-      padding: 16px;
-      perspective: 1000px;
+      transition: transform 0.55s cubic-bezier(0.34, 1.45, 0.4, 1);
+      will-change: transform;
     }
 
     .panel-open {
       transform: translateX(0);
     }
 
-    .card-layer {
-      position: absolute;
-      inset: 16px;
-      background: var(--paper-viewport-bot);
-      border: var(--border-soft);
-      border-radius: var(--radius-soft);
-    }
-    .cl-2 { transform: translate(12px, 12px) rotate(2deg); z-index: 1; opacity: 0; transition: all 0.6s 0.2s var(--ease-storybook); }
-    .cl-1 { transform: translate(6px, 6px) rotate(1deg); z-index: 2; opacity: 0; transition: all 0.6s 0.1s var(--ease-storybook); }
-
-    .panel-open .cl-2 { opacity: 1; }
-    .panel-open .cl-1 { opacity: 1; }
-
     .card-main {
       position: absolute;
-      inset: 16px;
-      background: var(--paper-panel);
-      border: var(--border-soft);
-      border-radius: var(--radius-soft);
-      z-index: 3;
-      padding: 32px 24px;
+      inset: 0;
+      background: #FBF5E6;
+      border: 2.5px solid #1C1610;
+      border-radius: 26px;
+      box-shadow: 0 5px 0 #1C1610;
+      padding: 30px 22px 24px;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
     .ribbons {
       position: absolute;
-      top: -2px;
-      left: 24px;
+      top: -2.5px;
+      left: 22px;
       display: flex;
       gap: 6px;
     }
     .ribbon {
-      width: 16px;
-      height: 28px;
-      border: var(--border-soft);
+      width: 15px;
+      height: 24px;
+      border: 2px solid #1C1610;
       border-top: none;
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
     }
 
     .panel-close-btn {
       position: absolute;
-      top: 16px;
-      right: 20px;
-      background: none;
-      border: none;
-      font-size: 24px;
-      color: var(--ink-muted);
+      top: 14px;
+      right: 14px;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: #FBF5E6;
+      border: 2px solid #1C1610;
+      box-shadow: 0 2px 0 #1C1610;
+      color: #332A1F;
       cursor: pointer;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
+      transition: transform 0.15s cubic-bezier(0.34, 1.45, 0.4, 1), box-shadow 0.12s ease, background 0.2s ease;
     }
-    .panel-close-btn:hover {
-      color: var(--ink-main);
-      transform: scale(1.1);
+    .panel-close-btn:hover { background: #F7DD4A; }
+    .panel-close-btn:active {
+      transform: scale(0.9) rotate(-6deg);
+      box-shadow: 0 1px 0 #1C1610;
+    }
+    .panel-close-btn svg {
+      width: 18px;
+      height: 18px;
     }
 
     .panel-header {
-      margin-top: 16px;
-      margin-bottom: 32px;
+      margin-top: 6px;
+      margin-bottom: 22px;
       text-align: center;
     }
 
     .archetype-emblem {
       display: flex;
       justify-content: center;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .panel-title {
-      font-family: var(--font-serif);
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--ink-main);
-      margin-bottom: 8px;
+      font-family: 'Lilita One', var(--font-sans, sans-serif);
+      font-weight: 400;
+      font-size: clamp(24px, 6.4vw, 30px);
+      line-height: 1.0;
+      letter-spacing: 0.015em;
+      text-transform: uppercase;
+      color: #332A1F;
+      margin: 0 0 10px;
     }
 
     .panel-subtitle-row {
@@ -223,75 +222,79 @@ import { TranslationService } from '../../../../services/translation.service';
     }
 
     .cluster-tag {
-      font-size: 11px;
-      font-weight: 800;
+      font-size: 10.5px;
+      font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
       padding: 4px 10px;
-      border-radius: 20px;
+      border-radius: 999px;
+      border: 2px solid #1C1610;
     }
 
     .id-tag {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: var(--ink-muted);
+      color: #7A6F5E;
     }
 
     .panel-description {
-      font-size: 15px;
+      font-family: var(--font-serif, 'Fraunces', serif);
+      font-size: 14.5px;
       line-height: 1.6;
-      text-align: justify;
-      color: var(--ink-main);
-      margin-bottom: 32px;
+      color: #5C5142;
+      margin: 0 0 26px;
       font-weight: 500;
     }
 
     .section-label {
-      font-size: 12px;
-      font-weight: 900;
+      font-family: 'Lilita One', var(--font-sans, sans-serif);
+      font-weight: 400;
+      font-size: 11px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--ink-muted);
-      margin-bottom: 16px;
+      color: #7A6F5E;
+      margin-bottom: 14px;
       display: block;
     }
 
     .ink-bars {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      margin-bottom: 32px;
+      gap: 12px;
+      margin-bottom: 28px;
     }
 
     .ink-bar-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     .ink-bar-header {
       display: flex;
       justify-content: space-between;
+      align-items: baseline;
     }
 
     .ink-bar-label {
       font-size: 12px;
       font-weight: 800;
-      color: var(--ink-main);
+      color: #5C5142;
     }
 
     .ink-bar-percent {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--ink-muted);
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      font-weight: 700;
+      color: #7A6F5E;
     }
 
     .attr-track {
       flex: 1;
       height: 12px;
-      background: var(--paper-viewport-bot);
-      border: 1.5px solid var(--ink-main);
-      border-radius: 6px;
+      background: #EDE2C6;
+      border: 2px solid #1C1610;
+      border-radius: 999px;
       position: relative;
       overflow: hidden;
     }
@@ -301,83 +304,122 @@ import { TranslationService } from '../../../../services/translation.service';
       left: 0;
       top: 0;
       height: 100%;
-      border-right: 1.5px solid var(--ink-main);
-      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border-right: 2px solid #1C1610;
+      border-radius: 999px 0 0 999px;
+      transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .insight-card {
-      background: rgba(0,0,0,0.03);
-      padding: 16px;
-      border: 1px dashed rgba(74, 62, 53, 0.2);
-      border-radius: 12px;
-      margin-bottom: 16px;
+      background: rgba(237, 226, 198, 0.45);
+      padding: 14px 16px;
+      border: 2px dashed rgba(28, 22, 16, 0.3);
+      border-radius: 16px;
+      margin-bottom: 12px;
+    }
+
+    .insight-card.shadow-card {
+      background: rgba(28, 22, 16, 0.06);
     }
 
     .insight-label {
-      font-size: 11px;
-      font-weight: 900;
+      font-family: 'Lilita One', var(--font-sans, sans-serif);
+      font-weight: 400;
+      font-size: 10.5px;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--ink-main);
-      margin-bottom: 6px;
+      color: #332A1F;
+      margin: 0 0 6px;
     }
 
     .insight-text {
+      font-family: var(--font-serif, 'Fraunces', serif);
       font-size: 14px;
       line-height: 1.6;
       font-style: italic;
-      color: var(--ink-muted);
+      color: #5C5142;
+      margin: 0;
     }
 
     .related-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      padding-bottom: 16px;
+      padding-bottom: 14px;
     }
 
     .rcard {
-      border: var(--border-soft);
-      border-radius: 12px;
-      background: #fff;
-      padding: 12px 6px;
+      border: 2px solid #1C1610;
+      border-radius: 16px;
+      background: #FBF5E6;
+      padding: 12px 6px 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 2px 2px 0 rgba(74,62,53,0.1);
+      transition: transform 0.16s cubic-bezier(0.34, 1.45, 0.4, 1), box-shadow 0.16s ease;
+      box-shadow: 0 2px 0 #1C1610;
     }
     .rcard:hover {
-      transform: translateY(-4px);
-      box-shadow: 2px 6px 0 rgba(74,62,53,0.15);
+      transform: translateY(-3px);
+      box-shadow: 0 4px 0 #1C1610;
+    }
+    .rcard:active {
+      transform: scale(0.93) rotate(-2deg);
     }
 
     .related-name {
       margin-top: 8px;
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 800;
       text-align: center;
       line-height: 1.2;
-      color: var(--ink-main);
+      color: #332A1F;
     }
-    
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(28, 22, 16, 0.25);
+      border-radius: 999px;
+    }
+
     @media (max-width: 900px) {
       .side-panel-wrapper {
-        width: 100%;
+        left: 0;
+        right: 0;
         top: auto;
         bottom: 0;
-        height: 80dvh;
-        transform: translateY(120%);
+        width: auto;
+        height: min(82dvh, 640px);
+        transform: translateY(105%);
       }
       .panel-open {
         transform: translateY(0);
       }
-      .card-layer {
-        display: none;
-      }
       .card-main {
-        border-radius: 24px 24px 0 0;
+        border-radius: 28px 28px 0 0;
         border-bottom: none;
+        box-shadow: 0 -3px 0 #1C1610;
+        padding-top: 24px;
+      }
+      .card-main::before {
+        content: "";
+        width: 44px;
+        height: 5px;
+        border-radius: 4px;
+        background: rgba(28, 22, 16, 0.18);
+        margin: 0 auto 12px;
+        flex: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .side-panel-wrapper {
+        transition: none;
       }
     }
   `],

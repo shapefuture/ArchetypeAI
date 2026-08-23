@@ -344,6 +344,30 @@
     </app-quickscan-panel>
   }
 
+  <!-- Map gate: You-tab actions that need the innerverse map, used before
+       the first descent is completed (also reached from the universe HUD). -->
+  @if (mapGate()) {
+    <div class="gate-scrim" (click)="mapGate.set(false)">
+      <div class="gate-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <h3 class="gate-title">{{ gateCopy().title }}</h3>
+        <p class="gate-body">{{ gateCopy().body }}</p>
+        <div class="gate-actions">
+          <button class="gate-btn gate-btn--primary" (click)="startDescentFromGate()">
+            {{ gateCopy().cta }}
+          </button>
+          @if (!hasRealAccount()) {
+            <button class="gate-btn gate-btn--ghost" (click)="loginFromGate()">
+              {{ gateCopy().login }}
+            </button>
+          }
+          <button class="gate-btn gate-btn--plain" (click)="mapGate.set(false)">
+            {{ gateCopy().close }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
   @if (appState() === 'intro' && therapistOpen()) {
     <app-therapist-panel (closed)="closeTherapist()"></app-therapist-panel>
   }

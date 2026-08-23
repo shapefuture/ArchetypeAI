@@ -728,22 +728,26 @@ export class AppComponent implements OnDestroy {
     this.goToIntro();
   }
 
+  /** Map-gate popup: shown when You-tab buttons that need the innerverse
+   *  map are used before the first descent is completed. */
+  readonly mapGate = signal(false);
+
   openInnerverse(): void {
     if (this.innerverseProfile()) this.appState.set('innerverse');
-    else this.startDescent();
+    else this.mapGate.set(true);
   }
 
   readonly checkinOpen = signal(false);
   openCheckin(): void {
     if (this.innerverseProfile()) this.checkinOpen.set(true);
-    else this.startDescent();
+    else this.mapGate.set(true);
   }
   closeCheckin(): void { this.checkinOpen.set(false); }
 
   readonly practiceOpen = signal(false);
   openPractice(): void {
     if (this.innerverseProfile()) this.practiceOpen.set(true);
-    else this.startDescent();
+    else this.mapGate.set(true);
   }
   closePractice(): void { this.practiceOpen.set(false); }
 
@@ -758,9 +762,40 @@ export class AppComponent implements OnDestroy {
   readonly synastryOpen = signal(false);
   openSynastry(): void {
     if (this.innerverseProfile()) this.synastryOpen.set(true);
-    else this.startDescent();
+    else this.mapGate.set(true);
   }
   closeSynastry(): void { this.synastryOpen.set(false); }
+
+  /** Gate copy — RU-first, EN inline (translations.ts is off-limits). */
+  readonly gateCopy = computed(() => {
+    const ru = this.translationService.getLanguage() === 'ru';
+    return ru ? {
+      title: 'Сначала пройдите погружение',
+      body: 'Отчёт, чек-ин, практика и синастрия открываются после первой карты — три части по 49 утверждений, около 25 минут. Прогресс сохраняется, можно сделать паузу.',
+      cta: '✦ Начать погружение',
+      login: 'Войти в аккаунт',
+      close: 'Позже',
+    } : {
+      title: 'Complete your first descent',
+      body: 'The report, check-in, practice and synastry open after your first map — three sittings of 49 statements, about 25 minutes. Progress is saved, pauses welcome.',
+      cta: '✦ Start the descent',
+      login: 'Sign in',
+      close: 'Later',
+    };
+  });
+
+  /** Signed in with a real (non-anonymous) account? */
+  readonly hasRealAccount = computed(() => !!this.currentUser() && !this.currentUser()?.isAnonymous);
+
+  startDescentFromGate(): void {
+    this.mapGate.set(false);
+    this.startDescent();
+  }
+
+  loginFromGate(): void {
+    this.mapGate.set(false);
+    this.openLoginModal();
+  }
 
   toggleLanguage(): void {
     const newLang = this.translationService.getLanguage() === 'en' ? 'ru' : 'en';

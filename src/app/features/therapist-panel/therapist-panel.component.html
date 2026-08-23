@@ -92,7 +92,7 @@
             <div class="th-client-head">
               <span class="th-client-name">{{ c.clientEmail || c.clientUid }}</span>
               @if (c.summary; as s) {
-                <span class="th-client-meta">Self {{ s.selfEnergy }} · burden {{ s.burden }} · {{ s.adherence.done }}/{{ s.adherence.done + s.adherence.skipped }}</span>
+                <span class="th-client-meta">{{ ui().selfLabel }} {{ s.selfEnergy }} · {{ ui().burdenLabel }} {{ s.burden }} · {{ ui().adherenceLabel }} {{ s.adherence.done }}/{{ s.adherence.done + s.adherence.skipped }}</span>
               } @else {
                 <span class="th-quiet">{{ ui().clientNoSummary }}</span>
               }
@@ -100,11 +100,11 @@
             @if (c.summary; as s) {
               <div class="th-stack">
                 @for (cx of s.activeComplexes; track cx.id) {
-                  <span class="th-complex" [class.gripping]="cx.tier === 'gripping'">{{ cx.id }} {{ cx.activation }}</span>
+                  <span class="th-complex" [class.gripping]="cx.tier === 'gripping'">{{ complexName(cx.id) }} {{ cx.activation }}</span>
                 }
               </div>
               <div class="th-stack-line">
-                {{ s.copingStack.l1 }} → {{ s.copingStack.l2 || '…' }} → {{ s.copingStack.l3 || '…' }} → {{ s.copingStack.floor }}
+                {{ partName(s.copingStack.l1) }} → {{ s.copingStack.l2 ? partName(s.copingStack.l2) : '…' }} → {{ s.copingStack.l3 ? partName(s.copingStack.l3) : '…' }} → {{ partName(s.copingStack.floor) }}
               </div>
             }
             <button class="th-x-btn" (click)="toggleArchive(c.clientUid, true)">{{ ui().toArchive }} ⌄</button>
@@ -128,8 +128,8 @@
         <section class="th-metrics">
           <h2>{{ ui().metricsTitle }}</h2>
           <div class="th-metrics-grid">
-            <span>{{ ui().metrics[0] }}: {{ metrics().timeToRepairH ?? '—' }}{{ metrics().timeToRepairH != null ? 'h' : '' }}</span>
-            <span>{{ ui().metrics[1] }}: {{ metrics().secrecyH ?? '—' }}{{ metrics().secrecyH != null ? 'h' : '' }}</span>
+            <span>{{ ui().metrics[0] }}: {{ metrics().timeToRepairH ?? '—' }}{{ metrics().timeToRepairH != null ? (lang() === 'ru' ? 'ч' : 'h') : '' }}</span>
+            <span>{{ ui().metrics[1] }}: {{ metrics().secrecyH ?? '—' }}{{ metrics().secrecyH != null ? (lang() === 'ru' ? 'ч' : 'h') : '' }}</span>
             <span>{{ ui().metrics[2] }}: {{ metrics().ifThenFireRate ?? '—' }}</span>
             <span>{{ ui().metrics[3] }}: {{ metrics().disclosureRatio ?? '—' }}</span>
           </div>
@@ -154,7 +154,7 @@
             <option value="">—</option>
             @for (e of exercises; track e.id) {
               <option [value]="e.id">
-                {{ (lang() === 'en' ? e.title.en : e.title.ru) }} · {{ e.type }} ({{ exGate(e.id) }})
+                {{ (lang() === 'en' ? e.title.en : e.title.ru) }} · {{ gateLabel(exGate(e.id)) }}
               </option>
             }
           </select>
@@ -163,7 +163,7 @@
           <span>{{ ui().fFrequency }}</span>
           <select (change)="assignFreq.set($any($event.target).value)">
             @for (f of ui().frequency; track f) {
-              <option [value]="f">{{ f }}</option>
+              <option [value]="f">{{ freqLabel(f) }}</option>
             }
           </select>
         </label>

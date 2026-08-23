@@ -13,6 +13,8 @@ import {
   type TherapistClientSummary, type AssignmentFrequency, type LinkedClient,
 } from '../../core/data/therapist-link';
 import { EXERCISES, EXERCISE_TYPES } from '../../core/data/exercises';
+import { PART_NAME_RU, COMPLEX_COPY_RU } from '../../core/data/constellation-copy';
+import { COMPLEXES } from '../../core/data/parts';
 import { resistantMetrics, loadEvents } from '../../core/data/state-v2';
 import {
   getTherapistAvailability, saveTherapistAvailability, therapistAppointments,
@@ -61,6 +63,7 @@ const UI = {
     metrics: ['Time to repair', 'Secrecy duration', 'If-then fire rate', 'Disclosure ratio'],
     metricsRule: 'If self-report improves but these don’t, the work is being narrated, not generalized — shift from insight exercises to behavior/environment exercises.',
     fClient: 'Client', fExercise: 'Exercise', fFrequency: 'Frequency',
+    selfLabel: 'Self', burdenLabel: 'burden', adherenceLabel: 'practice done',
     archive: 'Archive',
     toArchive: 'Archive',
     restore: 'Restore',
@@ -103,6 +106,7 @@ const UI = {
     metrics: ['Время до исправления', 'Длительность умолчания', 'Доля сработавших «если–то»', 'Доля раскрытий'],
     metricsRule: 'Если самоотчёт улучшается, а эти метрики нет — работа проговаривается, а не генерализуется: переведите фокус с инсайтов на поведенческие и средовые практики.',
     fClient: 'Клиент', fExercise: 'Практика', fFrequency: 'Частота',
+    selfLabel: 'Self-энергия', burdenLabel: 'нагрузка', adherenceLabel: 'практик выполнено',
     archive: 'Архив',
     toArchive: 'В архив',
     restore: 'Восстановить',
@@ -309,6 +313,33 @@ export class TherapistPanelComponent {
   exGate(exerciseId: string): string {
     const e = EXERCISES.find(x => x.id === exerciseId);
     return e ? EXERCISE_TYPES[e.type].gate : 'green';
+  }
+
+  /** Gate key ('green'|'yellow'|'red') as a locale label. */
+  gateLabel(gate: string): string {
+    if (this.lang() !== 'ru') return gate;
+    return gate === 'green' ? 'зелёный' : gate === 'yellow' ? 'жёлтый' : 'красный';
+  }
+
+  /** Assignment frequency key as a locale label (values stay as API keys). */
+  freqLabel(freq: string): string {
+    if (this.lang() !== 'ru') {
+      return { 'once': 'Once', 'daily': 'Daily', 'weekly': 'Weekly', 'after-trigger': 'After trigger' }[freq] ?? freq;
+    }
+    return { 'once': 'однократно', 'daily': 'ежедневно', 'weekly': 'еженедельно', 'after-trigger': 'после триггера' }[freq] ?? freq;
+  }
+
+  /** Part id ('taskmaster', 'rebel'…) as a locale display name. */
+  partName(id?: string): string {
+    if (!id) return '';
+    if (this.lang() === 'ru') return PART_NAME_RU[id] ?? id;
+    return id;
+  }
+
+  /** Complex id ('abandonment'…) as a locale display name. */
+  complexName(id: string): string {
+    if (this.lang() === 'ru') return COMPLEX_COPY_RU[id]?.name ?? id;
+    return COMPLEXES[id as keyof typeof COMPLEXES]?.name ?? id;
   }
 
   close(): void { this.closed.emit(); }

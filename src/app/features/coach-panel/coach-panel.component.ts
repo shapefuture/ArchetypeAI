@@ -222,7 +222,10 @@ export function formatCoachClock(ms: number): string {
     .coach-overlay {
       position: fixed;
       inset: 0;
-      z-index: var(--z-panel, 30);
+      /* Above the landing dock (40) and sheets (60/61), below the save gate
+         (200) — the coach is a modal popup, so its input bar must render on
+         top of the bottom navigation, not underneath it. */
+      z-index: 150;
       display: flex;
       align-items: flex-end;
       justify-content: center;

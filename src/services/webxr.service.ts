@@ -7,327 +7,138 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { TranslationService } from './translation.service';
-import {
-  IV_PARTS,
-  loadLooks,
-  sticker,
-  type EyeKind,
-  type IvPart,
-  type MouthKind,
-} from '../app/features/landing/stickers';
+import { sticker } from '../app/features/landing/stickers';
 import { gsap } from 'gsap';
 
 
 
-// --- DATA STRUCTURES ---
-export interface Archetype {
-  id: string;
-  name: string;
-  coordinates: [number, number, number, number];
-  color: string;
-  size: number;
-  symbol: string;
-  description?: string;
-  wound?: string;
-  cluster?: string;
-  quality?: string;
-  shadow?: string;
-  invitation: string;
-  coreBelief: string;
-  attracts: string;
-  integratedForm?: string;
-  /** Sticker character (satellite labels): body shape id from the part system. */
-  shape?: string;
-  /** Sticker character (satellite labels): eye + mouth glyph kinds. */
-  glyph?: { e: EyeKind; m: MouthKind };
-}
-
-export interface Dimension {
-  key: string;
-  labels: { hypo: string, hyper: string };
-  min: number;
-  max: number;
-}
-
-export interface DimensionalExpressions {
-  [key: string]: number; // from -1 to 1, with 0 being balanced
-}
-
-
-// --- DATA & CONSTANTS ---
-const DIMENSIONS_DATA: { [key: string]: { min: number, max: number, labels: { hypo: string, hyper: string } } } = {
-  AGENCY: { min: -1.0, max: 1.0, labels: { hypo: "Active", hyper: "Receptive" } },
-  TEMPERATURE: { min: -1.0, max: 1.0, labels: { hypo: "Cool", hyper: "Hot" } },
-  FOCUS: { min: -1.0, max: 1.0, labels: { hypo: "Self", hyper: "Other" } },
-  ATTACHMENT: { min: -1.0, max: 1.0, labels: { hypo: "Avoidant", hyper: "Anxious" } }
-};
-const DIMENSION_KEYS = Object.keys(DIMENSIONS_DATA);
-const POSITION_SCALE = 10;
-
-// --- THE 18-PART SYSTEM (source of truth: IV_PARTS in landing/stickers.ts) ---
-
-/** The part the genesis animation anchors on (the calm center of the map). */
-const GENESIS_ANCHOR_ID = 'sage';
-
-type ClusterId = 'managers' | 'firefighters' | 'exiles' | 'resources';
-
-/** Family palette + inline RU/EN names (translations.ts is legacy-only). */
-const FAMILY_META: Record<ClusterId, { ru: string; en: string; color: string }> = {
-  managers: { ru: 'Менеджеры', en: 'Managers', color: '#E1734B' },
-  firefighters: { ru: 'Пожарные', en: 'Firefighters', color: '#E58FA0' },
-  exiles: { ru: 'Изгнанники', en: 'Exiles', color: '#8F63C0' },
-  resources: { ru: 'Ресурсы', en: 'Resources', color: '#46A29D' },
+// --- TYPES + DATA live in universe-state.service (eager, three-free) ---
+// Re-exported here so existing imports keep resolving; the renderer below
+// consumes the same UniverseStateService signals every pre-universe panel does.
+import {
+  UniverseStateService,
+  ALL_ARCHETYPES,
+  DIMENSIONS_DATA,
+  DIMENSION_KEYS,
+  FAMILY_META,
+  POSITION_SCALE,
+  GENESIS_ANCHOR_ID,
+  buildDynamicRelationalIds,
+  effectiveLook,
+  type Archetype,
+  type ClusterId,
+  type Dimension,
+  type DimensionalExpressions,
+  type PartUniverseCopy,
+} from './universe-state.service';
+export {
+  ALL_ARCHETYPES,
+  buildDynamicRelationalIds,
+  effectiveLook,
+  type Archetype,
+  type ClusterId,
+  type Dimension,
+  type DimensionalExpressions,
+  type PartUniverseCopy,
 };
 
-const CLUSTER_BY_FAM: Record<string, ClusterId> = {
-  manager: 'managers',
-  firefighter: 'firefighters',
-  exile: 'exiles',
-  resource: 'resources',
-};
+// --- NIGHT-SKY OBSERVATORY SHADER SYSTEM ---
+// Shared, correct simplex noise. (The previous dead shaders could never
+// compile — this block is the fixed, now-wired version.)
+const SNOISE3D_GLSL = `
+  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+  float snoise(vec3 v) {
+    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+    vec3 i  = floor(v + dot(v, C.yyy));
+    vec3 x0 = v - i + dot(i, C.xxx);
+    vec3 g = step(x0.yzx, x0.xyz);
+    vec3 l = 1.0 - g;
+    vec3 i1 = min(g.xyz, l.zxy);
+    vec3 i2 = max(g.xyz, l.zxy);
+    vec3 x1 = x0 - i1 + C.xxx;
+    vec3 x2 = x0 - i2 + C.yyy;
+    vec3 x3 = x0 - D.yyy;
+    i = mod289(i);
+    vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+    vec4 j = p - 49.0 * floor(p * (1.0 / 49.0));
+    vec4 x_ = floor(j * (1.0 / 7.0));
+    vec4 y_ = floor(j - 7.0 * x_);
+    vec4 x = x_ * 0.142857142857 + 0.5 * 0.142857142857;
+    vec4 y = y_ * 0.142857142857 + 0.5 * 0.142857142857;
+    vec4 h = 1.0 - abs(x) - abs(y);
+    vec4 b0 = vec4(x.xy, y.xy);
+    vec4 b1 = vec4(x.zw, y.zw);
+    vec4 s0 = floor(b0)*2.0 + 1.0;
+    vec4 s1 = floor(b1)*2.0 + 1.0;
+    vec4 sh = -step(h, vec4(0.0));
+    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+    vec3 p0 = vec3(a0.xy,h.x); vec3 p1 = vec3(a0.zw,h.y); vec3 p2 = vec3(a1.xy,h.z); vec3 p3 = vec3(a1.zw,h.w);
+    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+    p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+    m = m * m;
+    return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+  }
+`;
 
-/** Satellite visual mass per family. */
-const SIZE_BY_FAM: Record<string, number> = {
-  manager: 0.75,
-  firefighter: 0.7,
-  exile: 0.6,
-  resource: 0.8,
-};
-
-const PART_SYMBOL: Record<string, string> = {
-  taskmaster: '📋', inner_critic: '🧐', pleaser: '🤝', controller: '🎛', analyst: '🔍',
-  hermit: '🕯', bypasser: '🌫', numb: '🧊', rebel: '⚡', charmer: '💫',
-  abandoned: '🕊', ashamed: '🥀', frightened: '👻', unseen: '🫥',
-  sage: '🦉', warrior: '⚔️', caregiver: '🤲', explorer: '🧭',
-};
-
-/** Plain RU one-liners per part (managers keep order, firefighters react, exiles carry the young pain, resources are the grown strengths). */
-interface PartUniverseCopy {
-  description: string;
-  coreBelief: string;
-  invitation: string;
-  quality?: string;
-  shadow: string;
-  wound?: string;
-  attracts: string;
-}
-
-const PART_COPY: Record<string, PartUniverseCopy> = {
-  // managers
-  taskmaster: {
-    description: 'Заранее раскладывает день по задачам и держит всё под контролем, чтобы неприятности не застали врасплох.',
-    coreBelief: 'Пока я выполняю и контролирую дела, всё идёт как надо.',
-    invitation: 'Разрешить себе одну спокойную паузу и спросить, что для вас важнее скорости.',
-    quality: 'Дисциплина и доведение дел до конца.',
-    shadow: 'Отдых воспринимается как потеря времени, а усталость скрывается до последнего.',
-    wound: 'Боится, что без пользы и результатов его не будут ценить.',
-    attracts: 'Людей и задачи, где ценят надёжность и результат.',
-  },
-  inner_critic: {
-    description: 'Заранее подмечает ошибки и слабые места, чтобы вас никто не раскритиковал со стороны.',
-    coreBelief: 'Если я буду строгим, вы не ошибётесь и вас не отвергнут.',
-    invitation: 'Спросить его, чего он опасается, и поблагодарить за заботу.',
-    quality: 'Требовательность и внимание к деталям.',
-    shadow: 'Любое усилие обесценивается, и остаётся чувство, что вы всегда недостаточно хороши.',
-    wound: 'Запомнил моменты, когда ошибки стоили любви и одобрения.',
-    attracts: 'Задачи, где важны точность и высокое качество.',
-  },
-  pleaser: {
-    description: 'Предвосхищает чужие желания и заранее сглаживает конфликты до того, как они начнутся.',
-    coreBelief: 'Меня примут, только пока я удобен.',
-    invitation: 'Один раз сказать честное «нет» и заметить, что отношения это выдержали.',
-    quality: 'Чуткость к настроению и потребностям людей.',
-    shadow: 'Собственные потребности откладываются так надолго, что перестают замечаться.',
-    wound: 'Усвоил, что любовь нужно заслуживать удобством.',
-    attracts: 'Людей, которым нужна поддержка и внимание.',
-  },
-  controller: {
-    description: 'Продумывает сценарии заранее и держит рычаги управления в своих руках.',
-    coreBelief: 'Если я всё предусмотрю, ничего плохого не случится.',
-    invitation: 'Доверить кому-то часть дел и выдержать небольшую неопределённость.',
-    quality: 'Холодная голова и готовность к любому развитию событий.',
-    shadow: 'Близким не хватает воздуха, а доверие заменяется инструкциями.',
-    wound: 'Живёт с ощущением, что одна ошибка в планировании обернётся катастрофой.',
-    attracts: 'Ситуации, где нужен порядок и ясные правила.',
-  },
-  analyst: {
-    description: 'Раскладывает переживания по полочкам и изучает их с безопасного расстояния.',
-    coreBelief: 'Пока я понимаю происходящее, я в безопасности.',
-    invitation: 'Назвать чувство одним словом до того, как объяснять его причины.',
-    quality: 'Ясное мышление и умение замечать закономерности.',
-    shadow: 'Понимание уходит в бесконечный анализ, а сами чувства остаются в стороне.',
-    wound: 'Когда-то понять происходящее было единственным способом почувствовать опору.',
-    attracts: 'Сложные вопросы без готовых ответов.',
-  },
-  hermit: {
-    description: 'Сокращает контакты до минимума и бережёт покой, пока мир не станет безопаснее.',
-    coreBelief: 'Наедине с собой меня хотя бы никто не ранит.',
-    invitation: 'Выбрать одного человека и сделать маленький шаг навстречу.',
-    quality: 'Умение быть с собой и ценить тишину.',
-    shadow: 'Расстояние до людей растёт, и близость начинает пугать.',
-    wound: 'Помнит, что близость стоила слишком много сил или боли.',
-    attracts: 'Тишину, уединённые занятия и спокойных людей.',
-  },
-  bypasser: {
-    description: 'Быстро переключает внимание на приятное, чтобы тяжёлое осталось позади.',
-    coreBelief: 'Если не задерживаться на плохом, оно пройдёт само.',
-    invitation: 'Дать трудному чувству одну минуту честного внимания.',
-    quality: 'Лёгкость и умение вывести ситуацию из тяжёлого настроения.',
-    shadow: 'Нерешённые вопросы накапливаются и возвращаются в самый неподходящий момент.',
-    wound: 'Когда-то тяжесть была настолько велика, что спасало только переключение.',
-    attracts: 'Лёгкие разговоры и приятные поводы отвлечься.',
-  },
-  // firefighters
-  numb: {
-    description: 'Когда боль подступает слишком близко, выключает чувствительность.',
-    coreBelief: 'Если перестать чувствовать, станет терпимо.',
-    invitation: 'Раз в день тихо спрашивать себя, что я чувствую на самом деле.',
-    quality: 'Способность действовать там, где выносить чувства невозможно.',
-    shadow: 'Вместе с болью притупляются радость и желания.',
-    wound: 'Вынес столько, что чувствительность пришлось отключить.',
-    attracts: 'Ситуации, где можно остаться в стороне от сильных эмоций.',
-  },
-  rebel: {
-    description: 'Вспыхивает против правил и давления, как только чувствует попытку подчинить.',
-    coreBelief: 'Любое правило пытается меня переделать.',
-    invitation: 'Выбрать правило, которое служит его собственной цели.',
-    quality: 'Смелость идти против общего мнения.',
-    shadow: 'Ломает планы и отношения, которые на самом деле важны.',
-    wound: 'Помнит, что свободу приходилось отвоёвывать.',
-    attracts: 'Ситуации с жёсткими правилами и авторитетами.',
-  },
-  charmer: {
-    description: 'Включает обаяние на полную, когда чувствует, что теряет внимание или расположение.',
-    coreBelief: 'Пока я нравлюсь, меня не отвергнут.',
-    invitation: 'Показать одному человеку что-то неотшлифованное и настоящее.',
-    quality: 'Лёгкость в общении и умение разрядить напряжение.',
-    shadow: 'Представление требует всё больше сил, а настоящая близость так и не начинается.',
-    wound: 'Уверен, что без яркой подачи интереса к нему будет мало.',
-    attracts: 'Внимание, восхищение и тёплые компании.',
-  },
-  // exiles
-  abandoned: {
-    description: 'Хранит память о моментах, когда поддержка была нужна больше всего, а рядом никого не оказалось.',
-    coreBelief: 'Те, кого я люблю, в конце концов уходят.',
-    invitation: 'Побыть рядом с ним и не торопить доверие.',
-    quality: 'Способность к глубокой привязанности.',
-    shadow: 'Страх потери заставляет цепляться или уходить первым.',
-    wound: 'Одиночество в самый трудный час.',
-    attracts: 'Отношения, где тепло нужно постоянно подтверждать.',
-  },
-  ashamed: {
-    description: 'Несёт ощущение, что с ним что-то не так, и старается занимать как можно меньше места.',
-    coreBelief: 'Если меня увидят по-настоящему, меня отвергнут.',
-    invitation: 'Показать одному безопасному человеку что-то незаконченное и настоящее.',
-    quality: 'Внимательность к людям и словам.',
-    shadow: 'Целые области жизни прячутся даже от близких.',
-    wound: 'Опыт, когда его видели только с плохой стороны.',
-    attracts: 'Взгляды и оценки, которые легко принять на свой счёт.',
-  },
-  frightened: {
-    description: 'Замечает угрозу там, где другие видят обычные вещи.',
-    coreBelief: 'Опасность всегда может оказаться рядом.',
-    invitation: 'Сделать один маленький шаг в пугающее и вернуться в безопасное место.',
-    quality: 'Способность замечать опасность раньше других.',
-    shadow: 'Жизнь сужается до самого безопасного маршрута.',
-    wound: 'Ранний опыт, когда мир был непредсказуемым.',
-    attracts: 'Перемены и неожиданные новости.',
-  },
-  unseen: {
-    description: 'Привык оставаться в тени и не ждать к себе интереса.',
-    coreBelief: 'Меня всё равно не заметят.',
-    invitation: 'Сказать в группе одно честное предложение и дать ему прозвучать.',
-    quality: 'Наблюдательность и внимание к другим.',
-    shadow: 'Таланты остаются в тени, а присутствие проходит незамеченным.',
-    wound: 'Опыт, когда его присутствие не имело значения.',
-    attracts: 'Компании, в которых легко остаться незамеченным.',
-  },
-  // resources
-  sage: {
-    description: 'Смотрит на ситуацию спокойно и видит её целиком.',
-    coreBelief: 'Ответы на большинство вопросов уже есть внутри меня.',
-    invitation: 'Перед трудным решением спросить его, что здесь важнее всего.',
-    quality: 'Спокойствие и широта взгляда.',
-    shadow: 'Иногда объясняет чувства вместо того, чтобы просто побыть рядом.',
-    attracts: 'Спокойные и глубокие разговоры.',
-  },
-  warrior: {
-    description: 'Чётко определяет границы и защищает то, что важно.',
-    coreBelief: 'Я могу за себя постоять.',
-    invitation: 'Сказать тёплое и твёрдое «нет» одному человеку.',
-    quality: 'Решительность и верность своим границам.',
-    shadow: 'Иногда переходит в атаку там, где хватило бы простого отказа.',
-    attracts: 'Честные договорённости и прямые разговоры.',
-  },
-  caregiver: {
-    description: 'Замечает чужие потребности и даёт тепло, не ведя счёта.',
-    coreBelief: 'Забота делает отношения настоящими.',
-    invitation: 'Подарить один час такой же заботы себе.',
-    quality: 'Щедрость и умение поддержать.',
-    shadow: 'Собственные потребности остаются на последнем месте.',
-    attracts: 'Людей, которым нужна забота и участие.',
-  },
-  explorer: {
-    description: 'Тянется к новому и спокойно относится к незнакомым маршрутам.',
-    coreBelief: 'Новое всегда даёт больше, чем привычное.',
-    invitation: 'Выбрать одно незнакомое дело и попробовать его просто так.',
-    quality: 'Любопытство и готовность пробовать.',
-    shadow: 'Бросает начатое, как только исчезает новизна.',
-    attracts: 'Новые места, идеи и людей.',
-  },
-};
-
-/** One universe archetype per IFS part: 0..100 axes → -1..1 coordinates. */
-function partToArchetype(p: IvPart): Archetype {
-  return {
-    id: p.id,
-    name: p.name[1], // RU-first; language switching falls back to this name
-    coordinates: [
-      (p.ax.ag - 50) / 50,
-      (p.ax.te - 50) / 50,
-      (p.ax.fo - 50) / 50,
-      (p.ax.at - 50) / 50,
-    ],
-    color: p.color,
-    size: SIZE_BY_FAM[p.fam] ?? 0.7,
-    symbol: PART_SYMBOL[p.id] ?? '✦',
-    cluster: CLUSTER_BY_FAM[p.fam],
-    shape: p.shape,
-    glyph: p.glyph,
-    ...(PART_COPY[p.id] ?? {
-      description: p.name[1],
-      coreBelief: p.name[1],
-      invitation: p.name[1],
-      shadow: p.name[1],
-      attracts: p.name[1],
-    }),
-  };
-}
-
-const ALL_ARCHETYPES: Archetype[] = IV_PARTS.map(partToArchetype);
-
-// --- SHADERS FOR QUANTUM SHELLS - ZEN THEME ---
-const ANXIOUS_SHELL = { // Energetic, reaching
+// Attachment legibility channel A — ANXIOUS side: an energetic, reaching corona.
+// Noise-displaced shell whose agitation scales with anxious attachment.
+const ANXIOUS_SHELL = {
   vertex: `
-    uniform float uTime; uniform float uAttachment; varying float vNoise;
-    vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; } vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; } vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); } vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-    float snoise(vec3 v) { const vec2 C = vec2(1.0/6.0, 1.0/3.0); const vec4 D = vec4(0.0, 0.5, 1.0, 2.0); vec3 i = floor(v + dot(v, C.yyy)); vec3 x0 = v - i + dot(i, C.xxx); vec3 g = step(x0.yzx, x0.xyz); vec3 l = 1.0 - g; vec3 i1 = min(g.xyz, l.zxy); vec3 i2 = max(g.xyz, l.zxy); vec3 x1 = x0 - i1 + C.xxx; vec3 x2 = x0 - i2 + C.yyy; vec3 x3 = x0 - D.yyy; i = mod289(i); vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0)); float n_ = 0.142857142857; vec3 ns = n_ * D.wyz - D.xzx; vec4 j = p - 49.0 * floor(p * ns.z * ns.z); vec4 x_ = floor(j * ns.z); vec4 y_ = floor(j - 7.0 * x_); vec4 x = x_ * ns.x + ns.yyyy; vec4 y = y_ * ns.x + ns.yyyy; vec4 h = 1.0 - abs(x) - abs(y); vec4 b0 = vec4(x.xy, y.xy); vec4 b1 = vec4(x.zw, y.zw); vec4 s0 = floor(b0)*2.0 + 1.0; vec4 s1 = floor(b1)*2.0 + 1.0; vec4 sh = -step(h, vec4(0.0)); vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy; vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww; vec3 p0 = vec3(a0.xy,h.x); vec3 p1 = vec3(a0.zw,h.y); vec3 p2 = vec3(a1.xy,h.z); vec3 p3 = vec3(a1.zw,h.w); vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3))); p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w; vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0); m = m * m; return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-    }
-    void main() { float noise = snoise(position * 4.0 + uTime * 0.5); vNoise = noise; vec3 displacedPosition = position + normal * noise * 0.2 * uAttachment; gl_Position = projectionMatrix * modelViewMatrix * vec4(displacedPosition, 1.0); }`,
+    uniform float uTime; uniform float uAttachment; uniform float uReveal;
+    varying float vNoise;
+    ${SNOISE3D_GLSL}
+    void main() {
+      float noise = snoise(position * 3.0 + uTime * 0.55);
+      vNoise = noise;
+      vec3 displaced = position + normal * noise * 0.22 * uAttachment;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
+    }`,
   fragment: `
-    uniform vec3 uColor; uniform float uAttachment; varying float vNoise;
-    void main() { float intensity = smoothstep(-0.5, 1.0, vNoise) * 0.8 + 0.2; gl_FragColor = vec4(uColor * intensity, intensity * uAttachment * 0.7); }`
+    uniform vec3 uColor; uniform float uAttachment; uniform float uReveal; uniform float uTime;
+    varying float vNoise;
+    void main() {
+      float intensity = smoothstep(-0.5, 1.0, vNoise) * 0.8 + 0.2;
+      float flicker = 0.85 + 0.15 * sin(uTime * 3.2 + vNoise * 6.0);
+      float alpha = intensity * uAttachment * 0.5 * uReveal * flicker;
+      gl_FragColor = vec4(uColor * intensity * 1.35, alpha);
+    }`
 };
-const AVOIDANT_SHELL = { // Smooth, absorptive
+
+// Attachment legibility channel B — AVOIDANT side: a smooth, absorptive veil.
+// A fresnel shell that reads as a cool distance-field around the part.
+const AVOIDANT_SHELL = {
   vertex: `
     varying vec3 vNormal; varying vec3 vViewDirection;
-    void main() { vec4 worldPosition = modelMatrix * vec4(position, 1.0); vNormal = normalize(normalMatrix * normal); vViewDirection = normalize(cameraPosition - worldPosition.xyz); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    void main() {
+      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+      vNormal = normalize(mat3(modelMatrix) * normal);
+      vViewDirection = normalize(cameraPosition - worldPosition.xyz);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }`,
   fragment: `
-    uniform vec3 uColor; uniform float uAttachment; uniform float uTime; varying vec3 vNormal; varying vec3 vViewDirection;
-    vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
-    float snoise(vec2 v) { const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439); vec2 i = floor(v + dot(v, C.yy)); vec2 x0 = v - i + dot(i, C.xx); vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0); vec2 x1 = x0.xy + C.xx - i1; vec2 x2 = x0.xy + C.zz; i = mod(i, 289.0); vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0)); vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x1,x1), dot(x2,x2)), 0.0); m = m*m; m = m*m; vec3 x = 2.0 * fract(p * C.www) - 1.0; vec3 h = abs(x) - 0.5; vec3 ox = floor(x + 0.5); vec3 a0 = x - ox; m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h); vec3 g; g.x = a0.x * x0.x + h.x * x0.y; g.yz = a0.yz * vec2(x1.x,x2.x) + h.yz * vec2(x1.y,x2.y); return 130.0 * dot(m, g); }
-    void main() { float fresnel = 1.0 - dot(vNormal, vViewDirection); fresnel = pow(fresnel, 2.0); float shimmer = snoise(vNormal.xy * 5.0 + uTime * 0.3) * 0.2 + 0.8; float rim = smoothstep(0.5, 1.0, fresnel) * shimmer; float alpha = (rim * 0.2 + (1.0 - fresnel) * 0.1) * abs(uAttachment); gl_FragColor = vec4(uColor, alpha); }`
+    uniform vec3 uColor; uniform float uAttachment; uniform float uReveal; uniform float uTime;
+    varying vec3 vNormal; varying vec3 vViewDirection;
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+    float vnoise(vec2 p) {
+      vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
+                 mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+    }
+    void main() {
+      float fresnel = pow(1.0 - abs(dot(normalize(vNormal), normalize(vViewDirection))), 2.4);
+      float shimmer = vnoise(vNormal.xy * 4.0 + uTime * 0.25) * 0.25 + 0.75;
+      float rim = smoothstep(0.25, 0.9, fresnel) * shimmer;
+      float alpha = rim * abs(uAttachment) * 0.55 * uReveal;
+      gl_FragColor = vec4(uColor * (0.7 + rim * 0.6), alpha);
+    }`
 };
 
 
@@ -386,8 +197,8 @@ const SKETCHY_OUTLINE_SHADER = {
       float noise = hash(vUv * 600.0 + sin(uTime * 0.005)) * 0.04;
       float parchment = 1.0 - noise;
       
-      vec3 inkColor = vec3(0.25, 0.22, 0.2); // Slightly softer ink color
-      vec3 finalColor = mix(baseColor.rgb * parchment, inkColor, edge * 0.75); 
+      vec3 inkColor = vec3(0.14, 0.13, 0.19); // night ink — cool so it reads on the indigo sky
+      vec3 finalColor = mix(baseColor.rgb * parchment, inkColor, edge * 0.6); 
       
       gl_FragColor = vec4(finalColor, baseColor.a);
     }`
@@ -486,51 +297,320 @@ const ILLUSTRATED_BLOB_SHADER = {
 };
 
 
-// --- INTELLIGENT RELATIONAL MAP ---
-// Guard pairs (manager ↔ exile) plus same-family resonances, keyed by part id.
-const RELATIONAL_MAP: { [key: string]: string[] } = {
-  // managers
-  taskmaster: ['rebel', 'caregiver', 'inner_critic'],
-  inner_critic: ['ashamed', 'sage', 'taskmaster'],
-  pleaser: ['abandoned', 'warrior', 'charmer'],
-  controller: ['frightened', 'explorer', 'rebel'],
-  analyst: ['unseen', 'frightened', 'sage'],
-  hermit: ['abandoned', 'explorer', 'numb'],
-  bypasser: ['ashamed', 'numb', 'charmer'],
-  // firefighters
-  numb: ['frightened', 'abandoned', 'caregiver'],
-  rebel: ['controller', 'taskmaster', 'warrior'],
-  charmer: ['unseen', 'pleaser', 'bypasser'],
-  // exiles
-  abandoned: ['pleaser', 'hermit', 'numb'],
-  ashamed: ['inner_critic', 'bypasser', 'caregiver'],
-  frightened: ['controller', 'analyst', 'sage'],
-  unseen: ['analyst', 'charmer', 'caregiver'],
-  // resources
-  sage: ['inner_critic', 'frightened', 'analyst'],
-  warrior: ['pleaser', 'rebel', 'controller'],
-  caregiver: ['taskmaster', 'numb', 'ashamed'],
-  explorer: ['controller', 'hermit', 'bypasser'],
+
+// The 3D subject — a living watercolor celestial body ("storybook blob, starlit").
+// Wobbling body + wrapped two-tone shading + a luminous fresnel rim (the night-sky
+// adaptation of the ink outline) + a highlight-driven heart glow that feeds bloom.
+const CELESTIAL_BLOB_SHADER = {
+  vertex: `
+    uniform float uTime;
+    uniform float uJiggle;
+    uniform float uHighlight;
+    varying vec3 vWorldNormal;
+    varying vec3 vViewDir;
+    varying float vNoise;
+    ${SNOISE3D_GLSL}
+    void main() {
+      vNoise = snoise(position * 3.0 + uTime * 0.35);
+      float amp = 0.14 + uHighlight * 0.08;
+      vec3 pos = position + normal * vNoise * amp * (1.0 + uJiggle * 2.0);
+      pos.y *= (1.0 + uJiggle * 0.25);
+      pos.xz *= (1.0 - uJiggle * 0.12);
+      vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+      vWorldNormal = normalize(mat3(modelMatrix) * normal);
+      vViewDir = normalize(cameraPosition - worldPos.xyz);
+      gl_Position = projectionMatrix * viewMatrix * worldPos;
+    }`,
+  fragment: `
+    uniform vec3 uColor;
+    uniform float uOpacity;
+    uniform float uHighlight;
+    uniform float uTime;
+    uniform vec3 uLightDir;
+    varying vec3 vWorldNormal;
+    varying vec3 vViewDir;
+    varying float vNoise;
+    void main() {
+      vec3 N = normalize(vWorldNormal);
+      vec3 V = normalize(vViewDir);
+      vec3 L = normalize(uLightDir);
+      float grain = fract(sin(dot(N.xy * 40.0 + vNoise, vec2(12.9898, 78.233))) * 43758.5453);
+      float diffuse = dot(N, L) * 0.5 + 0.5;
+      float mottle = smoothstep(-0.45, 0.9, vNoise) * 0.3;
+      vec3 deep = uColor * 0.52;
+      vec3 lit = uColor * 1.18;
+      vec3 base = mix(deep, lit, diffuse * 0.72 + mottle * 0.28);
+      base += (grain - 0.5) * 0.035; // paper grain in the watercolor
+      float heart = 0.6 + 0.4 * sin(uTime * 2.0);
+      base += uColor * uHighlight * (0.55 + 0.35 * heart);
+      float fresnel = pow(1.0 - max(dot(N, V), 0.0), 2.4);
+      vec3 rimLight = mix(uColor * 1.5, vec3(1.0, 0.93, 0.78), 0.35);
+      vec3 col = mix(base, rimLight, smoothstep(0.35, 0.95, fresnel) * 0.85);
+      float alpha = uOpacity * (0.92 + fresnel * 0.08);
+      gl_FragColor = vec4(col, alpha);
+    }`
 };
 
-function coordDistance(a: Archetype, b: Archetype): number {
-  return Math.sqrt(a.coordinates.reduce((sum, coord, i) => sum + Math.pow(coord - b.coordinates[i], 2), 0));
+// --- GPU STARFIELD (adapted from the starry-sky-visualization reference) ---
+// Per-star twinkle phase, B-V color temperature, diffraction spikes on the
+// brightest stars, additive blending. Buffers are magnitude-sorted so any
+// drawRange cut keeps the brightest stars on screen.
+const STAR_VERTEX_SHADER = `
+  attribute vec3 aColor;
+  attribute float aSize;
+  attribute float aPhase;
+  attribute float aFlag;
+  uniform float uTime;
+  uniform float uTwinkleAmp;
+  uniform float uPixelRatio;
+  uniform float uSizeScale;
+  varying vec3 vColor;
+  varying float vTwinkle;
+  varying float vFlag;
+  void main() {
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    float dist = max(-mvPosition.z, 1.0);
+    float flicker = sin(uTime * 3.1 + aPhase) * sin(uTime * 0.9 + aPhase * 2.3);
+    vTwinkle = clamp(1.0 + uTwinkleAmp * flicker * 0.6, 0.15, 1.7);
+    float perspectiveSize = (uSizeScale * aSize * 380.0) / dist;
+    gl_PointSize = clamp(perspectiveSize * uPixelRatio, 1.0, 56.0);
+    vColor = aColor;
+    vFlag = aFlag;
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+const STAR_FRAGMENT_SHADER = `
+  precision mediump float;
+  varying vec3 vColor;
+  varying float vTwinkle;
+  varying float vFlag;
+  void main() {
+    vec2 uv = gl_PointCoord - 0.5;
+    float d = length(uv) * 2.0;
+    float core = smoothstep(1.0, 0.0, d);
+    float glow = pow(core, 1.9);
+    float spike = 0.0;
+    if (vFlag > 0.5) {
+      float ax = abs(uv.x);
+      float ay = abs(uv.y);
+      spike += pow(max(0.0, 1.0 - ax * 16.0), 3.0) * step(ay, 0.05);
+      spike += pow(max(0.0, 1.0 - ay * 16.0), 3.0) * step(ax, 0.05);
+    }
+    float alpha = clamp(glow + spike * 0.5, 0.0, 1.0) * vTwinkle;
+    if (alpha < 0.01) discard;
+    gl_FragColor = vec4(vColor * alpha, alpha);
+  }
+`;
+
+/** Tilted "galactic" frame shared by the sky shader and the star band. */
+const GALACTIC_PLANE_NORMAL = new THREE.Vector3(0.25, 0.92, 0.3).normalize();
+const GALACTIC_CORE_DIR = (() => {
+  const raw = new THREE.Vector3(0.62, 0.12, -0.72).normalize();
+  return raw.clone().addScaledVector(GALACTIC_PLANE_NORMAL, -raw.dot(GALACTIC_PLANE_NORMAL)).normalize();
+})();
+
+/** B-V color temperature -> sRGB (Tanner Helland fit fed by Ballesteros B-V->K). */
+function bvToRGB(bvRaw: number): [number, number, number] {
+  const bv = Math.min(2.0, Math.max(-0.4, bvRaw));
+  const kelvin = 4600 * (1 / (0.92 * bv + 1.7) + 1 / (0.92 * bv + 0.62));
+  const t = kelvin / 100;
+  const cl = (v: number) => Math.min(1, Math.max(0, v / 255));
+  let r: number, g: number, b: number;
+  if (t <= 66) r = 255; else r = 329.698727446 * Math.pow(t - 60, -0.1332047592);
+  if (t <= 66) g = 99.4708025861 * Math.log(t) - 161.1195681661;
+  else g = 288.1221695283 * Math.pow(t - 60, -0.0755148492);
+  if (t >= 66) b = 255; else if (t <= 19) b = 0;
+  else b = 138.5177312231 * Math.log(t - 10) - 305.0447927307;
+  return [cl(r), cl(g), cl(b)];
 }
 
-export function buildDynamicRelationalIds(source: Archetype, archetypes: Archetype[], limit = 4): string[] {
-  const staticIds = RELATIONAL_MAP[source.id] || [];
-  const scored = archetypes
-    .filter(a => a.id !== source.id)
-    .map(a => ({
-      id: a.id,
-      score: coordDistance(source, a)
-        - (a.cluster && source.cluster && a.cluster === source.cluster ? 0.75 : 0)
-        - (a.cluster === 'resources' ? 0.2 : 0),
-    }))
-    .sort((a, b) => a.score - b.score)
-    .map(a => a.id);
+/** Inverse-CDF sech^2 sample around the galactic plane -> real band shape. */
+function sampleSech2(scale: number): number {
+  const u = Math.random();
+  const t = Math.max(-0.995, Math.min(0.995, 2 * u - 1));
+  return scale * Math.atanh(t);
+}
 
-  return Array.from(new Set([...staticIds, ...scored])).slice(0, limit);
+interface StarFieldBuffers {
+  positions: Float32Array;
+  colors: Float32Array;
+  sizes: Float32Array;
+  phases: Float32Array;
+  flags: Float32Array;
+}
+
+/** Magnitude-sorted star buffers (brightest-first, power-law magnitudes). */
+function generateStarFieldBuffers(count: number, innerRadius: number, outerRadius: number): StarFieldBuffers {
+  const up = Math.abs(GALACTIC_PLANE_NORMAL.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+  const tangent = new THREE.Vector3().crossVectors(up, GALACTIC_PLANE_NORMAL).normalize();
+  const bitangent = new THREE.Vector3().crossVectors(GALACTIC_PLANE_NORMAL, tangent).normalize();
+  const bandCount = Math.round(count * 0.62);
+
+  const raw: { pos: THREE.Vector3; mag: number; bv: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    const isBand = i < bandCount;
+    let dir: THREE.Vector3;
+    if (isBand) {
+      const az = Math.random() * Math.PI * 2;
+      const lat = sampleSech2(0.11);
+      const cosLat = Math.cos(lat);
+      dir = new THREE.Vector3()
+        .addScaledVector(tangent, Math.cos(az) * cosLat)
+        .addScaledVector(bitangent, Math.sin(az) * cosLat)
+        .addScaledVector(GALACTIC_PLANE_NORMAL, Math.sin(lat))
+        .normalize();
+    } else {
+      const phi = Math.random() * Math.PI * 2;
+      const cosTheta = Math.random() * 2 - 1;
+      const sinTheta = Math.sqrt(Math.max(0, 1 - cosTheta * cosTheta));
+      dir = new THREE.Vector3(Math.cos(phi) * sinTheta, cosTheta, Math.sin(phi) * sinTheta);
+    }
+    const radius = isBand
+      ? innerRadius + Math.random() * (outerRadius - innerRadius) * 0.45
+      : innerRadius + (outerRadius - innerRadius) * (0.55 + Math.random() * 0.45);
+    raw.push({
+      pos: dir.multiplyScalar(radius),
+      mag: -1.4 + Math.pow(Math.random(), 0.42) * 8.6,
+      bv: -0.3 + Math.pow(Math.random(), 1.6) * 2.2,
+    });
+  }
+  raw.sort((a, b) => a.mag - b.mag);
+
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+  const phases = new Float32Array(count);
+  const flags = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    const s = raw[i];
+    positions[i * 3] = s.pos.x;
+    positions[i * 3 + 1] = s.pos.y;
+    positions[i * 3 + 2] = s.pos.z;
+    const [r, g, b] = bvToRGB(s.bv);
+    colors[i * 3] = r;
+    colors[i * 3 + 1] = g;
+    colors[i * 3 + 2] = b;
+    sizes[i] = Math.min(Math.pow(2.512, (7.0 - s.mag) / 2.5) * 0.16, 7.5);
+    phases[i] = Math.random() * Math.PI * 2;
+    flags[i] = s.mag < 1.2 ? 1 : 0;
+  }
+  return { positions, colors, sizes, phases, flags };
+}
+
+
+// --------------------------------------------------------------- quality governor
+// zero-r-v3 PERFORMANCE.md contract: degrade in the ordered sequence
+// ambient → density → blur → identity-post; recover with hysteresis once
+// the device proves headroom. Metrics: p95 of rAF-to-rAF frame deltas, p95
+// of pointer→frame input latency, and long-task count from
+// PerformanceObserver (catches GC/JIT stalls a frame average smooths over).
+
+/** 3 = ultra · 2 = high · 1 = standard · 0 = raw (no post chain). */
+export type QualityTier = 3 | 2 | 1 | 0;
+
+const TIER_STAR_FRACTION = [0.22, 0.4, 0.65, 1.0] as const;
+
+class QualityGovernor {
+  private static readonly FRAME_BUF = 120;
+  private static readonly INTERACT_BUF = 40;
+
+  tier: QualityTier;
+  readonly maxTier: QualityTier;
+
+  private frames: number[] = [];
+  private interactions: number[] = [];
+  private longTasks = 0;
+  private longTaskWindowStart = 0;
+  private lastChangeAt = 0;
+  private goodSince = 0;
+  private pendingPointerAt = 0;
+  private observer: PerformanceObserver | null = null;
+
+  constructor(maxTier: QualityTier) {
+    this.maxTier = maxTier;
+    this.tier = maxTier; // optimistic start at the capability ceiling
+    if (typeof PerformanceObserver !== 'undefined') {
+      try {
+        this.observer = new PerformanceObserver((list) => {
+          for (const e of list.getEntries()) if (e.duration > 50) this.longTasks++;
+        });
+        this.observer.observe({ type: 'longtask', buffered: false });
+      } catch { /* longtask unsupported — frame p95 still drives tiers */ }
+    }
+  }
+
+  pointerDown(): void { this.pendingPointerAt = performance.now(); }
+
+  /** Fold the pending pointer into an input→frame latency sample (once per frame). */
+  collectInteraction(frameStart: number): void {
+    if (this.pendingPointerAt) {
+      this.push(this.interactions, frameStart - this.pendingPointerAt, QualityGovernor.INTERACT_BUF);
+      this.pendingPointerAt = 0;
+    }
+  }
+
+  frame(ms: number): void { this.push(this.frames, ms, QualityGovernor.FRAME_BUF); }
+
+  private push(buf: number[], v: number, cap: number): void {
+    buf.push(v);
+    if (buf.length > cap) buf.shift();
+  }
+
+  private p95(buf: number[]): number {
+    if (buf.length < 20) return 0; // not enough evidence yet
+    const s = [...buf].sort((a, b) => a - b);
+    return s[Math.min(s.length - 1, Math.floor(s.length * 0.95))];
+  }
+
+  /** Evaluate transitions. Returns the new tier when it changes, else null. */
+  tick(now: number): QualityTier | null {
+    // Long-task window: count only the last 10s of samples.
+    if (now - this.longTaskWindowStart > 10_000) {
+      this.longTasks = 0;
+      this.longTaskWindowStart = now;
+    }
+    const f = this.p95(this.frames);
+    const i = this.p95(this.interactions);
+    const lt = this.longTasks;
+
+    // zero-r thresholds, extended with a raw floor.
+    let indicated: QualityTier;
+    if (f > 34 || lt > 12) indicated = 0;                        // crisis: drop the chain
+    else if (f > 18 || i > 40 || lt > 8) indicated = 1;          // standard
+    else if (f > 11 || i > 20 || lt > 4) indicated = 2;          // high
+    else indicated = 3;                                           // ultra
+
+    // Degrade immediately (protected by a short cooldown so one stall
+    // doesn't ratchet through every tier), but never above the ceiling.
+    if (indicated < this.tier && now - this.lastChangeAt > 1_500) {
+      // degrade ONE step at a time — the ordered sequence must be walked,
+      // not skipped, so the visual regression stays legible.
+      return this.set(this.tier - 1 as QualityTier, now);
+    }
+
+    // Recover: only when metrics are fully clean for 3s continuous,
+    // one step at a time, with a longer cooldown to prevent oscillation.
+    const clean = f > 0 && f <= 11 && (i === 0 || i <= 20) && lt <= 4 && indicated === 3;
+    if (clean) {
+      if (!this.goodSince) this.goodSince = now;
+      if (this.tier < this.maxTier && indicated > this.tier &&
+          now - this.goodSince > 3_000 && now - this.lastChangeAt > 6_000) {
+        return this.set(this.tier + 1 as QualityTier, now);
+      }
+    } else {
+      this.goodSince = 0;
+    }
+    return null;
+  }
+
+  private set(tier: QualityTier, now: number): QualityTier {
+    this.tier = tier;
+    this.lastChangeAt = now;
+    this.goodSince = 0;
+    return tier;
+  }
+
+  stop(): void { this.observer?.disconnect(); this.observer = null; }
 }
 
 
@@ -540,45 +620,19 @@ export class VisualizationService {
   private ngZone = inject(NgZone);
 
 
-  // --- PUBLIC STATE ---
-  readonly allArchetypes = signal<Archetype[]>(ALL_ARCHETYPES);
-  
-  readonly dimensions = computed<Dimension[]>(() => {
-    const lang = this.translationService.getLanguage(); // trigger reactivity
-    return Object.entries(DIMENSIONS_DATA).map(([key, value]) => ({
-      key,
-      ...value,
-      labels: {
-        hypo: this.translationService.t(`${key.toLowerCase()}Hypo`, 'universe.dimensions'),
-        hyper: this.translationService.t(`${key.toLowerCase()}Hyper`, 'universe.dimensions')
-      }
-    }));
-  });
-
-  readonly allClusters = computed(() => {
-    const lang = this.translationService.getLanguage(); // trigger reactivity
-    const clusters = new Set(this.allArchetypes().map(a => a.cluster).filter(Boolean) as string[]);
-    return Array.from(clusters).map(id => ({
-      id,
-      // The four IFS families have inline RU/EN names; anything else
-      // (e.g. AI-generated clusters) falls back to the legacy translations.
-      name: FAMILY_META[id as ClusterId]?.[lang === 'en' ? 'en' : 'ru']
-        ?? this.translationService.t(id, 'universe.clusterNames')
-    }));
-  });
-  
-  readonly focusedArchetype = signal<Archetype | null>(null);
-  readonly selectedArchetype = signal<Archetype | null>(null);
-  readonly isolatedDimension = signal<string | null>(null);
-  readonly personalConstellation = signal<{ archetypeId: string, percentage: number }[] | null>(null);
-  
-  // Comparison state
-  readonly isComparing = signal(false);
-  readonly firstComparisonArchetype = signal<Archetype | null>(null);
-
-  readonly dimensionalExpressions = signal<DimensionalExpressions>({ AGENCY: 0, TEMPERATURE: 0, FOCUS: 0, ATTACHMENT: 0 });
-  readonly activeClusterFilters = signal<Set<string>>(new Set<string>());
-
+  // --- PUBLIC STATE (forwarded from UniverseStateService — one source of truth) ---
+  private readonly universeState = inject(UniverseStateService);
+  readonly allArchetypes = this.universeState.allArchetypes;
+  readonly dimensions = this.universeState.dimensions;
+  readonly allClusters = this.universeState.allClusters;
+  readonly focusedArchetype = this.universeState.focusedArchetype;
+  readonly selectedArchetype = this.universeState.selectedArchetype;
+  readonly isolatedDimension = this.universeState.isolatedDimension;
+  readonly personalConstellation = this.universeState.personalConstellation;
+  readonly isComparing = this.universeState.isComparing;
+  readonly firstComparisonArchetype = this.universeState.firstComparisonArchetype;
+  readonly dimensionalExpressions = this.universeState.dimensionalExpressions;
+  readonly activeClusterFilters = this.universeState.activeClusterFilters;
 
   // --- PRIVATE THREE.JS MEMBERS ---
   private renderer!: THREE.WebGLRenderer;
@@ -593,10 +647,24 @@ export class VisualizationService {
   private pointer = new THREE.Vector2();
 
   // Performance monitoring
-  private frameTimes: number[] = [];
-  private usePostProcessing = true;
   private frameCount = 0;
   readonly sceneReady = signal(false);
+
+  // Night-sky observatory members
+  private starField?: THREE.Points;
+  private starMaterial?: THREE.ShaderMaterial;
+  private sketchyOutlinePass?: ShaderPass;
+  private bloomPass?: UnrealBloomPass;
+  /** Adaptive quality governor (p95 frames + input latency + longtasks). */
+  private governor?: QualityGovernor;
+  private tier: QualityTier = 3;
+  private starMax = 9000;
+  private readonly isMobileDevice =
+    typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  private readonly prefersReducedMotion =
+    typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private lastInteractionTime = performance.now();
+  private readonly idleDriftDelayMs = 6000;
 
   private archetypeObjects: THREE.Group[] = [];
   private gridGroups: THREE.Group = new THREE.Group();
@@ -667,10 +735,10 @@ export class VisualizationService {
             const nameEl = (group.userData.labelNameEl as HTMLElement | undefined) ?? (label as any).element;
             nameEl.textContent = this.translationService.getArchetypeField(archetype.id, 'name', archetype.name);
           }
-          // Update shader colors
+          // Update shader colors (keep the attachment tint — raw color would wash it out)
           const mesh = group.getObjectByName('blobMesh') as THREE.Mesh;
           if (mesh && mesh.material instanceof THREE.ShaderMaterial) {
-            mesh.material.uniforms['uColor'].value.set(archetype.color);
+            mesh.material.uniforms['uColor'].value.copy(this.attachmentTintedColor(archetype));
           }
         }
       });
@@ -889,8 +957,8 @@ export class VisualizationService {
       size: 1.5,
       vertexColors: true,
       transparent: true,
-      opacity: 0.6,
-      blending: THREE.NormalBlending,
+      opacity: 0.5,
+      blending: THREE.AdditiveBlending, // gold dust glows on the night sky (feeds bloom)
       depthWrite: false,
       sizeAttenuation: true
     });
@@ -908,6 +976,27 @@ export class VisualizationService {
     // Focus remains on the 3D Archetype distribution
   }
 
+  /**
+   * Capability gate (zero-r CapabilityPort analogue): decide the initial
+   * DPR cap, star budget, and quality ceiling BEFORE the first frame — from
+   * device memory / core count / UA — so weak devices never spend their
+   * first seconds ratcheting down from an unattainable ultra.
+   */
+  private computeCapability(): { maxTier: QualityTier; starMax: number; dprCap: number } {
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const mem = nav.deviceMemory ?? 0; // GB; 0 = unknown (Safari/Firefox)
+    const cores = navigator.hardwareConcurrency || 2;
+    const weak = (mem > 0 && mem < 4) || cores <= (this.isMobileDevice ? 4 : 2);
+    if (this.isMobileDevice) {
+      return weak
+        ? { maxTier: 1, starMax: 2400, dprCap: 1.15 }
+        : { maxTier: 2, starMax: 4200, dprCap: 1.3 };
+    }
+    return weak
+      ? { maxTier: 2, starMax: 6000, dprCap: 1.5 }
+      : { maxTier: 3, starMax: 9000, dprCap: 1.75 };
+  }
+
   public init(canvas: HTMLCanvasElement, isFirstVisit: boolean = false): Promise<void> {
     return new Promise(resolve => {
       this.scene = new THREE.Scene();
@@ -921,7 +1010,12 @@ export class VisualizationService {
 
       this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
       this.renderer.setSize(window.innerWidth, window.innerHeight);
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Cap at 1.5x for 120fps target
+      // Capability-gated DPR budget (see computeCapability) — buttery-first.
+      const cap = this.computeCapability();
+      this.starMax = cap.starMax;
+      this.tier = cap.maxTier;
+      this.governor = new QualityGovernor(cap.maxTier);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, cap.dprCap));
       this.renderer.setClearColor(0x000000, 0);
 
       this.labelRenderer = new CSS2DRenderer();
@@ -943,6 +1037,10 @@ export class VisualizationService {
       this.controls.minDistance = 5;
       this.controls.maxDistance = 50;
       this.controls.enableSmoothZoom = true;
+      // Idle drift: after a few still seconds the whole observatory slowly
+      // rotates — the sky feels alive without stealing control from the user.
+      this.controls.autoRotate = false;
+      this.controls.autoRotateSpeed = 0.22;
 
       // Improve raycasting precision
       this.raycaster.params.Points.threshold = 0.5;
@@ -950,13 +1048,26 @@ export class VisualizationService {
       this.raycaster.params.Mesh = { threshold: 0.5 }; // Add threshold for meshes if needed (custom)
 
 
-      // Post-Processing Setup
+      // Post-Processing Setup — night-sky chain:
+      // RenderPass → UnrealBloom (star/blob glow) → Sketchy Ink (Sobel + paper grain).
+      // Bloom is desktop-only; the chain degrades tier-by-tier under sustained load.
       this.composer = new EffectComposer(this.renderer);
       this.composer.addPass(new RenderPass(this.scene, this.camera));
 
-      const sketchyOutlinePass = new ShaderPass(SKETCHY_OUTLINE_SHADER);
-      sketchyOutlinePass.uniforms['resolution'].value.set(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio);
-      this.composer.addPass(sketchyOutlinePass);
+      if (!this.isMobileDevice) {
+        this.bloomPass = new UnrealBloomPass(
+          new THREE.Vector2(window.innerWidth, window.innerHeight),
+          0.38, // strength — glow, not glare
+          0.55, // radius — soft halo
+          0.72  // threshold — only stars, rims and highlighted hearts bloom
+        );
+        this.composer.addPass(this.bloomPass);
+      }
+
+      this.sketchyOutlinePass = new ShaderPass(SKETCHY_OUTLINE_SHADER);
+      this.sketchyOutlinePass.uniforms['resolution'].value.set(window.innerWidth * this.renderer.getPixelRatio(), window.innerHeight * this.renderer.getPixelRatio());
+      this.composer.addPass(this.sketchyOutlinePass);
+      this.applyTier(this.tier);
 
 
       this.scene.add(new THREE.AmbientLight(0xffffff, 2.5));
@@ -968,7 +1079,8 @@ export class VisualizationService {
       this.scene.add(this.constellationLinesGroup);
       this.scene.add(this.gridGroups);
 
-      this.createZenBackground();
+      this.createNightSky();
+      this.createStarField();
       this.createEnvironmentProps(); // Add storybook environment
       this.createAxisGrids(isFirstVisit);
       this.createAxisLabels();
@@ -978,6 +1090,8 @@ export class VisualizationService {
       this.renderer.domElement.addEventListener('pointerdown', this.onPointerDown);
       this.renderer.domElement.addEventListener('pointermove', this.onPointerMove);
       this.renderer.domElement.addEventListener('pointerup', this.onPointerUp);
+      this.renderer.domElement.addEventListener('wheel', this.onUserInteraction, { passive: true });
+      document.addEventListener('visibilitychange', this.onVisibilityChange);
       window.addEventListener('keydown', this.onKeyDown);
 
       this.ngZone.runOutsideAngular(() => {
@@ -985,6 +1099,7 @@ export class VisualizationService {
       });
 
       if (isFirstVisit) {
+        if (this.prefersReducedMotion) this.animationState.duration = 1.2; // shorter genesis, same story
         this.animationState.running = true;
         setTimeout(() => {
           this.animationState.running = false;
@@ -1026,7 +1141,60 @@ export class VisualizationService {
     group.clear();
   }
 
+  /**
+   * Sleep instead of destroy when leaving the universe view: pause the rAF
+   * loop and tuck the label layer away, but KEEP the WebGL context, scene
+   * graph, geometries and materials (the canvas element is hoisted outside
+   * Angular's route subtree precisely so the context survives). Re-entry
+   * calls wake() and continues at full frame rate with zero rebuild cost.
+   */
+  public sleep(): void {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = 0;
+    }
+    if (this.labelRenderer?.domElement) {
+      this.labelRenderer.domElement.style.display = 'none';
+    }
+  }
+
+  /** Resume after sleep(). Safe to call repeatedly; no-op before init. */
+  /**
+   * Re-entry repair: Angular destroys the @case('universe') block — including
+   * the canvas this renderer was built on — whenever the app state leaves
+   * 'universe'. On the next entry Angular renders a FRESH placeholder canvas,
+   * while this renderer (WebGL context, pointer listeners, OrbitControls)
+   * stays bound to the detached original: scene invisible, drag/click dead.
+   * Swap the fresh placeholder for the real (still-styled) canvas so
+   * everything comes back to life.
+   */
+  public reattachCanvas(placeholder: HTMLCanvasElement): void {
+    if (!this.renderer) return;
+    const real = this.renderer.domElement;
+    if (real !== placeholder && !real.isConnected && placeholder.isConnected) {
+      placeholder.replaceWith(real);
+    }
+  }
+
+  public wake(): void {
+    if (!this.renderer || !this.scene || this.animationFrameId) return;
+    if (this.labelRenderer?.domElement) {
+      this.labelRenderer.domElement.style.display = '';
+    }
+    // Re-entry safety: never wake into a locked-controls state (an
+    // interrupted fly may have left controls disabled).
+    if (this.controls && this.camera && !gsap.isTweening(this.camera.position)) {
+      this.controls.enabled = true;
+    }
+    this.lastFrameStart = 0; // avoid a giant delta spike on resume
+    this.ngZone.runOutsideAngular(() => {
+      this.animate();
+    });
+  }
+
   public destroy(): void {
+    this.governor?.stop();
+    this.governor = undefined;
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
@@ -1051,13 +1219,19 @@ export class VisualizationService {
     this.archetypeObjects = [];
 
     window.removeEventListener('resize', this.onWindowResize);
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
     if (this.renderer?.domElement) {
       this.renderer.domElement.removeEventListener('pointerdown', this.onPointerDown);
       this.renderer.domElement.removeEventListener('pointermove', this.onPointerMove);
       this.renderer.domElement.removeEventListener('pointerup', this.onPointerUp);
+      this.renderer.domElement.removeEventListener('wheel', this.onUserInteraction);
     }
     window.removeEventListener('keydown', this.onKeyDown);
     clearTimeout(this.hoverDebounceTimeout);
+
+    // Dispose post-processing passes
+    this.bloomPass?.dispose();
+    this.sketchyOutlinePass?.dispose?.();
 
     // Dispose creation effects
     this.activeCreationEffects.forEach(effect => {
@@ -1143,7 +1317,8 @@ export class VisualizationService {
   public flyToArchetype(archetype: Archetype): void {
     if (!this.camera || !this.controls) return;
 
-    this.selectedArchetype.set(archetype);
+    this.onUserInteraction();
+    this.universeState.selectedArchetype.set(archetype);
     
     // Find the object
     const obj = this.archetypeObjects.find(o => o.userData.archetype.id === archetype.id);
@@ -1225,7 +1400,7 @@ export class VisualizationService {
 
   public resetCamera(): void {
     if (!this.camera || !this.controls) return;
-    this.selectedArchetype.set(null);
+    this.universeState.selectedArchetype.set(null);
 
     gsap.to(this.camera.position, {
       x: 15,
@@ -1255,15 +1430,15 @@ export class VisualizationService {
     const group = this.createSingleArchetypeObject(archetype);
     const mesh = group.getObjectByName('blobMesh') as THREE.Mesh;
     if (mesh && mesh.material instanceof THREE.ShaderMaterial) {
-      mesh.material.opacity = 0; // Handled by alpha blending in shader if needed
+      mesh.material.uniforms['uOpacity'].value = 0; // fades in via the update loop's damper
     }
     group.userData.isNew = true; // Flag for fade-in animation
 
 
     this.archetypeObjects.push(group);
     this.scene.add(group);
-    this.allArchetypes.update(all => [...all, archetype]);
-    this.selectedArchetype.set(archetype);
+    this.universeState.allArchetypes.update(all => [...all, archetype]);
+    this.universeState.selectedArchetype.set(archetype);
 
     // Create storybook "poof" creation effect with stars and sparkles
     this.createCreationPoof(group.userData.targetPosition, archetype.color);
@@ -1402,8 +1577,7 @@ export class VisualizationService {
   }
 
   public setComparisonState(isComparing: boolean, firstArchetype: Archetype | null): void {
-    this.isComparing.set(isComparing);
-    this.firstComparisonArchetype.set(firstArchetype);
+    this.universeState.setComparisonState(isComparing, firstArchetype);
   }
 
   public updateClusterFilters(filters: Set<string>): void {
@@ -1411,105 +1585,174 @@ export class VisualizationService {
       this.cancelCameraAnimation();
     }
 
-    this.activeClusterFilters.set(filters);
+    this.universeState.setClusterFilters(filters);
     this.updateConstellationLines(filters);
   }
 
   
   public updateDimensionalExpressions(expressions: DimensionalExpressions): void {
-    this.dimensionalExpressions.set(expressions);
+    this.universeState.updateDimensionalExpressions(expressions);
   }
 
 
   private cancelCameraAnimation(): void {
+    this.onUserInteraction(); // scripted camera work counts as interaction — pauses idle drift
     gsap.killTweensOf(this.camera?.position);
     gsap.killTweensOf(this.controls?.target);
     if (this.controls) this.controls.enabled = true;
   }
 
 
-  private createZenBackground(): void {
-    const geometry = new THREE.SphereGeometry(500, 64, 64);
+  /** Night-sky observatory background: indigo ink space, a real Milky Way band
+   * (fbm clouds + dust lanes + warm core), procedural far-sparkle, and a warm
+   * "paper lantern" horizon glow — the inner-verse palette rendered as a sky. */
+  private createNightSky(): void {
+    const geometry = new THREE.SphereGeometry(500, 48, 48);
 
-    // Storybook gradient with noise texture
     const vertexShader = `
-      varying vec3 vWorldPosition;
-      varying vec2 vUv;
+      varying vec3 vDir;
       void main() {
-        vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
-        vWorldPosition = worldPosition.xyz;
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+        vDir = normalize(position);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }`;
 
     const fragmentShader = `
-      uniform vec3 topColor;
-      uniform vec3 bottomColor;
-      uniform float offset;
-      uniform float exponent;
+      precision mediump float;
+      varying vec3 vDir;
       uniform float uTime;
-      varying vec3 vWorldPosition;
-      varying vec2 vUv;
+      uniform vec3 uPlaneNormal;
+      uniform vec3 uCoreDir;
 
-      // Simple noise function
-      float random(vec2 st) {
-        return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+      float hash(vec3 p) {
+        p = fract(p * 0.3183099 + 0.1);
+        p *= 17.0;
+        return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
       }
-
-      float noise(vec2 st) {
-        vec2 i = floor(st);
-        vec2 f = fract(st);
-        float a = random(i);
-        float b = random(i + vec2(1.0, 0.0));
-        float c = random(i + vec2(0.0, 1.0));
-        float d = random(i + vec2(1.0, 1.0));
-        vec2 u = f * f * (3.0 - 2.0 * f);
-        return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+      float noise(vec3 x) {
+        vec3 i = floor(x);
+        vec3 f = fract(x);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(
+          mix(mix(hash(i + vec3(0.0,0.0,0.0)), hash(i + vec3(1.0,0.0,0.0)), f.x),
+              mix(hash(i + vec3(0.0,1.0,0.0)), hash(i + vec3(1.0,1.0,0.0)), f.x), f.y),
+          mix(mix(hash(i + vec3(0.0,0.0,1.0)), hash(i + vec3(1.0,0.0,1.0)), f.x),
+              mix(hash(i + vec3(0.0,1.0,1.0)), hash(i + vec3(1.0,1.0,1.0)), f.x), f.y),
+          f.z);
+      }
+      float fbm(vec3 p) {
+        float v = 0.0;
+        float a = 0.55;
+        for (int i = 0; i < 3; i++) {
+          v += a * noise(p);
+          p *= 2.05;
+          a *= 0.5;
+        }
+        return v;
       }
 
       void main() {
-        float h = normalize(vWorldPosition + offset).y;
-        vec3 gradientColor = mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0));
+        vec3 dir = normalize(vDir);
 
-        // Add subtle noise texture
-        float n = noise(vUv * 50.0 + uTime * 0.05) * 0.03;
-        gradientColor += n;
+        // Height above/below the galactic plane -> band intensity (sech^2-ish).
+        float b = dot(dir, uPlaneNormal);
+        float band = exp(-(b * b) * 18.0);
 
-        // Add atmospheric fog near horizon
-        float fog = smoothstep(-0.1, 0.1, h) * smoothstep(0.3, 0.1, h);
-        gradientColor = mix(gradientColor, vec3(0.9, 0.92, 0.95), fog * 0.3);
+        // Distance to the galactic core direction -> warm glow.
+        float coreDist = length(dir - normalize(uCoreDir));
+        float core = exp(-coreDist * coreDist * 2.6);
 
-        gl_FragColor = vec4(gradientColor, 1.0);
+        // Deep indigo ink space — never flat black, subtly varying.
+        vec3 spaceColor = mix(vec3(0.040, 0.034, 0.078), vec3(0.055, 0.038, 0.095), noise(dir * 2.2 + 5.0));
+
+        // One fbm sample reused for cloud brightness and dust extinction.
+        float cloud = fbm(dir * 3.4 + vec3(11.0, 3.0, 7.0));
+        float dustMask = smoothstep(0.42, 0.78, cloud);
+        float dustLane = band * (1.0 - dustMask * 0.82);
+
+        // Indigo band melting into warm cream-gold at the core.
+        vec3 bandColor = mix(vec3(0.26, 0.29, 0.46), vec3(0.85, 0.70, 0.46), core);
+        vec3 milky = bandColor * dustLane * (0.38 + cloud * 0.72);
+
+        vec3 coreGlow = vec3(1.0, 0.84, 0.58) * core * 1.1;
+
+        // Cheap procedural "unresolved star" sparkle fills the background.
+        float sparkleField = hash(floor(dir * 720.0));
+        float sparkle = step(0.9975, sparkleField) * (0.4 + 0.6 * sin(uTime * 2.4 + sparkleField * 80.0));
+        float farDust = smoothstep(0.5, 0.9, fbm(dir * 1.4)) * 0.05;
+
+        vec3 col = spaceColor + milky + coreGlow + vec3(sparkle) * (0.5 + band * 0.5) + farDust * bandColor;
+
+        // Paper-observatory horizon: a warm lantern glow low on the sphere,
+        // as if the sky rests on a lit desk.
+        float lantern = smoothstep(0.10, -0.22, dir.y);
+        col += vec3(0.55, 0.33, 0.16) * lantern * lantern * 0.26;
+
+        gl_FragColor = vec4(col, 1.0);
       }`;
-
-    const uniforms = {
-      topColor: { value: new THREE.Color(0xa7c5d2) }, // --paper-viewport-top
-      bottomColor: { value: new THREE.Color(0xeaddd0) }, // --paper-viewport-bot
-      offset: { value: 0 },
-      exponent: { value: 0.8 },
-      uTime: { value: 0 }
-    };
 
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
-      uniforms,
-      side: THREE.BackSide
+      uniforms: {
+        uTime: { value: 0 },
+        uPlaneNormal: { value: GALACTIC_PLANE_NORMAL.clone() },
+        uCoreDir: { value: GALACTIC_CORE_DIR.clone() },
+      },
+      side: THREE.BackSide,
+      depthWrite: false,
     });
 
     // Store reference for animation
     this.backgroundMaterial = material;
-    this.scene.add(new THREE.Mesh(geometry, material));
+    const sky = new THREE.Mesh(geometry, material);
+    sky.name = 'nightSky';
+    sky.renderOrder = -1;
+    this.scene.add(sky);
 
     // Add floating dust particles
     this.createDustParticles();
   }
 
+  /** GPU starfield inside the sky sphere (see STAR_* shaders for the techniques). */
+  private createStarField(): void {
+    const buffers = generateStarFieldBuffers(this.starMax, 330, 480);
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(buffers.positions, 3));
+    geometry.setAttribute('aColor', new THREE.BufferAttribute(buffers.colors, 3));
+    geometry.setAttribute('aSize', new THREE.BufferAttribute(buffers.sizes, 1));
+    geometry.setAttribute('aPhase', new THREE.BufferAttribute(buffers.phases, 1));
+    geometry.setAttribute('aFlag', new THREE.BufferAttribute(buffers.flags, 1));
+    geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 500);
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader: STAR_VERTEX_SHADER,
+      fragmentShader: STAR_FRAGMENT_SHADER,
+      uniforms: {
+        uTime: { value: 0 },
+        uTwinkleAmp: { value: this.prefersReducedMotion ? 0 : 0.6 },
+        uPixelRatio: { value: Math.min(this.renderer.getPixelRatio(), 2) },
+        uSizeScale: { value: 1 },
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    const stars = new THREE.Points(geometry, material);
+    stars.name = 'starField';
+    stars.frustumCulled = false;
+    this.scene.add(stars);
+
+    this.starField = stars;
+    this.starMaterial = material;
+  }
+
   private createAxisGrids(isAnimated = false): void {
     const size = 20;
     const divisions = 10; // Reduced divisions for cleaner look
-    const opacity = 0.05; // Even more subtle opacity
-    const gridColor = 0x4a3e35; // --ink-main for more paper-like feel
+    const opacity = 0.08; // Subtle — chart lines on a star atlas, not graph paper
+    const gridColor = 0x8fa0d8; // luminous ink-blue: readable against the night sky
 
     const gridsInfo = [
       { key: 'AGENCY_FOCUS', color: gridColor, rotation: new THREE.Euler(Math.PI / 2, 0, 0) },
@@ -1539,6 +1782,7 @@ export class VisualizationService {
           transparent: true,
           opacity: opacity * (i % 5 === 0 ? 2.0 : 1.0), // Major lines slightly more visible
         });
+        hMaterial.userData.baseOpacity = hMaterial.opacity;
         const hLine = new THREE.Line(hGeometry, hMaterial);
         gridGroup.add(hLine);
 
@@ -1553,6 +1797,7 @@ export class VisualizationService {
           transparent: true,
           opacity: opacity * (i % 5 === 0 ? 2.0 : 1.0)
         });
+        vMaterial.userData.baseOpacity = vMaterial.opacity;
         const vLine = new THREE.Line(vGeometry, vMaterial);
         gridGroup.add(vLine);
       }
@@ -1627,22 +1872,9 @@ export class VisualizationService {
   private createSingleArchetypeObject(archetype: Archetype, isAnimated: boolean = false): THREE.Group {
     const group = new THREE.Group();
 
-    // Create illustrated blob mesh (shared geometry for performance)
+    // Create the living watercolor celestial body (shared geometry for performance)
     const geometry = this.sharedSphereGeometry;
-    // Attachment-tinted color: avoidant (coord[3] < 0) → cooler blue, anxious (coord[3] > 0) → warmer orange
-    const attachmentVal = archetype.coordinates[3]; // -1 = avoidant, +1 = anxious
-    const baseColor = new THREE.Color(archetype.color);
-    if (attachmentVal < -0.15) {
-      // Avoidant: blend toward a cool slate-blue
-      const coolBlue = new THREE.Color('#7ecef4');
-      const t = Math.min(Math.abs(attachmentVal), 1.0) * 0.45;
-      baseColor.lerp(coolBlue, t);
-    } else if (attachmentVal > 0.15) {
-      // Anxious: blend toward a warm amber-orange
-      const warmOrange = new THREE.Color('#f4a261');
-      const t = Math.min(attachmentVal, 1.0) * 0.45;
-      baseColor.lerp(warmOrange, t);
-    }
+    const baseColor = this.attachmentTintedColor(archetype);
 
     // Pre-calculate initial opacity to match what updateExplorationVisuals will set on first frame
     // This prevents the "vibrant → bleak" flash when entering the universe
@@ -1650,14 +1882,18 @@ export class VisualizationService {
     const initialHighlight = isResource ? 0.5 : 0.0;
     const initialOpacity = 0.3 + initialHighlight * 0.7; // matches updateExplorationVisuals formula
 
-    const material = new THREE.MeshStandardMaterial({
-      color: baseColor,
+    const material = new THREE.ShaderMaterial({
+      vertexShader: CELESTIAL_BLOB_SHADER.vertex,
+      fragmentShader: CELESTIAL_BLOB_SHADER.fragment,
+      uniforms: {
+        uTime: { value: 0 },
+        uJiggle: { value: 0 },
+        uHighlight: { value: initialHighlight },
+        uColor: { value: baseColor },
+        uOpacity: { value: initialOpacity },
+        uLightDir: { value: GALACTIC_CORE_DIR.clone() }, // key light = the warm galactic core
+      },
       transparent: true,
-      opacity: initialOpacity,
-      roughness: 0.3,
-      metalness: 0.15,
-      emissive: baseColor,
-      emissiveIntensity: 0.15
     });
 
     const mesh = new THREE.Mesh(geometry, material);
@@ -1665,6 +1901,32 @@ export class VisualizationService {
     mesh.scale.set(baseScale, baseScale, baseScale);
     mesh.name = 'blobMesh';
     group.add(mesh);
+
+    // Attachment shell — the legibility channel the v2 plan asked for:
+    // anxious parts wear an energetic corona, avoidant parts a cool veil.
+    const attachmentVal = archetype.coordinates[3]; // -1 = avoidant, +1 = anxious
+    if (Math.abs(attachmentVal) > 0.15) {
+      const anxious = attachmentVal > 0;
+      const shellSource = anxious ? ANXIOUS_SHELL : AVOIDANT_SHELL;
+      const shellMaterial = new THREE.ShaderMaterial({
+        vertexShader: shellSource.vertex,
+        fragmentShader: shellSource.fragment,
+        uniforms: {
+          uTime: { value: 0 },
+          uAttachment: { value: Math.min(Math.abs(attachmentVal), 1) },
+          uReveal: { value: isAnimated ? 0 : 1 },
+          uColor: { value: new THREE.Color(anxious ? '#f4a261' : '#7ecef4') },
+        },
+        transparent: true,
+        depthWrite: false,
+        blending: anxious ? THREE.AdditiveBlending : THREE.NormalBlending,
+      });
+      const shell = new THREE.Mesh(geometry, shellMaterial);
+      const shellScale = baseScale * 1.28;
+      shell.scale.set(shellScale, shellScale, shellScale);
+      shell.name = 'attachmentShell';
+      group.add(shell);
+    }
 
     // Add floating label: the part's real sticker character over a solid cream name chip
     const labelDiv = document.createElement('div');
@@ -1679,7 +1941,7 @@ export class VisualizationService {
     labelDiv.style.transform = 'translateY(-10px) scale(0.9)';
     labelDiv.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
 
-    const look = this.effectiveLook(archetype);
+    const look = effectiveLook(archetype);
     const stickerHost = document.createElement('div');
     stickerHost.className = 'archetype-label__sticker';
     stickerHost.style.width = '44px';
@@ -1762,7 +2024,7 @@ export class VisualizationService {
 
     if (isAnimated && !isAnchor) {
       group.position.set(isResource ? 0 : (Math.random() - 0.5) * 5, isResource ? 0 : (Math.random() - 0.5) * 5, isResource ? 0 : (Math.random() - 0.5) * 5);
-      material.opacity = 0;
+      material.uniforms['uOpacity'].value = 0;
     } else {
       group.position.copy(targetPosition);
     }
@@ -1770,88 +2032,139 @@ export class VisualizationService {
     return group;
   }
 
-  /** Effective sticker look for a part: persisted user override ?? part defaults. */
-  private effectiveLook(archetype: Archetype): { shape: string; color: string; eye: EyeKind; mouth: MouthKind } {
-    const override = loadLooks()[archetype.id];
-    if (override) {
-      return {
-        shape: override.shape,
-        color: override.color,
-        eye: override.eye as EyeKind,
-        mouth: override.mouth as MouthKind,
-      };
+  /** Base body color with the attachment tint baked in (avoidant → cool blue, anxious → warm amber). */
+  private attachmentTintedColor(archetype: Archetype): THREE.Color {
+    const attachmentVal = archetype.coordinates[3]; // -1 = avoidant, +1 = anxious
+    const baseColor = new THREE.Color(archetype.color);
+    if (attachmentVal < -0.15) {
+      baseColor.lerp(new THREE.Color('#7ecef4'), Math.min(Math.abs(attachmentVal), 1.0) * 0.45);
+    } else if (attachmentVal > 0.15) {
+      baseColor.lerp(new THREE.Color('#f4a261'), Math.min(attachmentVal, 1.0) * 0.45);
     }
-    return {
-      shape: archetype.shape ?? 'taskmaster',
-      color: archetype.color,
-      eye: archetype.glyph?.e ?? 'dot',
-      mouth: archetype.glyph?.m ?? 'smile',
-    };
+    return baseColor;
   }
   
+  /**
+   * Ordered degradation (zero-r PERFORMANCE.md): ambient effects go first,
+   * then density, then blur, and the ink identity post survives longest.
+   *   3 ultra    — everything: dust, idle drift, full stars, bloom + ink
+   *   2 high     — ambient off, 65% stars, bloom + ink
+   *   1 standard — 40% stars, ink only
+   *   0 raw      — 22% stars, no post chain at all
+   */
+  private applyTier(tier: QualityTier): void {
+    this.tier = tier;
+    if (this.dustParticles) this.dustParticles.visible = tier === 3;
+    if (this.bloomPass) this.bloomPass.enabled = tier === 3;
+    if (this.sketchyOutlinePass) this.sketchyOutlinePass.enabled = tier >= 1;
+    if (this.starField) {
+      const geometry = this.starField.geometry;
+      const draw = Math.max(400, Math.floor(this.starMax * TIER_STAR_FRACTION[tier]));
+      geometry.setDrawRange(0, draw); // buffers are magnitude-sorted: the brightest stars always stay
+    }
+  }
+
+  private lastFrameStart = 0;
+
   private animate = (): void => {
     if (!this.renderer || !this.scene || !this.camera) return;
     this.animationFrameId = requestAnimationFrame(this.animate);
 
+    // Full pause while the tab is hidden — no rAF work, no battery burn.
+    if (document.hidden) return;
+
     try {
       const frameStart = performance.now();
+      const frameMs = this.lastFrameStart ? frameStart - this.lastFrameStart : 16.7;
+      this.lastFrameStart = frameStart;
       this.timer.update(frameStart);
       const delta = this.timer.getDelta();
       const elapsedTime = this.timer.getElapsed();
+      const dt = Math.min(delta, 0.05); // clamp for stable damping after stalls
       this.frameCount++;
 
+      // Governor metrics: input→frame latency + frame pacing (p95-driven).
+      this.governor?.collectInteraction(frameStart);
+      this.governor?.frame(frameMs);
+
       // Mark scene ready after enough frames have been rendered to GPU
-      // (shaders compiled, textures uploaded, post-processing stable)
-      if (this.frameCount === 60 && !this.sceneReady()) {
+      // (shaders compiled, textures uploaded, post-processing stable).
+      // The time fallback keeps slow-GPU devices (software GL, old phones)
+      // from being declared broken when they're merely rendering slowly.
+      if (!this.sceneReady() && (this.frameCount >= 60 || elapsedTime > 8)) {
         this.sceneReady.set(true);
       }
 
       if (this.animationState.running) this.updateGenesisAnimation(delta);
 
-      // Cinematic look-at target (subtle drift)
+      // Cinematic look-at target (subtle drift, frame-rate independent)
       if (this.selectedArchetype()) {
         const archetype = this.selectedArchetype();
         const obj = this.archetypeObjects.find(o => o.userData.archetype.id === archetype?.id);
         if (obj) {
-          const target = obj.position.clone().add(this.archetypeFocusOffset);
-          this.controls.target.lerp(target, 0.03);
+          const target = this.vec3_1.copy(obj.position).add(this.archetypeFocusOffset);
+          this.controls.target.lerp(target, 1 - Math.exp(-2.2 * dt));
         }
       }
 
+      // Idle drift: after a quiet spell the observatory slowly turns on its
+      // own — an ambient effect, so it's first on the degradation ladder
+      // (tier ≥ 2) and always off under prefers-reduced-motion.
+      if (!this.prefersReducedMotion && this.tier >= 2) {
+        const idle = performance.now() - this.lastInteractionTime > this.idleDriftDelayMs;
+        const drifting = idle && !this.selectedArchetype() && !this.animationState.running && !this.isDragging;
+        if (this.controls.autoRotate !== drifting) this.controls.autoRotate = drifting;
+      } else if (this.controls.autoRotate) {
+        this.controls.autoRotate = false;
+      }
 
       this.controls.update();
       this.updateCreationEffects();
-      this.updateArchetypeVisuals(elapsedTime);
+      this.updateArchetypeVisuals(dt, elapsedTime);
       this.updateAxisLabels();
       this.updateTetherAnimation();
 
-      // Adaptive post-processing: disable Sobel if FPS drops
-      if (this.usePostProcessing && this.composer.passes.length > 1) {
-        this.composer.passes[1].uniforms['uTime'].value = elapsedTime;
+      // Living sky: stars + milky way advance every frame (cheap uniforms).
+      if (this.starMaterial) {
+        this.starMaterial.uniforms['uTime'].value = elapsedTime;
+      }
+
+      // Render through the post chain for the current tier.
+      if (this.sketchyOutlinePass) {
+        this.sketchyOutlinePass.uniforms['uTime'].value = elapsedTime;
+      }
+      if (this.tier >= 1) {
         this.composer.render();
       } else {
         this.renderer.render(this.scene, this.camera);
       }
-      this.labelRenderer.render(this.scene, this.camera);
 
-      // FPS monitoring (check every 60 frames)
-      const frameEnd = performance.now();
-      this.frameTimes.push(frameEnd - frameStart);
-      if (this.frameTimes.length > 60) this.frameTimes.shift();
-      if (this.frameCount % 60 === 0 && this.frameTimes.length >= 30) {
-        const avgFrameTime = this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
-        // avgFrameTime is just the JS work time, not total frame budget
-        // Use delta as a proxy for actual frame time
-        if (delta > 0.018 && this.usePostProcessing) { // > 18ms = below 55fps
-          this.usePostProcessing = false;
-        }
+      // CSS2D labels at 30Hz — each render writes transforms to ~20–40 DOM
+      // nodes; labels are quasi-static so half-rate is visually identical
+      // and halves the per-frame style-invalidation cost.
+      if (this.frameCount % 2 === 0) {
+        this.labelRenderer.render(this.scene, this.camera);
       }
 
-
+      // Adaptive quality: evaluate tier transitions every 15 frames.
+      if (this.governor && this.frameCount % 15 === 0) {
+        const next = this.governor.tick(frameStart);
+        if (next !== null) this.applyTier(next);
+      }
     } catch (error) {
       console.error('Error in animation loop:', error);
     }
   }
+
+  private onUserInteraction = (): void => {
+    this.lastInteractionTime = performance.now();
+    if (this.controls.autoRotate) this.controls.autoRotate = false;
+  };
+
+  private onVisibilityChange = (): void => {
+    // Reset the pacing baseline so the delta EMA doesn't spike on return.
+    if (!document.hidden) this.lastFrameStart = 0;
+  };
 
   private updateGenesisAnimation(delta: number): void {
     this.animationState.progress = Math.min(this.animationState.progress + delta / this.animationState.duration, 1);
@@ -1862,13 +2175,14 @@ export class VisualizationService {
       const group = g as THREE.Group;
       group.children.forEach((child: THREE.Object3D) => {
         if (child instanceof THREE.Line) {
-          (child.material as THREE.Material).opacity = eased * 0.15;
+          const mat = child.material as THREE.LineBasicMaterial;
+          mat.opacity = eased * (mat.userData.baseOpacity ?? 0.15);
         }
       });
       g.scale.set(eased, eased, eased);
     });
 
-    // Animate archetype meshes
+    // Animate archetype bodies: fly to place + fade in through shader uniforms
     this.archetypeObjects.forEach(group => {
       const isAnchor = group.userData.archetype.id === GENESIS_ANCHOR_ID;
       if (!isAnchor) {
@@ -1876,7 +2190,11 @@ export class VisualizationService {
 
         const mesh = group.getObjectByName('blobMesh') as THREE.Mesh;
         if (mesh && mesh.material instanceof THREE.ShaderMaterial) {
-          // Fade in logic if shader supports it
+          mesh.material.uniforms['uOpacity'].value = eased;
+        }
+        const shell = group.getObjectByName('attachmentShell') as THREE.Mesh;
+        if (shell && shell.material instanceof THREE.ShaderMaterial) {
+          shell.material.uniforms['uReveal'].value = eased;
         }
       }
     });
@@ -1912,27 +2230,31 @@ export class VisualizationService {
     }
   }
 
-  private updateArchetypeVisuals(elapsedTime: number): void {
+  private updateArchetypeVisuals(dt: number, elapsedTime: number): void {
     if (this.animationState.running) return;
     const personalConstellation = this.personalConstellation();
 
     if (personalConstellation) {
-        this.updatePersonalConstellationVisuals(elapsedTime, personalConstellation);
+        this.updatePersonalConstellationVisuals(dt, elapsedTime, personalConstellation);
     } else {
-        this.updateExplorationVisuals(elapsedTime);
+        this.updateExplorationVisuals(dt, elapsedTime);
     }
-    
-    // Global time update for all shaders
+
+    // Global time update for all shader-driven bodies (blob + attachment shell)
     this.archetypeObjects.forEach(group => {
       const mesh = group.getObjectByName('blobMesh') as THREE.Mesh;
       if (mesh && mesh.material instanceof THREE.ShaderMaterial) {
         mesh.material.uniforms['uTime'].value = elapsedTime;
-        mesh.material.uniforms['uJiggle'].value = group.userData.jiggle || 0;
+        mesh.material.uniforms['uJiggle'].value = this.prefersReducedMotion ? 0 : (group.userData.jiggle || 0);
+      }
+      const shell = group.getObjectByName('attachmentShell') as THREE.Mesh;
+      if (shell && shell.material instanceof THREE.ShaderMaterial) {
+        shell.material.uniforms['uTime'].value = elapsedTime;
       }
     });
   }
 
-  private updateExplorationVisuals(elapsedTime: number): void {
+  private updateExplorationVisuals(dt: number, elapsedTime: number): void {
     let totalExpressionMag = 0;
     Object.values(this.dimensionalExpressions()).forEach(v => totalExpressionMag += Math.abs(v));
 
@@ -1946,7 +2268,6 @@ export class VisualizationService {
 
       if (!mesh) return;
 
-      const mat = mesh.material as THREE.ShaderMaterial;
       const isSelected = this.selectedArchetype()?.id === archetype.id;
       const isFirstCompare = this.firstComparisonArchetype()?.id === archetype.id;
 
@@ -2008,19 +2329,25 @@ export class VisualizationService {
         targetOpacity *= 0.5;
       }
 
-      // Apply opacity to MeshPhysicalMaterial (lerp for smooth transition)
-      const physMat = mat as unknown as THREE.MeshPhysicalMaterial;
-      if (physMat.opacity !== undefined) {
-        physMat.opacity += (targetOpacity - physMat.opacity) * 0.06;
+      // Opacity + highlight damp toward their targets INSIDE the shader
+      // uniforms — frame-rate independent (identical feel at 60/90/120Hz).
+      const uniforms = (mesh.material as THREE.ShaderMaterial).uniforms;
+      if (uniforms?.uOpacity) {
+        uniforms.uOpacity.value = THREE.MathUtils.lerp(uniforms.uOpacity.value, targetOpacity, 1 - Math.exp(-4.5 * dt));
+      }
+      if (uniforms?.uHighlight) {
+        // Highlight feeds the heart glow (blooms when selected) and wobble amp
+        uniforms.uHighlight.value = THREE.MathUtils.lerp(uniforms.uHighlight.value, highlightScore, 1 - Math.exp(-3.5 * dt));
       }
 
       // Idle bob animation (interpolated to targetPosition)
-      const bobOffset = Math.sin(elapsedTime * 0.8 + group.userData.bobOffset) * 0.1;
+      const bobOffset = this.prefersReducedMotion ? 0 : Math.sin(elapsedTime * 0.8 + group.userData.bobOffset) * 0.1;
       const baseScale = group.userData.baseScale;
 
-      // Apply scale with hover effect
-      const targetS = baseScale * hoverScale;
-      mesh.scale.lerp(this.vec3_3.set(targetS, targetS, targetS), 0.1);
+      // Size encodes prominence in the default view (v2 plan Layer 2): scale
+      // breathes with highlight, and hover swell stacks on top.
+      const targetS = baseScale * hoverScale * (1 + highlightScore * 0.35);
+      mesh.scale.lerp(this.vec3_3.set(targetS, targetS, targetS), 1 - Math.exp(-6 * dt));
 
       // Bob the mesh vertically
       group.position.y = group.userData.targetPosition.y + bobOffset;
@@ -2032,12 +2359,13 @@ export class VisualizationService {
         shadow.position.y = -baseScale / 2 - 0.2 + bobOffset * 0.5;
       }
 
-      // Update position
+      // Update position (damped — buttery re-arrival after isolation/genesis)
       if (this.isolatedDimension()) {
-        this.applyIsolation(group, this.isolatedDimension()!);
+        this.applyIsolation(group, this.isolatedDimension()!, dt);
       } else {
-        group.position.x += (group.userData.targetPosition.x - group.position.x) * 0.06;
-        group.position.z += (group.userData.targetPosition.z - group.position.z) * 0.06;
+        const posK = 1 - Math.exp(-3.5 * dt);
+        group.position.x += (group.userData.targetPosition.x - group.position.x) * posK;
+        group.position.z += (group.userData.targetPosition.z - group.position.z) * posK;
       }
 
       // Handle aura
@@ -2079,7 +2407,7 @@ export class VisualizationService {
     }
   }
 
-  private updatePersonalConstellationVisuals(elapsedTime: number, constellation: { archetypeId: string, percentage: number }[]): void {
+  private updatePersonalConstellationVisuals(dt: number, elapsedTime: number, constellation: { archetypeId: string, percentage: number }[]): void {
     let totalExpressionMag = 0;
     Object.values(this.dimensionalExpressions()).forEach(v => totalExpressionMag += Math.abs(v));
 
@@ -2099,7 +2427,6 @@ export class VisualizationService {
 
         if (!mesh) return;
 
-        const mat = mesh.material as THREE.ShaderMaterial;
         const isSelected = this.selectedArchetype()?.id === archetype.id;
 
         // Dimension-based highlighting (same formula as exploration)
@@ -2129,7 +2456,13 @@ export class VisualizationService {
         const dimScale = totalExpressionMag > 0.01 ? 0.7 + dimHighlight * 0.5 : 1.0;
         const relevanceScale = (0.6 + (match.percentage / 100)) * dimScale;
         const finalScale = baseScale * relevanceScale * (isSelected ? 1.15 : 1.0);
-        mesh.scale.lerp(this.vec3_3.set(finalScale, finalScale, finalScale), 0.1);
+        mesh.scale.lerp(this.vec3_3.set(finalScale, finalScale, finalScale), 1 - Math.exp(-6 * dt));
+
+        // Highlight feeds the heart glow here too
+        const uniforms = (mesh.material as THREE.ShaderMaterial).uniforms;
+        if (uniforms?.uHighlight) {
+          uniforms.uHighlight.value = THREE.MathUtils.lerp(uniforms.uHighlight.value, dimHighlight, 1 - Math.exp(-3.5 * dt));
+        }
 
         // Update shadow
         if (shadow) {
@@ -2158,13 +2491,14 @@ export class VisualizationService {
           }
         }
 
-        group.position.x += (group.userData.targetPosition.x - group.position.x) * 0.05;
-        group.position.z += (group.userData.targetPosition.z - group.position.z) * 0.05;
+        const posK = 1 - Math.exp(-3 * dt);
+        group.position.x += (group.userData.targetPosition.x - group.position.x) * posK;
+        group.position.z += (group.userData.targetPosition.z - group.position.z) * posK;
       }
     });
   }
 
-  private applyIsolation(group: THREE.Group, isolation: string): void {
+  private applyIsolation(group: THREE.Group, isolation: string, dt: number): void {
       const original = group.userData.targetPosition;
       let target = original.clone();
       const archetype = group.userData.archetype as Archetype;
@@ -2176,7 +2510,7 @@ export class VisualizationService {
         const attachmentValue = archetype.coordinates[3] * POSITION_SCALE;
         target = new THREE.Vector3(agencyValue, attachmentValue, 0);
       }
-      group.position.lerp(target, 0.05);
+      group.position.lerp(target, 1 - Math.exp(-3 * dt));
   }
 
   private updateTethers(): void {
@@ -2222,14 +2556,14 @@ export class VisualizationService {
         const points = curve.getPoints(20);
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
-        // Hand-drawn dashed line material
+        // Star-chart ink: pale gold dashes that read against the night sky
         const material = new THREE.LineDashedMaterial({
-          color: 0x4a3e35, // --ink-main
+          color: 0xe8d5a8,
           linewidth: 1.5,
           dashSize: 0.3,
           gapSize: 0.2,
           transparent: true,
-          opacity: 0.4,
+          opacity: 0,
           scale: 1
         });
 
@@ -2237,6 +2571,15 @@ export class VisualizationService {
         line.computeLineDistances();
         this.relationalTethersGroup.add(line);
         this.tetherMaterials.push(material);
+
+        // Draw-in: each tether fades up in sequence — the constellation
+        // "writes itself" when a part is focused (the reveal anchor).
+        gsap.to(material, {
+          opacity: 0.5,
+          duration: 0.7,
+          delay: this.tetherMaterials.length * 0.07,
+          ease: 'power2.out',
+        });
       } else {
         console.warn(`[Relational Map] Could not find target archetype with id: '${targetId}' for source: '${tetherSource.name}'`);
 
@@ -2245,15 +2588,9 @@ export class VisualizationService {
   }
   
   private updateTetherAnimation(): void {
-    const elapsedTime = this.timer.getElapsed();
-    const pulse = (Math.sin(elapsedTime * 3) + 1) / 2;
-
+    // Flowing ink only — opacity belongs to the draw-in tween, never fought over.
     this.tetherMaterials.forEach(material => {
-      // Flowing dash effect
-      material.dashOffset -= 0.02;
-
-      // Subtle pulse for visibility
-      material.opacity = 0.3 + pulse * 0.2;
+      material.dashOffset -= 0.012;
     });
   }
 
@@ -2298,12 +2635,12 @@ export class VisualizationService {
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
         const material = new THREE.LineDashedMaterial({
-          color: 0xc2b7ad, // --ink-light
+          color: 0xd9cfb0, // warm parchment ink — star atlas lines
           linewidth: 1,
           dashSize: 0.2,
           gapSize: 0.15,
           transparent: true,
-          opacity: 0.5
+          opacity: 0.4
         });
 
         const line = new THREE.Line(geometry, material);
@@ -2455,11 +2792,15 @@ export class VisualizationService {
     this.composer.setSize(window.innerWidth, window.innerHeight);
     this.labelRenderer.setSize(window.innerWidth, window.innerHeight);
 
-    if (this.composer.passes[1]) {
-      this.composer.passes[1].uniforms['resolution'].value.set(
-        window.innerWidth * window.devicePixelRatio,
-        window.innerHeight * window.devicePixelRatio
+    if (this.sketchyOutlinePass) {
+      const pr = this.renderer.getPixelRatio();
+      this.sketchyOutlinePass.uniforms['resolution'].value.set(
+        window.innerWidth * pr,
+        window.innerHeight * pr
       );
+    }
+    if (this.starMaterial) {
+      this.starMaterial.uniforms['uPixelRatio'].value = Math.min(this.renderer.getPixelRatio(), 2);
     }
   };
 
@@ -2475,25 +2816,35 @@ export class VisualizationService {
     if (!this.isUniversePointerTarget(e.target)) {
       return;
     }
+    this.governor?.pointerDown(); // input→frame latency sample
+    this.onUserInteraction();
+    // Self-heal: an interrupted cinematic (tween killed outside
+    // cancelCameraAnimation) can leave the controls disabled — re-enable
+    // unless a camera animation is genuinely in flight.
+    if (this.controls && !this.controls.enabled &&
+        !gsap.isTweening(this.camera!.position) && !gsap.isTweening(this.controls.target)) {
+      this.controls.enabled = true;
+    }
     this.isPointerDown = true;
     this.isDragging = false;
     this.pointerDownPosition.set(e.clientX, e.clientY);
   }
 
   private onPointerMove = (e: PointerEvent) => {
+    this.onUserInteraction();
     const isCanvasOrLabel = this.isUniversePointerTarget(e.target);
     
     if (this.isPointerDown && !this.isDragging) {
       if (this.pointerDownPosition.distanceTo(new THREE.Vector2(e.clientX, e.clientY)) > this.dragThreshold) {
         this.isDragging = true;
-        this.focusedArchetype.set(null);
+        this.universeState.focusedArchetype.set(null);
       }
     }
     if (e.pointerType === 'mouse' && !this.isDragging && isCanvasOrLabel) {
       clearTimeout(this.hoverDebounceTimeout);
       this.hoverDebounceTimeout = setTimeout(() => {
           this.pointer.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1);
-          this.focusedArchetype.set(this.checkIntersection());
+          this.universeState.focusedArchetype.set(this.checkIntersection());
       }, 50);
     }
   }
@@ -2515,13 +2866,13 @@ export class VisualizationService {
           if (intersected) {
               if (this.focusedArchetype()?.id === intersected.id) {
                   this.selectedArchetype.set(intersected); 
-                  this.focusedArchetype.set(null);
+                  this.universeState.focusedArchetype.set(null);
               } else {
-                  this.focusedArchetype.set(intersected);
+                  this.universeState.focusedArchetype.set(intersected);
                   if(!this.isComparing()) this.selectedArchetype.set(null); 
               }
           } else {
-              this.focusedArchetype.set(null);
+              this.universeState.focusedArchetype.set(null);
               if(!this.isComparing()) this.selectedArchetype.set(null);
           }
       }
@@ -2548,17 +2899,17 @@ export class VisualizationService {
             e.preventDefault();
             if (this.focusedArchetype()) {
                 this.selectedArchetype.set(this.focusedArchetype());
-                this.focusedArchetype.set(null);
+                this.universeState.focusedArchetype.set(null);
             }
             break;
         case 'Escape':
             e.preventDefault();
             if (this.selectedArchetype()) {
-                this.selectedArchetype.set(null);
+                this.universeState.selectedArchetype.set(null);
             } else if (this.firstComparisonArchetype()) {
                 // Handled in component
             } else if (this.focusedArchetype()) {
-                this.focusedArchetype.set(null);
+                this.universeState.focusedArchetype.set(null);
             }
             break;
     }
@@ -2584,7 +2935,7 @@ export class VisualizationService {
     if (currentIndex === -1) {
         screenPositions.sort((a,b) => (a.x**2 + a.y**2) - (b.x**2 + b.y**2));
         if (screenPositions.length > 0) {
-            this.focusedArchetype.set(screenPositions[0].obj.userData.archetype);
+            this.universeState.focusedArchetype.set(screenPositions[0].obj.userData.archetype);
         }
         return;
     }
@@ -2614,7 +2965,7 @@ export class VisualizationService {
     }
 
     if (bestCandidate) {
-        this.focusedArchetype.set(bestCandidate.obj.userData.archetype);
+        this.universeState.focusedArchetype.set(bestCandidate.obj.userData.archetype);
         const targetObj = bestCandidate.obj;
         if (targetObj) {
             this.controls.target.lerp(targetObj.position, 0.4);

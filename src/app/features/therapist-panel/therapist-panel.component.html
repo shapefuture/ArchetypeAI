@@ -128,8 +128,8 @@
         <section class="th-metrics">
           <h2>{{ ui().metricsTitle }}</h2>
           <div class="th-metrics-grid">
-            <span>{{ ui().metrics[0] }}: {{ metrics().timeToRepairH ?? '—' }}{{ metrics().timeToRepairH != null ? (lang() === 'ru' ? 'ч' : 'h') : '' }}</span>
-            <span>{{ ui().metrics[1] }}: {{ metrics().secrecyH ?? '—' }}{{ metrics().secrecyH != null ? (lang() === 'ru' ? 'ч' : 'h') : '' }}</span>
+            <span>{{ ui().metrics[0] }}: {{ metrics().timeToRepairH ?? '—' }}{{ metrics().timeToRepairH != null ? STRINGS.therapist.clinical.hoursUnit[lang() === 'ru' ? 1 : 0] : '' }}</span>
+            <span>{{ ui().metrics[1] }}: {{ metrics().secrecyH ?? '—' }}{{ metrics().secrecyH != null ? STRINGS.therapist.clinical.hoursUnit[lang() === 'ru' ? 1 : 0] : '' }}</span>
             <span>{{ ui().metrics[2] }}: {{ metrics().ifThenFireRate ?? '—' }}</span>
             <span>{{ ui().metrics[3] }}: {{ metrics().disclosureRatio ?? '—' }}</span>
           </div>

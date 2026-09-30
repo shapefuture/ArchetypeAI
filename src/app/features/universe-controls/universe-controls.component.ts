@@ -1,40 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, output, input, viewChild, ElementRef } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
-import { VisualizationService, Archetype, DimensionalExpressions } from '../../../services/webxr.service';
+import { UniverseStateService } from '../../../services/universe-state.service';
+import type { Archetype, DimensionalExpressions } from '../../../services/universe-state.service';
 import { GeminiService } from '../../../services/gemini.service';
 import { SearchBoxComponent } from '../../shared/components/search-box/search-box.component';
 
-/** Inline RU/EN copy for the four IFS families (translations.ts is legacy-only). */
-const CLUSTER_COPY = {
-  ru: {
-    managers: 'Менеджеры',
-    firefighters: 'Пожарные',
-    exiles: 'Изгнанники',
-    resources: 'Ресурсы',
-  },
-  en: {
-    managers: 'Managers',
-    firefighters: 'Firefighters',
-    exiles: 'Exiles',
-    resources: 'Resources',
-  },
-} as const;
-
-const CLUSTER_DESC_COPY = {
-  ru: {
-    managers: 'Заранее удерживают порядок, чтобы плохой день так и не наступил.',
-    firefighters: 'Прибегают мгновенно, когда внутри уже горит.',
-    exiles: 'Несут юную боль, спрятанную от повседневной жизни.',
-    resources: 'Выращенные силы, на которые может опереться Self.',
-  },
-  en: {
-    managers: 'Keep order preemptively so the bad day never arrives.',
-    firefighters: 'Arrive the moment something inside catches fire.',
-    exiles: 'Carry the young pain hidden from daily life.',
-    resources: 'Grown strengths the Self can lean on.',
-  },
-} as const;
+const CLUSTER_COPY = STRINGS.universeControls.clusterCopy;
+const CLUSTER_DESC_COPY = STRINGS.universeControls.clusterDescCopy;
 
 const CLUSTER_COLORS: { [key: string]: string } = {
   managers: '#E1734B',
@@ -66,7 +40,7 @@ const CLUSTER_COLORS: { [key: string]: string } = {
 })
 export class UniverseControlsComponent {
   public readonly translationService = inject(TranslationService);
-  public readonly visualizationService = inject(VisualizationService);
+  public readonly universeState = inject(UniverseStateService);
   public readonly geminiService = inject(GeminiService);
   public readonly DIMENSIONS_DATA = {
     AGENCY: { labels: { hypo: 'agencyHypo', hyper: 'agencyHyper' } },
@@ -83,7 +57,7 @@ export class UniverseControlsComponent {
   readonly searchResults = computed(() => {
     const query = this.searchQuery().toLowerCase();
     if (!query) return [];
-    return this.visualizationService.allArchetypes().filter(a => {
+    return this.universeState.allArchetypes().filter(a => {
       const translatedName = this.translationService.getArchetypeField(a.id, 'name', a.name).toLowerCase();
       return translatedName.includes(query) || a.name.toLowerCase().includes(query);
     });
@@ -95,6 +69,8 @@ export class UniverseControlsComponent {
 
   // Outputs
   archetypeSelected = output<Archetype>();
+  /** AI-created archetype ready to materialize in the scene (renderer owns it). */
+  archetypeCreated = output<Archetype>();
   viewIntro = output<void>();
   viewFullUniverse = output<void>();
   toggleCoach = output<void>();
@@ -105,7 +81,7 @@ export class UniverseControlsComponent {
 
   // "Living Glass" Glow Effect
   readonly dominantExpressionGlow = computed(() => {
-    const expressions = this.visualizationService.dimensionalExpressions();
+    const expressions = this.universeState.dimensionalExpressions();
     let maxKey = '';
     let maxValue = 0;
     for (const [key, value] of Object.entries(expressions)) {
@@ -161,9 +137,9 @@ export class UniverseControlsComponent {
   }
 
   // Dimension Mappings
-  readonly dimensionalExpressions = this.visualizationService.dimensionalExpressions;
-  readonly isolatedDimension = this.visualizationService.isolatedDimension;
-  readonly activeClusterFilters = this.visualizationService.activeClusterFilters;
+  readonly dimensionalExpressions = this.universeState.dimensionalExpressions;
+  readonly isolatedDimension = this.universeState.isolatedDimension;
+  readonly activeClusterFilters = this.universeState.activeClusterFilters;
 
   toggleSettingsPanel(): void {
     this.isSettingsPanelCollapsed.update(v => !v);
@@ -184,7 +160,7 @@ export class UniverseControlsComponent {
       }
       return newFilters;
     });
-    this.visualizationService.updateClusterFilters(this.activeClusterFilters());
+    this.universeState.setClusterFilters(this.activeClusterFilters());
   }
 
   getClusterColor(clusterId: string): string {
@@ -215,7 +191,7 @@ export class UniverseControlsComponent {
     this.isCreatingArchetype.set(true);
     try {
       const newArchetype = await this.geminiService.createArchetype(prompt);
-      this.visualizationService.addArchetype(newArchetype);
+      this.archetypeCreated.emit(newArchetype);
       this.creationPrompt.set('');
       setTimeout(() => this.summonArchetype(newArchetype), 100);
     } catch (error) {
@@ -262,7 +238,7 @@ export class UniverseControlsComponent {
       ...expressions,
       [dimension]: value
     }));
-    this.visualizationService.updateDimensionalExpressions(this.dimensionalExpressions());
+    this.universeState.updateDimensionalExpressions(this.dimensionalExpressions());
   }
 
   toggleLanguage(): void {

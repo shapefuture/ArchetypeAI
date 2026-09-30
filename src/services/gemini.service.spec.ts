@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { GeminiAiAdapter } from '../app/core/adapters/gemini-ai.adapter';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { GeminiService } from './gemini.service';
 import { TranslationService } from './translation.service';
@@ -318,7 +319,7 @@ describe('GeminiService', () => {
     it('snapCluster() (private helper): maps common aliases to the 7 valid clusters', () => {
       // Access the private helper via cast — these mappings are part of the
       // schema's safety net, so they need direct test coverage.
-      const svc = service as any;
+      const svc = TestBed.runInInjectionContext(() => new GeminiAiAdapter()) as any;
       const valid = [
         'gift_archetypes', 'control_shadows', 'emotional_storm_shadows',
         'avoidant_intellectual_shadows', 'anxious_connection_shadows',
@@ -338,7 +339,7 @@ describe('GeminiService', () => {
     });
 
     it('renormalizeProminences() (private helper): equal distribution when total is 0 or negative', () => {
-      const svc = service as any;
+      const svc = TestBed.runInInjectionContext(() => new GeminiAiAdapter()) as any;
       const arr = [{ prominence: 0 }, { prominence: 0 }] as any;
       svc.renormalizeProminences(arr);
       const sum = arr.reduce((s: number, a: any) => s + a.prominence, 0);

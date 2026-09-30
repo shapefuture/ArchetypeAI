@@ -31,3 +31,21 @@
 /*
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   Cross-Origin-Resource-Policy: cross-origin
+
+# Never let the edge or the browser cache the navigation document or the
+# service worker. If index.html or sw.js is served stale from an HTTP cache,
+# the browser won't see the new build id in sw.js and the old shell sticks
+# (stale-version-until-clear). A no-store on these two is what guarantees the
+# update flow (install → skipWaiting → controllerchange → reload) always fires.
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Cross-Origin-Resource-Policy: cross-origin
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Cross-Origin-Resource-Policy: cross-origin
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Cross-Origin-Resource-Policy: cross-origin

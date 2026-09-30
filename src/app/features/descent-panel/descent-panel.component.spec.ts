@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { flushLocal, resetLocalQueueForTests } from '../../core/data/local-store';
 import { DescentPanelComponent } from './descent-panel.component';
 import { scoreProfile } from '../../core/data/scoring-v2';
 
@@ -24,7 +25,7 @@ function make(): DescentPanelComponent {
 describe('DescentPanelComponent — flow', () => {
   beforeEach(async () => {
     vi.useFakeTimers();
-    localStorage.clear();
+    localStorage.clear(); resetLocalQueueForTests();
     TestBed.configureTestingModule({});
   });
   afterEach(() => vi.useRealTimers());
@@ -47,16 +48,14 @@ describe('DescentPanelComponent — flow', () => {
     expect(make().recalibrated()).toBe(false);
   });
 
-  it('fires a somatic follow-up exactly per §1.12 and stores the zone locally', () => {
+  it('somatic follow-ups are disabled pending redesign (§1.12 paused)', () => {
     const c = make();
     c.acceptEthics();
-    // Item 0 is taskmaster q1 (index 0 → mod 5 == 0); a 4 triggers the body map.
-    if (c.currentRef().kind === 'shadow') expect(c.currentRef().index).toBe(0);
+    // Item 0 is taskmaster q1 (a 4 used to trigger the body map) — with the
+    // feature flag off the popup must NOT appear and the zone store stays empty.
     c.answer(4);
-    expect(c.pendingSomaticPart()).toBe('taskmaster');
-    c.chooseZone('chest');
     expect(c.pendingSomaticPart()).toBeNull();
-    expect(c.somatic()['taskmaster']).toEqual(['chest']);
+    expect(c.somatic()['taskmaster'] ?? []).toEqual([]);
   });
 
   it('walks all three descents and emits a scoreable AssessmentInput', () => {
@@ -117,6 +116,7 @@ describe('DescentPanelComponent — flow', () => {
     c.setFutureSelfAnswer(1, 'They pause. They ask the part what it fears. They stay.');
     expect(c.futureSelfValid()).toBe(true);
     c.saveFutureSelf();
+    flushLocal();
     const saved = JSON.parse(localStorage.getItem('INNERVERSE_FUTURE_SELF_V1')!);
     expect(saved[0]).toContain('quiet studio');
     expect(c.stage()).toBe('complete');
@@ -126,6 +126,7 @@ describe('DescentPanelComponent — flow', () => {
     const c = make();
     c.acceptEthics();
     c.skipFutureSelf();
+    flushLocal();
     expect(localStorage.getItem('INNERVERSE_FUTURE_SELF_V1')).toBeNull();
   });
 
@@ -135,6 +136,7 @@ describe('DescentPanelComponent — flow', () => {
     c.answer(4);
     if (c.pendingSomaticPart()) c.skipZone();
     vi.advanceTimersByTime(200);
+    flushLocal();
     expect(localStorage.getItem('INNERVERSE_DESCENT_V1')).toBeTruthy();
     const c2 = make();
     expect(c2.stage()).toBe('item'); // restored straight into the battery

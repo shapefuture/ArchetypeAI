@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { DimensionalExpressions } from '../../../services/webxr.service';
+import type { DimensionalExpressions } from '../../../services/universe-state.service';
 import { SynastryReport } from '../data/synastry';
 
 export interface AssessmentData {

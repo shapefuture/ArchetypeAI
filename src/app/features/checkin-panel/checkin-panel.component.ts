@@ -4,6 +4,8 @@
  * History is local-only; the weather layer and unburdening moments accrue here.
  */
 import { ChangeDetectionStrategy, Component, computed, inject, model, output, signal } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
+import { localSet, localGet } from '../../core/data/local-store';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { SHADOW_PARTS, SUBTYPES, type EventType, type PartId } from '../../core/data/parts';
@@ -24,67 +26,11 @@ const CHARTER_KEY = 'INNERVERSE_CHARTER_V1';
 
 type Stage = 'arousal' | 'event' | 'confirm' | 'done';
 
-const UI = {
-  en: {
-    title: 'Daily check-in',
-    where: 'Where are you right now?',
-    arousal: ['Shutdown', 'Low', 'In my window', 'Activated', 'Hyper'],
-    eventQ: 'What kind of day was it? (optional)',
-    events: ['Relational', 'Achievement', 'Loss', 'Boundary', 'Change', 'Calm day'],
-    skip: 'Skip',
-    didIt: p => `Did the ${p} take the wheel?`,
-    yes: 'Yes — it drove',
-    no: 'No — I noticed and chose',
-    correct: 'No — another part drove',
-    done: 'Logged. The weather shifts.',
-    unburdening: p => `${p} is softening — its star steadies. This part worked hard for years; take a moment to thank it for the job it is putting down.`,
-    verdictLock: 'Facts and feelings now. Meaning gets 48 hours.',
-    verdictPrompt: 'Write the conclusion that feels true right now — it will be sealed and return in 48 hours.',
-    seal: 'Seal it',
-    resurfaceTitle: 'Read it from where you are now. What still feels true?',
-    ratings: ['still true', 'partly', 'state artifact'],
-    close: 'Close',
-    weatherFor: p => `${p} · ${p} flares in the last 30 days`,
-  },
-  ru: {
-    title: 'Ежедневная сверка',
-    where: 'Где вы сейчас?',
-    arousal: ['Заморожен', 'Низко', 'В окне', 'Взвинчен', 'Гипер'],
-    eventQ: 'Каким был день? (необязательно)',
-    events: ['Отношения', 'Достижение', 'Потеря', 'Граница', 'Перемены', 'Спокойный'],
-    skip: 'Пропустить',
-    didIt: p => `Не «${p}» ли сегодня держал руль?`,
-    yes: 'Да — вёл',
-    no: 'Нет — я заметил и выбрал сам',
-    correct: 'Нет — вела другая часть',
-    done: 'Записано. Погода меняется.',
-    unburdening: p => `«${p}» смягчается — её звезда выравнивается. Эта часть трудилась годами; поблагодарите её за работу, которую она складывает.`,
-    verdictLock: 'Сейчас — факты и чувства. Смысл подождёт 48 часов.',
-    verdictPrompt: 'Напишите вывод, который сейчас кажется правдой, — он будет запечатан и вернётся через 48 часов.',
-    seal: 'Запечатать',
-    resurfaceTitle: 'Прочтите это из того места, где вы теперь. Что всё ещё правда?',
-    ratings: ['всё так', 'отчасти', 'артефакт состояния'],
-    close: 'Закрыть',
-    weatherFor: p => `${p} · вспышек за 30 дней: ${p}`,
-  },
-};
+const UI = STRINGS.checkin.ui;
+const JITAI_CARDS = STRINGS.checkin.jitaiCards;
 
-const JITAI_CARDS: Record<'en' | 'ru', Record<JitaiCardId, { title: string; body: string }>> = {
-  en: {
-    body_anchor: { title: 'Body anchor', body: 'Feet on the floor. Three slow breaths. Name one controllable thing — and do it.' },
-    dual_bound_charter: { title: 'Dual-bound charter', body: 'This was one behavior in one context — not proof of a verdict. AND it still matters: one repair action, one next-time plan. Do both now.' },
-    witness_contact: { title: 'Contact your witness', body: 'Call the person you chose for moments like this — before deciding anything.' },
-    if_then_plan: { title: 'Your if-then plan', body: 'Say your if-then plan out loud, right now: “When ⟨trigger⟩, I will ⟨action⟩.”' },
-    sealed_verdict_offer: { title: 'Seal tonight’s verdict', body: 'Facts and feelings now; meaning in 48 hours. Write the conclusion that feels true — it returns sealed.' },
-  },
-  ru: {
-    body_anchor: { title: 'Якорь в теле', body: 'Стопы в пол. Три медленных вдоха. Назовите одну подвластную вам вещь — и сделайте её.' },
-    dual_bound_charter: { title: 'Двойная рамка', body: 'Это один поступок в одном контексте — не приговор. И это всё равно серьёзно: одно действие исправления и один план на следующий раз. Сделайте оба.' },
-    witness_contact: { title: 'Позвоните свидетелю', body: 'Позвоните человеку, которого выбрали на такой случай, — прежде чем что-либо решать.' },
-    if_then_plan: { title: 'Ваш план «если–то»', body: 'Скажите план вслух, прямо сейчас: «Когда ⟨триггер⟩, я сделаю ⟨действие⟩».' },
-    sealed_verdict_offer: { title: 'Запечатайте вывод', body: 'Сейчас — факты и чувства; смысл через 48 часов. Напишите вывод, который кажется правдой, — он вернётся запечатанным.' },
-  },
-};
+
+
 
 @Component({
   selector: 'app-checkin-panel',
@@ -129,7 +75,7 @@ export class CheckInPanelComponent {
    * (persisting lastCardAt inside a computed would poison it). */
   readonly jitaiCard = signal<{ id: JitaiCardId } | null>(null);
   private lastJitaiAt: string | null =
-    (() => { try { return JSON.parse(localStorage.getItem(JITAI_KEY) ?? 'null'); } catch { return null; } })();
+    localGet<string | null>(JITAI_KEY, null);
 
   private chooseJitaiCard(): void {
     const p = this.profile();
@@ -152,7 +98,7 @@ export class CheckInPanelComponent {
     });
     if (card) {
       this.lastJitaiAt = now.toISOString();
-      try { localStorage.setItem(JITAI_KEY, JSON.stringify(this.lastJitaiAt)); } catch { /* unavailable */ }
+      localSet(JITAI_KEY, this.lastJitaiAt);
     }
     this.jitaiCard.set(card);
   }
@@ -177,7 +123,7 @@ export class CheckInPanelComponent {
   recordCharter(repairLogged: boolean, told: boolean): void {
     this.charterDeliveries.update(d => {
       const next = [...d, { blame: this.blame(), license: this.license(), at: new Date().toISOString() }];
-      try { localStorage.setItem(CHARTER_KEY, JSON.stringify(next)); } catch { /* unavailable */ }
+      localSet(CHARTER_KEY, next);
       return next;
     });
     if (repairLogged) storeEvent('repair');
@@ -191,15 +137,15 @@ export class CheckInPanelComponent {
 
   private load(): void {
     try {
-      this.history.set(JSON.parse(localStorage.getItem(STORE_KEY) ?? '[]'));
-      const verdicts: SealedVerdict[] = JSON.parse(localStorage.getItem(VERDICT_KEY) ?? '[]');
+      this.history.set(localGet<CheckIn[]>(STORE_KEY, []));
+      const verdicts: SealedVerdict[] = localGet<SealedVerdict[]>(VERDICT_KEY, []);
       const due = verdicts.find(v => !v.reRating && readyToResurface(v, new Date()));
       if (due) this.resurfacing.set(due);
     } catch { /* fresh */ }
   }
 
   private save(): void {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(this.history())); } catch { /* unavailable */ }
+    localSet(STORE_KEY, this.history());
   }
 
   // labels are [Shutdown, Low, Window, Activated, Hyper] (rendered bottom-up):
@@ -270,18 +216,18 @@ arousalForIndex(i: number): Arousal { return (i - 2) as Arousal; }
     const text = this.verdictDraft().trim();
     if (!text) return;
     try {
-      const verdicts: SealedVerdict[] = JSON.parse(localStorage.getItem(VERDICT_KEY) ?? '[]');
+      const verdicts: SealedVerdict[] = localGet<SealedVerdict[]>(VERDICT_KEY, []);
       verdicts.push(sealVerdict(text, new Date()));
-      localStorage.setItem(VERDICT_KEY, JSON.stringify(verdicts));
+      localSet(VERDICT_KEY, verdicts);
     } catch { /* unavailable */ }
     this.verdictDraft.set('');
   }
 
   rateResurfaced(v: SealedVerdict, rating: 'still true' | 'partly' | 'state artifact'): void {
     try {
-      const verdicts: SealedVerdict[] = JSON.parse(localStorage.getItem(VERDICT_KEY) ?? '[]');
+      const verdicts: SealedVerdict[] = localGet<SealedVerdict[]>(VERDICT_KEY, []);
       const i = verdicts.findIndex(x => x.createdAt === v.createdAt);
-      if (i >= 0) { verdicts[i].reRating = rating; localStorage.setItem(VERDICT_KEY, JSON.stringify(verdicts)); }
+      if (i >= 0) { verdicts[i].reRating = rating; localSet(VERDICT_KEY, verdicts); }
     } catch { /* unavailable */ }
     this.resurfacing.set(null);
   }

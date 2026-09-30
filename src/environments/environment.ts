@@ -1,5 +1,6 @@
 export const environment = {
   /** AI provider router (Cloudflare Worker; dev uses the local proxy). */
+  aiProvider: 'gemini' as 'gemini' | 'heuristic',
   aiApiUrl: '/api/ai',
   /** Stripe subscription checkout (cross-origin worker; no local proxy). */
   stripeApiUrl: 'https://archetypeai-worker.wmobilas.workers.dev/api/stripe-checkout',

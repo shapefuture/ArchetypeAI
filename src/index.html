@@ -132,7 +132,10 @@
     // already existed at page load (an update, not the first visit).
     if ('serviceWorker' in navigator && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
+        // Attach the reload listener BEFORE registering: the browser's own
+        // navigation-triggered update check can install + claim a new worker
+        // while the page is still loading — a listener attached later misses
+        // that controllerchange and the page never reloads into the new build.
         const hadController = !!navigator.serviceWorker.controller;
         let reloaded = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -140,6 +143,12 @@
           reloaded = true;
           window.location.reload();
         });
+        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+          // Explicit update() is NOT subject to the browser's ~24h update-check
+          // throttle, so every page load discovers a freshly deployed worker
+          // instead of waiting for the next throttled navigation check.
+          .then(reg => reg?.update())
+          .catch(() => {});
         // Persistent PWA sessions never navigate; nudge the browser to
         // check for a new worker when the app becomes visible and hourly.
         const check = () => navigator.serviceWorker.getRegistration().then(r => r?.update()).catch(() => {});

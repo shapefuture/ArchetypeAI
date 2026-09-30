@@ -5,6 +5,7 @@
  * pastes theirs back. Fully client-side, deterministic.
  */
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { scoreProfile, type AssessmentInput } from '../../core/data/scoring-v2';
@@ -12,46 +13,8 @@ import { synastry, toSynastryProfile, type SynastryProfile, type SynastryResult 
 
 const PROFILE_KEY = 'INNERVERSE_PROFILE_V1';
 
-const UI = {
-  en: {
-    title: 'Synastry — the Pattern between you',
-    yourCode: 'Your pairing code',
-    copy: 'Copy',
-    copied: 'Copied',
-    pasteLabel: 'Paste their code',
-    compare: 'Read the pattern',
-    badCode: 'That code could not be read.',
-    noProfile: 'Complete the battery first — your constellation is one of the two inputs.',
-    loopTitle: 'Your signature loop',
-    hexagon: 'Six dynamics — no single number, ever',
-    interlocks: 'Locked storylines',
-    noInterlocks: 'No locked storyline — your complexes run in parallel. That is a good result.',
-    dance: 'Attachment dance',
-    nourish: 'What you can actually give each other',
-    axes: ['Friction', 'Resonance', 'Balance', 'Safety', 'Growth', 'Nourish'],
-    close: 'Close',
-    export: 'Save as image',
-  },
-  ru: {
-    title: 'Синастрия — узор между вами',
-    yourCode: 'Ваш код для пары',
-    copy: 'Скопировать',
-    copied: 'Скопировано',
-    pasteLabel: 'Вставьте их код',
-    compare: 'Прочитать узор',
-    badCode: 'Код не читается.',
-    noProfile: 'Сначала пройдите батарею — ваше созвездие половина входа.',
-    loopTitle: 'Ваша сигнатурная петля',
-    hexagon: 'Шесть динамик — и никогда одной цифры',
-    interlocks: 'Сцепленные сюжетные линии',
-    noInterlocks: 'Сцепленной линии нет — ваши комплексы идут параллельно. Это хороший результат.',
-    dance: 'Танец привязанности',
-    nourish: 'Что вы реально можете дать друг другу',
-    axes: ['Трение', 'Резонанс', 'Баланс', 'Безопасность', 'Рост', 'Питание'],
-    close: 'Закрыть',
-    export: 'Сохранить как изображение',
-  },
-};
+const UI = STRINGS.synastryCompare;
+
 
 function encodeProfile(p: SynastryProfile): string {
   const json = JSON.stringify(p);

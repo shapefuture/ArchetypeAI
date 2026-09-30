@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ChangeDetectorRef, provideZonelessChangeDetection } from '@angular/core';
+import { flushLocal } from './app/core/data/local-store';
 import { AppComponent } from './app.component';
 import { VisualizationService } from './services/webxr.service';
 import { GeminiService, ChatMessage } from './services/gemini.service';
@@ -206,6 +207,7 @@ describe('AppComponent', () => {
 
       expect(component.appState()).toBe('assessment');
       expect(component.assessmentResponses()[7]).toBe(0);
+      flushLocal();
       expect(localStorage.getItem('ARCHETYPE_ASSESSMENT_RESPONSES')).toBe(JSON.stringify(responses));
     });
 
@@ -1478,7 +1480,11 @@ describe('AppComponent — login modal i18n (regression guard)', () => {
   // and translations.ru under the 'universe' section, and wire them through
   // translationService.t() in app.component.html.
   const appHtml = readFileSync(resolve(__dirname, 'app.component.html'), 'utf-8');
-  const translationsTs = readFileSync(resolve(__dirname, 'i18n/translations.ts'), 'utf-8');
+  // Post-consolidation: the translations dict physically lives in strings.ts
+  // (translations.ts is a thin re-export adapter). Scope to the TRANSLATIONS
+  // export so the lazy `en:`/`ru:` regexes anchor to the right block.
+  const stringsTs = readFileSync(resolve(__dirname, 'i18n/strings.ts'), 'utf-8');
+  const translationsTs = stringsTs.slice(stringsTs.indexOf('export const TRANSLATIONS'));
 
   // Extract the @if (isLoginModalOpen()) { ... } block.
   // Use [\s\S] to span newlines and a non-greedy match.

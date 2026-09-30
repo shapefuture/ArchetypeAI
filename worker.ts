@@ -73,7 +73,7 @@ export default {
 
       try {
         // Strategy: Try Ollama first (preferred), fall back to racer if it fails/times out
-        console.log(`[AI] Prompt: "${body.prompt.substring(0, 80)}..."`);
+        console.log(`[AI] Prompt: "${String(body.prompt ?? '').substring(0, 80)}..."`);
 
         // Phase 1: Try Ollama models sequentially with short timeout
         for (const model of ['gemma4:31b-cloud']) {

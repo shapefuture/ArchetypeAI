@@ -178,7 +178,4 @@ export async function myAssignments(clientUid: string): Promise<TherapistAssignm
   return snap.docs.map(d => d.data() as unknown as TherapistAssignment);
 }
 
-export const CONSENT_TEXT = {
-  en: 'Your therapist sees: your constellation headline, part T-scores, active complexes, coping stack, and exercise adherence. They never see: your raw answers, your somatic zones, or your reflections — unless you share a reflection yourself, one at a time. You can unlink at any moment.',
-  ru: 'Ваш терапевт видит: название созвездия, T-баллы частей, активные комплексы, стратегию совладания и выполнение практик. Он никогда не видит: ваши исходные ответы, соматические зоны и размышления — если вы сами не поделитесь конкретным размышлением. Отключить связь можно в любой момент.',
-};
+export { CONSENT_TEXT } from '../../../i18n/strings';

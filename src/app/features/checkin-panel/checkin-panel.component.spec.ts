@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { flushLocal, resetLocalQueueForTests } from '../../core/data/local-store';
 import { CheckInPanelComponent } from './checkin-panel.component';
 import { SHADOW_PARTS, RESOURCES } from '../../core/data/parts';
 import { scoreProfile, type AssessmentInput } from '../../core/data/scoring-v2';
@@ -24,7 +25,7 @@ function make(): CheckInPanelComponent {
 }
 
 describe('CheckInPanelComponent', () => {
-  beforeEach(() => { localStorage.clear(); TestBed.configureTestingModule({}); });
+  beforeEach(() => { localStorage.clear(); resetLocalQueueForTests(); TestBed.configureTestingModule({}); });
 
   it('walks the 15-second loop: arousal → event → confirm → recorded', () => {
     const c = make();
@@ -38,6 +39,7 @@ describe('CheckInPanelComponent', () => {
     expect(c.stage()).toBe('done');
     expect(c.history().length).toBe(1);
     expect(c.history()[0].confirmedPart).toBe('ashamed');
+    flushLocal();
     expect(JSON.parse(localStorage.getItem('INNERVERSE_CHECKINS_V1')!)[0].predictedPart).toBe('ashamed');
   });
 
@@ -65,11 +67,13 @@ describe('CheckInPanelComponent', () => {
     const c = make();
     c.verdictDraft.set('I am a disaster');
     c.sealCurrentVerdict();
+    flushLocal();
     const stored = JSON.parse(localStorage.getItem('INNERVERSE_SEALED_VERDICTS_V1')!);
     expect(stored.length).toBe(1);
     expect(stored[0].text).toBe('I am a disaster');
     c.resurfacing.set(stored[0]);
     c.rateByLabel('state artifact');
+    flushLocal();
     const rated = JSON.parse(localStorage.getItem('INNERVERSE_SEALED_VERDICTS_V1')!);
     expect(rated[0].reRating).toBe('state artifact');
     expect(c.resurfacing()).toBeNull();
@@ -99,15 +103,17 @@ describe('CheckInPanelComponent — template', () => {
 });
 
 describe('CheckInPanelComponent — §3C.2/§3C.6 charter + events', () => {
-  beforeEach(() => { localStorage.clear(); TestBed.configureTestingModule({}); });
+  beforeEach(() => { localStorage.clear(); resetLocalQueueForTests(); TestBed.configureTestingModule({}); });
 
   it('charter sliders record a delivery and the repair/told events', () => {
     const c = make();
     c.blame.set(7); c.license.set(2);
     c.recordCharter(true, true);
+    flushLocal();
     const d = JSON.parse(localStorage.getItem('INNERVERSE_CHARTER_V1')!);
     expect(d.length).toBe(1);
     expect(d[0].blame).toBe(7);
+    flushLocal();
     const kinds = JSON.parse(localStorage.getItem('INNERVERSE_EVENTS_V1')!).map((e: any) => e.kind);
     expect(kinds).toContain('repair');
     expect(kinds).toContain('told');
@@ -119,6 +125,7 @@ describe('CheckInPanelComponent — §3C.2/§3C.6 charter + events', () => {
     c.chooseEvent('boundary');
     c.correcting.set(true);
     c.pickPart('rebel');
+    flushLocal();
     const kinds = JSON.parse(localStorage.getItem('INNERVERSE_EVENTS_V1') ?? '[]').map((e: any) => e.kind);
     expect(kinds).toContain('lapse');
   });
@@ -126,6 +133,7 @@ describe('CheckInPanelComponent — §3C.2/§3C.6 charter + events', () => {
   it('firedUnderLoad logs the if-then fire event', () => {
     const c = make();
     c.firedUnderLoad();
+    flushLocal();
     const kinds = JSON.parse(localStorage.getItem('INNERVERSE_EVENTS_V1')!).map((e: any) => e.kind);
     expect(kinds).toContain('ifthen_fired');
   });

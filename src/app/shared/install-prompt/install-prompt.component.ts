@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
 import { CommonModule } from '@angular/common';
 import { InstallService } from '../../../services/install.service';
 import { TranslationService } from '../../../services/translation.service';
@@ -8,32 +9,8 @@ import { TranslationService } from '../../../services/translation.service';
  * instead of the browser mini-bar. Android/desktop get the native
  * prompt behind the Install button; iOS gets the Safari share steps.
  */
-const UI = {
-  en: {
-    title: 'Install Innerverse',
-    desc: 'Add it to your home screen — it opens full-screen and keeps your place offline.',
-    install: 'Install',
-    later: 'Not now',
-    iosTitle: 'Add Innerverse to your Home Screen',
-    iosSteps: [
-      'Tap the Share button in Safari',
-      'Scroll and tap “Add to Home Screen”',
-      'Tap “Add” — Innerverse gets its own icon',
-    ],
-  },
-  ru: {
-    title: 'Установить Innerverse',
-    desc: 'Добавьте на домашний экран — открывается на весь экран и сохраняет прогресс офлайн.',
-    install: 'Установить',
-    later: 'Позже',
-    iosTitle: 'Добавьте Innerverse на экран «Домой»',
-    iosSteps: [
-      'Нажмите кнопку «Поделиться» в Safari',
-      'Пролистайте и выберите «На экран “Домой”»',
-      'Нажмите «Добавить» — у Innerverse появится своя иконка',
-    ],
-  },
-};
+const UI = STRINGS.installPrompt;
+
 
 @Component({
   selector: 'app-install-prompt',

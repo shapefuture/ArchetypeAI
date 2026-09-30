@@ -21,7 +21,12 @@ const LANDING_DIR = resolve(__dirname);
 const componentTs = readFileSync(resolve(LANDING_DIR, 'landing.component.ts'), 'utf-8');
 const componentCss = readFileSync(resolve(LANDING_DIR, 'landing.component.css'), 'utf-8');
 const templateHtml = readFileSync(resolve(LANDING_DIR, 'landing.component.html'), 'utf-8');
-const translationsTs = readFileSync(resolve(LANDING_DIR, '../../../i18n/translations.ts'), 'utf-8');
+// Post-consolidation: the translations dict physically lives in strings.ts
+// (translations.ts is a thin re-export adapter). Scope the read to the
+// TRANSLATIONS export — earlier sections in strings.ts also contain `en:`/
+// `ru:`/`landing:` blocks that would foil the lazy regexes below.
+const stringsTs = readFileSync(resolve(LANDING_DIR, '../../../i18n/strings.ts'), 'utf-8');
+const translationsTs = stringsTs.slice(stringsTs.indexOf('export const TRANSLATIONS'));
 
 describe('LandingComponent — in-progress test resume (regression guard)', () => {
   describe('Component wiring', () => {

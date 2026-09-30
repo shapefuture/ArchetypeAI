@@ -4,6 +4,7 @@
  * library. Completions are logged locally and feed chapter unlocks.
  */
 import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, model, output, signal } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import type { ScoredProfile } from '../../core/data/scoring-v2';
@@ -26,42 +27,8 @@ interface PracticeState {
   ladder: Record<string, LadderState>;
 }
 
-const UI = {
-  en: {
-    title: 'Practice',
-    today: 'Today’s practice',
-    noneToday: 'No suggestion today — a quiet day is a real practice too. The library is open below.',
-    chapters: 'Practice path · skills unlocked, never levels earned',
-    chapterNames: ['Grounding', 'Meeting', 'Tending', 'Relating', 'Integrating'],
-    locked: 'Locked', unlocked: 'Unlocked',
-    gate: { green: 'self-serve', yellow: 'gated', red: 'therapist only' },
-    stopRule: 'If it gets intense',
-    done: 'Mark practiced',
-    close: 'Close',
-    ch2Hint: '7 days of check-ins', ch3Hint: 'after a part dialogue', ch4Hint: 'a synastry run', ch5Hint: 'therapist link only',
-    ladder: 'Proceduralization ladder', rungNames: ['Name the principle', 'Write the if-then plan', 'Mental rehearsal (90s)', 'Live rep', 'Verified under load'],
-    rungNamed: 'I can name it', rungIfThenPh: 'When ⟨trigger⟩, I will ⟨action⟩', rungSave: 'Save plan',
-    rungStart: 'Rehearse 90 seconds', rungDone: 'Rehearsal complete',
-    rungLocked: 'with a therapist', integrated: 'integrated',
-  },
-  ru: {
-    title: 'Практика',
-    today: 'Практика на сегодня',
-    noneToday: 'На сегодня предложений нет — тихий день тоже практика. Библиотека открыта ниже.',
-    chapters: 'Путь практики · открываются навыки, а не «уровни человека»',
-    chapterNames: ['Заземление', 'Встреча', 'Забота', 'Отношения', 'Интеграция'],
-    locked: 'Закрыто', unlocked: 'Открыто',
-    gate: { green: 'самостоятельно', yellow: 'с ограничением', red: 'только с терапевтом' },
-    stopRule: 'Если становится остро',
-    done: 'Отметить выполненным',
-    close: 'Закрыть',
-    ch2Hint: '7 дней сверок', ch3Hint: 'после диалога с частью', ch4Hint: 'после синастрии', ch5Hint: 'только связь с терапевтом',
-    ladder: 'Лестница процедурализации', rungNames: ['Назвать принцип', 'Записать план «если–то»', 'Мысленная репетиция (90с)', 'Живая проба', 'Проверено под нагрузкой'],
-    rungNamed: 'Могу назвать', rungIfThenPh: 'Когда ⟨триггер⟩, я сделаю ⟨действие⟩', rungSave: 'Сохранить план',
-    rungStart: 'Репетировать 90 секунд', rungDone: 'Репетиция завершена',
-    rungLocked: 'с терапевтом', integrated: 'интегрировано',
-  },
-};
+const UI = STRINGS.practice;
+
 
 @Component({
   selector: 'app-practice-panel',

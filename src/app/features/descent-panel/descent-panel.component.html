@@ -15,8 +15,12 @@
   @if (stage() === 'item') {
     <div class="pad sit">
       <div class="sit-top">
-        <button class="iconbtn" type="button" (click)="goBack()"
-                [disabled]="itemIndex() === 0" aria-label="{{ ui().back }}">←</button>
+        <div style="display:flex; gap:6px">
+          <button class="iconbtn" type="button" (click)="exitDescent()" aria-label="{{ ui().exit }}" title="{{ ui().exit }}">⏸</button>
+          @if (itemIndex() > 0) {
+            <button class="iconbtn" type="button" (click)="goBack()" aria-label="{{ ui().back }}" title="{{ ui().back }}">←</button>
+          }
+        </div>
         <div class="starstrip" aria-hidden="true">
           @for (s of sequence.slice(0, 12); track $index) {
             <span class="slot" [class.lit]="$index * 49 < answeredInDescent() * 12">
@@ -27,7 +31,9 @@
           }
         </div>
         <span class="chip"><span class="em" aria-hidden="true">✦</span>{{ litStars() }}</span>
-        <button class="iconbtn" type="button" (click)="exitDescent()" aria-label="{{ ui().exit }}">✕</button>
+        @if (itemIndex() < 146 && answers()[itemIndex()] > 0) {
+          <button class="iconbtn" type="button" (click)="goForward()" aria-label="{{ ui().next }}" title="{{ ui().next }}">→</button>
+        }
       </div>
 
       @if (!pendingSomaticPart()) {

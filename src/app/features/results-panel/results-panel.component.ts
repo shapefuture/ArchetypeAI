@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, input, output, effect, Injector, ChangeDetectorRef, ElementRef, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { localSet, localGet } from '../../core/data/local-store';
+import { STRINGS } from '../../../i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { GeminiService, GeneratedArchetype } from '../../../services/gemini.service';
-import { VisualizationService, DimensionalExpressions } from '../../../services/webxr.service';
+import { UniverseStateService } from '../../../services/universe-state.service';
+import type { DimensionalExpressions } from '../../../services/universe-state.service';
 import { BlobCharacterComponent } from '../../shared/components/blob-character/blob-character.component';
 import { ASSESSMENT_QUESTIONS } from '../../core/data/assessment-questions';
 import { PartsDynamic, PoleScores, computePoleScores, detectComplexes, computeDefenseHierarchy, computeTriggerMap, computeIntegrationPathway, computeDissociation, computeRegulationCapacity, computeBoundaryStyle, computeNarrativeCoherence, generateArchetypes, Complex, DefenseHierarchy, TriggerEntry, PathwayStep, DissociationIndicator, RegulationCapacity, BoundaryAssessment, CoherenceIndicator, ScoredArchetype } from '../../core/data/scoring';
@@ -37,7 +40,7 @@ export interface AssessmentResults {
 export class ResultsPanelComponent implements OnInit, OnDestroy, AfterViewInit {
   public readonly translationService = inject(TranslationService);
   private readonly geminiService = inject(GeminiService);
-  private readonly visualizationService = inject(VisualizationService);
+  private readonly universeState = inject(UniverseStateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly el = inject(ElementRef<HTMLElement>);
 
@@ -355,7 +358,7 @@ export class ResultsPanelComponent implements OnInit, OnDestroy, AfterViewInit {
         assessmentResponses: this.responses(),
         results: null,
       };
-      localStorage.setItem('ARCHETYPE_COMPLETED_BACKUP', JSON.stringify(draftBackup));
+      localSet('ARCHETYPE_COMPLETED_BACKUP', draftBackup);
     } catch (storageErr) {
       console.warn('LocalStorage draft backup failed:', storageErr);
     }
@@ -364,7 +367,7 @@ export class ResultsPanelComponent implements OnInit, OnDestroy, AfterViewInit {
       const results = await this.geminiService.analyzeAssessment(
         this.responses(),
         this.questions,
-        this.visualizationService.allArchetypes(),
+        this.universeState.allArchetypes(),
         this.scoringMethod(),
         this.dimensionalExpressions(),
         { signal }
@@ -382,7 +385,7 @@ export class ResultsPanelComponent implements OnInit, OnDestroy, AfterViewInit {
           assessmentResponses: this.responses(),
           results: results,
         };
-        localStorage.setItem('ARCHETYPE_COMPLETED_BACKUP', JSON.stringify(backup));
+        localSet('ARCHETYPE_COMPLETED_BACKUP', backup);
       } catch (storageErr) {
         console.warn('LocalStorage auto-save failed:', storageErr);
       }
@@ -527,6 +530,8 @@ export class ResultsPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!res || !ps) return;
 
     const isRu = this.translationService.getLanguage() === 'ru';
+    const ES = STRINGS.resultsPanel.exportLabels[isRu ? 'ru' : 'en'];
+    const ML = STRINGS.resultsPanel.metrics[isRu ? 'ru' : 'en'];
     const lang = isRu ? 'ru' as const : 'en' as const;
     const reportArchetypes = isRu ? generateArchetypes(this.responses(), 'ru').archetypes : this.toScoredArchetypes(res);
     const reportComplexes = detectComplexes(reportArchetypes, ps, lang);
@@ -538,39 +543,39 @@ export class ResultsPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     const reportBoundary = computeBoundaryStyle(ps);
     const reportCoherence = computeNarrativeCoherence(this.responses(), ps);
     const S = {
-      title: isRu ? 'Клинический отчёт ArchetypeAI' : 'ArchetypeAI Clinical Report',
-      generated: isRu ? 'Сформировано' : 'Generated',
-      language: isRu ? 'Язык' : 'Language',
-      primary: isRu ? 'Основной архетип' : 'Primary archetype',
-      narrative: isRu ? 'Нарратив' : 'Narrative',
-      signature: isRu ? 'Размерный профиль' : 'Dimensional Signature',
-      poleScores: isRu ? 'Оценки полюсов' : 'Pole Scores',
-      pantheon: isRu ? 'Пантеон' : 'Pantheon',
-      complexes: isRu ? 'Комплексы' : 'Complexes',
-      defense: isRu ? 'Иерархия защит' : 'Defense Hierarchy',
-      triggers: isRu ? 'Карта триггеров' : 'Trigger Map',
-      pathway: isRu ? 'Путь интеграции' : 'Integration Pathway',
-      diagnostics: isRu ? 'Диагностика' : 'Diagnostics',
-      note: isRu ? 'Информационный отчёт. Не является медицинским или психиатрическим диагнозом.' : 'Informational report only. Not a medical or psychiatric diagnosis.'
+      title: ES.title,
+      generated: ES.generated,
+      language: ES.language,
+      primary: ES.primary,
+      narrative: ES.narrative,
+      signature: ES.signature,
+      poleScores: ES.poleScores,
+      pantheon: ES.pantheon,
+      complexes: ES.complexes,
+      defense: ES.defense,
+      triggers: ES.triggers,
+      pathway: ES.pathway,
+      diagnostics: ES.diagnostics,
+      note: ES.note
     };
-    const noneDetected = isRu ? 'Не обнаружено.' : 'None detected.';
-    const noneMapped = isRu ? 'Не сопоставлено.' : 'None mapped.';
-    const noNarrative = isRu ? 'Нарратив отсутствует.' : 'No narrative available.';
-    const na = isRu ? 'Н/Д' : 'N/A';
+    const noneDetected = ES.noneDetected;
+    const noneMapped = ES.noneMapped;
+    const noNarrative = ES.noNarrative;
+    const na = ES.na;
     const fmtPct = (n: number | null | undefined): string => `${Math.max(0, Math.min(100, Number(n) || 0)).toFixed(0)}%`;
     const fmtSigned = (n: number): string => `${(Math.abs(n) * 100).toFixed(0)}% ${n >= 0 ? '→' : '←'}`;
     const partType = (v?: string): string => isRu ? ({
-      manager: 'Менеджер',
-      firefighter: 'Пожарный',
-      exile: 'Изгнанник',
-      self: 'Самость',
+      manager: STRINGS.resultsPanel.partTypesRu.manager,
+      firefighter: STRINGS.resultsPanel.partTypesRu.firefighter,
+      exile: STRINGS.resultsPanel.partTypesRu.exile,
+      self: STRINGS.resultsPanel.partTypesRu.self,
     } as Record<string, string>)[v || ''] || na : v || na;
     const origin = (v?: string): string => isRu ? ({
-      pre_verbal: 'Довербальный период',
-      early_attachment: 'Ранняя привязанность',
-      oedipal: 'Эдипальный период',
-      latency: 'Латентный период',
-      adolescent: 'Подростковый период',
+      pre_verbal: STRINGS.resultsPanel.originsRu.pre_verbal,
+      early_attachment: STRINGS.resultsPanel.originsRu.early_attachment,
+      oedipal: STRINGS.resultsPanel.originsRu.oedipal,
+      latency: STRINGS.resultsPanel.originsRu.latency,
+      adolescent: STRINGS.resultsPanel.originsRu.adolescent,
     } as Record<string, string>)[v || ''] || na : v || na;
     const narrative = isRu
       ? this.buildRussianClinicalNarrative(reportArchetypes, reportComplexes, reportDissociation, reportRegulation, reportBoundary, reportCoherence)
@@ -586,38 +591,38 @@ export class ResultsPanelComponent implements OnInit, OnDestroy, AfterViewInit {
       narrative,
       '',
       `## ${S.signature}`,
-      `${isRu ? '- Агентность' : '- Agency'}: ${fmtSigned(this.dimensionalExpressions().AGENCY)}`,
-      `${isRu ? '- Температура' : '- Temperature'}: ${fmtSigned(this.dimensionalExpressions().TEMPERATURE)}`,
-      `${isRu ? '- Фокус' : '- Focus'}: ${fmtSigned(this.dimensionalExpressions().FOCUS)}`,
-      `${isRu ? '- Привязанность' : '- Attachment'}: ${fmtSigned(this.dimensionalExpressions().ATTACHMENT)}`,
+      `${ML.agency}: ${fmtSigned(this.dimensionalExpressions().AGENCY)}`,
+      `${ML.temperature}: ${fmtSigned(this.dimensionalExpressions().TEMPERATURE)}`,
+      `${ML.focus}: ${fmtSigned(this.dimensionalExpressions().FOCUS)}`,
+      `${ML.attachment}: ${fmtSigned(this.dimensionalExpressions().ATTACHMENT)}`,
       '',
       `## ${S.poleScores}`,
-      `${isRu ? '- Здоровье' : '- Health'}: ${fmtPct(ps.healthScore * 100)}`,
-      `${isRu ? '- Центр агентности' : '- Agency center'}: ${(ps.center[0] * 100).toFixed(0)}%`,
-      `${isRu ? '- Центр температуры' : '- Temperature center'}: ${(ps.center[1] * 100).toFixed(0)}%`,
-      `${isRu ? '- Центр фокуса' : '- Focus center'}: ${(ps.center[2] * 100).toFixed(0)}%`,
-      `${isRu ? '- Центр привязанности' : '- Attachment center'}: ${(ps.center[3] * 100).toFixed(0)}%`,
+      `${ML.health}: ${fmtPct(ps.healthScore * 100)}`,
+      `${ML.agencyCenter}: ${(ps.center[0] * 100).toFixed(0)}%`,
+      `${ML.temperatureCenter}: ${(ps.center[1] * 100).toFixed(0)}%`,
+      `${ML.focusCenter}: ${(ps.center[2] * 100).toFixed(0)}%`,
+      `${ML.attachmentCenter}: ${(ps.center[3] * 100).toFixed(0)}%`,
       '',
       `## ${S.pantheon}`,
       ...reportArchetypes.flatMap(a => [
         `### ${a.name}`,
-        `${isRu ? '- Символ' : '- Symbol'}: ${a.symbol || na}`,
-        `${isRu ? '- Кластер' : '- Cluster'}: ${isRu ? this.translationService.t(a.cluster, 'universe.clusterNames', a.cluster) : a.cluster}`,
-        `${isRu ? '- Значимость' : '- Prominence'}: ${fmtPct(a.prominence)}`,
-        `${isRu ? '- Тип части' : '- Part type'}: ${partType(a.partType)}`,
-        `${isRu ? '- Развитие' : '- Developmental origin'}: ${origin(a.developmentalOrigin)}`,
-        `${isRu ? '- Рана' : '- Wound'}: ${a.wound || na}`,
-        `${isRu ? '- Тень' : '- Shadow'}: ${a.shadow || na}`,
-        `${isRu ? '- Приглашение' : '- Invitation'}: ${a.invitation || na}`,
-        `${isRu ? '- Базовое убеждение' : '- Core belief'}: ${a.coreBelief || na}`,
-        `${isRu ? '- Притягивает' : '- Attracts'}: ${a.attracts || na}`,
+        `${ML.symbol}: ${a.symbol || na}`,
+        `${ML.prominence}: ${isRu ? this.translationService.t(a.cluster, 'universe.clusterNames', a.cluster) : a.cluster}`,
+        `${ML.partType}: ${fmtPct(a.prominence)}`,
+        `${ML.origin}: ${partType(a.partType)}`,
+        `${ML.wound}: ${origin(a.developmentalOrigin)}`,
+        `${ML.shadow}: ${a.wound || na}`,
+        `${ML.invitation}: ${a.shadow || na}`,
+        `${ML.coreBelief}: ${a.invitation || na}`,
+        `${ML.attracts}: ${a.coreBelief || na}`,
+        `${ML.dissociation}: ${a.attracts || na}`,
         '',
       ]),
       `## ${S.complexes}`,
       ...(reportComplexes.length ? reportComplexes.map(cx => `- **${isRu ? cx.nameRu : cx.name}**: ${isRu ? cx.coreWoundRu : cx.coreWound} (${Math.round(cx.severity * 100)}%)`) : [`- ${noneDetected}`]),
       '',
       `## ${S.defense}`,
-      ...(reportDefense.layers.length ? reportDefense.layers.map(layer => `- ${isRu ? 'Уровень' : 'L'} ${layer.level}: ${isRu ? layer.labelRu : layer.label} (${layer.parts.join(', ')})`) : [`- ${noneDetected}`]),
+      ...(reportDefense.layers.length ? reportDefense.layers.map(layer => `- ${ML.layer} ${layer.level}: ${isRu ? layer.labelRu : layer.label} (${layer.parts.join(', ')})`) : [`- ${noneDetected}`]),
       '',
       `## ${S.triggers}`,
       ...(reportTriggers.length ? reportTriggers.map(trig => `- ${trig.partName}: ${(isRu ? trig.triggerSituationsRu : trig.triggerSituations).join('; ')}`) : [`- ${noneMapped}`]),
@@ -628,10 +633,10 @@ export class ResultsPanelComponent implements OnInit, OnDestroy, AfterViewInit {
         : [`- ${noneMapped}`]),
       '',
       `## ${S.diagnostics}`,
-      `${isRu ? '- Диссоциация' : '- Dissociation'}: ${isRu ? reportDissociation.levelRu : reportDissociation.level}`,
-      `${isRu ? '- Регуляция' : '- Regulation'}: ${isRu ? reportRegulation.dysregulationPatternRu : reportRegulation.dysregulationPattern}`,
-      `${isRu ? '- Границы' : '- Boundaries'}: ${isRu ? reportBoundary.styleRu : reportBoundary.style}`,
-      `${isRu ? '- Когерентность' : '- Coherence'}: ${isRu ? reportCoherence.levelRu : reportCoherence.level}`,
+      `${ML.regulation}: ${isRu ? reportDissociation.levelRu : reportDissociation.level}`,
+      `${ML.boundaries}: ${isRu ? reportRegulation.dysregulationPatternRu : reportRegulation.dysregulationPattern}`,
+      `${ML.coherence}: ${isRu ? reportBoundary.styleRu : reportBoundary.style}`,
+      `${ML.coherence}: ${isRu ? reportCoherence.levelRu : reportCoherence.level}`,
       '',
       `> ${S.note}`
     ];
@@ -654,22 +659,23 @@ export class ResultsPanelComponent implements OnInit, OnDestroy, AfterViewInit {
     coherence: CoherenceIndicator
   ): string {
     const primary = archetypes[0];
-    if (!primary) return 'Нарратив отсутствует.';
+    const FN = STRINGS.resultsPanel.fallbackNarrativeRu;
+    if (!primary) return FN.noNarrative;
     const complexLine = complexes.length
-      ? `Наиболее выраженный комплекс: ${complexes[0].nameRu.toLowerCase()} (${Math.round(complexes[0].severity * 100)}%).`
-      : 'Выраженные комплексы не обнаружены.';
+      ? `${FN.complexTop} ${complexes[0].nameRu.toLowerCase()} (${Math.round(complexes[0].severity * 100)}%).`
+      : FN.complexesNone;
     return [
-      '## Ваш реляционный отпечаток',
+      FN.title,
       '',
-      `Профиль организован вокруг части **${primary.name}** с выраженностью ${primary.prominence}%. Эта часть показывает центральную стратегию системы: ${primary.description}`,
+      FN.profileLine(primary.name, primary.prominence, primary.description),
       '',
-      '### Основная динамика',
-      `${primary.wound} Защитная тень проявляется как: ${primary.shadow}`,
+      FN.coreDynamic,
+      FN.shadowLine(primary.wound, primary.shadow),
       '',
-      '### Клиническая перспектива',
-      `${complexLine} Регуляция: ${regulation.dysregulationPatternRu}; диссоциация: ${dissociation.levelRu}; границы: ${boundary.styleRu}; нарративная связность: ${coherence.levelRu}.`,
+      FN.clinicalTitle,
+      FN.clinicalLine(complexLine, regulation.dysregulationPatternRu, dissociation.levelRu, boundary.styleRu, coherence.levelRu),
       '',
-      '### Направление интеграции',
+      FN.integrationTitle,
       primary.invitation,
     ].join('\n');
   }

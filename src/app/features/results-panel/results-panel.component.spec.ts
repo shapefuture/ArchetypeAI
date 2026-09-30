@@ -16,7 +16,12 @@ import { resolve } from 'node:path';
 const RESULTS_DIR = resolve(__dirname);
 const templateHtml = readFileSync(resolve(RESULTS_DIR, 'results-panel.component.html'), 'utf-8');
 const componentTs = readFileSync(resolve(RESULTS_DIR, 'results-panel.component.ts'), 'utf-8');
-const translationsTs = readFileSync(resolve(RESULTS_DIR, '../../../i18n/translations.ts'), 'utf-8');
+// Post-consolidation: the translations dict physically lives in strings.ts
+// (translations.ts is a thin re-export adapter). Scope the read to the
+// TRANSLATIONS export — earlier sections in strings.ts (STRINGS, etc.) also
+// contain `en:`/`ru:`/`cabinet:` blocks that would foil the lazy regexes below.
+const stringsTs = readFileSync(resolve(RESULTS_DIR, '../../../i18n/strings.ts'), 'utf-8');
+const translationsTs = stringsTs.slice(stringsTs.indexOf('export const TRANSLATIONS'));
 
 describe('ResultsPanelComponent — Section 1 dimensional profile table', () => {
   describe('Section DOM structure', () => {

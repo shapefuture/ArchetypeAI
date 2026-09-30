@@ -1,14 +1,15 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, inject, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardStackComponent } from '../card-stack/card-stack.component';
-import { BlobCharacterComponent } from '../blob-character/blob-character.component';
-import { Archetype } from '../../../../services/webxr.service';
+import { PartStickerComponent } from '../part-sticker/part-sticker.component';
+import type { Archetype } from '../../../../services/universe-state.service';
+import { STRINGS } from '../../../../i18n/strings';
 import { TranslationService } from '../../../../services/translation.service';
 
 @Component({
   selector: 'app-archetype-detail-card',
   standalone: true,
-  imports: [CommonModule, BlobCharacterComponent],
+  imports: [CommonModule, PartStickerComponent],
 
   template: `
     <div class="side-panel-wrapper" [class.panel-open]="archetype">
@@ -28,12 +29,7 @@ import { TranslationService } from '../../../../services/translation.service';
         <!-- Hero Section -->
         <header class="panel-header">
           <div class="archetype-emblem">
-            <app-blob-character
-              [color]="archetype.color"
-              size="xl"
-              mood="happy"
-              [animate]="true">
-            </app-blob-character>
+            <app-part-sticker [archetype]="archetype" [sizePx]="124"></app-part-sticker>
           </div>
 
           <div class="title-block">
@@ -97,7 +93,7 @@ import { TranslationService } from '../../../../services/translation.service';
           <div class="related-grid">
             @for (related of relatedArchetypes(); track related.id) {
               <div class="rcard" (click)="navigateToArchetype.emit(related)">
-                <app-blob-character [color]="related.color" size="sm" [animate]="false"></app-blob-character>
+                <app-part-sticker [archetype]="related" [sizePx]="46"></app-part-sticker>
                 <span class="related-name">{{ translationService.getArchetypeField(related.id, 'name', related.name) }}</span>
               </div>
             }
@@ -483,14 +479,8 @@ export class ArchetypeDetailCardComponent implements OnInit {
   // Format cluster name for display
   readonly formattedCluster = computed(() => {
     if (!this.archetype?.cluster) return '';
-    // The four IFS families have inline RU/EN labels
-    const familyNames: { [key: string]: [string, string] } = {
-      managers: ['Managers', 'Менеджеры'],
-      firefighters: ['Firefighters', 'Пожарные'],
-      exiles: ['Exiles', 'Изгнанники'],
-      resources: ['Resources', 'Ресурсы'],
-    };
-    const inline = familyNames[this.archetype.cluster];
+    // The four IFS families live in STRINGS.archetypeDetailCard.familyNames
+    const inline = STRINGS.archetypeDetailCard.familyNames[this.archetype.cluster];
     if (inline) {
       return this.translationService.getLanguage() === 'en' ? inline[0] : inline[1];
     }

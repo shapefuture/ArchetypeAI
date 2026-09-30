@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
 import { CommonModule } from '@angular/common';
 import { StoragePort, AssessmentData, SynastrySavedReportData } from '../../core/ports/storage.port';
 import { STORAGE_PORT } from '../../core/ports/storage.port';
@@ -16,37 +17,8 @@ import {
   type AppointmentStatus,
 } from '../booking-panel/booking';
 
-/** Scoring-method chip copy — RU-first, EN inline (translations.ts is off-limits). */
-const SCORING_COPY: Record<string, { ru: string; en: string }> = {
-  deterministic: { ru: 'точный расчёт', en: 'deterministic' },
-  fallback: { ru: 'ИИ-режим', en: 'AI mode' },
-};
-
-/** «Мои записи» copy — RU-first, EN inline (translations.ts is off-limits). */
-const BOOKING_COPY = {
-  ru: {
-    title: 'Мои записи',
-    body: 'Сессии со специалистом: заявки, подтверждения и отмена.',
-    empty: 'Записей пока нет.',
-    book: 'Записаться к специалисту',
-    cancel: 'Отменить',
-    statusPending: 'ожидает',
-    statusApproved: 'подтверждена',
-    statusDeclined: 'отклонена',
-    statusCancelled: 'отменена',
-  },
-  en: {
-    title: 'My appointments',
-    body: 'Sessions with a therapist: requests, confirmations, and cancellations.',
-    empty: 'No appointments yet.',
-    book: 'Book a session',
-    cancel: 'Cancel',
-    statusPending: 'pending',
-    statusApproved: 'approved',
-    statusDeclined: 'declined',
-    statusCancelled: 'cancelled',
-  },
-};
+const SCORING_COPY: Record<string, { ru: string; en: string }> = STRINGS.cabinet.scoring;
+const BOOKING_COPY = STRINGS.cabinet.booking;
 
 @Component({
   selector: 'app-cabinet',

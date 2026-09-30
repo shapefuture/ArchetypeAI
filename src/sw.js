@@ -5,15 +5,26 @@
  *   - same-origin static assets: cache-first (Angular output is
  *     content-hashed, so stale entries are simply never requested again)
  *   - Firebase/Firestore/API calls: always network (never cached)
+ *
+ * Update contract: scripts/stamp-sw.mjs replaces __BUILD_ID__ with a content
+ * hash of the build at deploy time, so EVERY deploy changes sw.js bytes →
+ * browser detects the update on first visit → skipWaiting → controllerchange
+ * → the page reloads itself once into the new version. The cache name embeds
+ * the same build id, so activation deletes every entry from previous builds
+ * (no "one version behind" shell).
  */
-// update-flow test rev B
-const CACHE = 'innerverse-v7';
+const BUILD_ID = '__BUILD_ID__'; // stamped at build time (scripts/stamp-sw.mjs)
+const CACHE = `innerverse-${BUILD_ID}`;
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/firebase-messaging-sw.js'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((cache) => cache.addAll(SHELL))
+      // cache:'reload' — bypass the HTTP cache so a fresh install always
+      // precaches the shell that was JUST deployed, never a stale disk copy.
+      .then((cache) => Promise.all(SHELL.map((url) =>
+        fetch(new Request(url, { cache: 'reload' })).then((res) => cache.put(url, res)),
+      )))
       .then(() => self.skipWaiting()),
   );
 });
@@ -39,22 +50,27 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/')) return;
 
-  // App navigations: cache-first with background refresh (zero-r pattern).
-  // Launch is instant from the cached shell — no network round trip on the
-  // interaction path — while a silent fetch updates the cache for the next
-  // launch. Offline falls back to the cached shell.
+  // App navigations: network-first, fall back to the cached shell offline.
+  // Correctness note: a cache-first shell stays stale for as long as the
+  // browser keeps serving the OLD worker (update checks are throttled to
+  // ~daily on navigations), which is exactly how "refresh shows the old
+  // build until site data is cleared" happened. With network-first, a plain
+  // refresh ALWAYS renders the freshly deployed shell; the cached copy is
+  // only a network-failure fallback (offline). The extra round trip on
+  // launch is the price of never being stale.
   if (request.mode === 'navigate') {
     event.respondWith(
-      caches.match('/').then((cached) => {
-        const refresh = fetch(request)
-          .then((response) => {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put('/', copy));
-            return response;
-          })
-          .catch(() => cached);
-        return cached || refresh;
-      }),
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put('/', copy));
+          return response;
+        })
+        .catch(() =>
+          caches.open(CACHE)
+            .then((cache) => cache.match('/'))
+            .then((cached) => cached || Response.error()),
+        ),
     );
     return;
   }

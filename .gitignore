@@ -29,3 +29,12 @@ dist-ssr
 .beads-credential-key
 
 .angular/
+
+# Scratch artifacts from agent sessions (not project source)
+/beginning.txt
+/session.txt
+/strings.ts
+/strings_updated.zip
+
+# Standalone visual-comparison prototype (own package.json/node_modules)
+/starry-sky-visualization-comparison/

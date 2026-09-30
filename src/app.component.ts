@@ -1,7 +1,14 @@
 import { ChangeDetectionStrategy, Component, ElementRef, signal, viewChild, afterNextRender, inject, computed, WritableSignal, Signal, OnDestroy, effect, Injector, runInInjectionContext, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { VisualizationService } from './services/webxr.service';
-import { Archetype, Dimension, DimensionalExpressions } from './services/webxr.service';
+// The three.js renderer is LAZY: dynamically imported on first universe
+// entry so the 3D module (+three/gsap/postprocessing) ships as its own chunk
+// instead of weighing down the landing page. Type-only import keeps the
+// static graph clean.
+import type { VisualizationService } from './services/webxr.service';
+import { UniverseStateService } from './services/universe-state.service';
+import { localSet, localSetRaw, localGet, localRemove, flushLocal } from './app/core/data/local-store';
+import { STRINGS } from './i18n/strings';
+import type { Archetype, Dimension, DimensionalExpressions } from './services/universe-state.service';
 import { GeminiService, ChatMessage, CoachResponse, GeneratedArchetype, AssessmentAnalysis } from './services/gemini.service';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -83,7 +90,15 @@ const AUTH_REDIRECT_PENDING_KEY = 'ARCHETYPE_AUTH_REDIRECT_PENDING';
 })
 export class AppComponent implements OnDestroy {
   readonly assessmentQuestions = ASSESSMENT_QUESTIONS;
-  private readonly visualizationService = inject(VisualizationService);
+  /** STRINGS catalog exposed for template-level copy (single EN/RU source). */
+  protected readonly STRINGS = STRINGS;
+  /** Eager universe state — safe to bind anywhere, any app state. */
+  private readonly universeState = inject(UniverseStateService);
+  /** Lazy renderer instance — set on first universe entry (see loadRenderer). */
+  private vizRenderer: VisualizationService | null = null;
+  /** Determinism seed captured before the renderer exists; applied on load. */
+  private pendingDeterminismSeed: string | null = null;
+  private rendererLoad: Promise<VisualizationService> | null = null;
 
   private readonly geminiService = inject(GeminiService);
   public readonly translationService = inject(TranslationService);
@@ -147,6 +162,18 @@ export class AppComponent implements OnDestroy {
     {
       title: this.translationService.t('help4Title', 'universe'),
       description: this.translationService.t('help4Desc', 'universe')
+    },
+    {
+      title: this.translationService.t('help5Title', 'universe'),
+      description: this.translationService.t('help5Desc', 'universe')
+    },
+    {
+      title: this.translationService.t('help6Title', 'universe'),
+      description: this.translationService.t('help6Desc', 'universe')
+    },
+    {
+      title: this.translationService.t('help7Title', 'universe'),
+      description: this.translationService.t('help7Desc', 'universe')
     }
   ]);
 
@@ -168,8 +195,8 @@ export class AppComponent implements OnDestroy {
   // Comparison State Signals
   readonly isComparing = signal(false);
   readonly firstComparisonArchetype = signal<Archetype | null>(null);
-  readonly secondComparisonArchetype = computed(() => this.isComparing() ? this.visualizationService.selectedArchetype() : null);
-  readonly displayArchetype = computed(() => this.isComparing() ? this.firstComparisonArchetype() : this.visualizationService.selectedArchetype());
+  readonly secondComparisonArchetype = computed(() => this.isComparing() ? this.universeState.selectedArchetype() : null);
+  readonly displayArchetype = computed(() => this.isComparing() ? this.firstComparisonArchetype() : this.universeState.selectedArchetype());
   
 
 
@@ -257,7 +284,7 @@ export class AppComponent implements OnDestroy {
 
 
   // Interaction Signals from Service
-  readonly selectedArchetype: Signal<Archetype | null> = this.visualizationService.selectedArchetype;
+  readonly selectedArchetype: Signal<Archetype | null> = this.universeState.selectedArchetype;
 
 
   private initializationPromise: Promise<void> | null = null;
@@ -275,7 +302,7 @@ export class AppComponent implements OnDestroy {
     // PWA install dialog: offer once per week, well after first paint.
     this.installService.autoOpenAfterDelay(9000);
 
-    effect(() => this.visualizationService.setComparisonState(this.isComparing(), this.firstComparisonArchetype()));
+    effect(() => this.universeState.setComparisonState(this.isComparing(), this.firstComparisonArchetype()));
 
     // Auth state tracking
     effect(() => {
@@ -289,7 +316,8 @@ export class AppComponent implements OnDestroy {
     // Subscribe first so redirect auth can settle before any anonymous bootstrap.
     this.authSubscription = this.authPort.user$.subscribe(user => {
       this.currentUser.set(user);
-      this.visualizationService.setDeterminismSeed(user?.uid || null);
+      this.pendingDeterminismSeed = user?.uid || null;
+      this.vizRenderer?.setDeterminismSeed(this.pendingDeterminismSeed);
 
       if (user && this.anonymousBootstrapTimeout) {
         clearTimeout(this.anonymousBootstrapTimeout);
@@ -348,7 +376,13 @@ export class AppComponent implements OnDestroy {
         this.appState() === 'assessment' ||
         this.appState() === 'assessment-gate' ||
         this.appState() === 'assessment-results';
-      this.visualizationService.setLabelsVisible(!panelsOpen);
+      // The axis-label layer lives on <body> (outside Angular's subtree, so
+      // the CSS2DRenderer survives view switches). Show it ONLY inside the
+      // 3D universe view — otherwise this effect re-shows it after sleep()
+      // hid it, and the frozen labels linger on top of whatever screen the
+      // user returned to (intro, cabinet, …).
+      const inUniverseView = this.appState() === 'universe';
+      this.vizRenderer?.setLabelsVisible(inUniverseView && !panelsOpen);
     });
 
     this.startLoadingPhrases();
@@ -360,7 +394,7 @@ export class AppComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.visualizationService.destroy();
+    this.vizRenderer?.destroy();
     clearInterval(this.phraseInterval);
     if (this.loadingFallback) clearTimeout(this.loadingFallback);
     if (this.redirectPendingTimeout) clearTimeout(this.redirectPendingTimeout);
@@ -622,8 +656,40 @@ export class AppComponent implements OnDestroy {
     animate();
   }
 
+  /**
+   * Dynamically import the three.js renderer on first universe entry.
+   * The chunk (~three/gsap/postprocessing) never loads for users who don't
+   * open the universe; landing/results stay featherweight. The module is
+   * cached by the browser, so subsequent entries resolve instantly.
+   */
+  private loadRenderer(): Promise<VisualizationService> {
+    if (!this.rendererLoad) {
+      this.rendererLoad = import('./services/webxr.service').then(mod => {
+        const viz = this.injector.get(mod.VisualizationService);
+        this.vizRenderer = viz;
+        if (this.pendingDeterminismSeed) viz.setDeterminismSeed(this.pendingDeterminismSeed);
+        return viz;
+      });
+    }
+    return this.rendererLoad;
+  }
+
+  /** Speculative prefetch (zero-r economic scheduler, simplified): call on
+   *  hover/focus of likely universe entry points — the chunk downloads while
+   *  the user is still deciding, so the eventual entry feels instant. */
+  prefetchUniverseRenderer(): void {
+    void this.loadRenderer();
+  }
+
   private initializeUniverse(canvasEl: HTMLCanvasElement): Promise<void> {
     if (this.initializationPromise) {
+      // Scene survived a sleep (route exit) — repair the DOM binding first:
+      // Angular destroyed the original canvas when the @case switched away,
+      // so swap the fresh placeholder for the renderer's real canvas, then
+      // wake. Without this, the renderer keeps drawing into a detached
+      // canvas and the universe appears dead (no drag, no clicks).
+      this.vizRenderer?.reattachCanvas(canvasEl);
+      this.vizRenderer?.wake();
       return this.initializationPromise;
     }
     this.initializationPromise = (async () => {
@@ -632,7 +698,7 @@ export class AppComponent implements OnDestroy {
         const isFirstVisit = !(() => { try { return localStorage.getItem('hasVisited'); } catch { return null; } })();
         const minDelayPromise = new Promise(resolve => setTimeout(resolve, 1000));
         await Promise.all([
-            this.visualizationService.init(canvasEl, isFirstVisit),
+            (await this.loadRenderer()).init(canvasEl, isFirstVisit),
             minDelayPromise
         ]);
         clearInterval(this.phraseInterval);
@@ -640,7 +706,7 @@ export class AppComponent implements OnDestroy {
       if (this.appState() === 'universe' && isFirstVisit) {
             setTimeout(() => {
                 this.isHelpPanelOpen.set(true);
-                try { localStorage.setItem('hasVisited', 'true'); } catch { /* storage unavailable */ }
+                localSetRaw('hasVisited', 'true');
             }, 500);
         }
         
@@ -670,7 +736,7 @@ export class AppComponent implements OnDestroy {
     return new Promise((resolve, reject) => {
       const startedAt = Date.now();
       const tick = () => {
-        if (this.visualizationService.sceneReady()) {
+        if (this.vizRenderer?.sceneReady()) {
           resolve();
           return;
         }
@@ -685,7 +751,7 @@ export class AppComponent implements OnDestroy {
   }
 
   startAssessment(): void {
-    this.visualizationService.selectedArchetype.set(null);
+    this.universeState.selectedArchetype.set(null);
     this.assessmentResponses.set(new Array(this.assessmentQuestions.length).fill(0));
     this.appState.set('assessment');
     this.assessmentResults.set(null);
@@ -693,7 +759,7 @@ export class AppComponent implements OnDestroy {
 
   restartAssessment(): void {
     try {
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localRemove(LOCAL_STORAGE_KEY);
       localStorage.removeItem(ASSESSMENT_INDEX_KEY);
     } catch { /* storage unavailable */ }
     this.startAssessment();
@@ -711,14 +777,14 @@ export class AppComponent implements OnDestroy {
     this.innerverseProfile.set(scoreProfile(input));
     recordAndStore(input); // §4 step 10: anonymized item distributions, local-only
     void syncTelemetry(loadTelemetry()); // fire-and-forget to Firestore (no PII)
-    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(input)); } catch { /* storage unavailable */ }
+    localSet(PROFILE_KEY, input);
     this.appState.set('innerverse');
   }
 
   /** Restore the last completed descent so a reload never loses the report. */
   restoreInnerverseProfile(): void {
     try {
-      const raw = localStorage.getItem(PROFILE_KEY);
+      const raw = (() => { try { return JSON.stringify(localGet<unknown>(PROFILE_KEY, null)); } catch { return null; } })();
       if (!raw) return;
       this.innerverseProfile.set(scoreProfile(JSON.parse(raw) as AssessmentInput));
     } catch { localStorage.removeItem(PROFILE_KEY); }
@@ -769,19 +835,13 @@ export class AppComponent implements OnDestroy {
   /** Gate copy — RU-first, EN inline (translations.ts is off-limits). */
   readonly gateCopy = computed(() => {
     const ru = this.translationService.getLanguage() === 'ru';
-    return ru ? {
-      title: 'Сначала пройдите погружение',
-      body: 'Отчёт, чек-ин, практика и синастрия открываются после первой карты — три части по 49 утверждений, около 25 минут. Прогресс сохраняется, можно сделать паузу.',
-      cta: '✦ Начать погружение',
-      login: 'Войти в аккаунт',
-      close: 'Позже',
-    } : {
-      title: 'Complete your first descent',
-      body: 'The report, check-in, practice and synastry open after your first map — three sittings of 49 statements, about 25 minutes. Progress is saved, pauses welcome.',
-      cta: '✦ Start the descent',
-      login: 'Sign in',
-      close: 'Later',
-    };
+    return STRINGS.app.gate[ru ? 'ru' : 'en'];
+  });
+
+  /** Loading-screen tagline (moved here from a hardcoded template string). */
+  readonly loadingTagline = computed(() => {
+    const ru = this.translationService.getLanguage() === 'ru';
+    return STRINGS.app.alerts.loadingTagline[ru ? 1 : 0];
   });
 
   /** Signed in with a real (non-anonymous) account? */
@@ -805,8 +865,7 @@ export class AppComponent implements OnDestroy {
 
   goToIntro(): void {
     if (this.appState() === 'universe') {
-      this.visualizationService.destroy();
-      this.initializationPromise = null;
+      this.vizRenderer?.sleep(); // keep context + scene: instant re-entry
     }
     this.universeLoading.set(false);
     this.initError.set(null);
@@ -951,8 +1010,7 @@ export class AppComponent implements OnDestroy {
    */
   private exitSpecialistMatrixView(): void {
     if (this.appState() === 'universe') {
-      this.visualizationService.destroy();
-      this.initializationPromise = null;
+      this.vizRenderer?.sleep(); // keep context + scene: instant re-entry
     }
     this.universeLoading.set(false);
     this.specialistViewClientUid.set(null);
@@ -963,7 +1021,7 @@ export class AppComponent implements OnDestroy {
   }
 
   async enterUniverse(): Promise<void> {
-    this.visualizationService.personalConstellation.set(null); // Ensure we see the full universe
+    this.universeState.personalConstellation.set(null); // Ensure we see the full universe
     this.initError.set(null);
     this.appState.set('universe');
     this.universeLoading.set(true);
@@ -1027,7 +1085,7 @@ export class AppComponent implements OnDestroy {
   exitCompareMode(): void {
     this.isComparing.set(false);
     this.firstComparisonArchetype.set(null);
-    this.visualizationService.selectedArchetype.set(null); // Clear the second via shared service
+    this.universeState.selectedArchetype.set(null); // Clear the second via shared service
     this.resetCoachConversation();
   }
 
@@ -1480,7 +1538,7 @@ export class AppComponent implements OnDestroy {
   /** Report: download the innerverse profile as a local backup file. */
   downloadInnerverseBackup(): void {
     try {
-      const raw = localStorage.getItem('INNERVERSE_PROFILE_V1');
+      const raw = (() => { try { return JSON.stringify(localGet<unknown>('INNERVERSE_PROFILE_V1', null)); } catch { return null; } })();
       if (!raw) return;
       const blob = new Blob([raw], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -1503,7 +1561,7 @@ export class AppComponent implements OnDestroy {
   /** Universe HUD «download copy»: save the innerverse map when present,
    *  otherwise the raw assessment responses; explain when there is no data. */
   downloadBackup(): void {
-    if (localStorage.getItem('INNERVERSE_PROFILE_V1')) {
+    if (localGet<unknown>('INNERVERSE_PROFILE_V1', null) !== null) {
       this.downloadInnerverseBackup();
       return;
     }
@@ -1512,7 +1570,7 @@ export class AppComponent implements OnDestroy {
       return;
     }
     const ru = this.translationService.getLanguage() === 'ru';
-    try { alert(ru ? 'Пока нечего сохранять — сначала пройдите погружение.' : 'Nothing to save yet — complete a descent first.'); } catch { /* non-interactive */ }
+    try { alert(STRINGS.app.alerts.nothingToSave[ru ? 1 : 0]); } catch { /* non-interactive */ }
   }
 
   /** Universe HUD «synastry»: leave the universe, then open synastry
@@ -1599,7 +1657,7 @@ export class AppComponent implements OnDestroy {
 
   restoreLocalBackup(): void {
     try {
-      const backupStr = localStorage.getItem('ARCHETYPE_COMPLETED_BACKUP');
+      const backupStr = (() => { try { return JSON.stringify(localGet<unknown>('ARCHETYPE_COMPLETED_BACKUP', null)); } catch { return null; } })();
       if (!backupStr) return;
       const parsed = JSON.parse(backupStr);
       let responses = parsed.assessmentResponses;
@@ -1705,9 +1763,10 @@ export class AppComponent implements OnDestroy {
 
 
   private toastRestore(kind: 'innerverse' | 'assessment'): void {
-    const msg = this.translationService.getLanguage() === 'ru'
-      ? (kind === 'innerverse' ? 'Карта восстановлена' : 'Ответы восстановлены')
-      : (kind === 'innerverse' ? 'Map restored' : 'Answers restored');
+    const ru = this.translationService.getLanguage() === 'ru';
+    const msg = ru
+      ? (kind === 'innerverse' ? STRINGS.app.alerts.mapRestored[1] : STRINGS.app.alerts.answersRestored[1])
+      : (kind === 'innerverse' ? STRINGS.app.alerts.mapRestored[0] : STRINGS.app.alerts.answersRestored[0]);
     try { alert(msg); } catch { /* non-interactive */ }
   }
 
@@ -1723,10 +1782,10 @@ export class AppComponent implements OnDestroy {
         // Innerverse map backup ({shadow, resources, self, validity}) —
         // the file the report's "local copy" button downloads.
         if (parsed && parsed.shadow && parsed.resources && parsed.self) {
-          localStorage.setItem('INNERVERSE_PROFILE_V1', JSON.stringify(parsed));
+          localSet('INNERVERSE_PROFILE_V1', parsed);
           // Marker so the landing surfaces the map CTAs (the legacy restore
           // parser ignores this format's missing fields safely).
-          if (!localStorage.getItem('ARCHETYPE_COMPLETED_BACKUP')) {
+          if (localGet<unknown>('ARCHETYPE_COMPLETED_BACKUP', null) === null) {
             localStorage.setItem('ARCHETYPE_COMPLETED_BACKUP', '{}');
           }
           this.innerverseProfile.set(scoreProfile(parsed));
@@ -1821,7 +1880,7 @@ export class AppComponent implements OnDestroy {
   }
 
   private resumeAssessment(responses: number[]): void {
-    try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(responses)); } catch { /* storage unavailable */ }
+    localSet(LOCAL_STORAGE_KEY, responses);
     this.assessmentResponses.set(responses);
     this.assessmentResults.set(null);
     this.appState.set('assessment');
@@ -1847,7 +1906,7 @@ export class AppComponent implements OnDestroy {
       await this.waitForSceneReady();
 
       let newClusterId = '';
-      const usedIds = new Set(this.visualizationService.allArchetypes().map(a => a.id));
+      const usedIds = new Set(this.universeState.allArchetypes().map(a => a.id));
       // Universe placement must be consistent across regenerations.
       // Always derive coordinates/prominence from the deterministic scoring engine (answers),
       // regardless of whether the narrative/pantheon fields came from an AI mode.
@@ -1895,16 +1954,16 @@ export class AppComponent implements OnDestroy {
           size: Math.max(0.4, Math.min(1.1, stableGenerated.size || 0.8)),
         };
         if (!newClusterId) newClusterId = newArchetype.cluster || 'personal_pantheon';
-        this.visualizationService.addArchetype(newArchetype);
+        this.vizRenderer?.addArchetype(newArchetype);
         return { archetypeId: newArchetype.id, percentage: stableProminence };
       });
 
-      this.visualizationService.personalConstellation.set(constellationData);
+      this.universeState.personalConstellation.set(constellationData);
       this.universeLoading.set(false);
 
       setTimeout(() => {
         if (newClusterId) {
-          this.visualizationService.flyToConstellation(newClusterId);
+          this.vizRenderer?.flyToConstellation(newClusterId);
         }
       }, 500);
     } catch (error) {
@@ -1979,7 +2038,11 @@ export class AppComponent implements OnDestroy {
 
   // --- Universe Control Handlers ---
   onArchetypeSelected(archetype: Archetype): void {
-    this.visualizationService.flyToArchetype(archetype);
+    this.vizRenderer?.flyToArchetype(archetype);
+  }
+
+  onArchetypeCreated(archetype: Archetype): void {
+    this.vizRenderer?.addArchetype(archetype);
   }
 
 
@@ -1996,7 +2059,7 @@ export class AppComponent implements OnDestroy {
     } catch (err) {
       console.warn('[Billing] checkout failed:', err);
       const ru = this.translationService.getLanguage() === 'ru';
-      try { alert(ru ? 'Оплата пока недоступна. Попробуйте позже.' : 'Checkout is not available yet. Please try again later.'); } catch { /* non-interactive */ }
+      try { alert(STRINGS.app.alerts.checkoutUnavailable[ru ? 1 : 0]); } catch { /* non-interactive */ }
     }
   }
 
@@ -2091,7 +2154,7 @@ export class AppComponent implements OnDestroy {
         history,
         this.firstComparisonArchetype() ?? this.selectedArchetype(),
         this.secondComparisonArchetype(),
-        this.visualizationService.allArchetypes(),
+        this.universeState.allArchetypes(),
         // Persona carries through to the GeminiService so the persona
         // prefix is composed at the prompt-engineering layer. The next
         // ask reuses the same `coachMode` — leftover parts-mode turns

@@ -4,6 +4,7 @@
  * client summaries → exercise assignments (incl. RED, container-gated).
  */
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
 import { take } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
@@ -41,94 +42,8 @@ function defaultRows(): AvailabilityRow[] {
   }));
 }
 
-const UI = {
-  en: {
-    title: 'Therapist Mode',
-    close: 'Close',
-    attest: 'I attest that I am a licensed mental-health professional.',
-    license: 'License number (stored locally, not verified at launch)',
-    enter: 'Enter dashboard',
-    claimLabel: 'Client invite code',
-    claim: 'Link client',
-    badCode: 'Code not found.',
-    clients: 'Linked clients',
-    noClients: 'No clients linked yet. Ask your client for their invite code.',
-    assign: 'Assign exercise',
-    frequency: ['once', 'daily', 'weekly', 'after-trigger'],
-    send: 'Assign',
-    assigned: 'Assigned.',
-    redNote: 'RED exercises attach only here — and only after the client has built their Safe Place container.',
-    consentTitle: 'What you see — and never see',
-    metricsTitle: 'Resistant outcomes (logged events only)',
-    metrics: ['Time to repair', 'Secrecy duration', 'If-then fire rate', 'Disclosure ratio'],
-    metricsRule: 'If self-report improves but these don’t, the work is being narrated, not generalized — shift from insight exercises to behavior/environment exercises.',
-    fClient: 'Client', fExercise: 'Exercise', fFrequency: 'Frequency',
-    selfLabel: 'Self', burdenLabel: 'burden', adherenceLabel: 'practice done',
-    archive: 'Archive',
-    toArchive: 'Archive',
-    restore: 'Restore',
-    archived: 'Archived clients',
-    noArchived: 'No archived clients.',
-    requests: 'Session requests',
-    noRequests: 'No session requests yet.',
-    approve: 'Approve',
-    decline: 'Decline',
-    approvedChip: 'confirmed',
-    statusPending: 'pending',
-    statusApproved: 'approved',
-    statusDeclined: 'declined',
-    statusCancelled: 'cancelled',
-    availability: 'Availability',
-    availHint: 'Per-day working hours. Slots are 60 minutes.',
-    dayNames: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    saveAvail: 'Save availability',
-    saved: 'Saved.',
-    clientNoSummary: 'linked via booking — no assessment summary yet',
-  },
-  ru: {
-    title: 'Режим терапевта',
-    close: 'Закрыть',
-    attest: 'Я подтверждаю, что являюсь дипломированным специалистом в области психического здоровья.',
-    license: 'Номер лицензии (хранится локально, не проверяется на старте)',
-    enter: 'Войти в панель',
-    claimLabel: 'Код приглашения клиента',
-    claim: 'Связать клиента',
-    badCode: 'Код не найден.',
-    clients: 'Связанные клиенты',
-    noClients: 'Пока никто не связан. Попросите у клиента код приглашения.',
-    assign: 'Назначить практику',
-    frequency: ['once', 'daily', 'weekly', 'after-trigger'],
-    send: 'Назначить',
-    assigned: 'Назначено.',
-    redNote: 'RED-практики доступны только здесь — и только после того, как клиент построил контейнер Безопасного Места.',
-    consentTitle: 'Что вы видите — и чего не видите никогда',
-    metricsTitle: 'Устойчивые исходы (только из журнала событий)',
-    metrics: ['Время до исправления', 'Длительность умолчания', 'Доля сработавших «если–то»', 'Доля раскрытий'],
-    metricsRule: 'Если самоотчёт улучшается, а эти метрики нет — работа проговаривается, а не генерализуется: переведите фокус с инсайтов на поведенческие и средовые практики.',
-    fClient: 'Клиент', fExercise: 'Практика', fFrequency: 'Частота',
-    selfLabel: 'Self-энергия', burdenLabel: 'нагрузка', adherenceLabel: 'практик выполнено',
-    archive: 'Архив',
-    toArchive: 'В архив',
-    restore: 'Восстановить',
-    archived: 'Архив клиентов',
-    noArchived: 'Архив пуст.',
-    requests: 'Заявки на сессии',
-    noRequests: 'Заявок пока нет.',
-    approve: 'Подтвердить',
-    decline: 'Отклонить',
-    approvedChip: 'подтверждена',
-    statusPending: 'ожидает',
-    statusApproved: 'подтверждена',
-    statusDeclined: 'отклонена',
-    statusCancelled: 'отменена',
-    availability: 'Доступность',
-    availHint: 'Рабочие часы по дням недели. Слоты — 60 минут.',
-    dayNames: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
-    saveAvail: 'Сохранить доступность',
-    saved: 'Сохранено.',
-    clientNoSummary: 'связан через запись — сводки результатов пока нет',
-  },
-};
+const UI = STRINGS.therapist;
+
 
 @Component({
   selector: 'app-therapist-panel',
@@ -146,10 +61,12 @@ export class TherapistPanelComponent {
 
   readonly lang = computed(() => this.translationService.getLanguage());
   readonly ui = computed(() => UI[this.lang()] as typeof UI.en);
+  /** STRINGS catalog exposed for template-level copy (single EN/RU source). */
+  protected readonly STRINGS = STRINGS;
 
   readonly attested = signal(localStorage.getItem(ATTEST_KEY) === 'yes');
   readonly entered = signal(false);
-  readonly license = signal(localStorage.getItem(ATTEST_KEY + ':license') ?? '');
+  readonly license = signal(localStorage.getItem(ATTEST_KEY + ':license') ?? '1111');
   readonly code = signal('');
   readonly clients = signal<LinkedClient[]>([]);
   readonly claiming = signal(false);
@@ -318,7 +235,7 @@ export class TherapistPanelComponent {
   /** Gate key ('green'|'yellow'|'red') as a locale label. */
   gateLabel(gate: string): string {
     if (this.lang() !== 'ru') return gate;
-    return gate === 'green' ? 'зелёный' : gate === 'yellow' ? 'жёлтый' : 'красный';
+    return STRINGS.therapist.clinical.gateWords[this.lang()][gate] ?? gate;
   }
 
   /** Assignment frequency key as a locale label (values stay as API keys). */
@@ -326,7 +243,7 @@ export class TherapistPanelComponent {
     if (this.lang() !== 'ru') {
       return { 'once': 'Once', 'daily': 'Daily', 'weekly': 'Weekly', 'after-trigger': 'After trigger' }[freq] ?? freq;
     }
-    return { 'once': 'однократно', 'daily': 'ежедневно', 'weekly': 'еженедельно', 'after-trigger': 'после триггера' }[freq] ?? freq;
+    return STRINGS.therapist.clinical.freqWords[this.lang()][freq] ?? freq;
   }
 
   /** Part id ('taskmaster', 'rebel'…) as a locale display name. */

@@ -40,7 +40,13 @@ export class PushService {
     try {
       const token = await getToken(getMessaging(getFirebaseApp()), {
         vapidKey: environment.vapidPublicKey,
-        serviceWorkerRegistration: await navigator.serviceWorker.register('/firebase-messaging-sw.js'),
+        // Scope '/fcm/': the messaging worker MUST NOT live at scope '/' —
+        // two workers on one scope replace each other, so registering the
+        // FCM worker at root would evict the app-shell worker (and vice
+        // versa on the next page load). '/fcm/' is within the script's
+        // default max scope ('/'), so no Service-Worker-Allowed header is
+        // needed; push delivery does not depend on the scope covering the app.
+        serviceWorkerRegistration: await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/fcm/' }),
       });
       if (!token) return 'denied';
       localStorage.setItem(TOKEN_KEY, token);

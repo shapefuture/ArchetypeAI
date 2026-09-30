@@ -25,6 +25,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TranslationService } from '../../../services/translation.service';
 import { InstallService } from '../../../services/install.service';
 import { PART_COPY } from '../../core/data/part-copy';
+import { localGet } from '../../core/data/local-store';
 import {
   EYE_KINDS,
   IV_PARTS,
@@ -47,119 +48,21 @@ import {
   type MouthKind,
   type PartLook,
 } from './stickers';
+import { STRINGS } from '../../../i18n/strings';
 
 // ---------------------------------------------------------------- data
 
 const P = Object.fromEntries(IV_PARTS.map((p) => [p.id, p])) as Record<string, IvPart>;
 
-/** Resource face-lines — shadow parts read PART_COPY (§1.9). */
-const RESOURCE_FACE: Record<string, [string, string]> = {
-  sage: ['The quiet knowing that sees the whole field.', 'Тихое знание, которое видит всю картину.'],
-  warrior: ['The clear no that protects what matters.', 'Ясное «нет», которое защищает важное.'],
-  caregiver: ['The warm tending that asks nothing back.', 'Тепло, которое заботится и ничего не ждёт взамен.'],
-  explorer: ['The curious reach toward the new.', 'Любопытный шаг навстречу новому.'],
-};
-
-/** One tiny practice per part (bilingual) — the sheet's closing card. */
-const PRACTICE: Record<string, [string, string]> = {
-  taskmaster: ['Schedule one deliberately useless hour — and survive it.', 'Запланируйте один нарочно бесполезный час — и переживите его.'],
-  inner_critic: ['Ask it: “what are you protecting?” — then thank it and continue.', 'Спросите его: «что ты защищаешь?» — поблагодарите и продолжайте.'],
-  pleaser: ['Say one honest “not really” this week — small, safe, real.', 'Скажите одно честное «на самом деле нет» на этой неделе — маленькое, безопасное, настоящее.'],
-  controller: ['Let someone else drive once — and watch the world not end.', 'Позвольте кому-то другому вести — и убедитесь, что мир не рухнул.'],
-  analyst: ['Name one feeling out loud without the word “because”.', 'Назовите одно чувство вслух — без слова «потому что».'],
-  hermit: ['Send one “thinking of you” text. No occasion needed.', 'Отправьте одно «думаю о тебе» — без повода.'],
-  bypasser: ['Let one bad moment be fully bad for sixty seconds.', 'Позвольте одному плохому моменту быть целиком плохим шестьдесят секунд.'],
-  numb: ['Once a day ask: “if I did feel something — what would it be?”', 'Раз в день спрашивайте: «если бы я что-то чувствовал — что бы это было?»'],
-  rebel: ['Choose one rule to follow — on purpose, as an experiment.', 'Выберите одно правило, чтобы соблюсти, — нарочно, как эксперимент.'],
-  charmer: ['Tell one person something unpolished and true.', 'Расскажите одному человеку что-то неотшлифованное и правдивое.'],
-  abandoned: ['Sit with one unanswered message for an hour. Notice the sky stays up.', 'Побудьте час с одним неотвеченным сообщением. Заметьте: небо не упало.'],
-  ashamed: ['Show one person something you made before it was perfect.', 'Покажите одному человеку то, что вы сделали, ещё до совершенства.'],
-  frightened: ['Take one small step past the exit map. Then come back — by choice.', 'Сделайте шаг за карту выходов. Потом вернитесь — по своему выбору.'],
-  unseen: ['Say one true sentence in a group this week. Let it land.', 'Скажите одно правдивое предложение в группе на этой неделе. Дайте ему прозвучать.'],
-  sage: ['Before a hard talk, ask the Sage: “what actually matters here?”', 'Перед трудным разговором спросите Мудреца: «что здесь по-настоящему важно?»'],
-  warrior: ['Practice one warm no: “Not this time — and I do like you.”', 'Потренируйте тёплое «нет»: «Не в этот раз — и ты мне правда нравишься».'],
-  caregiver: ['Give yourself one hour of your own best care this week.', 'Подарите себе час собственной лучшей заботы на этой неделе.'],
-  explorer: ['Finish one small boring thing — purely to feel the other muscle.', 'Доведите до конца одну маленькую скучную вещь — просто чтобы почувствовать другую мышцу.'],
-};
-
-/** Named pair dynamics (bilingual) — the chemistry lab's signature reactions. */
-const DUOS: Record<string, { t: [string, string]; n: [string, string] }> = {
-  'rebel|taskmaster': {
-    t: ['The Deadline Heist', 'Ограбление дедлайна'],
-    n: ['The Taskmaster writes the schedule; the Rebel sells the schedule’s furniture. Productive sabotage — unless the Rebel gets one owned block of beautiful anarchy per week.', 'Деятель составляет расписание; Бунтарь продаёт его мебель. Продуктивный саботаж — если только Бунтарь не получит один принадлежащий только ему блок прекрасной анархии в неделю.'],
-  },
-  'abandoned|hermit': {
-    t: ['Asymmetric Orbit', 'Асимметричная орбита'],
-    n: ['One invests intensely; the other holds loosely. The imbalance is structural, not personal. Named early, it becomes rhythm; unnamed, it becomes the Ghosting Loop.', 'Один вкладывается сильно; другой держится свободно. Дисбаланс структурный, а не личный. Названный рано, он становится ритмом; неназванный — петлёй исчезновений.'],
-  },
-  'charmer|unseen': {
-    t: ['Stage Light, Backstage Shadow', 'Свет рампы, тень за кулисами'],
-    n: ['The Charmer performs the person the Unseen One is sure no one wants. Encore after encore, the audience applauds someone who isn’t there.', 'Обаяшка играет человека, которым Незамеченный уверен, что никто не заинтересуется. Бис за бисом — зал аплодирует тому, кого здесь нет.'],
-  },
-  'inner_critic|sage': {
-    t: ['The Auditor and the Oracle', 'Аудитор и оракул'],
-    n: ['The Critic grades the exam; the Sage already knows it doesn’t count. When both are loud, address the Critic first — it’s the one who’s scared.', 'Критик проверяет экзамен; Мудрец уже знает, что его не засчитают. Когда громкие оба — сначала к Критику: именно ему страшно.'],
-  },
-  'pleaser|warrior': {
-    t: ['The Velvet Fence', 'Бархатный забор'],
-    n: ['Warmth with a spine. When these two align you get the rarest social physics: kindness that doesn’t invoice anyone — including you.', 'Тепло с хребтом. Когда эти двое в согласии, рождается редчайшая социальная физика: доброта, не выставляющая счёт никому — включая вас.'],
-  },
-  'controller|explorer': {
-    t: ['The Map and the Wind', 'Карта и ветер'],
-    n: ['One charts; one sails off the chart. As a team they go further than either dares alone — as rivals they produce itineraries for trips that never happen.', 'Один чертит карту; второй уплывает за её край. В команде они заходят дальше, чем каждый осмелился бы один; как соперники — рисуют маршруты путешествий, которые не случатся.'],
-  },
-  'abandoned|numb': {
-    t: ['Signal in the Fog', 'Сигнал в тумане'],
-    n: ['The Numb turns the volume down exactly where the Abandoned One broadcasts. The channel deserves one low-volume broadcast a day.', 'Онемение убавляет громкость ровно там, откуда вещает Брошенный. Этому каналу нужен один негромкий эфир в день.'],
-  },
-  'analyst|frightened': {
-    t: ['The Threat Model', 'Модель угрозы'],
-    n: ['The Analyst gives the Frightened One something unprecedented: threat data instead of threat. Panic slows when it becomes a spreadsheet.', 'Аналитик даёт Напуганному нечто беспрецедентное: данные об угрозе вместо самой угрозы. Паника замедляется, становясь таблицей.'],
-  },
-  'caregiver|numb': {
-    t: ['The Lighthouse Effect', 'Эффект маяка'],
-    n: ['Light for everyone else, fog for itself. The Caregiver refills others while the Numb mutes its own gauge. Wells need gauges.', 'Свет всем остальным, туман — себе. Заботник наполняет других, пока Онемение глушит его собственный датчик. Колодцам нужны датчики.'],
-  },
-  'inner_critic|warrior': {
-    t: ['The Drill Sergeant', 'Сержант-инструктор'],
-    n: ['Both cut clean — one inward, one outward. Pointed outward together they defend standards; pointed inward they defend nothing and charge rent.', 'Оба режут чисто — один внутрь, другой наружу. Вместе наружу они защищают стандарты; внутрь — не защищают ничего и берут плату за аренду.'],
-  },
-  'caregiver|taskmaster': {
-    t: ['Compassion Logistics', 'Логистика сострадания'],
-    n: ['The Taskmaster industrializes the Caregiver’s warmth: meals planned, crises calendared. Watch the tank — this duo volunteers for everything.', 'Деятель превращает тепло Заботника в производство: еда спланирована, кризисы в календаре. Следите за баком — эта пара записывается добровольцами на всё.'],
-  },
-  'ashamed|bypasser': {
-    t: ['The Quick Paint Job', 'Косметический ремонт'],
-    n: ['The Bypasser paints over what the Ashamed One is hiding — both convinced the inspection is coming. One uncovered corner, shown to one safe person, breaks the loop.', 'Обходчик закрашивает то, что прячет Стыдящийся, — оба уверены: скоро проверка. Один открытый угол, показанный одному безопасному человеку, разрывает петлю.'],
-  },
-  'controller|rebel': {
-    t: ['Catalyst Collision', 'Столкновение катализаторов'],
-    n: ['Two high-agency vectors, opposite headings. Brilliant for starting revolutions. Catastrophic for group projects. Assign separate theaters of war.', 'Два мощных вектора, противоположные курсы. Блестяще для начала революций. Катастрофично для групповых проектов. Разведите их по разным театрам военных действий.'],
-  },
-  'explorer|hermit': {
-    t: ['The Weekend Cartographer', 'Картограф выходного дня'],
-    n: ['Far horizons, deep caves — both authentic, mutually exclusive on Tuesdays. This pair thrives on explicit seasons: explore hard, then guard the cave without apology.', 'Далёкие горизонты, глубокие пещеры — оба подлинные, но несовместимые по вторникам. Эта пара живёт сезонами: исследовать на полную, потом охранять пещеру без извинений.'],
-  },
-};
-
-const FAM: Record<FamKind, { em: string; hex: string; n: [string, string]; line: [string, string] }> = {
-  manager: { em: '📋', hex: '#E1734B', n: ['Manager', 'Менеджер'], line: ['The ones who keep tomorrow safe.', 'Те, кто сохраняет завтрашний день безопасным.'] },
-  firefighter: { em: '🧯', hex: '#E58FA0', n: ['Firefighter', 'Пожарный'], line: ['The ones who arrive when it burns.', 'Те, кто прибегает, когда горит.'] },
-  exile: { em: '🫧', hex: '#8F63C0', n: ['Exile', 'Изгнанник'], line: ['The young ones who hold the hurt.', 'Молодые, которые несут боль.'] },
-  resource: { em: '🌿', hex: '#46A29D', n: ['Resource', 'Ресурс'], line: ['The ones the Self can lean on.', 'Те, на кого может опереться Self.'] },
-};
-
-/** Manager→exile guard links drawn on the sky map. */
-const GUARD_LINKS: [string, string][] = [
-  ['pleaser', 'abandoned'],
-  ['inner_critic', 'ashamed'],
-  ['controller', 'frightened'],
-  ['analyst', 'unseen'],
-];
-
-const RINGS: Record<FamKind, number> = { exile: 0.34, firefighter: 0.52, manager: 0.72, resource: 0.9 };
-const SPEEDS: Record<FamKind, number> = { exile: 0.00016, firefighter: -0.00011, manager: 0.00007, resource: -0.00005 };
-const BASE_ANGLE: Record<FamKind, number> = { exile: 0.6, firefighter: 2.2, manager: 0, resource: 1.1 };
+// Catalogs live in src/i18n/strings.ts → STRINGS.landing.* (single EN/RU editing surface).
+const RESOURCE_FACE = STRINGS.landing.resourceFace;
+const PRACTICE = STRINGS.landing.practice;
+const DUOS = STRINGS.landing.duos;
+const FAM = STRINGS.landing.fam;
+const GUARD_LINKS = STRINGS.landing.guardLinks;
+const RINGS = STRINGS.landing.rings;
+const SPEEDS = STRINGS.landing.speeds;
+const BASE_ANGLE = STRINGS.landing.baseAngle;
 
 interface SkyStar {
   p: IvPart;
@@ -203,6 +106,8 @@ export class LandingComponent implements OnDestroy {
   readonly practiceRequested = output<void>();
   readonly synastryRequested = output<void>();
   readonly exploreUniverse = output<void>();
+  /** Hover/focus intent on the universe entry — lets the shell prefetch the 3D chunk. */
+  readonly universeIntent = output<void>();
   readonly langToggle = output<void>();
   readonly backupUpload = output<Event>();
   readonly loginRequested = output<void>();
@@ -214,6 +119,10 @@ export class LandingComponent implements OnDestroy {
   // --- app router ---
   readonly screen = signal<'welcome' | 'sky' | 'codex' | 'you'>('welcome');
   readonly codexTab = signal<'parts' | 'chem'>('parts');
+  /** Tap-the-Self popup (sky canvas center). */
+  readonly selfInfoOpen = signal(false);
+  /** Bilingual copy for the Self popup (lives in STRINGS.landing.selfInfo). */
+  readonly selfInfo = STRINGS.landing.selfInfo;
   /** Codex family filter ('' = all) — driven by the crest chips. */
   readonly codexFam = signal<FamKind | ''>('');
   /** Codex grid rosters, filtered by the active crest. */
@@ -266,6 +175,8 @@ export class LandingComponent implements OnDestroy {
   readonly totalQuestions = 147;
 
   readonly parts = IV_PARTS;
+  /** STRINGS catalog exposed for template-level copy (single EN/RU source). */
+  protected readonly STRINGS = STRINGS;
   readonly guardLinks = GUARD_LINKS;
   readonly famKeys: FamKind[] = ['manager', 'firefighter', 'exile', 'resource'];
   readonly welcomeSatellites: { id: string; left: string; top: string; delay: string }[] = [
@@ -443,16 +354,13 @@ export class LandingComponent implements OnDestroy {
 
   axes(id: string): { key: string; label: string; v: number }[] {
     const ax = P[id]?.ax ?? { ag: 0, te: 0, fo: 0, at: 0 };
-    const labels: Record<string, [string, string]> = {
-      ag: ['Agency', 'Драйв'],
-      te: ['Heat', 'Накал'],
-      fo: ['Focus', 'Фокус'],
-      at: ['Attachment', 'Привязанность'],
-    };
+    const labels = STRINGS.landing.axes;
     return (['ag', 'te', 'fo', 'at'] as const).map((k) => ({
       key: k,
       label: this.L(labels[k]),
-      v: ax[k],
+      // Sheet labels are directional ("Драйв"/"Agency" = activity), but ax.ag now
+      // stores the system convention (high = Receptive) — invert for truthful display.
+      v: k === 'ag' ? 100 - ax.ag : ax[k],
     }));
   }
 
@@ -509,8 +417,8 @@ export class LandingComponent implements OnDestroy {
     const id = this.editId();
     if (!id) return;
     if (id === 'new') {
-      const en = this.draftNameEn().trim() || 'My part';
-      const ru = this.draftNameRu().trim() || 'Моя часть';
+      const en = this.draftNameEn().trim() || STRINGS.landing.draftNameFallback[0];
+      const ru = this.draftNameRu().trim() || STRINGS.landing.draftNameFallback[1];
       this.customParts.set(
         saveCustomPart({
           id: 'custom_' + Date.now().toString(36),
@@ -606,7 +514,9 @@ export class LandingComponent implements OnDestroy {
     };
     const dist = Math.sqrt(d.ag * d.ag + d.te * d.te + d.fo * d.fo + d.at * d.at) / 200;
     const flow = Math.round(Math.min(97, Math.max(8, 100 - dist * 58)));
-    const spark = Math.round(Math.min(98, (a.ax.ag + b.ax.ag) / 2 * 0.5 + (a.ax.te + b.ax.te) / 2 * 0.5));
+    // ax.ag stores the system convention (high = Receptive); spark measures drive + heat,
+    // so the agency component is inverted back to activity.
+    const spark = Math.round(Math.min(98, (200 - a.ax.ag - b.ax.ag) / 2 * 0.5 + (a.ax.te + b.ax.te) / 2 * 0.5));
     const drag = Math.round(Math.min(95, d.at * 0.55 + d.ag * 0.45));
     const duo = DUOS[[aId, bId].sort().join('|')];
 
@@ -616,43 +526,31 @@ export class LandingComponent implements OnDestroy {
       verdict = duo.t;
       note = duo.n;
     } else if (flow >= 78) {
-      verdict = ['Sweet Orbit', 'Сладкая орбита'];
-      note = [
-        'Low drag, matched tempo. These two run nearly the same physics — the risk isn’t friction, it’s an echo chamber: nobody aboard flags the icebergs.',
-        'Малое трение, совпадающий темп. Эти двое работают почти на одной физике — риск не в трении, а в эхо-камере: никто на борту не замечает айсберги.',
-      ];
+      verdict = STRINGS.landing.chemDefault.verdict;
+      note = STRINGS.landing.chemDefault.note;
     } else if (flow >= 60) {
-      verdict = ['Working Gravity', 'Рабочая гравитация'];
-      note = [
-        'Different masses, stable dance. Occasional wobble is the system correcting, not failing. Give them clear lanes and they compound.',
-        'Разные массы, стабильный танец. Лёгкое покачивание — это коррекция системы, а не сбой. Дайте им свои полосы — и они усилят друг друга.',
-      ];
+      verdict = STRINGS.landing.chemTiers[0].verdict;
+      note = STRINGS.landing.chemTiers[0].note;
     } else if (flow >= 45) {
-      verdict = ['Dynamic Friction', 'Динамическое трение'];
-      note = [
-        'Real tension, real torque. This pairing gets things moving that comfortable pairs never touch — but it burns fuel. Schedule recovery on purpose.',
-        'Настоящее напряжение, настоящий момент силы. Эта пара сдвигает то, до чего уютным парам дело не доходит, — но она жжёт топливо. Планируйте восстановление заранее.',
-      ];
+      verdict = STRINGS.landing.chemTiers[1].verdict;
+      note = STRINGS.landing.chemTiers[1].note;
     } else {
-      verdict = ['Collision Course', 'Курс столкновения'];
-      note = [
-        'Opposite vectors at high stakes. Brilliant in short bursts; catastrophic unsupervised. Never let these two co-sign the same plan without a third part in the room.',
-        'Противоположные вектора на высоких ставках. Блестяще короткими рывками; катастрофично без присмотра. Не позволяйте этим двоим подписывать один план без третьей части в комнате.',
-      ];
+      verdict = STRINGS.landing.chemTiers[2].verdict;
+      note = STRINGS.landing.chemTiers[2].note;
     }
 
     const lensTpl: Record<string, [string, string]> = {
-      ag: ['Agency gap {n} — one drives, one drifts', 'Разрыв драйва {n} — один ведёт, другой дрейфует'],
-      te: ['Temperature gap {n} — different burn rates', 'Разрыв темпа {n} — разная скорость горения'],
-      fo: ['Focus gap {n} — telescopes pointed elsewhere', 'Разрыв фокуса {n} — телескопы смотрят в стороны'],
-      at: ['Attachment gap {n} — one anchors, one wanders', 'Разрыв привязанности {n} — один якорь, другой странник'],
+      ag: STRINGS.landing.lensGaps.ag,
+      te: STRINGS.landing.lensGaps.te,
+      fo: STRINGS.landing.lensGaps.fo,
+      at: STRINGS.landing.lensGaps.at,
     };
     const lens: [string, string][] = [];
     if (d.ag >= 30) lens.push(lensTpl.ag);
     if (d.te >= 30) lens.push(lensTpl.te);
     if (d.fo >= 30) lens.push(lensTpl.fo);
     if (d.at >= 30) lens.push(lensTpl.at);
-    if (!lens.length) lens.push(['All four axes closely matched', 'Все четыре оси близко совпадают']);
+    if (!lens.length) lens.push(STRINGS.landing.lensAllMatched);
     const withNums = lens.map(([en, ru]) => [en, ru] as [string, string]);
 
     return { flow, spark, drag, verdict, note, lens: withNums };
@@ -678,9 +576,7 @@ export class LandingComponent implements OnDestroy {
 
   // --- share ---
   async shareApp(): Promise<void> {
-    const text = this.isEnglish()
-      ? 'Innerverse ✦ meet everyone you are. 18 inner parts, one sky — measured, not guessed.'
-      : 'Innerverse ✦ познакомьтесь со всеми, кто вы есть. 18 внутренних частей, одно небо — измерено, а не наугад.';
+    const text = STRINGS.landing.share[this.isEnglish() ? 0 : 1];
     const url = typeof location !== 'undefined' ? location.href.split('#')[0] : undefined;
     try {
       if (navigator.share) {
@@ -703,7 +599,7 @@ export class LandingComponent implements OnDestroy {
   // --- backups (resume-in-progress regression guards depend on these) ---
   private checkLocalBackup(): void {
     try {
-      const backup = localStorage.getItem('ARCHETYPE_COMPLETED_BACKUP');
+      const backup = (() => { const v = localGet<unknown>('ARCHETYPE_COMPLETED_BACKUP', null); return v === null ? null : JSON.stringify(v); })();
       if (backup) this.hasCompletedBackup.set(true);
     } catch {
       // storage unavailable
@@ -826,12 +722,7 @@ export class LandingComponent implements OnDestroy {
     c.textAlign = 'center';
     for (const k of Object.keys(RINGS) as FamKind[]) {
       c.fillStyle = filter && filter !== k ? 'transparent' : dark ? 'rgba(247,238,218,.4)' : 'rgba(42,28,16,.4)';
-      const plural: Record<FamKind, [string, string]> = {
-        manager: ['MANAGERS', 'МЕНЕДЖЕРЫ'],
-        firefighter: ['FIREFIGHTERS', 'ПОЖАРНЫЕ'],
-        exile: ['EXILES', 'ИЗГНАННИКИ'],
-        resource: ['RESOURCES', 'РЕСУРСЫ'],
-      };
+      const plural = STRINGS.landing.familyLegendUpper;
       c.fillText(this.L(plural[k]), cx, cy - RINGS[k] * R * 0.92 - 5);
     }
 
@@ -867,7 +758,7 @@ export class LandingComponent implements OnDestroy {
       c.globalAlpha = dimmed ? 0.15 : 1;
 
       const look = this.lookFor(s.p.id);
-      const avg = s.p.ax.ag / 100 * 2.2;
+      const avg = (100 - s.p.ax.ag) / 100 * 2.2; // activity drives star size (high ag = Receptive post-fix)
       const rr = 9 + avg * 3 + Math.sin(t / 600 + s.tw) * 0.8;
       if (dark && !dimmed) {
         c.shadowColor = look.color;
@@ -910,7 +801,7 @@ export class LandingComponent implements OnDestroy {
         c.arc(pos.x, pos.y + rr * 0.18, rr * 0.32, 0.4, 2.7);
         c.stroke();
       }
-      if (s.p.ax.ag >= 85) this.spark(c, pos.x + rr + 5, pos.y - rr - 3, 3.4, ink);
+      if (s.p.ax.ag <= 15) this.spark(c, pos.x + rr + 5, pos.y - rr - 3, 3.4, ink); // most active stars sparkle (post-fix: low ag = active)
       c.fillStyle = dark ? 'rgba(247,238,218,.85)' : 'rgba(42,28,16,.85)';
       c.font = '600 9.5px system-ui';
       c.fillText(this.L(s.p.short), pos.x, pos.y + rr + 12);
@@ -957,7 +848,7 @@ export class LandingComponent implements OnDestroy {
     c.fillStyle = dark ? 'rgba(247,238,218,.7)' : 'rgba(42,28,16,.7)';
     c.font = '600 9px system-ui';
     c.textAlign = 'center';
-    c.fillText(this.isEnglish() ? 'SELF ✦ YOU' : 'SELF ✦ ВЫ', x, y + r + 16);
+    c.fillText(STRINGS.landing.skyCanvasSelfLabel[this.isEnglish() ? 0 : 1], x, y + r + 16);
   }
 
   private readonly pathCache = new Map<string, Path2D>();
@@ -998,6 +889,12 @@ export class LandingComponent implements OnDestroy {
     const rect = el.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
+    // The Self star sits at the sky center (see the draw call: cx, cy).
+    const ds = (this.sky.cx - x) ** 2 + (this.sky.cy - y) ** 2;
+    if (ds < 28 * 28) {
+      this.selfInfoOpen.set(true);
+      return;
+    }
     let best: SkyStar | null = null;
     let bd = Infinity;
     for (const s of this.sky.stars) {

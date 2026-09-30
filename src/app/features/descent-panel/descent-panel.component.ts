@@ -11,8 +11,10 @@ import {
   ChangeDetectionStrategy, Component, computed, inject, output, signal,
   HostListener, OnDestroy,
 } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
+import { localSet, localGet } from '../../core/data/local-store';
 import { novaSvg } from '../landing/stickers';
 import { TranslationService } from '../../../services/translation.service';
 import {
@@ -29,6 +31,9 @@ const STORE_KEY = 'INNERVERSE_DESCENT_V1';
 export const FUTURE_SELF_KEY = 'INNERVERSE_FUTURE_SELF_V1';
 const LEGACY_KEY = 'ARCHETYPE_ASSESSMENT_RESPONSES'; // 64-item engine, unsalvageable (§4 step 9)
 
+/** Somatic follow-ups are paused pending redesign — flip to re-enable. */
+const SOMATIC_FOLLOW_UP_ENABLED = false;
+
 type Stage = 'ethics' | 'item' | 'break' | 'future-self' | 'complete';
 
 interface Persisted {
@@ -37,95 +42,11 @@ interface Persisted {
   somatic: Partial<Record<ShadowPartId, string[]>>;
 }
 
-const UI = {
-  en: {
-    exit: 'Exit',
-    back: 'Previous statement',
-    ethicsTitle: 'Before you descend',
-    ethicsSub: 'Three sittings of 49 statements. Pause after any one — progress is kept.',
-    planTitle: 'What to expect',
-    plan: [
-      { name: 'Descent I', meta: '49 statements · ~10 min' },
-      { name: 'Descent II', meta: '49 statements · ~10 min' },
-      { name: 'Descent III', meta: '49 statements · ~10 min' },
-    ],
-    planPause: 'pause',
-    ethicsWhy: 'Why three sittings? Attention fades — somewhere past the fiftieth statement, answers slide onto autopilot. Three short sittings keep you honest, and the pauses between them let what you saw settle.',
-    ethics1: 'A mirror, not a diagnosis · answers stay on this device',
-    ethics2: 'Every part of you is welcome here. Nothing aims to delete or fix away any of you. You can stop at any time; anything can wait.',
-    ethicsGo: 'I understand — begin Descent I',
-    descent: n => `Descent ${['I', 'II', 'III'][n]}`,
-    itemOf: (i, n) => `${i} / ${n}`,
-    sitHint: 'Answer for the you of most days, not your best day.',
-    somaticQ: 'Where do you feel this?',
-    somaticSkip: 'Skip',
-    breakTitle: n => `Descent ${['I', 'II', 'III'][n]} complete`,
-    breakSub: 'The stars you lit are held safely. Continue now, or return when you are ready — nothing is lost.',
-    breakResume: n => (n < 2 ? `Continue — Descent ${['II', 'III'][n]}` : 'Behold your constellation'),
-    breakLater: 'Return later',
-    retakeNote: 'Your answers stay on this device.',
-    recalibrated: 'The stars have been recalibrated. The old map cannot be translated — descend again to be measured anew.',
-    fsTitle: 'Your North Star',
-    fsSub: 'Not the version with fewer wounds — the one you are drawn toward. Answer two of the three (a sentence or two each). You can edit this anytime.',
-    fsQ: [
-      'One year from now, what are you moving toward?',
-      'The version of you who has met these parts — what do they do differently under load?',
-      'What do you love enough that it summons you?',
-    ],
-    fsSkip: 'Skip for now — a dim star will hold the place',
-    fsSave: 'Set my North Star',
-  },
-  ru: {
-    exit: 'Выйти',
-    back: 'Предыдущее утверждение',
-    ethicsTitle: 'Перед погружением',
-    ethicsSub: 'Три части по 49 утверждений. Можно остановиться после любой — прогресс сохранится.',
-    planTitle: 'Как всё устроено',
-    plan: [
-      { name: 'Погружение I', meta: '49 утверждений · ~10 минут' },
-      { name: 'Погружение II', meta: '49 утверждений · ~10 минут' },
-      { name: 'Погружение III', meta: '49 утверждений · ~10 минут' },
-    ],
-    planPause: 'пауза',
-    ethicsWhy: 'Почему три части? Внимание быстро притупляется: где-то после пятидесятого утверждения ответы начинаются «на автомате». Три короткие части помогают отвечать честно, а паузы между ними дают увиденному улечься.',
-    ethics1: 'Инструмент самопознания · ответы остаются на устройстве',
-    ethics2: 'Каждая ваша часть здесь желанна: ничего не нужно «удалять» или «чинить». Вы можете остановиться в любой момент — всё подождёт.',
-    ethicsGo: 'Хорошо — начинаем Погружение I',
-    descent: n => `Погружение ${['I', 'II', 'III'][n]}`,
-    itemOf: (i, n) => `${i} / ${n}`,
-    sitHint: 'Отвечайте за себя обычного, а не в лучший день.',
-    somaticQ: 'Где вы это чувствуете?',
-    somaticSkip: 'Пропустить',
-    breakTitle: n => `Погружение ${['I', 'II', 'III'][n]} завершено`,
-    breakSub: 'Зажжённые вами звёзды мы сохранили. Можно продолжить сразу или вернуться позже — ничего не потеряется.',
-    breakResume: n => (n < 2 ? `Продолжить — Погружение ${['II', 'III'][n]}` : 'Пора увидеть ваше созвездие'),
-    breakLater: 'Вернуться позже',
-    retakeNote: 'Ответы остаются на этом устройстве.',
-    recalibrated: 'Звёзды перенастроены: прежнюю карту не перевести на новый лад. Пройдите все три погружения заново — вас измерят по-новой.',
-    fsTitle: 'Ваша Полярная звезда',
-    fsSub: 'Опишите образ, к которому вас тянет. Ответьте на два из трёх вопросов — по предложению-два. Позже текст можно изменить.',
-    fsQ: [
-      'Через год — к чему вы движетесь?',
-      'Ваша версия, встретившая эти части, — что она делает иначе под нагрузкой?',
-      'Что вы любите настолько, что оно вас зовёт?',
-    ],
-    fsSkip: 'Пока пропустить — тусклая звезда подержит место',
-    fsSave: 'Задать Полярную звезду',
-  },
-};
+const UI = STRINGS.descent.ui;
+const ZONE_LABELS = STRINGS.descent.zoneLabels;
+
 
 const LIKERT_EMOTES = ['🙅', '🤏', '🌗', '👋', '🎯'];
-
-const ZONE_LABELS: Record<'en' | 'ru', Record<string, string>> = {
-  en: {
-    head: 'Head', 'jaw-face': 'Jaw / face', throat: 'Throat', chest: 'Chest',
-    gut: 'Gut', 'shoulders-arms': 'Shoulders / arms', pelvis: 'Pelvis', legs: 'Legs',
-  },
-  ru: {
-    head: 'Голова', 'jaw-face': 'Челюсть и лицо', throat: 'Горло', chest: 'Грудь',
-    gut: 'Живот', 'shoulders-arms': 'Плечи и руки', pelvis: 'Таз', legs: 'Ноги',
-  },
-};
 
 @Component({
   selector: 'app-descent-panel',
@@ -191,9 +112,8 @@ export class DescentPanelComponent implements OnDestroy {
 
   private restore(): void {
     try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return;
-      const saved = JSON.parse(raw) as Persisted;
+      const saved = localGet<Persisted | null>(STORE_KEY, null);
+      if (!saved) return;
       if (Array.isArray(saved.answers) && saved.answers.length === 147) {
         this.answers.set(saved.answers);
         this.itemIndex.set(Math.max(0, Math.min(saved.itemIndex ?? 0, 146)));
@@ -207,9 +127,9 @@ export class DescentPanelComponent implements OnDestroy {
 
   private persist(): void {
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({
+      localSet(STORE_KEY, {
         answers: this.answers(), itemIndex: this.itemIndex(), somatic: this.somatic(),
-      } satisfies Persisted));
+      } satisfies Persisted);
     } catch { /* storage unavailable */ }
   }
 
@@ -227,8 +147,9 @@ export class DescentPanelComponent implements OnDestroy {
 
     this.answers.update(a => { a[idx] = rating; return [...a]; });
 
-    // §1.12 deterministic somatic follow-up (stored locally, never telemetry)
-    if (somaticFollowUpFires(ref, rating) && ref.kind === 'shadow') {
+    // §1.12 deterministic somatic follow-up (stored locally, never telemetry).
+    // Paused pending redesign — flip the flag to re-enable the body-map sheet.
+    if (SOMATIC_FOLLOW_UP_ENABLED && somaticFollowUpFires(ref, rating) && ref.kind === 'shadow') {
       this.pendingSomaticPart.set(ref.part);
       this.transitioning.set(false);
       this.persist();
@@ -297,6 +218,15 @@ export class DescentPanelComponent implements OnDestroy {
     }
   }
 
+  /** Forward in review mode — only after goBack, when the current item is answered. */
+  goForward(): void {
+    if (this.stage() !== 'item') return;
+    if (this.itemIndex() < 146 && this.answers()[this.itemIndex()] > 0) {
+      this.itemIndex.update(i => i + 1);
+      this.persist();
+    }
+  }
+
   /** Leave the descent entirely — progress is already persisted per answer. */
   exitDescent(): void {
     this.persist();
@@ -316,7 +246,7 @@ export class DescentPanelComponent implements OnDestroy {
 
   saveFutureSelf(): void {
     try {
-      localStorage.setItem(FUTURE_SELF_KEY, JSON.stringify(this.futureSelf()));
+      localSet(FUTURE_SELF_KEY, this.futureSelf());
     } catch { /* unavailable */ }
     this.finish();
   }

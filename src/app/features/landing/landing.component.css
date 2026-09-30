@@ -1367,3 +1367,61 @@ button {
   opacity: .6;
   margin: -2px 0 2px;
 }
+
+/* ── Tap-the-Self popup (sky canvas center) ── */
+.selfinfo {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(28, 22, 16, .45);
+  animation: selfinfo-in .18s ease-out;
+}
+.selfinfo__card {
+  position: relative;
+  max-width: 430px;
+  width: 100%;
+  max-height: 82vh;
+  overflow-y: auto;
+  background: #fdfbf5;
+  border: 2px solid #1c1610;
+  border-radius: 14px 10px 16px 8px;
+  box-shadow: 5px 5px 0 rgba(28, 22, 16, .25);
+  padding: 20px 22px;
+}
+.selfinfo__card h3 {
+  font-size: 17px;
+  margin: 0 0 10px;
+  padding-right: 24px;
+}
+.selfinfo__card p {
+  font-size: 13.5px;
+  line-height: 1.55;
+  margin: 0 0 10px;
+}
+.selfinfo__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 15px;
+  opacity: .55;
+  padding: 4px;
+}
+.selfinfo__close:hover { opacity: 1; }
+.selfinfo__ok {
+  width: 100%;
+  padding: 9px 12px;
+  margin-top: 2px;
+  border: 2px solid #1c1610;
+  border-radius: 10px;
+  background: #f7dd4a;
+  font-weight: 700;
+  cursor: pointer;
+}
+@keyframes selfinfo-in { from { opacity: 0; } to { opacity: 1; } }

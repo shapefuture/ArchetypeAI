@@ -9,6 +9,7 @@
  * bilingual UI-object pattern as descent-panel / therapist-panel).
  */
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { UserDirectoryService } from '../../../services/user-directory.service';
@@ -24,46 +25,8 @@ import {
   type AvailabilityWindow,
 } from './booking';
 
-const UI = {
-  ru: {
-    title: 'Записаться к специалисту',
-    close: 'Закрыть',
-    stepTherapist: 'Шаг 1 — специалист',
-    therapistEmail: 'Email специалиста',
-    find: 'Найти',
-    notFound: 'Специалист не найден. Проверьте email.',
-    stepDate: 'Шаг 2 — дата',
-    stepSlot: 'Шаг 3 — время',
-    noSlots: 'На эту дату свободных слотов нет.',
-    confirm: 'Подтвердить запись',
-    busy: 'Отправляем…',
-    done: 'Заявка отправлена! Специалист подтвердит её в своей панели.',
-    pickDate: 'Выберите дату',
-    pickSlot: 'Выберите время',
-    back: 'Назад',
-    loginFirst: 'Войдите, чтобы записаться.',
-    slotMinutes: 'мин.',
-  },
-  en: {
-    title: 'Book a session',
-    close: 'Close',
-    stepTherapist: 'Step 1 — therapist',
-    therapistEmail: 'Therapist email',
-    find: 'Find',
-    notFound: 'Therapist not found. Check the email.',
-    stepDate: 'Step 2 — date',
-    stepSlot: 'Step 3 — time',
-    noSlots: 'No free slots on this date.',
-    confirm: 'Confirm booking',
-    busy: 'Sending…',
-    done: 'Request sent! The therapist will approve it in their panel.',
-    pickDate: 'Pick a date',
-    pickSlot: 'Pick a time',
-    back: 'Back',
-    loginFirst: 'Sign in to book a session.',
-    slotMinutes: 'min',
-  },
-};
+const UI = STRINGS.booking;
+
 
 @Component({
   selector: 'app-booking-panel',

@@ -5,6 +5,7 @@
  * Results are NEVER stored and never touch the profile.
  */
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
+import { STRINGS } from '../../../i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { ITEM_BANK, LIKERT } from '../../../i18n/items';
@@ -12,26 +13,8 @@ import { SHADOW_PARTS, SUBTYPES, type ShadowPartId } from '../../core/data/parts
 import { quickScan } from '../../core/data/scoring-v2';
 import { PART_COPY } from '../../core/data/part-copy';
 
-const UI = {
-  en: {
-    title: 'Meet one part in 90 seconds',
-    skip: 'Close',
-    resultOf: name => `${name} stepped forward.`,
-    teaserNote: 'A one-part glimpse. The full battery — 147 statements, three sittings — meets all eighteen.',
-    cta: 'Begin the full battery',
-    selfTitle: 'No part claimed the floor — your Self is near the surface.',
-    selfNote: 'Rare and good. The full battery will still find the quieter ones.',
-  },
-  ru: {
-    title: 'Встретьте одну часть за 90 секунд',
-    skip: 'Закрыть',
-    resultOf: name => `Вперёд вышла часть «${name}».`,
-    teaserNote: 'Это взгляд на одну часть. Полная батарея — 147 утверждений, три части — встретит все восемнадцать.',
-    cta: 'Начать полную батарею',
-    selfTitle: 'Ни одна часть не заняла сцену — ваш Self близко к поверхности.',
-    selfNote: 'Редко и хорошо. Полная батарея всё равно найдёт более тихие.',
-  },
-};
+const UI = STRINGS.quickscan;
+
 
 @Component({
   selector: 'app-quickscan-panel',

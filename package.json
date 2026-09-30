@@ -9,7 +9,7 @@
     "dev": "bash scripts/run-with-node-version.sh ./node_modules/@angular/cli/bin/ng.js serve",
     "prebuild": "tailwindcss -i src/index.css -o src/styles/tailwind.generated.css --config tailwind.config.cjs",
     "build": "bash scripts/run-with-node-version.sh ./node_modules/@angular/cli/bin/ng.js build",
-    "postbuild": "cp _headers dist/_headers",
+    "postbuild": "node scripts/stamp-sw.mjs && cp _headers dist/_headers",
     "_deploy:headers": "echo 'Verify _headers is in dist/ before wrangler deploy' && test -f dist/_headers",
     "preview": "bash scripts/run-with-node-version.sh ./node_modules/@angular/cli/bin/ng.js serve --configuration=production",
     "lint": "tsc --noEmit",
@@ -55,6 +55,7 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.8.2",
-    "vitest": "3.1.1"
+    "vitest": "3.1.1",
+    "wrangler": "^4.127.1"
   }
 }

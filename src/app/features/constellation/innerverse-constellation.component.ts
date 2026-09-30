@@ -14,6 +14,7 @@ import {
   computed, inject, model, viewChild,
 } from '@angular/core';
 
+import { STRINGS } from '../../../i18n/strings';
 const safeR = (v: number) => Math.max(0.1, v);
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
@@ -61,9 +62,7 @@ export class InnerverseConstellationComponent implements AfterViewInit, OnDestro
 
   readonly ariaLabel = computed(() => {
     const en = this.translationService.getLanguage() === 'en';
-    return en
-      ? `Your inner constellation: ${this.layout().stars.length} parts around the Self`
-      : `Ваше внутреннее созвездие: ${this.layout().stars.length} частей вокруг Self`;
+    return STRINGS.constellation.title[en ? 0 : 1].replace('{n}', String(this.layout().stars.length));
   });
 
   ngAfterViewInit(): void {

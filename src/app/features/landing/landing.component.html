@@ -64,7 +64,7 @@
     <section class="screen" id="s-codex" [class.on]="screen() === 'codex'" aria-label="Codex">
       <div class="pad pad-dock">
         <div class="hud">
-          <span class="brand">CODEX</span>
+          <span class="brand">{{ t('codexBrand') }}</span>
           <span class="chip"><span class="em">📖</span><span>18/18</span></span>
         </div>
 
@@ -182,7 +182,7 @@
           <div class="stat"><b>18</b><span>{{ t('statParts') }}</span></div>
           <div class="stat"><b>147</b><span>{{ t('statStatements') }}</span></div>
           <div class="stat"><b>3</b><span>{{ t('statSittings') }}</span></div>
-          <div class="stat"><b>~25ᵐ</b><span>{{ t('statTimeShort') }}</span></div>
+          <div class="stat"><b>~25{{ isEnglish() ? 'm' : 'мин' }}</b><span>{{ t('statTimeShort') }}</span></div>
         </div>
 
         <div class="card">
@@ -214,7 +214,7 @@
           <button class="btn full" (click)="installService.promptInstall()">📲&nbsp; {{ t('installAppCta') }}</button>
           <button class="btn ghost full" (click)="shareApp()">📤&nbsp; {{ t('youShare') }}</button>
           <button class="btn ghost full" (click)="quickScanRequested.emit()">✦&nbsp; {{ t('quickScanCta') }}</button>
-          <button class="btn ghost full" (click)="exploreUniverse.emit()">🌌&nbsp; {{ t('youUniverse') }}</button>
+          <button class="btn ghost full" (click)="exploreUniverse.emit()" (pointerenter)="universeIntent.emit()" (focus)="universeIntent.emit()">🌌&nbsp; {{ t('youUniverse') }}</button>
           @if (isLoggedIn()) {
             <button class="btn ghost full" (click)="dashboardRequested.emit()">📁&nbsp; {{ t('youCabinet') }}</button>
             <button class="btn ghost full" (click)="logoutRequested.emit()">🚪&nbsp; {{ t('youLogout') }}</button>
@@ -252,8 +252,7 @@
             <p style="font-size:14.5px; line-height:1.5">{{ partNeed(sp) }}</p>
           }
           <div class="gc">
-            <div class="card"><b style="color:var(--lime)">✦ {{ t('sheetGift') }}</b><p>{{ isCustom(sp) ? '—' : partSuperpower(sp) }}</p></div>
-            <div class="card"><b style="color:var(--red)">✧ {{ t('sheetCost') }}</b><p>{{ isCustom(sp) ? '—' : partShadow(sp) }}</p></div>
+            <div class="card" style="grid-column:1/-1"><b style="color:var(--lime)">✦ {{ t('sheetGift') }}</b><p>{{ isCustom(sp) ? '—' : partSuperpower(sp) }}</p></div>
           </div>
           <p class="kicker" style="margin-bottom:8px">{{ t('sheetAxes') }}</p>
           <div class="axes">
@@ -285,7 +284,7 @@
             </h3>
             @if (eid === 'new' || isCustom(eid)) {
               <input class="nameinput" type="text" [value]="editorName()"
-                     [placeholder]="isEnglish() ? 'Name' : 'Название'"
+                     [placeholder]="STRINGS.landing.partEditorNamePlaceholder[isEnglish() ? 0 : 1]"
                      (input)="setEditorName($any($event.target).value)" />
             }
           </div>
@@ -374,4 +373,18 @@
       <span>{{ t('dockYou') }}</span>
     </button>
   </nav>
+
+  <!-- Tap-the-Self popup: what the map, the center and the stars mean -->
+  @if (selfInfoOpen()) {
+    <div class="selfinfo" (click)="selfInfoOpen.set(false)" role="dialog" [attr.aria-label]="L(selfInfo.title)">
+      <div class="selfinfo__card" (click)="$event.stopPropagation()">
+        <button class="selfinfo__close" type="button" (click)="selfInfoOpen.set(false)" [attr.aria-label]="L(selfInfo.close)">✕</button>
+        <h3>{{ L(selfInfo.title) }}</h3>
+        <p>{{ L(selfInfo.p1) }}</p>
+        <p>{{ L(selfInfo.p2) }}</p>
+        <p>{{ L(selfInfo.p3) }}</p>
+        <button class="selfinfo__ok" type="button" (click)="selfInfoOpen.set(false)">{{ L(selfInfo.close) }}</button>
+      </div>
+    </div>
+  }
 </div>

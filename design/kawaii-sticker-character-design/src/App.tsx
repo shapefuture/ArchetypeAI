@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { characters as initialCharacters, IFSCharacter } from './data/characters';
 import { CustomSticker, CustomSpecies, CustomExpression, CustomAccessory } from './components/CustomSticker';
+// --- Felt Atelier: every part below is real sewn felt (3D geometry, or the flat record of the same sewing pass) ---
+import { withFeltArt } from './felt/feltCharacters';
+import { dnaFor, dnaForCustom } from './felt/dnaMap';
+import { FeltStage } from './felt/FeltStage';
+import { describe } from './felt/engine';
 import { 
   Heart, Sparkles, BookOpen, Compass, Trash2, Plus, RotateCcw, 
   MessageCircle, Check, HelpCircle, Activity, Flame, 
@@ -11,6 +16,7 @@ export default function App() {
   // --- STATE ---
   const [customCharacters, setCustomCharacters] = useState<IFSCharacter[]>([]);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>('sol-self');
+  const [art, setArt] = useState<'felt' | 'classic'>('felt'); // felt = sewn by the Felt Atelier engine
   const [activeTab, setActiveTab] = useState<'album' | 'garden' | 'ceremony' | 'quiz' | 'customizer'>('album');
   const [unburdenedParts, setUnburdenedParts] = useState<string[]>([]);
   const [chatHistories, setChatHistories] = useState<Record<string, { sender: 'user' | 'part'; text: string }[]>>({});
@@ -22,8 +28,9 @@ export default function App() {
 
   // Combine initial and custom characters
   const allCharacters = useMemo(() => {
-    return [...customCharacters, ...initialCharacters];
-  }, [customCharacters]);
+    const list = [...customCharacters, ...initialCharacters];
+    return art === 'felt' ? withFeltArt(list) : list;
+  }, [customCharacters, art]);
 
   const selectedCharacter = useMemo(() => {
     return allCharacters.find(c => c.id === selectedCharacterId) || allCharacters[0];
@@ -126,6 +133,18 @@ export default function App() {
     green: { primary: '#a7f3d0', secondary: '#f0fdf4', accent: '#059669', dark: '#064e3b', bg: 'from-emerald-50 to-teal-100', border: 'border-emerald-200' },
     orange: { primary: '#fed7aa', secondary: '#ffedd5', accent: '#f97316', dark: '#7c2d12', bg: 'from-orange-50 to-amber-100', border: 'border-orange-200' }
   };
+
+  // the part being designed in the workshop, as real felt DNA (role -> body + mood, species -> shape,
+  // expression -> eyes/mouth, accessory -> a sewn-on patch or something stitched off the seam)
+  const customDna = useMemo(() => dnaForCustom({
+    id: 'custom-' + (customName || 'part') + customRole + customSpecies + customExpression + customAccessory + customColorTheme,
+    name: customName || 'My Part',
+    role: customRole,
+    species: customSpecies,
+    expression: customExpression,
+    accessory: customAccessory,
+    color: colorThemes[customColorTheme as keyof typeof colorThemes].primary,
+  }), [customName, customRole, customSpecies, customExpression, customAccessory, customColorTheme]);
 
   // --- BREATHING EXERCISE CYCLE TIMER ---
   useEffect(() => {
@@ -523,6 +542,27 @@ export default function App() {
           <p className="text-sm text-[#c8b29e] mt-2 max-w-2xl">
             A premium, physical ring-bound scrapbook dedicated to map, understand, and lovingly unburden your internal parts. 
           </p>
+          <div className="mt-3 inline-flex items-center gap-1 p-1 bg-[#1c1611]/80 border border-amber-800/40 rounded-full" role="group" aria-label="Part artwork">
+            {(['felt', 'classic'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                data-art={mode}
+                aria-pressed={art === mode}
+                onClick={() => setArt(mode)}
+                className={`px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all ${
+                  art === mode ? 'bg-[#fef08a] text-[#451a03] border-2 border-[#3d2a1c] shadow' : 'text-[#c8b29e] border-2 border-transparent hover:text-white'
+                }`}
+              >
+                {mode === 'felt' ? 'Sewn felt' : 'Flat art'}
+              </button>
+            ))}
+            <span className="px-2 text-[10px] font-semibold text-[#a88d75] max-w-[190px] leading-tight">
+              {art === 'felt'
+                ? 'Parts are real stuffed-felt geometry, sewn from their DNA'
+                : 'Parts are the original flat sticker art'}
+            </span>
+          </div>
         </div>
 
         {/* Global Self-Presence Indicator */}
@@ -672,10 +712,18 @@ export default function App() {
                   
                   {/* Header / Sticker Preview */}
                   <div className="flex items-start gap-4 border-b-2 border-[#f5ece0] pb-4 mb-4 mt-2">
-                    <div className="w-24 h-24 bg-white border-3 border-[#3d2a1c] rounded-2xl p-1.5 shrink-0 flex items-center justify-center relative shadow-sm">
-                      {selectedCharacter.renderSticker({ 
-                        className: 'w-full h-full', 
-                        isUnburdened: unburdenedParts.includes(selectedCharacter.id) 
+                    <div className={`${
+                      art === 'felt' ? 'w-32 h-32' : 'w-24 h-24'
+                    } bg-white border-3 border-[#3d2a1c] rounded-2xl p-1.5 shrink-0 flex items-center justify-center relative shadow-sm overflow-hidden`}>
+                      {art === 'felt' ? (
+                        <FeltStage
+                          dna={dnaFor(selectedCharacter)}
+                          className="w-full h-full rounded-xl"
+                          background="#fffef9"
+                        />
+                      ) : selectedCharacter.renderSticker({
+                        className: 'w-full h-full',
+                        isUnburdened: unburdenedParts.includes(selectedCharacter.id)
                       })}
                       {unburdenedParts.includes(selectedCharacter.id) && (
                         <div className="absolute -bottom-2.5 -right-2 bg-emerald-100 text-emerald-800 border-2 border-emerald-300 text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">
@@ -684,6 +732,11 @@ export default function App() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
+                      {art === 'felt' && (
+                        <p className="text-[10px] font-bold text-[#8c7e70] italic mb-1.5 leading-tight">
+                          {describe(dnaFor(selectedCharacter))} — sewn from DNA, turned on a real turntable
+                        </p>
+                      )}
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border-2 ${
                           selectedCharacter.role === 'Self' ? 'bg-yellow-100 text-yellow-900 border-yellow-300' :
@@ -1444,8 +1497,10 @@ export default function App() {
 
                   <span className="text-[10px] font-black text-[#9d8975] uppercase tracking-widest mb-3">Live Sticker Preview</span>
                   
-                  <div className="w-56 h-56 bg-neutral-50/50 border-3 border-dashed border-neutral-300 rounded-[32px] p-4 flex items-center justify-center relative shadow-inner">
-                    <CustomSticker
+                  <div className="w-56 h-56 bg-neutral-50/50 border-3 border-dashed border-neutral-300 rounded-[32px] p-4 flex items-center justify-center relative shadow-inner overflow-hidden">
+                    {art === 'felt' ? (
+                      <FeltStage dna={customDna} className="w-full h-full rounded-[24px]" background="#fffef9" />
+                    ) : (<CustomSticker
                       species={customSpecies}
                       expression={customExpression}
                       accessory={customAccessory}
@@ -1454,7 +1509,7 @@ export default function App() {
                       accentColor={colorThemes[customColorTheme as keyof typeof colorThemes].accent}
                       name={customName || 'My Part'}
                       className="w-full h-full"
-                    />
+                    />)}
                     
                     <span className="absolute bottom-4 bg-[#fff] border-2 border-[#3d2a1c] text-[#3d2a1c] text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-sm">
                       {customRole.toUpperCase()}

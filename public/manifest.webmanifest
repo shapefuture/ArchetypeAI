@@ -1,0 +1,25 @@
+{
+  "name": "Parts Cartographer — IFS map & coaching",
+  "short_name": "Parts Map",
+  "description": "Internal Family Systems parts cartography: assessment, 3D inner universe, coaching, practice, compatibility analysis.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07070a",
+  "theme_color": "#07070a",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["health", "lifestyle", "education", "utilities"],
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Start assessment", "short_name": "Assess", "url": "/?go=assessment" },
+    { "name": "Quick check-in", "short_name": "Check-in", "url": "/?go=checkin" }
+  ]
+}

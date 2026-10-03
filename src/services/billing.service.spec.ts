@@ -16,6 +16,10 @@ import {
 } from './billing.service';
 import { environment } from '../environments/environment';
 
+vi.mock('../environments/firebase-id-token', () => ({
+  getFirebaseIdToken: async () => 'firebase-test-id-token',
+}));
+
 describe('buildCheckoutRequest (pure helper)', () => {
   it('includes origin, locale and email', () => {
     const body = buildCheckoutRequest('user@example.com', 'https://app.example.com');
@@ -90,6 +94,7 @@ describe('BillingService — startCheckout', () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe(environment.stripeApiUrl);
     expect(init.method).toBe('POST');
+    expect(init.headers.Authorization).toBe('Bearer firebase-test-id-token');
     const payload = JSON.parse(init.body);
     expect(payload.email).toBe('someone@example.com');
     expect(payload.locale).toBe('en');
@@ -146,6 +151,7 @@ describe('BillingService — verifySession', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining('/api/stripe-verify?session_id=cs_test_9'),
+      { headers: { Authorization: 'Bearer firebase-test-id-token' } },
     );
     expect(svc.subscription()).toBe('active');
     expect(svc.active()).toBe(true);

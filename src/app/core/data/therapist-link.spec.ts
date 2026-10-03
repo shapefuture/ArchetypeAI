@@ -13,12 +13,12 @@ const all = (fill: number): AssessmentInput => {
 };
 
 describe('therapist link layer (§3B.4)', () => {
-  it('codes are 6 chars from the unambiguous alphabet', () => {
+  it('codes are 10 chars from the unambiguous alphabet', () => {
     let seed = 42;
     const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
     for (let i = 0; i < 50; i++) {
       const code = generateLinkCode(rand);
-      expect(code).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/);
+      expect(code).toMatch(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{10}$/);
     }
   });
 

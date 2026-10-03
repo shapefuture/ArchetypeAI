@@ -83,11 +83,15 @@
           <section class="bk-step">
             <h3 class="bk-step__title">{{ formatDate(dateISO()) }} · {{ formatSlot(slot()) }} ({{ slotLength() }} {{ ui().slotMinutes }})</h3>
             <p class="bk-quiet">{{ resolvedTherapist()?.email }}</p>
+            <label class="bk-consent">
+              <input type="checkbox" [checked]="shareConsent()" (change)="shareConsent.set($any($event.target).checked)" />
+              <span>{{ ui().dataShareConsent }}</span>
+            </label>
             <div class="bk-actions">
               <button type="button" class="bk-btn bk-btn--ghost" (click)="back()">{{ ui().back }}</button>
               <button type="button"
                       class="bk-btn bk-btn--primary"
-                      [disabled]="submitting()"
+                      [disabled]="submitting() || !shareConsent()"
                       (click)="confirm()">
                 {{ submitting() ? ui().busy : ui().confirm }}
               </button>

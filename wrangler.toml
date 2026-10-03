@@ -11,7 +11,25 @@ not_found_handling = "single-page-application"
 [vars]
 # Do NOT commit real API keys. API keys (GOOGLE_API_KEY, OPENROUTER_API_KEY,
 # NVIDIA_API_KEY, OLLAMA_API_KEY) live in Cloudflare's encrypted secret store
-# and are set via `wrangler secret put <KEY_NAME>`. They cannot also be listed
-# here — wrangler rejects a secret whose name collides with a var.
+# and are set via `wrangler secret put <KEY_NAME>`.
+FIREBASE_PROJECT_ID = "archetype-ai-3e43b"
+ALLOWED_APP_ORIGINS = "https://archetype-ai-3e43b.web.app,https://archetype-ai-3e43b.firebaseapp.com,https://innerverseai.web.app,https://innerverseai.firebaseapp.com,http://localhost:3000,http://127.0.0.1:3000,http://localhost:4200,http://127.0.0.1:4200,http://localhost:4174,http://127.0.0.1:4174,http://localhost:5174,http://127.0.0.1:5174"
 OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free"
 AI_PROVIDER_DEFAULT = "ollama"
+
+# Per-identity and per-IP request limits. Cloudflare rate limits are
+# best-effort per data center; Firebase ID-token validation remains mandatory.
+[[ratelimits]]
+name = "AI_RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 12, period = 60 }
+
+[[ratelimits]]
+name = "AI_IP_RATE_LIMITER"
+namespace_id = "1002"
+simple = { limit = 50, period = 60 }
+
+[[ratelimits]]
+name = "BILLING_RATE_LIMITER"
+namespace_id = "1003"
+simple = { limit = 10, period = 60 }

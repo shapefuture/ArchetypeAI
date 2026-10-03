@@ -94,10 +94,13 @@ export class FirebaseStorageAdapter implements StoragePort {
 
   async createShareCode(userId: string): Promise<string> {
     const code = generateShareCode();
+    const assessment = await this.loadAssessment(userId);
+    if (!assessment) throw new Error('Save an assessment before generating a share code');
     await withResilience(() =>
       setDoc(doc(this.db, 'shareCodes', code), {
         uid: userId,
         createdAt: new Date().toISOString(),
+        assessment,
       }),
     );
     return code;
@@ -105,12 +108,19 @@ export class FirebaseStorageAdapter implements StoragePort {
 
   async loadSharedWithUid(shareCode: string): Promise<{ uid: string; data: AssessmentData } | null> {
     return withResilience(async () => {
-      const codeSnap = await getDoc(doc(this.db, 'shareCodes', shareCode));
+      const codeSnap = await getDoc(doc(this.db, 'shareCodes', shareCode.trim().toLowerCase()));
       if (!codeSnap.exists()) return null;
-      const { uid } = codeSnap.data() as { uid: string };
-      const assessmentSnap = await getDoc(doc(this.db, 'users', uid, 'assessment', 'current'));
+      const payload = codeSnap.data() as { uid?: string; assessment?: AssessmentData };
+      if (!payload.uid) return null;
+      if (payload.assessment && Array.isArray(payload.assessment.responses)) {
+        return { uid: payload.uid, data: payload.assessment };
+      }
+      // Compatibility with pre-projection codes. Current rules may correctly
+      // reject this legacy cross-user read, in which case the caller reports
+      // the code as unavailable rather than exposing owner-only documents.
+      const assessmentSnap = await getDoc(doc(this.db, 'users', payload.uid, 'assessment', 'current'));
       if (!assessmentSnap.exists()) return null;
-      return { uid, data: assessmentSnap.data() as AssessmentData };
+      return { uid: payload.uid, data: assessmentSnap.data() as AssessmentData };
     });
   }
 

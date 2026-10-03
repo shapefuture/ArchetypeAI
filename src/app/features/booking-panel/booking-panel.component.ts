@@ -20,8 +20,8 @@ import {
   freeSlots,
   getTherapistAvailability,
   slotEnd,
-  therapistAppointments,
-  type Appointment,
+  therapistBusyIntervals,
+  type BusyInterval,
   type AvailabilityWindow,
 } from './booking';
 
@@ -56,11 +56,12 @@ export class BookingPanelComponent {
   readonly therapistEmail = signal('');
   readonly resolvedTherapist = signal<{ uid: string; email: string | null } | null>(null);
   readonly availability = signal<AvailabilityWindow[]>([]);
-  readonly bookedAppts = signal<Appointment[]>([]);
+  readonly bookedAppts = signal<BusyInterval[]>([]);
   readonly days = signal<string[]>([]);
   readonly dateISO = signal('');
   readonly slots = signal<string[]>([]);
   readonly slot = signal('');
+  readonly shareConsent = signal(false);
   readonly finding = signal(false);
   readonly loadingSlots = signal(false);
   readonly submitting = signal(false);
@@ -94,6 +95,7 @@ export class BookingPanelComponent {
     this.dateISO.set('');
     this.slots.set([]);
     this.slot.set('');
+    this.shareConsent.set(false);
     this.error.set('');
     this.success.set(false);
     this.submitting.set(false);
@@ -127,12 +129,12 @@ export class BookingPanelComponent {
   private async resolveTherapist(uid: string, email: string | null): Promise<void> {
     this.resolvedTherapist.set({ uid, email });
     try {
-      const [availability, appts] = await Promise.all([
+      const [availability, busySlots] = await Promise.all([
         getTherapistAvailability(uid),
-        therapistAppointments(uid).catch(() => [] as Appointment[]),
+        therapistBusyIntervals(uid),
       ]);
       this.availability.set(availability);
-      this.bookedAppts.set(appts);
+      this.bookedAppts.set(busySlots);
       this.days.set(bookableDays(availability));
       this.step.set('date');
     } catch {
@@ -176,7 +178,7 @@ export class BookingPanelComponent {
   async confirm(): Promise<void> {
     const user = this.user();
     const therapist = this.resolvedTherapist();
-    if (!user || user.isAnonymous || !therapist || !this.slot()) return;
+    if (!user || user.isAnonymous || !therapist || !this.slot() || !this.shareConsent()) return;
     this.submitting.set(true);
     this.error.set('');
     try {

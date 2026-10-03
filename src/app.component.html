@@ -538,6 +538,10 @@
           <!-- Share code section -->
           <div class="mt-4 border-t border-ink/10 pt-4">
             <h4 class="text-[9px] font-black uppercase tracking-[0.15em] text-ink-l mb-2">{{ translationService.t('shareTitle', 'universe.synastry') }}</h4>
+            <label class="mt-2 mb-3 flex items-start gap-2 text-xs leading-snug">
+              <input type="checkbox" [checked]="shareCodeConsent()" (change)="shareCodeConsent.set($any($event.target).checked)" />
+              <span>{{ translationService.t('shareCodeConsent', 'universe.synastry') }}</span>
+            </label>
             @if (shareCode(); as code) {
               <div class="flex items-center gap-2 bg-sage/10 border-2 border-sage/30 rounded-lg p-3">
                 <span class="text-lg font-mono font-black text-ink tracking-widest flex-1 text-center">{{ code }}</span>
@@ -545,7 +549,7 @@
                         (click)="navigator.clipboard.writeText(code)">📋</button>
               </div>
             } @else {
-              <button class="upload-btn" [disabled]="shareCodeLoading()"
+              <button class="upload-btn" [disabled]="shareCodeLoading() || !shareCodeConsent()"
                       (click)="generateShareCode()">
                 @if (shareCodeLoading()) {
                   <span class="animate-spin inline-block w-3 h-3 border-2 border-ink border-t-transparent rounded-full"></span>

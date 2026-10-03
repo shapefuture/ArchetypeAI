@@ -2,244 +2,557 @@ rules_version = '2';
 
 // ============================================================================
 // ArchetypeAI — Firestore Security Rules
-// ----------------------------------------------------------------------------
-// These rules enforce: "each user can read/write ONLY their own data tree"
-// under /users/{uid}/... . Admin allowlist and share codes have narrow
-// additional rules. Real admin security (custom claims) is a follow-up.
 //
-// IMPORTANT: deploy with `firebase deploy --only firestore:rules` from the
-// project that owns archetype-ai-3e43b, OR paste this into the Firebase
-// Console → Firestore → Rules editor.
+// Cross-user assessment access is limited to (a) a verified allowlisted admin
+// with an adminClients relationship, or (b) a therapist with an active,
+// client-created appointment share. Admins are allowlisted by verified Firebase
+// email; the bootstrap account is intentionally pinned here and in
+// AdminAccessService. Add/remove other admins through the admin UI.
 // ============================================================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ---------- helpers ----------
     function isSignedIn() {
       return request.auth != null;
     }
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    // Does the requester appear in the admin allowlist?
-    // We allow self-bootstrap on first admin create (see adminAllowlist rule).
+
+    function hasVerifiedEmail() {
+      return isSignedIn()
+        && request.auth.token.email is string
+        && request.auth.token.email_verified == true;
+    }
+
     function isAdmin() {
-      return isSignedIn() &&
-        exists(/databases/$(database)/documents/adminAllowlist/$(request.auth.token.email));
+      return hasVerifiedEmail()
+        && (
+          request.auth.token.email == 'admin@example.com'
+          || exists(/databases/$(database)/documents/adminAllowlist/$(request.auth.token.email))
+        );
+    }
+
+    function hasActiveAppointment(clientUid, therapistUid, appointmentId) {
+      let appointmentPath = /databases/$(database)/documents/appointments/$(appointmentId);
+      return appointmentId is string
+        && exists(appointmentPath)
+        && get(appointmentPath).data.clientUid == clientUid
+        && get(appointmentPath).data.therapistUid == therapistUid
+        && (
+          get(appointmentPath).data.status == 'pending'
+          || get(appointmentPath).data.status == 'approved'
+        );
+    }
+
+    function therapistBusySlotPath(therapistUid, start) {
+      return /databases/$(database)/documents/therapistBusySlots/$(therapistUid + '_' + start);
+    }
+
+    function hasMatchingBusySlotAfter(therapistUid, start, end, appointmentId) {
+      let busyPath = therapistBusySlotPath(therapistUid, start);
+      return existsAfter(busyPath)
+        && getAfter(busyPath).data.therapistUid == therapistUid
+        && getAfter(busyPath).data.appointmentId == appointmentId
+        && getAfter(busyPath).data.start == start
+        && getAfter(busyPath).data.end == end;
+    }
+
+    function hasValidBookingShare(clientUid, therapistUid, appointmentId) {
+      let sharePath = /databases/$(database)/documents/clientShares/$(therapistUid + '_' + clientUid);
+      return exists(sharePath)
+        && get(sharePath).data.clientUid == clientUid
+        && get(sharePath).data.therapistUid == therapistUid
+        && get(sharePath).data.source == 'booking'
+        && get(sharePath).data.appointmentId == appointmentId
+        && hasActiveAppointment(clientUid, therapistUid, appointmentId);
+    }
+
+    function hasValidInviteLink(clientUid, linkCode) {
+      let invitePath = /databases/$(database)/documents/therapistLinks/$(linkCode);
+      return linkCode is string
+        && exists(invitePath)
+        && get(invitePath).data.clientUid == clientUid
+        && get(invitePath).data.summary is map;
+    }
+
+    function validShareCodePayload(data) {
+      return data.keys().hasAll(['uid', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'createdAt', 'schema', 'mapSnapshot', 'assessment'])
+        && data.uid is string
+        && data.createdAt is string
+        && (
+          (!('schema' in data) && !('mapSnapshot' in data) && !('assessment' in data))
+          || (
+            data.schema == 'parts-cartographer.v1'
+            && data.mapSnapshot is map
+            && !('assessment' in data)
+            && data.mapSnapshot.keys().hasAll(['schema', 'profile', 'parts', 'createdAt', 'updatedAt'])
+            && data.mapSnapshot.keys().hasOnly(['schema', 'profile', 'parts', 'createdAt', 'updatedAt'])
+            && data.mapSnapshot.profile is map
+            && data.mapSnapshot.parts is list
+            && data.mapSnapshot.parts.size() <= 100
+            && data.mapSnapshot.createdAt is string
+            && data.mapSnapshot.updatedAt is string
+          )
+          || (
+            data.assessment is map
+            && !('schema' in data)
+            && !('mapSnapshot' in data)
+            && data.assessment.keys().hasAll(['responses', 'dimensionalExpressions', 'results', 'scoringMethod', 'updatedAt'])
+            && data.assessment.keys().hasOnly(['responses', 'dimensionalExpressions', 'results', 'scoringMethod', 'updatedAt'])
+            && data.assessment.responses is list
+            && data.assessment.responses.size() <= 200
+            && data.assessment.dimensionalExpressions is map
+            && (data.assessment.results == null || data.assessment.results is map)
+            && (data.assessment.scoringMethod == 'deterministic' || data.assessment.scoringMethod == 'fallback')
+            && data.assessment.updatedAt is string
+          )
+        );
+    }
+
+    function hasTrustedTherapistClientLink(therapistUid, clientUid) {
+      let rosterPath = /databases/$(database)/documents/therapistClients/$(therapistUid + '_' + clientUid);
+      return exists(rosterPath)
+        && get(rosterPath).data.therapistUid == therapistUid
+        && get(rosterPath).data.clientUid == clientUid
+        && (
+          (
+            get(rosterPath).data.source == 'booking'
+            && hasValidBookingShare(clientUid, therapistUid, get(rosterPath).data.appointmentId)
+          )
+          ||
+          (
+            get(rosterPath).data.source == 'invite'
+            && hasValidInviteLink(clientUid, get(rosterPath).data.linkCode)
+          )
+        );
+    }
+
+    function hasTherapistReadGrant(userId) {
+      return isSignedIn()
+        && hasValidBookingShare(userId, request.auth.uid,
+          get(/databases/$(database)/documents/clientShares/$(request.auth.uid + '_' + userId)).data.appointmentId);
+    }
+
+    function hasAdminReadGrant(userId) {
+      return isAdmin()
+        && exists(/databases/$(database)/documents/adminClients/$(request.auth.uid + '_' + userId))
+        && get(/databases/$(database)/documents/adminClients/$(request.auth.uid + '_' + userId)).data.adminUid == request.auth.uid
+        && get(/databases/$(database)/documents/adminClients/$(request.auth.uid + '_' + userId)).data.clientUid == userId;
+    }
+
+    function validTherapistSummary(summary) {
+      return summary is map
+        && summary.keys().hasAll(['headline', 'burden', 'selfEnergy', 'parts', 'activeComplexes', 'copingStack', 'adherence'])
+        && summary.keys().hasOnly(['headline', 'burden', 'selfEnergy', 'parts', 'activeComplexes', 'copingStack', 'adherence'])
+        && summary.headline is string
+        && summary.headline.size() <= 160
+        && summary.burden is number
+        && summary.selfEnergy is number
+        && summary.parts is map
+        && summary.activeComplexes is list
+        && summary.activeComplexes.size() <= 50
+        && summary.copingStack is map
+        && summary.adherence is map;
     }
 
     // ---------- user-owned data ----------
-    // Owner-only read/write on the entire /users/{uid} subtree. This covers
-    // assessment, history, connections, synastry, and any future per-user
-    // collections the app adds.
-    //
-    // The /assessment/ subcollection has ONE extra read path: a specialist
-    // (admin) who has been linked to this client via an `adminClients`
-    // document may read the client's latest assessment + history. This is
-    // what powers the "My clients" specialist dashboard — without this
-    // allowlist, the cross-user read fails with "Missing or insufficient
-    // permissions". Writes remain owner-only.
     match /users/{userId} {
       allow read, write: if isOwner(userId);
 
       match /assessment/{docId} {
-        allow read: if isOwner(userId)
-          || exists(/databases/$(database)/documents/adminClients/$(request.auth.uid + '_' + userId));
+        allow read: if isOwner(userId) || hasAdminReadGrant(userId) || hasTherapistReadGrant(userId);
         allow write: if isOwner(userId);
       }
+
       match /history/{docId} {
-        allow read: if isOwner(userId)
-          || exists(/databases/$(database)/documents/adminClients/$(request.auth.uid + '_' + userId));
+        allow read: if isOwner(userId) || hasAdminReadGrant(userId) || hasTherapistReadGrant(userId);
         allow write: if isOwner(userId);
       }
+
       match /connections/{docId} {
         allow read, write: if isOwner(userId);
       }
+
       match /synastry/{docId} {
         allow read, write: if isOwner(userId);
       }
     }
 
-    // ---------- share codes ----------
-    // Reading a share code is allowed for any signed-in user (so a partner can
-    // look up an owner's uid by code). The actual assessment read for the
-    // shared user still requires the partner to hold a valid code — but
-    // Firestore rules can't easily do multi-step validation, so we keep the
-    // owner-only restriction on the assessment doc and treat share-code reads
-    // as best-effort (the owner can also embed the data in the share doc
-    // later if needed).
-    // §4 step 10: anonymous telemetry — create-only, never readable by clients.
+    // Anonymous telemetry is still tied to a Firebase Auth session. No reads,
+    // updates, or deletes are available to clients.
     match /telemetryResponses/{docId} {
       allow read: if false;
-      allow create: if request.resource.data.keys().hasOnly(['payload', 'at'])
-        && request.resource.data.payload is string;
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll(['payload', 'at'])
+        && request.resource.data.keys().hasOnly(['payload', 'at'])
+        && request.resource.data.payload is string
+        && request.resource.data.payload.size() <= 32768
+        && request.resource.data.at is string
+        && request.resource.data.at.size() <= 40;
     }
 
-    // §3.8: registered push tokens for the daily reminder send.
+    // FCM registration is private to the Firebase user that owns the token.
     match /pushTokens/{token} {
       allow read: if false;
-      allow create: if request.resource.data.keys().hasOnly(['token', 'createdAt']);
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll(['token', 'uid', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['token', 'uid', 'createdAt'])
+        && request.resource.data.token == token
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.createdAt is string
+        && request.resource.data.createdAt.size() <= 40;
+      allow update: if isSignedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasAll(['token', 'uid', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['token', 'uid', 'createdAt'])
+        && request.resource.data.token == token
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.createdAt is string
+        && request.resource.data.createdAt.size() <= 40;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
-    // §1.3: remote norm refresh (public read, admin write via console).
+    // Public, read-only app configuration.
     match /config/{docId} {
       allow read: if true;
       allow write: if false;
     }
 
+    // Share-code lookup must be a single-document get, never a collection list.
+    // Codes are bearer links, so only authenticated users can resolve one.
     match /shareCodes/{code} {
-      allow read: if isSignedIn();
-      // Only the code owner can create/update/delete a code that points at
-      // their own uid.
-      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isSignedIn() && code.matches('^[a-z0-9]{8,16}$');
+      allow list: if false;
+      allow create: if code.matches('^[a-z0-9]{8,16}$')
+        && isOwner(request.resource.data.uid)
+        && validShareCodePayload(request.resource.data);
+      allow update: if isOwner(resource.data.uid)
+        && request.resource.data.uid == resource.data.uid
+        && code.matches('^[a-z0-9]{8,16}$')
+        && validShareCodePayload(request.resource.data);
+      allow delete: if isOwner(resource.data.uid);
     }
 
-    // ---------- admin allowlist ----------
-    // Read: any signed-in user (used by AdminAccessService.isAdmin to check
-    //   whether the CURRENT user is an admin by looking up their own email).
-    // Create: any signed-in user — this is the bootstrap path. The first
-    //   admin is the bootstrap email hard-coded in AdminAccessService
-    //   (BOOTSTRAP_ADMIN_EMAILS). Anyone could theoretically create a new
-    //   admin entry; this is acceptable per the in-code comment that calls
-    //   client-side allowlisting a "convenience feature, not a security
-    //   boundary". Real hardening should use Firebase custom claims.
-    // Update / Delete: only an existing admin can change the allowlist.
+    // Therapist invite codes carry only the summary the client consented to
+    // share. `get` is the bearer-code redemption flow; listing is prohibited.
+    match /therapistLinks/{code} {
+      allow get: if isSignedIn() && code.matches('^[A-Z0-9]{6,10}$');
+      allow list: if false;
+      allow create: if isOwner(request.resource.data.clientUid)
+        && code.matches('^[A-Z0-9]{6,10}$')
+        && request.resource.data.keys().hasAll(['clientUid', 'createdAt', 'summary'])
+        && request.resource.data.keys().hasOnly(['clientUid', 'createdAt', 'summary'])
+        && request.resource.data.createdAt is string
+        && validTherapistSummary(request.resource.data.summary);
+      allow update: if false;
+      allow delete: if isOwner(resource.data.clientUid);
+    }
+
+    // Admin allowlist: only an already-authorized, verified admin can manage
+    // entries. A user can get only their own entry to support the client-side
+    // role check; collection listing is admin-only.
     match /adminAllowlist/{email} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin();
+      allow get: if isAdmin()
+        || (isSignedIn() && request.auth.token.email is string && request.auth.token.email == email);
+      allow list: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.email == email
+        && request.resource.data.keys().hasAll(['email', 'createdAt', 'createdByUid'])
+        && request.resource.data.keys().hasOnly(['email', 'createdAt', 'createdByUid'])
+        && request.resource.data.createdAt is string
+        && request.resource.data.createdByUid == request.auth.uid;
+      allow update: if isAdmin()
+        && request.resource.data.email == email
+        && request.resource.data.createdByUid == resource.data.createdByUid;
+      allow delete: if isAdmin();
     }
 
-    // ---------- specialist client links (admin → client relationships) ----------
-    // Each doc carries an explicit `adminUid` field. The docId is
-    // `{adminUid}_{clientUid}` — the join key. Only the admin whose UID
-    // matches the doc's `adminUid` field can read/write it.
-    //
-    // We intentionally filter on the FIELD (not the docId prefix) because
-    // Firestore `list` queries without a `where` clause can't evaluate
-    // a rule that depends on `docId` — there is no specific document
-    // to check the rule against. The companion `listMyClients` query
-    // uses `where('adminUid', '==', adminUid)`, which is the idiomatic
-    // pattern for "give me only my own docs".
-    //
-    // Write operations are split because Firestore distinguishes:
-    //   - create: `resource.data` is null (no existing doc); use
-    //     `request.resource.data` to check the doc being written.
-    //   - update / delete: `resource.data` is the existing doc; use
-    //     `resource.data` to verify the requester owns it.
-    // A blanket `allow write: if resource.data.adminUid == ...` would
-    // fail on create (resource is null), which is exactly the bug that
-    // produced "Missing or insufficient permissions" when an admin
-    // tried to add a client.
+    // Specialist-client relationships are privileged and cannot be self-issued
+    // by ordinary signed-in users.
     match /adminClients/{docId} {
-      // Read (get or list) — requester must own the doc(s).
-      allow read: if isSignedIn() && resource.data.adminUid == request.auth.uid;
-      // Create — requester must set adminUid to their own UID.
-      allow create: if isSignedIn() && request.resource.data.adminUid == request.auth.uid;
-      // Update — requester must own the existing doc AND keep adminUid
-      // pointing at themselves (prevents an admin from reassigning a
-      // link to a different admin via update).
-      allow update: if isSignedIn()
+      // Keep this condition field-based: the admin dashboard queries by
+      // `adminUid`, and Firestore rules do not filter query results by doc ID.
+      allow read: if isAdmin()
+        && resource.data.adminUid == request.auth.uid;
+      allow create: if isAdmin()
+        && request.resource.data.adminUid == request.auth.uid
+        && request.resource.data.clientUid is string
+        && request.resource.data.clientUid != request.auth.uid
+        && docId == request.resource.data.adminUid + '_' + request.resource.data.clientUid
+        && request.resource.data.keys().hasAll(['adminUid', 'clientUid', 'clientEmail', 'notes', 'addedAt', 'addedByUid'])
+        && request.resource.data.keys().hasOnly(['adminUid', 'clientUid', 'clientEmail', 'notes', 'addedAt', 'addedByUid'])
+        && (request.resource.data.clientEmail == null || request.resource.data.clientEmail is string)
+        && request.resource.data.notes is string
+        && request.resource.data.notes.size() <= 4000
+        && request.resource.data.addedAt is string
+        && request.resource.data.addedByUid == request.auth.uid;
+      allow update: if isAdmin()
         && resource.data.adminUid == request.auth.uid
-        && request.resource.data.adminUid == request.auth.uid;
-      // Delete — requester must own the doc.
-      allow delete: if isSignedIn() && resource.data.adminUid == request.auth.uid;
+        && request.resource.data.adminUid == request.auth.uid
+        && request.resource.data.clientUid == resource.data.clientUid
+        && docId == request.resource.data.adminUid + '_' + request.resource.data.clientUid
+        && request.resource.data.keys().hasAll(['adminUid', 'clientUid', 'clientEmail', 'notes', 'addedAt', 'addedByUid'])
+        && request.resource.data.keys().hasOnly(['adminUid', 'clientUid', 'clientEmail', 'notes', 'addedAt', 'addedByUid'])
+        && (request.resource.data.clientEmail == null || request.resource.data.clientEmail is string)
+        && request.resource.data.notes is string
+        && request.resource.data.notes.size() <= 4000
+        && request.resource.data.addedByUid == resource.data.addedByUid;
+      allow delete: if isAdmin()
+        && resource.data.adminUid == request.auth.uid
+        && docId == resource.data.adminUid + '_' + resource.data.clientUid;
     }
 
-    // ---------- public user directory ----------
-    // Bidirectional UID<->email lookup so the admin's "Add client" form
-    // can auto-fill the other side. Each non-anonymous user writes their
-    // own doc on sign-in via UserDirectoryService.
-    //
-    // The docId is the user's UID (single-doc read by UID is indexless).
-    // The `emailLower` field is the lowercased email; the companion
-    // lookupByEmail() uses `where('emailLower', '==', email)` which
-    // requires the index declared in `firestore.indexes.json`.
-    //
-    // Privacy: the doc is readable by ANY signed-in user. It contains
-    // only the email + displayName (no assessment data, no PII), and
-    // is the same information a user implicitly shares when an admin
-    // types their email into the "Add client" form. Real hardening
-    // would gate reads on a Firebase custom claim (admin == true),
-    // which requires the Admin SDK on a server we don't have yet.
+    // The directory contains only a user's own email/display-name projection.
+    // Signed-in users can resolve a therapist by email; writes stay owner-only.
     match /publicProfiles/{userId} {
-      // Read: any signed-in user. The `where('emailLower', '==', ...)`
-      // query works because the read rule does NOT depend on `docId`,
-      // so the SDK can evaluate it per-document in a list.
       allow read: if isSignedIn();
-      // Write: only the user themselves can create/update/delete their
-      // own profile. A malicious user can't overwrite someone else's
-      // profile or impersonate them in the directory.
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.keys().hasAll(['emailLower', 'email', 'displayName', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['emailLower', 'email', 'displayName', 'updatedAt'])
+        && request.resource.data.email is string
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.emailLower is string
+        && request.resource.data.emailLower == request.auth.token.email
+        && (request.resource.data.displayName == null || request.resource.data.displayName is string)
+        && request.resource.data.updatedAt is string;
       allow delete: if isOwner(userId);
     }
-    // ---------- session booking ----------
-    // therapists/{uid}: the therapist's availability (public read so clients
-    // can generate free slots; write by the owning therapist only).
+
+    // Therapist availability is visible only to signed-in users. A profile may
+    // be created/edited by its owner and carries no arbitrary extra fields.
     match /therapists/{uid} {
-      allow read: if true;
-      allow write: if isOwner(uid);
+      allow read: if isSignedIn();
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasAll(['email', 'availability'])
+        && request.resource.data.keys().hasOnly(['email', 'availability'])
+        && (request.resource.data.email == null || request.resource.data.email is string)
+        && request.resource.data.availability is list
+        && request.resource.data.availability.size() <= 14;
+      allow delete: if false;
     }
 
-    // appointments/{id}: a client-created session request. Clients read/write
-    // only their own appointments; a therapist reads appointments where
-    // therapistUid == their uid and may update ONLY the status field
-    // (approve / decline). Nobody deletes — history is kept.
+    // Busy-slot projection exposes only scheduling fields, never client email
+    // or UID. A deterministic therapist+start document is the client-side
+    // concurrency lock for a generated appointment slot.
+    match /therapistBusySlots/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll(['therapistUid', 'appointmentId', 'start', 'end'])
+        && request.resource.data.keys().hasOnly(['therapistUid', 'appointmentId', 'start', 'end'])
+        && request.resource.data.therapistUid is string
+        && request.resource.data.appointmentId is string
+        && request.resource.data.start is string
+        && request.resource.data.start.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$')
+        && request.resource.data.end is string
+        && request.resource.data.end.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$')
+        && request.resource.data.end > request.resource.data.start
+        && id == request.resource.data.therapistUid + '_' + request.resource.data.start
+        && existsAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId))
+        && (
+          getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.clientUid == request.auth.uid
+          || getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.therapistUid == request.auth.uid
+        )
+        && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.therapistUid == request.resource.data.therapistUid
+        && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.start == request.resource.data.start
+        && getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.end == request.resource.data.end
+        && (
+          getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.status == 'pending'
+          || getAfter(/databases/$(database)/documents/appointments/$(request.resource.data.appointmentId)).data.status == 'approved'
+        );
+      allow update: if false;
+      allow delete: if isSignedIn()
+        && resource.data.appointmentId is string
+        && existsAfter(/databases/$(database)/documents/appointments/$(resource.data.appointmentId))
+        && getAfter(/databases/$(database)/documents/appointments/$(resource.data.appointmentId)).data.therapistUid == resource.data.therapistUid
+        && getAfter(/databases/$(database)/documents/appointments/$(resource.data.appointmentId)).data.start == resource.data.start
+        && getAfter(/databases/$(database)/documents/appointments/$(resource.data.appointmentId)).data.end == resource.data.end
+        && (
+          getAfter(/databases/$(database)/documents/appointments/$(resource.data.appointmentId)).data.clientUid == request.auth.uid
+          || getAfter(/databases/$(database)/documents/appointments/$(resource.data.appointmentId)).data.therapistUid == request.auth.uid
+        )
+        && (
+          getAfter(/databases/$(database)/documents/appointments/$(resource.data.appointmentId)).data.status == 'declined'
+          || getAfter(/databases/$(database)/documents/appointments/$(resource.data.appointmentId)).data.status == 'cancelled'
+        );
+    }
+
+    // Appointment creation is a client request to a real therapist profile.
+    // The parties and scheduling fields are immutable; only a constrained
+    // status transition is allowed afterwards.
     match /appointments/{id} {
       allow read: if isSignedIn()
-        && (resource.data.clientUid == request.auth.uid
-            || resource.data.therapistUid == request.auth.uid);
+        && (resource.data.clientUid == request.auth.uid || resource.data.therapistUid == request.auth.uid);
       allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll(['clientUid', 'clientEmail', 'therapistUid', 'therapistEmail', 'start', 'end', 'status', 'createdAt', 'accessGranted'])
+        && request.resource.data.keys().hasOnly(['clientUid', 'clientEmail', 'therapistUid', 'therapistEmail', 'start', 'end', 'status', 'createdAt', 'accessGranted'])
         && request.resource.data.clientUid == request.auth.uid
-        && request.resource.data.status == 'pending';
+        && request.resource.data.clientEmail == request.auth.token.email
+        && request.resource.data.therapistUid is string
+        && request.resource.data.therapistUid != request.auth.uid
+        && exists(/databases/$(database)/documents/therapists/$(request.resource.data.therapistUid))
+        && request.resource.data.therapistEmail == get(/databases/$(database)/documents/therapists/$(request.resource.data.therapistUid)).data.email
+        && request.resource.data.start is string
+        && request.resource.data.start.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$')
+        && request.resource.data.end is string
+        && request.resource.data.end.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$')
+        && request.resource.data.end > request.resource.data.start
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt is string
+        && request.resource.data.createdAt.size() <= 40
+        && request.resource.data.accessGranted == true
+        && hasMatchingBusySlotAfter(
+          request.resource.data.therapistUid,
+          request.resource.data.start,
+          request.resource.data.end,
+          id
+        );
       allow update: if isSignedIn()
         && (
-          // therapist: status-only transition
-          (resource.data.therapistUid == request.auth.uid
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+          (
+            resource.data.therapistUid == request.auth.uid
+            && resource.data.status == 'pending'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+            && (
+              request.resource.data.status == 'approved'
+              || (
+                request.resource.data.status == 'declined'
+                && !existsAfter(therapistBusySlotPath(resource.data.therapistUid, resource.data.start))
+              )
+            )
+          )
           ||
-          // client: cancel their own booking (status-only)
-          (resource.data.clientUid == request.auth.uid
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+          (
+            resource.data.clientUid == request.auth.uid
+            && (resource.data.status == 'pending' || resource.data.status == 'approved')
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+            && request.resource.data.status == 'cancelled'
+            && !existsAfter(therapistBusySlotPath(resource.data.therapistUid, resource.data.start))
+          )
         );
       allow delete: if false;
     }
 
-    // clientShares/{therapistUid}_{clientUid}: booking grants the therapist
-    // read access to the client's profile/answers. Created by the client
-    // (source: 'booking'); readable by either side; removed only by the
-    // client who granted it.
+    // A booking share must point to a real appointment created by this client
+    // for this therapist. That live relationship also gates assessment/history
+    // reads while the appointment remains pending or approved.
     match /clientShares/{docId} {
       allow read: if isSignedIn()
-        && (resource.data.clientUid == request.auth.uid
-            || resource.data.therapistUid == request.auth.uid);
+        && (resource.data.clientUid == request.auth.uid || resource.data.therapistUid == request.auth.uid);
       allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll(['clientUid', 'clientEmail', 'therapistUid', 'grantedAt', 'source', 'appointmentId'])
+        && request.resource.data.keys().hasOnly(['clientUid', 'clientEmail', 'therapistUid', 'grantedAt', 'source', 'appointmentId'])
         && request.resource.data.clientUid == request.auth.uid
-        && request.resource.data.source == 'booking';
-      allow update, delete: if isSignedIn()
-        && resource.data.clientUid == request.auth.uid;
+        && request.resource.data.clientEmail == request.auth.token.email
+        && request.resource.data.therapistUid is string
+        && docId == request.resource.data.therapistUid + '_' + request.resource.data.clientUid
+        && request.resource.data.source == 'booking'
+        && request.resource.data.grantedAt is string
+        && hasActiveAppointment(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId);
+      allow update: if isSignedIn()
+        && resource.data.clientUid == request.auth.uid
+        && request.resource.data.clientUid == resource.data.clientUid
+        && request.resource.data.therapistUid == resource.data.therapistUid
+        && docId == request.resource.data.therapistUid + '_' + request.resource.data.clientUid
+        && request.resource.data.keys().hasAll(['clientUid', 'clientEmail', 'therapistUid', 'grantedAt', 'source', 'appointmentId'])
+        && request.resource.data.keys().hasOnly(['clientUid', 'clientEmail', 'therapistUid', 'grantedAt', 'source', 'appointmentId'])
+        && request.resource.data.clientEmail == request.auth.token.email
+        && request.resource.data.source == 'booking'
+        && request.resource.data.grantedAt is string
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clientEmail', 'grantedAt', 'source', 'appointmentId'])
+        && hasActiveAppointment(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId);
+      allow delete: if isOwner(resource.data.clientUid);
     }
 
-    // therapistClients/{therapistUid}_{clientUid}: the therapist dashboard's
-    // linked-client list (the share mechanism reused by bookings so a booked
-    // client appears in «Мои клиенты» immediately). Docs are created either
-    // by the therapist claiming an invite code or by a client booking
-    // (clientUid == requester). The therapist may update (summary refresh,
-    // archive toggle); either side of the link may read.
+    // A therapist/client roster row is valid only when backed by a booking share
+    // or a client-created invite code. Clients may add their own booking row;
+    // therapists may claim a code and maintain archive state.
     match /therapistClients/{docId} {
       allow read: if isSignedIn()
-        && (resource.data.therapistUid == request.auth.uid
-            || resource.data.clientUid == request.auth.uid);
+        && (resource.data.therapistUid == request.auth.uid || resource.data.clientUid == request.auth.uid);
       allow create: if isSignedIn()
-        && (request.resource.data.therapistUid == request.auth.uid
-            || request.resource.data.clientUid == request.auth.uid);
+        && docId == request.resource.data.therapistUid + '_' + request.resource.data.clientUid
+        && (
+          (
+            request.resource.data.source == 'booking'
+            && request.resource.data.clientUid == request.auth.uid
+            && request.resource.data.keys().hasAll(['therapistUid', 'clientUid', 'clientEmail', 'linkedAt', 'source', 'appointmentId'])
+            && request.resource.data.keys().hasOnly(['therapistUid', 'clientUid', 'clientEmail', 'linkedAt', 'source', 'appointmentId'])
+            && request.resource.data.clientEmail == request.auth.token.email
+            && request.resource.data.linkedAt is string
+            && hasValidBookingShare(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId)
+          )
+          ||
+          (
+            request.resource.data.source == 'invite'
+            && request.resource.data.therapistUid == request.auth.uid
+            && request.resource.data.keys().hasAll(['therapistUid', 'clientUid', 'linkedAt', 'source', 'linkCode', 'summary'])
+            && request.resource.data.keys().hasOnly(['therapistUid', 'clientUid', 'linkedAt', 'source', 'linkCode', 'summary'])
+            && request.resource.data.linkedAt is string
+            && validTherapistSummary(request.resource.data.summary)
+            && hasValidInviteLink(request.resource.data.clientUid, request.resource.data.linkCode)
+            && get(/databases/$(database)/documents/therapistLinks/$(request.resource.data.linkCode)).data.summary == request.resource.data.summary
+          )
+        );
       allow update: if isSignedIn()
-        && resource.data.therapistUid == request.auth.uid;
-      allow delete: if isSignedIn()
-        && resource.data.therapistUid == request.auth.uid;
+        && resource.data.therapistUid == request.resource.data.therapistUid
+        && resource.data.clientUid == request.resource.data.clientUid
+        && docId == request.resource.data.therapistUid + '_' + request.resource.data.clientUid
+        && (
+          (
+            request.resource.data.therapistUid == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['archived'])
+            && request.resource.data.archived is bool
+          )
+          ||
+          (
+            request.resource.data.source == 'invite'
+            && request.resource.data.therapistUid == request.auth.uid
+            && request.resource.data.keys().hasAll(['therapistUid', 'clientUid', 'linkedAt', 'source', 'linkCode', 'summary'])
+            && request.resource.data.keys().hasOnly(['therapistUid', 'clientUid', 'clientEmail', 'linkedAt', 'archived', 'source', 'appointmentId', 'linkCode', 'summary'])
+            && request.resource.data.linkedAt is string
+            && validTherapistSummary(request.resource.data.summary)
+            && hasValidInviteLink(request.resource.data.clientUid, request.resource.data.linkCode)
+            && get(/databases/$(database)/documents/therapistLinks/$(request.resource.data.linkCode)).data.summary == request.resource.data.summary
+          )
+          ||
+          (
+            request.resource.data.source == 'booking'
+            && request.resource.data.clientUid == request.auth.uid
+            && request.resource.data.keys().hasAll(['therapistUid', 'clientUid', 'clientEmail', 'linkedAt', 'source', 'appointmentId'])
+            && request.resource.data.keys().hasOnly(['therapistUid', 'clientUid', 'clientEmail', 'linkedAt', 'archived', 'source', 'appointmentId', 'linkCode', 'summary'])
+            && request.resource.data.clientEmail == request.auth.token.email
+            && request.resource.data.linkedAt is string
+            && hasValidBookingShare(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clientEmail', 'linkedAt', 'source', 'appointmentId'])
+          )
+        );
+      allow delete: if isSignedIn() && resource.data.therapistUid == request.auth.uid;
+    }
+
+    // Exercise assignments may be authored only by a therapist with a trusted
+    // roster relationship. The linked client and therapist may read the result.
+    match /assignments/{id} {
+      allow read: if isSignedIn()
+        && (resource.data.clientUid == request.auth.uid || resource.data.therapistUid == request.auth.uid);
+      allow create: if isOwner(request.resource.data.therapistUid)
+        && request.resource.data.id == id
+        && request.resource.data.clientUid is string
+        && hasTrustedTherapistClientLink(request.auth.uid, request.resource.data.clientUid)
+        && request.resource.data.keys().hasAll(['id', 'therapistUid', 'clientUid', 'exerciseId', 'frequency', 'assignedAt'])
+        && request.resource.data.keys().hasOnly(['id', 'therapistUid', 'clientUid', 'exerciseId', 'frequency', 'assignedAt', 'note'])
+        && request.resource.data.exerciseId is string
+        && request.resource.data.exerciseId.size() <= 120
+        && (request.resource.data.frequency == 'once'
+          || request.resource.data.frequency == 'daily'
+          || request.resource.data.frequency == 'weekly'
+          || request.resource.data.frequency == 'after-trigger')
+        && request.resource.data.assignedAt is string
+        && request.resource.data.assignedAt.size() <= 40
+        && (!('note' in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 1000));
+      allow update, delete: if false;
     }
   }
 }

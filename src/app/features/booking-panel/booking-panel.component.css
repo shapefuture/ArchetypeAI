@@ -114,6 +114,21 @@
   justify-content: flex-end;
 }
 
+.bk-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 16px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.bk-consent input {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
 .bk-quiet {
   color: rgba(0, 0, 0, 0.55);
   font-size: 13px;

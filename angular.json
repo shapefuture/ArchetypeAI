@@ -19,6 +19,7 @@
             "browser": "src/main.ts",
             "index": "src/index.html",
             "tsConfig": "tsconfig.json",
+            "webWorkerTsConfig": "tsconfig.worker.json",
               "styles": [
                 "src/styles/tailwind.generated.css",
                 "src/styles/design-system.css",

@@ -2,7 +2,7 @@
 // Body = two stuffed felt pieces (inflated from the outline) joined by a blanket-stitched seam.
 // Eyes, patches and rays are cut felt pieces conformed to the stuffed surface; embroidery is real thread geometry.
 import * as THREE from 'three';
-import Delaunator from 'delaunator';
+import Delaunator from '../vendor/delaunator.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SDF, outline, normals, inside, distTo, smoothPoly, resample, SegIndex, sdfGrid } from './shapes.js';
 import { rng, TEMPLATE, feltHex, threadHex, FELT } from './dna.js';

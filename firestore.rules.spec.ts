@@ -2,128 +2,89 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /**
- * Regression guard for `firestore.rules` — the "My clients" specialist
- * dashboard.
- *
- * The bug: when a signed-in admin (user in `adminAllowlist/{email}`) opened
- * their cabinet and tried to load their "My clients" list, Firestore
- * returned "Missing or insufficient permissions" on the very first read of
- * the `adminClients` collection. The root cause: `firestore.rules` had no
- * `match /adminClients/{...}` block, so every access was denied by default.
- *
- * A second, related issue: even if the `adminClients` read succeeded, the
- * cross-user read of `users/{clientUid}/assessment/current` (which powers
- * the per-client "Last assessment" row) was blocked because
- * `/users/{uid}/assessment` is owner-only.
- *
- * The fix: a `match /adminClients/{docId}` block restricted to the admin
- * whose UID is the docId prefix, AND an extra read-path on
- * `/users/{userId}/assessment/{docId}` and `/users/{userId}/history/{docId}`
- * gated on the existence of an `adminClients/{adminUid}_{clientUid}` doc.
- *
- * These tests pin the rules structure so a future refactor can't silently
- * drop the new permissions. They are file-content checks — no TestBed, no
- * Firebase emulator — and they run as part of `npm test`.
+ * Fast structural checks for the rules' most important authorization gates.
+ * Runtime behavior is covered separately by firestore.rules.emulator.spec.ts.
  */
+const rules = readFileSync(resolve(process.cwd(), 'firestore.rules'), 'utf8');
 
-const RULES_PATH = resolve(__dirname, 'firestore.rules');
-const rules = readFileSync(RULES_PATH, 'utf-8');
+function matchBlock(pattern: RegExp): string {
+  const match = rules.match(pattern);
+  expect(match).not.toBeNull();
+  return match?.[1] ?? '';
+}
 
-describe('firestore.rules — specialist client dashboard', () => {
-  it('declares a `match /adminClients/{docId}` block', () => {
-    // The collection must be matched at all — without this, every read
-    // and write to `adminClients/*` is denied by the default-deny policy.
-    expect(rules).toMatch(/match\s+\/adminClients\/\{docId\}\s*\{/);
+describe('firestore.rules — security boundaries', () => {
+  it('requires a verified email and bootstrap/allowlist membership for admin status', () => {
+    const admin = matchBlock(/function\s+isAdmin\s*\(\)\s*\{([\s\S]*?)\n\s*\}/);
+    expect(admin).toMatch(/hasVerifiedEmail\(\)/);
+    expect(admin).toMatch(/adminAllowlist/);
+    expect(admin).toMatch(/wmobilas@gmail\.com/);
   });
 
-  it('adminClients rule splits read/create/update/delete and gates each on `adminUid`', () => {
-    // The previous bug: a single `allow read, write: if resource.data.adminUid == ...`
-    // failed on `create` because `resource` is null for new docs. Firestore
-    // returned "Missing or insufficient permissions" with no useful diagnostic
-    // (the field is silently treated as null/undefined, making the condition
-    // false). The fix splits writes into create/update/delete and uses
-    // `request.resource.data` on create (where `resource` is null).
-    //
-    // We also pin the read rule's field-based shape (not docId-based) for the
-    // same `list`-query reason: a rule that depends on `docId.matches(...)`
-    // can't be evaluated for a `getDocs(collection(...))` query with no
-    // `where` clause.
-    const block = rules.match(/match\s+\/adminClients\/\{docId\}\s*\{([\s\S]*?)\n\s+\}/);
-    expect(block).not.toBeNull();
-    const body = block![1];
-
-    // Read: field-based ownership check on the existing doc(s).
-    expect(body).toMatch(/allow\s+read:\s*if\s+isSignedIn\(\)\s*&&\s*resource\.data\.adminUid\s*==\s*request\.auth\.uid/);
-
-    // Create: must check the doc BEING WRITTEN, not the existing doc (which
-    // is null). This is the actual regression — without this line, the
-    // "Add client" form fails with permissions error.
-    expect(body).toMatch(/allow\s+create:\s*if\s+isSignedIn\(\)\s*&&\s*request\.resource\.data\.adminUid\s*==\s*request\.auth\.uid/);
-
-    // Update: must verify the requester owns the EXISTING doc AND keeps
-    // `adminUid` pointing at themselves in the NEW doc (prevents an admin
-    // from reassigning a link to a different admin via update).
-    expect(body).toMatch(/allow\s+update:\s*if\s+isSignedIn\(\)\s*&&\s*resource\.data\.adminUid\s*==\s*request\.auth\.uid[\s\S]*?request\.resource\.data\.adminUid\s*==\s*request\.auth\.uid/);
-
-    // Delete: field-based ownership check on the doc being deleted.
-    expect(body).toMatch(/allow\s+delete:\s*if\s+isSignedIn\(\)\s*&&\s*resource\.data\.adminUid\s*==\s*request\.auth\.uid/);
-
-    // Sanity: no blanket `allow write: if ...` — that pattern would
-    // re-introduce the create bug.
-    expect(body).not.toMatch(/allow\s+write:\s*if/);
+  it('gates every adminClients operation on isAdmin and validates the relationship identity', () => {
+    const block = matchBlock(/match\s+\/adminClients\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
+    const readRule = block.match(/allow\s+read:\s*if[\s\S]*?;/)?.[0] ?? '';
+    expect(readRule).toMatch(/isAdmin\(\)[\s\S]*?resource\.data\.adminUid\s*==\s*request\.auth\.uid/);
+    expect(readRule).not.toMatch(/docId/);
+    expect(block).toMatch(/allow\s+create:\s*if\s+isAdmin\(\)/);
+    expect(block).toMatch(/allow\s+update:\s*if\s+isAdmin\(\)/);
+    expect(block).toMatch(/allow\s+delete:\s*if\s+isAdmin\(\)/);
+    expect(block).toMatch(/request\.resource\.data\.adminUid\s*==\s*request\.auth\.uid/);
+    expect(block).toMatch(/docId\s*==\s*request\.resource\.data\.adminUid\s*\+\s*'_'/);
   });
 
-  it('users/{userId}/assessment allows cross-user read when an adminClients link exists', () => {
-    // The new read path: owner OR an admin with an adminClients link.
-    const block = rules.match(/match\s+\/users\/\{userId\}[\s\S]*?match\s+\/assessment\/\{docId\}\s*\{([\s\S]*?)\n\s+\}\s*\n\s+\}/);
-    expect(block).not.toBeNull();
-    const body = block![1];
-    // The read rule must allow read for the owner OR via an adminClients
-    // link that joins the requester UID with the target userId.
-    expect(body).toMatch(/allow\s+read:\s*if\s+isOwner\(userId\)[\s\S]*?\|\|[\s\S]*?exists\([\s\S]*?adminClients[\s\S]*?request\.auth\.uid[\s\S]*?userId/);
-    // Writes must stay owner-only.
-    expect(body).toMatch(/allow\s+write:\s*if\s+isOwner\(userId\)/);
+  it('requires an admin link or a valid therapist booking share for cross-user records', () => {
+    const data = matchBlock(/match\s+\/assessment\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
+    const history = matchBlock(/match\s+\/history\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
+    for (const block of [data, history]) {
+      expect(block).toMatch(/isOwner\(userId\)\s*\|\|\s*hasAdminReadGrant\(userId\)\s*\|\|\s*hasTherapistReadGrant\(userId\)/);
+      expect(block).toMatch(/allow\s+write:\s*if\s+isOwner\(userId\)/);
+    }
+    expect(rules).toMatch(/function\s+hasActiveAppointment\s*\(/);
+    expect(rules).toMatch(/function\s+hasValidBookingShare\s*\(/);
   });
 
-  it('users/{userId}/history allows cross-user read when an adminClients link exists', () => {
-    // Same as assessment — the specialist view may also want history.
-    const block = rules.match(/match\s+\/users\/\{userId\}[\s\S]*?match\s+\/history\/\{docId\}\s*\{([\s\S]*?)\n\s+\}\s*\n\s+\}/);
-    expect(block).not.toBeNull();
-    const body = block![1];
-    expect(body).toMatch(/allow\s+read:\s*if\s+isOwner\(userId\)[\s\S]*?\|\|[\s\S]*?exists\([\s\S]*?adminClients[\s\S]*?request\.auth\.uid[\s\S]*?userId/);
-    expect(body).toMatch(/allow\s+write:\s*if\s+isOwner\(userId\)/);
+  it('requires authentication for telemetry and binds push tokens to a UID', () => {
+    const telemetry = matchBlock(/match\s+\/telemetryResponses\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
+    const push = matchBlock(/match\s+\/pushTokens\/\{token\}\s*\{([\s\S]*?)\n\s*\}/);
+    expect(telemetry).toMatch(/allow\s+create:\s*if\s+isSignedIn\(\)/);
+    expect(push).toMatch(/request\.resource\.data\.uid\s*==\s*request\.auth\.uid/);
+    expect(push).toMatch(/allow\s+read:\s*if\s+false/);
   });
 
-  it('declares a `match /publicProfiles/{userId}` block for UID<->email lookup', () => {
-    // The collection must be matched at all — without this, every read
-    // and write to `publicProfiles/*` is denied by the default-deny policy,
-    // and the admin's "Add client" form can't auto-fill email by UID
-    // (or UID by email).
-    expect(rules).toMatch(/match\s+\/publicProfiles\/\{userId\}\s*\{/);
+  it('allows signed-in directory reads but limits public-profile changes to the owner', () => {
+    const profile = matchBlock(/match\s+\/publicProfiles\/\{userId\}\s*\{([\s\S]*?)\n\s*\}/);
+    expect(profile).toMatch(/allow\s+read:\s*if\s+isSignedIn\(\)/);
+    expect(profile).toMatch(/allow\s+create,\s*update:\s*if\s+isOwner\(userId\)/);
+    expect(profile).toMatch(/allow\s+delete:\s*if\s+isOwner\(userId\)/);
   });
 
-  it('publicProfiles allows read for any signed-in user', () => {
-    // The read rule must NOT depend on `docId` — otherwise the
-    // `where('emailLower', '==', email)` query used by lookupByEmail
-    // would fail silently with "Missing or insufficient permissions"
-    // (Firestore can't evaluate a docId-dependent rule on a list query
-    // with no specific doc). The `isSignedIn()` gate is enough for the
-    // MVP; real hardening would gate on a Firebase custom claim.
-    const block = rules.match(/match\s+\/publicProfiles\/\{userId\}\s*\{([\s\S]*?)\n\s+\}/);
-    expect(block).not.toBeNull();
-    const body = block![1];
-    expect(body).toMatch(/allow\s+read:\s*if\s+isSignedIn\(\)/);
+  it('prevents collection enumeration of bearer share and therapist invite codes', () => {
+    const shareCodes = matchBlock(/match\s+\/shareCodes\/\{code\}\s*\{([\s\S]*?)\n\s*\}/);
+    const therapistLinks = matchBlock(/match\s+\/therapistLinks\/\{code\}\s*\{([\s\S]*?)\n\s*\}/);
+    expect(shareCodes).toMatch(/allow\s+get:\s*if\s+isSignedIn\(\)/);
+    expect(shareCodes).toMatch(/allow\s+list:\s*if\s+false/);
+    expect(shareCodes).toMatch(/validShareCodePayload\(request\.resource\.data\)/);
+    expect(rules).toMatch(/function\s+validShareCodePayload\s*\(/);
+    expect(therapistLinks).toMatch(/allow\s+get:\s*if\s+isSignedIn\(\)/);
+    expect(therapistLinks).toMatch(/allow\s+list:\s*if\s+false/);
   });
 
-  it('publicProfiles allows write only for the user themselves (isOwner)', () => {
-    // Prevents a malicious user from overwriting someone else's profile
-    // (e.g. swapping the email on another user's doc) or impersonating
-    // them in the directory.
-    const block = rules.match(/match\s+\/publicProfiles\/\{userId\}\s*\{([\s\S]*?)\n\s+\}/);
-    expect(block).not.toBeNull();
-    const body = block![1];
-    expect(body).toMatch(/allow\s+create:\s*if\s+isOwner\(userId\)/);
-    expect(body).toMatch(/allow\s+update:\s*if\s+isOwner\(userId\)/);
-    expect(body).toMatch(/allow\s+delete:\s*if\s+isOwner\(userId\)/);
+  it('uses a minimal public busy-slot projection as a booking collision guard', () => {
+    const slots = matchBlock(/match\s+\/therapistBusySlots\/\{id\}\s*\{([\s\S]*?)\n\s*\}/);
+    expect(slots).toMatch(/allow\s+read:\s*if\s+isSignedIn\(\)/);
+    expect(slots).toMatch(/request\.resource\.data\.keys\(\)\.hasOnly\(\['therapistUid', 'appointmentId', 'start', 'end'\]\)/);
+    expect(slots).toMatch(/existsAfter\([\s\S]*?appointments/);
+    expect(slots).toMatch(/allow\s+update:\s*if\s+false/);
+    const appointments = matchBlock(/match\s+\/appointments\/\{id\}\s*\{([\s\S]*?)\n\s*\}/);
+    expect(appointments).toMatch(/hasMatchingBusySlotAfter\(/);
+  });
+
+  it('checks appointment/client-share data before adding a therapist roster row', () => {
+    const shares = matchBlock(/match\s+\/clientShares\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
+    const roster = matchBlock(/match\s+\/therapistClients\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
+    expect(shares).toMatch(/hasActiveAppointment\(/);
+    expect(roster).toMatch(/hasValidBookingShare\(/);
+    expect(roster).toMatch(/hasValidInviteLink\(/);
   });
 });

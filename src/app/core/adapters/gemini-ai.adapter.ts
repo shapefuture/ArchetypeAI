@@ -3,6 +3,7 @@ import type { Archetype, DimensionalExpressions } from '../../../services/univer
 import { TranslationService } from '../../../services/translation.service';
 import { generateArchetypes, ScoredArchetype } from '../data/scoring';
 import { environment } from '../../../environments/environment';
+import { getFirebaseIdToken } from '../../../environments/firebase-id-token';
 import { ResilientExecutor, isRetryableFailure, OperationCancelledError } from './resilience';
 import { buildStudioArchetypeId, createStudioArchetype } from '../ai/studio-creator';
 import {
@@ -160,12 +161,18 @@ export class GeminiAiAdapter implements AiPort {
     try {
       const response = await this.executor.call(
         'gemini:callAI',
-        () => fetch(this.apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          signal: controller.signal,
-        }),
+        async () => {
+          const idToken = await getFirebaseIdToken();
+          return fetch(this.apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+        },
         undefined,
         options?.signal,
       ).then(r => {

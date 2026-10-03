@@ -1,0 +1,110 @@
+import React from 'react';
+import { useApp } from '../app.jsx';
+import { COLORS, EYES, FACES, HEADS, MOUTHS, SHAPES } from '../pal/traits.ts';
+import { EyesIcon, FaceIcon, HeadIcon, MouthIcon, ShapeIcon } from '../pal/Character.tsx';
+
+/* Cute chunky option buttons — style DNA from cutebuttons Customizer */
+const BTN = {
+  width: 46, height: 46, borderRadius: 16,
+  display: 'grid', placeItems: 'center',
+  background: 'var(--surface2)', border: '1.5px solid var(--line)',
+  boxShadow: '0 5px 0 rgba(0,0,0,.4), inset 0 1.5px 0 rgba(255,255,255,.1)',
+  transition: 'transform .1s, box-shadow .1s',
+  color: 'var(--text)',
+};
+const ON = {
+  ...BTN,
+  background: '#FFD000', color: '#16161c', borderColor: '#e6bc00',
+  transform: 'translateY(-2px)', boxShadow: '0 7px 0 #8a6d00',
+};
+
+function Section({ title, kicker, children }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
+        <h3 style={{ fontFamily: 'var(--font-round)', fontSize: 13.5, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase' }}>{title}</h3>
+        <span className="faint" style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.18em', textTransform: 'uppercase' }}>{kicker}</span>
+      </div>
+      <div className="row wrap" style={{ gap: 9 }}>{children}</div>
+    </div>
+  );
+}
+
+export function CustomizerLike({ traits, onChange, disabled }) {
+  const { t } = useApp();
+  const b = (on) => (on ? ON : BTN);
+  return (
+    <div>
+      <Section title={t('edSil')} kicker={t('edAnat')}>
+        {SHAPES.map((s) => (
+          <button key={s} title={s} disabled={disabled} style={b(traits.shape === s)} onClick={() => onChange({ shape: s })}>
+            <ShapeIcon shape={s} className="" />
+          </button>
+        ))}
+      </Section>
+
+      <Section title={t('edFleece')} kicker={t('edDye')}>
+        {COLORS.map((c) => (
+          <button key={c.value} title={c.name} disabled={disabled}
+            style={{
+              width: 40, height: 40, borderRadius: '50%', background: c.value,
+              border: '2px solid rgba(0,0,0,.35)',
+              boxShadow: '0 4px 0 rgba(0,0,0,.4), inset 0 2px 0 rgba(255,255,255,.35)',
+              transform: traits.color === c.value ? 'scale(1.12)' : 'none',
+              outline: traits.color === c.value ? '3px solid #FFD000' : 'none',
+              outlineOffset: 2,
+            }}
+            onClick={() => onChange({ color: c.value })} />
+        ))}
+      </Section>
+
+      <Section title={t('edGaze')} kicker={t('edWindows')}>
+        {EYES.map((e) => (
+          <button key={e} title={e} disabled={disabled} style={b(traits.eyes === e)} onClick={() => onChange({ eyes: e })}>
+            <EyesIcon style={e} />
+          </button>
+        ))}
+      </Section>
+
+      <Section title={t('edMug')} kicker={t('edOpt')}>
+        {MOUTHS.map((m) => (
+          <button key={m} title={m} disabled={disabled} style={b(traits.mouth === m)} onClick={() => onChange({ mouth: m })}>
+            <MouthIcon style={m} />
+          </button>
+        ))}
+      </Section>
+
+      <div className="row" style={{ gap: 20, alignItems: 'flex-start' }}>
+        <div className="grow">
+          <Section title={t('edLid')} kicker={t('edHead')}>
+            {HEADS.map((h) => (
+              <button key={h} title={h} disabled={disabled} style={b(traits.head === h)} onClick={() => onChange({ head: h })}>
+                <HeadIcon style={h} />
+              </button>
+            ))}
+          </Section>
+        </div>
+        <div className="grow">
+          <Section title={t('edFace')} kicker={t('edOptic')}>
+            {FACES.map((f) => (
+              <button key={f} title={f} disabled={disabled} style={b(traits.face === f)} onClick={() => onChange({ face: f })}>
+                <FaceIcon style={f} />
+              </button>
+            ))}
+          </Section>
+        </div>
+      </div>
+
+      <Section title={t('edExtras')} kicker={t('edDrama')}>
+        <button disabled={disabled} style={{ ...b(traits.bow), width: 'auto', padding: '0 16px', fontSize: 13, fontWeight: 900, fontFamily: 'var(--font-round)' }}
+          onClick={() => onChange({ bow: !traits.bow })}>
+          {t('edBow')} {traits.bow ? t('onT') : t('offT')}
+        </button>
+        <button disabled={disabled} style={{ ...b(traits.cheeks), width: 'auto', padding: '0 16px', fontSize: 13, fontWeight: 900, fontFamily: 'var(--font-round)' }}
+          onClick={() => onChange({ cheeks: !traits.cheeks })}>
+          {t('edBlush')} {traits.cheeks ? t('onT') : t('offT')}
+        </button>
+      </Section>
+    </div>
+  );
+}

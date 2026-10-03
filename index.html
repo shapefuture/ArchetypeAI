@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07070a" />
+    <meta name="description" content="Parts Cartographer — Internal Family Systems parts map, coaching, practice & compatibility analysis. Installable PWA." />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Parts Map" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Parts Cartographer · IFS map</title>
+  </head>
+  <body>
+    <script>
+      /* apply stored theme/lang before first paint (defaults: light + ru) */
+      try {
+        var th = localStorage.getItem('ifs.theme'); th = th ? JSON.parse(th) : 'light';
+        document.documentElement.setAttribute('data-theme', th === 'dark' ? 'dark' : 'light');
+        var lg = localStorage.getItem('ifs.lang'); lg = lg ? JSON.parse(lg) : 'ru';
+        document.documentElement.lang = lg === 'en' ? 'en' : 'ru';
+      } catch (e) {}
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/parts-cartographer/main.jsx"></script>
+  </body>
+</html>

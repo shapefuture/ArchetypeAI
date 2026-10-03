@@ -13,7 +13,7 @@ let FLAT = null;
 let LAYER = null;
 // Quality settings: 'hero' for the close-up, 'map' for crowds (fewer triangles, 3 draw calls per character).
 let Q = { sdCell: 0.005, tubeSeg: 0.0035, radial: 6, body: 0.017, piece: 0.009, fuzz: true, fibres: 3, knot: 48, unify: false };
-const LODS = { hero: Q, map: { sdCell: 0.008, tubeSeg: 0.009, radial: 4, body: 0.03, piece: 0.016, fuzz: false, fibres: 1, knot: 20, unify: true } };
+const LODS = { hero: Q, map: { sdCell: 0.008, tubeSeg: 0.02, radial: 3, body: 0.042, piece: 0.026, fuzz: false, fibres: 1, knot: 14, unify: true } };
 const flat = (rec) => { if (FLAT) { if (LAYER) rec.layer = LAYER; FLAT.push(rec); } };
 
 const BLACK = '#1d1c1f';

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Felt Lineup</title>
+<style>html,body{margin:0;height:100%;background:#e9e7e3;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"./vendor/three.module.min.js","three/addons/":"./vendor/addons/","delaunator":"./vendor/delaunator.js","robust-predicates":"./vendor/rp/orient2d.js"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { generateSet } from './src/dna.js';
+import { buildCharacter } from './src/builder.js';
+import { setupStage } from './src/stage.js';
+const q = new URLSearchParams(location.search);
+const seed = +(q.get('seed') || 3), collection = q.get('c') || 'wool', yaw = +(q.get('yaw') || 0), pitch = +(q.get('pitch') ?? 0);
+const W = innerWidth, H = innerHeight;
+const { renderer, scene, camera } = setupStage(document.body, W, H);
+const set = generateSet({ seed, collection, n: 12 });
+const rows = [[1, 2, 3, 4], [5, 6, 0, 7, 8], [9, 10, 11, 12]];
+const t0 = performance.now();
+const solo = q.get('solo');
+if (solo !== null) { const g = buildCharacter(set[+solo]); g.rotation.set(pitch, yaw, 0); scene.add(g); camera.position.set(0, 0, 3.0); camera.lookAt(0, 0, 0); renderer.render(scene, camera); window.__ready = true; throw 0; }
+rows.forEach((row, ri) => row.forEach((idx, ci) => {
+  const g = buildCharacter(set[idx]);
+  const sp = 1.12; g.position.set((ci - (row.length - 1) / 2) * sp, (1 - ri) * 0.98, 0);
+  g.rotation.set(pitch, yaw + ((idx * 37) % 9 - 4) * 0.012, ((idx * 53) % 9 - 4) * 0.02);
+  scene.add(g);
+}));
+camera.position.set(0, 0, 9.2); camera.lookAt(0, 0, 0);
+renderer.render(scene, camera);
+window.__buildMs = performance.now() - t0;
+window.__set = set;
+requestAnimationFrame(() => { renderer.render(scene, camera); window.__ready = true; });
+</script></body></html>

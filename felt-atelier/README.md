@@ -2,15 +2,23 @@
 
 3D appliqué-felt character customizer, randomizer and constellation preview. No server needed.
 
-- `customizer.html`: the whole app in one file (open it in a browser). Rebuild with `node build.mjs`.
-- `preview.html`: the self-contained 2D/3D preview — one character on a turntable with the flat sewing record fused
-  over it, a twelve-character inner family where every character is shown both as a 3D render and as its 2D sticker,
-  and a constellation view that floats 24 characters in real 3D at crowd LOD with a strip of their 2D stickers
-  (click one to open it on the turntable). No network at all: three.js, the engine and the sewing worker are inlined.
+- `preview.html`: **the one to open or send.** A single self-contained file — three.js, the engine and the sewing
+  worker are inlined, no network, no server, no build step. Double-click it, or serve the folder (`index.html`
+  redirects to it). Rebuild with `node build.mjs`.
+  In it: one character on a turntable with the flat sewing record fused over it, a twelve-character inner family
+  where every character appears both as a 3D render and as its 2D sticker, and a constellation view that floats 24
+  characters in real 3D at crowd LOD with a strip of their 2D stickers (click one to open it on the turntable).
+- `customizer.html`: the full customizer, also one file. `index.html` is a landing page that points at `preview.html`.
 - `lineup.html`: dev harness that renders a 13-character lineup (`?seed=3&pitch=-0.42`, `&solo=5` for one close-up).
 - `bench.mjs`, `bench2.mjs`: Node benchmarks of the sewing pipeline (`node bench.mjs`).
 - `smoke.mjs`: runs `preview.html` in jsdom with only the WebGL renderer stubbed, then drives the controls and
-  asserts the results (`node smoke.mjs`; needs `jsdom` as well).
+  asserts the results (`node smoke.mjs`; needs `jsdom` as well). It also checks the file ships with no external URLs.
+
+## Opening it without a server
+
+`preview.html` runs from `file://` straight off disk. The one difference: browsers refuse to start a blob worker from
+an opaque origin, so the pool sews on the main thread instead (the HUD says so). Everything is identical, just
+serialised — a character is about 100-200 ms instead of running in the background.
 
 Build needs `three`, `delaunator` and `esbuild` in `node_modules` (`npm i three@0.183.2 delaunator esbuild`).
 
@@ -22,6 +30,9 @@ record back into 3D: each record gets its height from the same inflation formula
 projected through the live camera. So the preview can draw the 2D paths *on* the plush (Trace), and register the flat
 sticker to the silhouette behind a split slider (Fuse). Front-on they coincide; turn the character and you can watch
 the flat record separate from the volume it describes.
+
+**Print sheet** turns the current character into an A4 page: the 3D render, the flat sticker, the construction table
+and the DNA — one DNA as both outputs, on paper.
 
 The constellation view is the other end of the same deal: 24 characters at crowd LOD in one scene (about 17k triangles
 and 3 draw calls each, no shadow pass, ~427k triangles for the whole family), each one also cut as a 2D sticker from

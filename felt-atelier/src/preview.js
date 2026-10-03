@@ -34,7 +34,7 @@ warmPrograms(renderer, scene, camera);
 
 // ---------- state ----------
 let dna = generate({ seed: 20261003, collection: 'wool' });
-let current = null, currentSvg = '', svgBox = null, items = [], seamItem = null, userSeam = null, dome = null, fitDist = 2.9;
+let current = null, sewnFlat = null, currentSvg = '', svgBox = null, items = [], seamItem = null, userSeam = null, dome = null, fitDist = 2.9;
 let lod = 'hero', fuse = false, trace = false, split = 50, spin = false, fuseEase = 0, token = 0, popT = 1;
 let view = 'single';
 const cam = { yaw: 0.34, pitch: -0.24, dist: 3.2, zoom: 1, vyaw: 0 };
@@ -72,7 +72,7 @@ function attach(r, d) {
   fitDist = Math.max(2.4, fh * r.size * 2.55, (fw * r.size * 2.2) / asp);
   if (current) { pivot.remove(current); disposeGroup(current); }
   current = g; pivot.add(g); popT = 0;
-  dna = d;
+  dna = d; sewnFlat = r.flat;
   currentSvg = toSVG(r.flat, { id: 'cur', title: describe(d) });
   svgBox = svgViewBox(currentSvg);
   $('#sticker').innerHTML = currentSvg;
@@ -184,7 +184,9 @@ function hud(now) {
   if (now - hudAt < 400) return; hudAt = now;
   const i = renderer.info.render; perf.draws = i.calls; perf.tris = i.triangles;
   perf.fps = Math.round(1000 / Math.max(1, avgDt));
-  $('#hud').textContent = `${perf.fps} fps · ${perf.cpu.toFixed(1)} ms CPU · ${i.calls} draws · ${(i.triangles / 1000).toFixed(0)}k tris · ${pr.toFixed(2)}× res`;
+  // opened from disk (file://) a browser will not start a blob worker, so the pool sews on the main thread instead
+  const sew = pool.fallback ? 'sewing on the main thread' : `${pool.workers.length} sewing workers`;
+  $('#hud').textContent = `${perf.fps} fps · ${perf.cpu.toFixed(1)} ms CPU · ${i.calls} draws · ${(i.triangles / 1000).toFixed(0)}k tris · ${pr.toFixed(2)}× res · ${sew}`;
 }
 function loop(now) {
   const dt = Math.min(100, now - lastT); lastT = now; avgDt = avgDt * 0.9 + dt * 0.1;
@@ -447,6 +449,36 @@ async function sewGrid(seed, collection = dna.collection) {
     cell.querySelector('.open').addEventListener('click', () => load(structuredClone(d)));
   }
 }
+// ---------- character sheet: the same DNA printed as both outputs ----------
+function snapshotHero() {
+  if (!current) return '';
+  const kr = pivot.rotation.clone(), ks = pivot.scale.clone(), kp = camera.position.clone(), kq = camera.quaternion.clone();
+  const kv = pivot.visible, kc = crowdRoot.visible, kb = scene.background;
+  pivot.rotation.set(-0.12, 0.3, 0); pivot.scale.setScalar(1); pivot.visible = true; crowdRoot.visible = false;
+  scene.background = new THREE.Color('#ffffff');
+  camera.position.set(0, 0, fitDist); camera.lookAt(0, 0, 0);
+  scaler.render(scene, camera);
+  const src = renderer.domElement, S = 900, c = document.createElement('canvas'); c.width = c.height = S;
+  const k = Math.min(src.width, src.height);
+  c.getContext('2d').drawImage(src, (src.width - k) / 2, (src.height - k) / 2, k, k, 0, 0, S, S);
+  pivot.rotation.copy(kr); pivot.scale.copy(ks); camera.position.copy(kp); camera.quaternion.copy(kq);
+  pivot.visible = kv; crowdRoot.visible = kc; scene.background = kb;
+  scaler.render(scene, camera); // restore before the browser paints
+  return c.toDataURL('image/jpeg', 0.9);
+}
+function buildSheet() {
+  $('#sheet3d').src = snapshotHero();
+  $('#sheet2d').innerHTML = sewnFlat ? toSVG(sewnFlat, { id: 'sh', title: describe(dna) }) : currentSvg;
+  $('#sheet-stats').innerHTML = $('#stats').innerHTML;
+  $('#sheet-dna').textContent = JSON.stringify(dna, null, 1);
+  $('#sheet-sub').textContent = `${describe(dna)} · seed ${dna.seed} · DNA hash ${dnaHash(dna).toString(16)} · ${lod} LOD`;
+}
+$('#print').addEventListener('click', () => {
+  if (!current) { toast('Sew a character first'); return; }
+  buildSheet();
+  try { window.print(); } catch { toast('Printing is blocked here'); }
+});
+
 // ---------- sticker actions ----------
 async function download(name, blob) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;

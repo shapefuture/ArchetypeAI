@@ -70,6 +70,7 @@ win.HTMLCanvasElement.prototype.getContext = function (kind) {
   });
 };
 win.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/jpeg;base64,/9j/AAAA';
+win.print = () => { win.__printed = (win.__printed || 0) + 1; };
 win.matchMedia = win.matchMedia || (() => ({ matches: false, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
 win.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
 win.structuredClone = win.structuredClone || structuredClone;
@@ -99,9 +100,19 @@ let fails = 0;
 const ok = (c, m, extra = '') => { console.log((c ? '  ok   ' : '  FAIL ') + m + (extra ? ' — ' + extra : '')); if (!c) fails++; };
 
 console.log('executing bundle…');
+// the built file must stand alone: no network of any kind
+const shipped = readFileSync(path.join(here, 'preview.html'), 'utf8');
+const external = (shipped.match(/(?:src|href)\s*=\s*["']https?:\/\/[^"']*/g) || []);
+ok(external.length === 0, 'preview.html has no external URLs', external.slice(0, 2).join(' '));
+ok(shipped.includes('<script type="text/plain" id="wsrc">'), 'the sewing worker is inlined in the file');
+ok(shipped.length < 1.4e6, 'preview.html stays a reasonable single file', (shipped.length / 1024).toFixed(0) + ' KB');
+
 ok(await until(() => win.__ready, 8000), 'bundle ran to the end (window.__ready)');
 ok(errors.length === 0, 'no errors during boot', errors.join(' | ').slice(0, 400));
 
+// jsdom has no Worker, so this run takes exactly the path a file:// open takes: sewing on the main thread
+ok(await until(() => /main thread/.test(doc.querySelector('#hud').textContent)), 'main-thread sewing fallback works end to end',
+  doc.querySelector('#hud').textContent);
 ok(await until(() => doc.querySelector('#stats').children.length > 10), 'construction stats filled', doc.querySelector('#stats').textContent.slice(0, 60).replace(/\s+/g, ' '));
 ok(await until(() => /"seed"/.test(doc.querySelector('#dna').textContent)), 'DNA shown');
 ok(await until(() => doc.querySelector('#sticker').innerHTML.includes('<svg')), '2D sticker generated from the sewing record');
@@ -171,6 +182,17 @@ doc.querySelector('#crowd').children[3].dispatchEvent(new win.Event('click', { b
 ok(await until(() => doc.querySelector('#views').querySelector('[data-view="single"]').getAttribute('aria-pressed') === 'true'), 'clicking a sticker opens it on the turntable');
 ok(await until(() => !doc.querySelector('#fusebar').hidden && doc.querySelector('#crowdbar').hidden), 'back to the single view');
 ok(await until(() => /<dt>/.test(doc.querySelector('#stats').innerHTML)), 'the clicked character is loaded', doc.querySelector('#desc').textContent);
+
+// character sheet: the same DNA prepared for paper, 3D render + flat sticker + construction + DNA
+doc.querySelector('#print').dispatchEvent(new win.Event('click', { bubbles: true }));
+ok(await until(() => win.__printed === 1), 'print sheet requested');
+ok(await until(() => (doc.querySelector('#sheet3d').src || '').startsWith('data:image/jpeg')), 'sheet carries a real 3D render of the character');
+ok(await until(() => doc.querySelector('#sheet2d').innerHTML.includes('<svg')), 'sheet carries the flat 2D sticker');
+ok(await until(() => doc.querySelector('#sheet-stats').children.length > 10), 'sheet carries the construction table');
+ok(await until(() => /"seed"/.test(doc.querySelector('#sheet-dna').textContent)), 'sheet carries the DNA');
+ok(await until(() => /seed \d+ · DNA hash [0-9a-f]+/.test(doc.querySelector('#sheet-sub').textContent)), 'sheet caption names seed and hash',
+  doc.querySelector('#sheet-sub').textContent);
+ok(doc.querySelector('#sheet').getAttribute('aria-hidden') === 'true', 'the sheet stays out of the screen layout');
 
 await sleep(500);
 ok(errors.length === 0, 'no errors in the whole run', errors.join(' | ').slice(0, 600));

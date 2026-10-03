@@ -92,6 +92,29 @@ pre { margin: 0; max-height: 190px; overflow: auto; font: 11.5px/1.45 var(--mono
 .meta b { font-weight: 600; }
 .meta i { font-style: normal; color: var(--muted); }
 .legend { color: var(--muted); font-size: 12.5px; margin: 0; }
+/* The character sheet only exists on paper: screen shows the app, the printer gets the sheet. */
+#sheet { display: none; }
+@media print {
+  @page { size: A4 portrait; margin: 14mm; }
+  html, body { background: #fff; color: #111; padding: 0; }
+  .app, #toast, .stagebox, .fusebar, .rail, .family { display: none !important; }
+  #sheet { display: block !important; font-size: 10.5pt; }
+  #sheet header { border-bottom: 1px solid #bbb; padding-bottom: 6pt; margin-bottom: 10pt; }
+  #sheet h2 { font: 600 17pt/1.2 var(--display); margin: 0 0 3pt; }
+  #sheet h3 { font: 600 10pt/1 var(--display); letter-spacing: .08em; text-transform: uppercase; margin: 0 0 5pt; }
+  #sheet p { margin: 0; }
+  #sheet-sub { font: 9.5pt var(--mono); color: #444; }
+  .sheetpair { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; }
+  .sheetpair figure { margin: 0; break-inside: avoid; }
+  .sheetpair img, .sheetpair #sheet2d svg { width: 100%; height: auto; display: block; border: 0.5pt solid #ccc; border-radius: 3pt; background: #fff; }
+  .sheetpair #sheet2d { padding: 6pt; border: 0.5pt solid #ccc; border-radius: 3pt; }
+  .sheetpair figcaption { font-size: 8.5pt; color: #444; margin-top: 4pt; }
+  .sheetgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; margin-top: 12pt; }
+  .sheetgrid pre { max-height: none; font-size: 8pt; background: none; padding: 0; }
+  #sheet .stats { font-size: 9.5pt; }
+  #sheet .stats dt { color: #555; }
+  .sheetfoot { margin-top: 10pt; border-top: 1px solid #bbb; padding-top: 5pt; font-size: 8.5pt; color: #555; }
+}
 #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--ink); color: var(--panel); padding: 9px 16px; border-radius: 999px; font-size: 13.5px; z-index: 9; }
 #swap { font: 11px var(--mono); color: var(--muted); }
 .crowd { display: flex; gap: 6px; overflow-x: auto; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); margin-top: 10px; scrollbar-width: thin; }
@@ -166,6 +189,7 @@ pre { margin: 0; max-height: 190px; overflow: auto; font: 11.5px/1.45 var(--mono
         <div class="row">
           <button type="button" class="btn" id="svg-dl">Download SVG</button>
           <button type="button" class="btn" id="png-dl">PNG</button>
+          <button type="button" class="btn" id="print">Print sheet</button>
         </div>
       </div>
       <div class="card">
@@ -185,4 +209,21 @@ pre { margin: 0; max-height: 190px; overflow: auto; font: 11.5px/1.45 var(--mono
     <div class="grid" id="grid"></div>
   </section>
 </div>
+<section id="sheet" aria-hidden="true">
+  <header>
+    <h2>Felt Atelier — character sheet</h2>
+    <p id="sheet-sub"></p>
+  </header>
+  <div class="sheetpair">
+    <figure><img id="sheet3d" alt="The character rendered as real stuffed-felt geometry"><figcaption><b>3D</b> — two cut pieces
+      inflated into stuffed domes, blanket-stitched rim, felt pieces and thread laid on the surface.</figcaption></figure>
+    <figure><div id="sheet2d"></div><figcaption><b>2D</b> — the same sewing record drawn flat: seam, stitch ticks, cut
+      pieces, embroidery.</figcaption></figure>
+  </div>
+  <div class="sheetgrid">
+    <div><h3>Construction</h3><dl class="stats" id="sheet-stats"></dl></div>
+    <div><h3>DNA — seed to every stitch</h3><pre id="sheet-dna"></pre></div>
+  </div>
+  <p class="sheetfoot">One DNA, one sewing pass, two outputs. Sewn by the Felt Atelier engine.</p>
+</section>
 <div id="toast" hidden></div>

@@ -33,7 +33,8 @@ local-first and inside its own CSP.
 Sewing costs 35-170ms per character, so it runs in a Web Worker
 (`dist/assets/felt-worker.js`, precached by the service worker). Where workers are
 unavailable the same engine runs time-sliced on the main thread instead. The WebGL
-stack is a lazy chunk: the map never parses it, only opening a part does.
+stack is a lazy chunk: the initial payload is ~35kB gzipped and does not include it —
+it is fetched on first touch and only parsed if a part is actually opened.
 
 ## Run locally
 

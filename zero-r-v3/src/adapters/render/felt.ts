@@ -168,14 +168,23 @@ export class FeltCharacters implements RenderPort {
     return this.enginePromise;
   }
 
-  /** Felt textures are expensive to build once; building them during idle is free. */
+  /**
+   * Felt textures cost real time to build once. They are warmed on the first touch
+   * rather than on load: pointerdown fires before click, so the 3D stack starts
+   * downloading while the part's hero doll is still being sewn in the worker.
+   */
   private maybeWarm() {
     if (this.warmed || this.queue.length || this.inflight.size) return;
     if (this.quality === "standard" || !this.warmKeys.size || !this.hasWebGL()) return;
     this.warmed = true;
-    void import("felt-atelier/assemble").then(({ warm }) => {
-      try { warm([...this.warmKeys]); } catch { /* pre-warming is a nicety */ }
-    }).catch(() => { /* no 3D stack; nothing to warm */ });
+    const keys = [...this.warmKeys];
+    const kick = () => {
+      void import("felt-atelier/assemble").then(({ warm }) => {
+        try { warm(keys); } catch { /* pre-warming is a nicety */ }
+      }).catch(() => { /* no 3D stack available; nothing to warm */ });
+    };
+    document.addEventListener("pointerdown", kick, { once: true, passive: true });
+    document.addEventListener("keydown", kick, { once: true });
   }
 
   private lodFor(slot: "map" | "detail"): Lod {

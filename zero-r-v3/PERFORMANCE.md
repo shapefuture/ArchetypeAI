@@ -25,8 +25,9 @@ runs where frames are made. The budget is therefore:
   the service worker can precache it and the PWA can still sew offline.
 - **Time-sliced fallback.** No workers? Same engine, 8ms slices, 24ms between them, so
   no slice is ever long enough to be seen.
-- **Lazy 3D.** three.js is a separate chunk. `assets/main.js` is ~25kB and never parses
-  the WebGL stack; opening a part is what fetches it.
+- **Lazy 3D.** three.js is a separate chunk. `assets/main.js` is ~25kB and does not
+  contain it; it is fetched on the first touch (pointerdown, which fires before the
+  click that opens the part) and parsed only if a part is actually opened.
 - **Cached per (lod, DNA).** The map, the family shelf and the hero view of a part share
   one sewn result, so a character is built at most twice (map + hero).
 

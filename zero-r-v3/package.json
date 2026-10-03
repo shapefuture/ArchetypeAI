@@ -11,7 +11,8 @@
     "test:unit": "node ./tests/run-tests.mjs",
     "test:ui": "node ./tests/smoke-ui.mjs",
     "bundle": "node ./scripts/bundle.mjs",
-    "sheet": "node ./tests/render-svg-sheet.mjs"
+    "sheet": "node ./tests/render-svg-sheet.mjs",
+    "build:single": "node ./scripts/build-single-file.mjs"
   },
   "devDependencies": {
     "delaunator": "^5.1.0",

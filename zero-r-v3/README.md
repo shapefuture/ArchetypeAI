@@ -47,4 +47,6 @@ it is fetched on first touch and only parsed if a part is actually opened.
 bundle and asserts the characters appear on the map, in the part panel and on the
 family shelf. `npm run typecheck` type-checks the app and the engine contract.
 `npm run sheet` writes a PNG contact sheet of the current cast so it can be checked
-without opening a browser.
+without opening a browser. `npm run build:single` writes one portable HTML file
+(`parts-map.html`) with the app, the engine, the worker and the stylesheet inlined —
+it runs from a file host or from `file://` with nothing else beside it.

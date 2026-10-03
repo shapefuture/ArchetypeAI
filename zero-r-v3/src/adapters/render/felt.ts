@@ -31,7 +31,8 @@ interface SewReply { id: number; ok: boolean; svg?: string; size?: number; tris?
 const cache = new Map<string, Sewn>();
 /** Dark stage, so the doll sits inside the app's own panel rather than on a white card. */
 const STAGE_BG = "#191622";
-const WORKER_URL = "/assets/felt-worker.js";
+/** Single-file builds (see scripts/build-single-file.mjs) inject a blob URL here. */
+const WORKER_URL = (globalThis as unknown as { __FELT_WORKER_URL__?: string }).__FELT_WORKER_URL__ ?? "/assets/felt-worker.js";
 
 export class FeltCharacters implements RenderPort {
   private quality: "ultra" | "high" | "standard" = "high";

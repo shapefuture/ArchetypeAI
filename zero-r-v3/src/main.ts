@@ -41,4 +41,4 @@ characters.onSelectPart=(id)=>dispatch({type:"OPEN_PART",id});
 state.subscribe(renderState); positionParts(); renderState(); void coordinator.restore(INITIAL_STATE).then(renderState);
 for(const part of PARTS){const el=qs<HTMLElement>(`[data-part="${part.id}"]`);if(el)characters.attachNode(el,part);}
 const selfNode=qs<HTMLElement>(".self-node"); if(selfNode)characters.attachSelf(selfNode);
-if("serviceWorker" in navigator) addEventListener("load",()=>void navigator.serviceWorker.register("/sw.js"),{once:true});
+if("serviceWorker" in navigator) addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{});},{once:true});

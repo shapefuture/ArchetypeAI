@@ -1,5 +1,5 @@
 /* postbuild: stamp dist/sw.js with a hash of dist/index.html (draft PWA requirement) */
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,6 +24,10 @@ const stamp = `${hash}-${Date.now().toString(36)}`;
 
 let sw = readFileSync(swSrc, 'utf8');
 sw = sw.replace('__BUILD_ID__', stamp);
+// Precache lazy screens, workers and fonts as well as the initial bundle, so a
+// previously unopened assessment/report remains usable after going offline.
+const assets = readdirSync(join(root, 'dist', 'assets')).map((name) => `/assets/${name}`);
+sw = sw.replace('const BUILD_ASSETS = [];', `const BUILD_ASSETS = ${JSON.stringify(assets)};`);
 
 mkdirSync(dirname(swDst), { recursive: true });
 writeFileSync(swDst, sw);

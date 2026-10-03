@@ -836,3 +836,23 @@ html[lang='ru'] :where(.kicker, .section-title, .btn, .chip, .opt, .menu-item, .
 /* ghost buttons ON a light card stay dark (white-on-white fix) */
 [data-theme='light'] .overlay .card .btn.ghost,
 [data-theme='light'] .overlay .plan .btn.ghost { color: #16161c; }
+
+/* Keyboard access and motion preferences apply to every migrated flow. */
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid var(--accent, #3b9bff);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+.report-embedded { position: relative; width: 100%; }
+.report-embedded > .scroll { height: auto; overflow: visible; padding: 16px 0; }
+.modal-layer { position: absolute; inset: 0; z-index: 60; pointer-events: none; }
+.modal-layer .overlay, .modal-layer .sheet { pointer-events: auto; }
+.app-content { display: flex; flex: 1; min-height: 0; width: 100%; }
+.app-content > .screen { width: 100%; min-width: 0; }
+.grow { min-width: 0; }
+
+.universe-actions { scrollbar-width: none; }
+.universe-actions::-webkit-scrollbar { display: none; }
+.universe-actions .tray-btn { flex: 0 0 auto; white-space: nowrap; }

@@ -140,4 +140,44 @@ describe('React 64-item scoring-method parity', () => {
     expect(container.textContent).toContain('AI request cancelled');
     expect(container.textContent).toContain('Deterministic · local');
   });
+  it('aborts AI on an in-place language change and rebuilds the local report', () => {
+    let signal: AbortSignal;
+    aiMock.analyzeLegacy.mockImplementation((_input, options) => { signal = options.signal; return new Promise(() => undefined); });
+    const container = mount();
+    clickButton(container, 'AI-generated pantheon');
+    appMock.current!.lang = 'ru';
+    act(() => root?.render(React.createElement(Legacy64Assessment)));
+    expect(signal!.aborted).toBe(true);
+    expect(container.textContent).toContain('Точный расчёт');
+    expect(JSON.parse(localStorage.getItem('ifs.legacy64.result')!).language).toBe('ru');
+    expect(localStorage.getItem('archetype_scoring_method')).toBe('deterministic');
+  });
+
+  it('keeps deterministic data after a failed AI request and allows a successful retry', async () => {
+    aiMock.analyzeLegacy.mockRejectedValueOnce(new Error('provider unavailable'));
+    const container = mount();
+    const before = JSON.parse(localStorage.getItem('ifs.legacy64.result')!);
+    await act(async () => {
+      const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent?.includes('AI-generated pantheon'));
+      (button as HTMLButtonElement).click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(container.textContent).toContain('AI analysis could not be completed');
+    expect(localStorage.getItem('archetype_scoring_method')).not.toBe('fallback');
+    expect(JSON.parse(localStorage.getItem('ifs.legacy64.result')!).poleScores).toEqual(before.poleScores);
+    const generated = { analysis: 'A careful alternate reflection.', poleScores: { agency: 0, emotional_temperature: 0, relational_focus: 0, attachment: 0 },
+      pantheon: Array.from({ length: 4 }, (_, i) => ({ ...before.archetypes[0], name: `Retry pattern ${i + 1}` })) };
+    aiMock.analyzeLegacy.mockResolvedValueOnce(generated);
+    await act(async () => {
+      const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent?.includes('AI-generated pantheon'));
+      (button as HTMLButtonElement).click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(aiMock.analyzeLegacy).toHaveBeenCalledTimes(2);
+    expect(container.textContent).toContain('Retry pattern 1');
+    expect(localStorage.getItem('archetype_scoring_method')).toBe('fallback');
+    expect(JSON.parse(localStorage.getItem('ifs.legacy64.result')!).poleScores).toEqual(before.poleScores);
+    expect(JSON.parse(localStorage.getItem('ifs.legacy64.result')!).aiAnalysis.analysis).toBe(generated.analysis);
+  });
+
 });

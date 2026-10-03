@@ -10,7 +10,7 @@ const apiMocks = vi.hoisted(() => ({
 vi.mock('./auth.service', () => ({ getFirebaseIdToken: authMocks.getFirebaseIdToken }));
 vi.mock('./api', () => ({ workerApiUrl: apiMocks.workerApiUrl }));
 
-import { analyzeLegacyRelationalAssessment, generateSynastryNarrative, ResilientAiAdapter } from './ai.adapter';
+import { analyzeLegacyRelationalAssessment, chatWithContext, createStudioArchetype, generateSynastryNarrative, ResilientAiAdapter } from './ai.adapter';
 
 const analysisPayload = {
   analysis: `${'## Grounded reflection\nThis is a careful, response-based reflection and not a diagnosis. '.repeat(3)}\n## Keep in mind\nUse your own judgment.`,
@@ -52,6 +52,46 @@ beforeEach(() => {
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
+  vi.useRealTimers();
+});
+
+describe('coach and studio lifecycle', () => {
+  it('sends bounded dialogue and only the explicitly selected part fields', async () => {
+    fetchSpy.mockResolvedValue(workerResponse('A careful response.'));
+    await chatWithContext(Array.from({ length: 30 }, (_, i) => ({ role: i % 2 ? 'ai' as const : 'user' as const, text: 'x'.repeat(5000) })), 'parts', {
+      language: 'ru', part: { name: 'Selected guardian', need: 'A pause', privateJournal: 'secret', answers: [1, 2] } as any,
+    });
+    const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
+    expect(body.history).toHaveLength(20);
+    expect(body.prompt).toHaveLength(4000);
+    expect(body.systemInstruction).toContain('Russian');
+    expect(body.systemInstruction).toContain('Selected guardian');
+    expect(JSON.stringify(body)).not.toMatch(/secret|privateJournal|answers/);
+  });
+  it('cancels even while waiting for Firebase identity without sending a request', async () => {
+    authMocks.getFirebaseIdToken.mockImplementation(() => new Promise(() => undefined));
+    const controller = new AbortController();
+    const pending = chatWithContext([{ role: 'user', text: 'Pause' }], 'general', { language: 'en' }, { signal: controller.signal });
+    controller.abort();
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+  it('validates studio coordinates and returns a clearly degraded local draft on malformed output', async () => {
+    fetchSpy.mockResolvedValue(workerResponse(JSON.stringify({ title: 'Guardian', family: 'manager', coordinates: [0, 0, 0, 9] })));
+    const draft = JSON.parse(await createStudioArchetype('Мой защитник', 'ru'));
+    expect(draft.title).toBe('Мой защитник');
+    expect(draft.coordinates).toEqual([0, 0, 0, 0]);
+    expect(ResilientAiAdapter.degradation.degraded).toBe(true);
+  });
+  it('bounds a hung provider request instead of leaving the assessment busy forever', async () => {
+    vi.useFakeTimers();
+    fetchSpy.mockImplementation(() => new Promise(() => undefined));
+    const pending = analyzeLegacyRelationalAssessment(promptInput);
+    const failure = expect(pending).rejects.toMatchObject({ name: 'TimeoutError' });
+    await vi.advanceTimersByTimeAsync(45_000);
+    await failure;
+    expect(fetchSpy.mock.calls[0][1].signal.aborted).toBe(true);
+  });
 });
 
 describe('authenticated AI-first legacy analysis transport', () => {
@@ -95,11 +135,10 @@ describe('authenticated AI-first legacy analysis transport', () => {
     let rejectRequest!: (reason: unknown) => void;
     fetchSpy.mockImplementation(() => new Promise((_resolve, reject) => { rejectRequest = reject; }));
     const pending = analyzeLegacyRelationalAssessment(promptInput, { signal: controller.signal });
-    await Promise.resolve();
-    await Promise.resolve();
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(fetchSpy.mock.calls[0][1].signal).toBe(controller.signal);
+    expect(fetchSpy.mock.calls[0][1].signal.aborted).toBe(false);
     controller.abort();
     rejectRequest(new DOMException('Aborted', 'AbortError'));
 
@@ -138,10 +177,9 @@ describe('authenticated AI-first legacy analysis transport', () => {
     let rejectRequest!: (reason: unknown) => void;
     fetchSpy.mockImplementation(() => new Promise((_resolve, reject) => { rejectRequest = reject; }));
     const pending = generateSynastryNarrative({ score: 50 }, 'en', { signal: controller.signal });
-    await Promise.resolve();
-    await Promise.resolve();
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
 
-    expect(fetchSpy.mock.calls[0][1].signal).toBe(controller.signal);
+    expect(fetchSpy.mock.calls[0][1].signal.aborted).toBe(false);
     controller.abort();
     rejectRequest(new DOMException('Aborted', 'AbortError'));
     await expect(pending).rejects.toMatchObject({ name: 'AbortError' });

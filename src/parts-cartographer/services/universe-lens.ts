@@ -8,6 +8,10 @@ export interface UniverseDimensions {
 }
 
 export type ArchetypeCoordinates = [number, number, number, number];
+export type DimensionKey = keyof UniverseDimensions;
+export const DIMENSION_KEYS: DimensionKey[] = ['AGENCY', 'TEMPERATURE', 'FOCUS', 'ATTACHMENT'];
+export type UniverseAxes = [DimensionKey, DimensionKey, DimensionKey];
+export const DEFAULT_AXES: UniverseAxes = ['AGENCY', 'TEMPERATURE', 'FOCUS'];
 
 export const ZERO_DIMENSIONS: UniverseDimensions = {
   AGENCY: 0,
@@ -35,13 +39,24 @@ function boundedCoordinates(coordinates: ArchetypeCoordinates): ArchetypeCoordin
 }
 
 /** Project a 4D archetype point to the stable 3D scene axes. */
-export function archetypeCoordinatePosition(coordinates: ArchetypeCoordinates): [number, number, number] {
-  const [agency, temperature, focus, attachment] = boundedCoordinates(coordinates);
-  return [
-    (agency + focus) * 14,
-    (temperature + attachment) * 14,
-    (agency - focus + temperature - attachment) * 8,
-  ];
+export function archetypeCoordinatePosition(
+  coordinates: ArchetypeCoordinates,
+  axes: UniverseAxes = DEFAULT_AXES,
+  isolation: DimensionKey | null = null,
+): [number, number, number] {
+  const point = boundedCoordinates(coordinates);
+  if (isolation === 'ATTACHMENT') return [point[0] * 10, point[3] * 10, 0];
+  return axes.map((key) => isolation && key !== isolation ? 0 : point[DIMENSION_KEYS.indexOf(key)] * 10) as [number, number, number];
+}
+
+/** Same weighted Gaussian affinity as Angular's exploration and report layers. */
+export function coordinateAffinity(coordinates: ArchetypeCoordinates, dimensions: UniverseDimensions, resource = false): number {
+  const expressions = DIMENSION_KEYS.map((key) => Math.max(-1, Math.min(1, Number(dimensions[key]) || 0)));
+  const magnitude = expressions.reduce((sum, value) => sum + Math.abs(value), 0);
+  if (magnitude <= 0.01) return resource ? 0.5 : 0;
+  const point = boundedCoordinates(coordinates);
+  return expressions.reduce((sum, expression, index) =>
+    sum + Math.abs(expression) * Math.exp(-Math.pow(expression - point[index], 2) * 2), 0) / magnitude;
 }
 
 /** Apply the user's visual lens to a coordinate-bearing archetype, rather than to its family average. */

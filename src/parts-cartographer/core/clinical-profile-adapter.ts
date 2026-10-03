@@ -20,6 +20,7 @@ import { PART_COPY as CLINICAL_PART_COPY, COMPLEX_COPY_RU } from '../../i18n/str
 import { hashStr } from './ports';
 import { FAMILY_LABELS, SEED_PARTS, type Family, type Part } from '../pal/traits';
 import { SCORING_NAME_POOLS, type Lang } from '../i18n/strings';
+import { IV_PARTS } from '../../app/features/landing/stickers';
 
 const PART_NAME_EN: Record<string, string> = {
   taskmaster: 'Taskmaster',
@@ -118,7 +119,7 @@ function familyFor(id: PartId): Family {
 function partTraits(id: string, family: Family): Part['traits'] {
   const choices = FAMILY_SEEDS[family];
   const seed = choices[hashStr(id) % choices.length] ?? SEED_PARTS[0];
-  return { ...seed.traits };
+  return { ...seed.traits, characterSeed: hashStr(id) };
 }
 
 function projectedPart(
@@ -134,6 +135,7 @@ function projectedPart(
   const intensity = Math.max(1, Math.min(5, Math.round((score.T - 20) / 15 + 1)));
   const felt = score.T < 45 ? 'low' : score.T >= 60 ? 'high' : 'mid';
   const band = score.band ? ` · ${score.band}` : '';
+  const reference = IV_PARTS.find((part) => part.id === id)!;
 
   return {
     id,
@@ -153,6 +155,18 @@ function projectedPart(
     somatic: intensity,
     felt,
     scoreT: score.T,
+    archetype: {
+      schema: 'archetype-map.v1',
+      sourceAssessment: 'descent147',
+      coordinates: [reference.ax.ag, reference.ax.te, reference.ax.fo, reference.ax.at]
+        .map((value) => (value - 50) / 50) as [number, number, number, number],
+      cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[family],
+      prominence: Math.max(0, Math.min(100, (score.T - 20) / 60 * 100)),
+      size: { manager: 0.75, firefighter: 0.7, exile: 0.6, resource: 0.8 }[family],
+      description: localCopy?.face[copyIndex] ?? '',
+      invitation: localCopy?.need[copyIndex] ?? '',
+      shadow: localCopy?.shadow[copyIndex] ?? '',
+    },
   };
 }
 
@@ -173,17 +187,13 @@ export function adaptClinicalProfile(score: ClinicalScore, lang: Lang): { profil
     energy: Math.max(0, Math.min(1, (strongest.T - 20) / 60)),
     scoreT: strongest.T,
   };
-  const attachmentIndex = score.attachment.disorganized
-    ? 3
-    : score.attachment.anxious > score.attachment.avoidant
-      ? 1
-      : score.attachment.avoidant > score.attachment.anxious
-        ? 2
-        : 0;
+  const attachmentIndex = score.attachment.disorganized ? 3
+    : score.attachment.anxious >= score.attachment.avoidant && score.attachment.anxious >= score.attachment.secure ? 1
+    : score.attachment.avoidant >= score.attachment.secure ? 2 : 0;
   const attachmentNames = lang === 'ru' ? SCORING_NAME_POOLS.attachment.ru : SCORING_NAME_POOLS.attachment.en;
   const resolveSubtypes = (language: Lang) => SHADOW_PARTS.map((id) => {
     const subtype = score.subtypes[id];
-    return subtypeName(familyFor(id), subtype.slug, subtype.name, language);
+    return subtypeName(id, subtype.slug, subtype.name, language);
   });
   const subtypesEn = resolveSubtypes('en');
   const subtypesRu = resolveSubtypes('ru');

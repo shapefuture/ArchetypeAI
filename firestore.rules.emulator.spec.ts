@@ -253,6 +253,8 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(setDoc(doc(asUser(UIDS.attacker, 'attacker@example.com'), 'pushTokens', 'token-victim'), {
         token: 'token-victim', uid: UIDS.attacker, createdAt: 'now',
       }));
+      await assertFails(deleteDoc(doc(asUser(UIDS.attacker), 'pushTokens', 'token-victim')));
+      await assertSucceeds(deleteDoc(doc(owner, 'pushTokens', 'token-victim')));
     });
 
     it('allows authenticated single-code lookup but denies share-code collection listing', async () => {
@@ -284,7 +286,9 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       const shared = await assertSucceeds(getDoc(doc(recipient, 'shareCodes', 'map123code45')));
       expect(shared.data()?.mapSnapshot.parts).toHaveLength(1);
       await assertFails(deleteDoc(doc(recipient, 'shareCodes', 'map123code45')));
+      await assertFails(updateDoc(doc(recipient, 'shareCodes', 'map123code45'), { uid: UIDS.attacker }));
       await assertSucceeds(deleteDoc(codeRef));
+      expect((await assertSucceeds(getDoc(doc(recipient, 'shareCodes', 'map123code45')))).exists()).toBe(false);
     });
 
     it('supports legacy assessment share codes through a bounded embedded snapshot', async () => {
@@ -380,6 +384,31 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         end: '2026-10-05T11:00',
       });
       await assertFails(duplicate.commit());
+    });
+
+    it('permits exactly one concurrent client reservation for the same therapist slot', async () => {
+      await seedTherapistProfile();
+      const attempts = [UIDS.client, UIDS.attacker].map((clientUid, index) => {
+        const db = asUser(clientUid, `client${index}@example.com`);
+        const id = `concurrent-${index}`;
+        const batch = writeBatch(db);
+        batch.set(doc(db, 'appointments', id), {
+          clientUid, clientEmail: `client${index}@example.com`, therapistUid: UIDS.therapist,
+          therapistEmail: 'therapist@example.com', start: '2026-10-05T10:00', end: '2026-10-05T11:00',
+          status: 'pending', createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+        });
+        batch.set(doc(db, 'therapistBusySlots', `${UIDS.therapist}_2026-10-05T10:00`), {
+          therapistUid: UIDS.therapist, appointmentId: id, start: '2026-10-05T10:00', end: '2026-10-05T11:00',
+        });
+        return batch.commit();
+      });
+      const results = await Promise.allSettled(attempts);
+      expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+      expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+      await seed(async (db) => {
+        expect((await getDocs(collection(db, 'appointments'))).size).toBe(1);
+        expect((await getDocs(collection(db, 'therapistBusySlots'))).size).toBe(1);
+      });
     });
 
     it('allows a valid appointment share and revokes cross-user reads when the appointment is declined', async () => {

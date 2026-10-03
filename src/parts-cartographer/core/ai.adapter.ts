@@ -17,6 +17,9 @@ const pickFrom = <T,>(arr: T[], seed: number): T => arr[seed % arr.length];
 export const LocalHeuristicAiAdapter: AI_PORT = {
   async chat(messages, mode) {
     const last = messages[messages.length - 1]?.text ?? '';
+    if (/[А-Яа-яЁё]/.test(last)) return mode === 'parts'
+      ? 'Какая часть сейчас говорит? Заметьте, где она ощущается в теле. Спросите, что она пытается для вас защитить, и дайте ей немного пространства.'
+      : 'Давайте замедлимся. Что вы сейчас замечаете и какой небольшой бережный шаг кажется возможным?';
     const seed = hashStr(last + mode);
     const r = rngFrom(seed);
     if (mode === 'parts') {
@@ -39,10 +42,10 @@ export const LocalHeuristicAiAdapter: AI_PORT = {
     return pickFrom(lines, seed + Math.floor(r() * 7));
   },
   async aiReport(profile) {
-    const p = profile as { headline?: string; validity?: number } | null;
-    return `AI report (local heuristic): headline "${p?.headline ?? 'unset'}". Validity ${(p?.validity ?? 0.7).toFixed(2)}. ` +
-      `The system shows protective organization before relational openness — classic Manager-led sky with Firefighter backup. ` +
-      `Recommended next: one witnessing exercise per day for 7 days, then re-scan polarizations.`;
+    const p = profile as { language?: string; nextStep?: string } | null;
+    return p?.language === 'ru'
+      ? 'ИИ сейчас недоступен. Ваши локальные показатели не изменены. Сделайте паузу и выберите один небольшой бережный шаг.'
+      : 'AI is currently unavailable. Your local indicators are unchanged. Pause and choose one small, considerate next step.';
   },
   async quickScan(code) {
     const seed = hashStr(code);
@@ -52,9 +55,13 @@ export const LocalHeuristicAiAdapter: AI_PORT = {
       `. Dominant bond: ${pickFrom(['mirror', 'anchor', 'catalyst', 'sanctuary', 'challenger', 'echo'], seed)}.`;
   },
   async suggestExercise(profile) {
-    const seed = hashStr(JSON.stringify(profile ?? {}) || 'x');
-    const ids = ['e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12', 'e13', 'e14', 'e15', 'e16', 'e17', 'e18', 'e19', 'e20'];
-    return pickFrom(ids, seed);
+    const { EXERCISES, suggestExercise } = await import('../../app/core/data/exercises');
+    const clinical = (profile as any)?.clinical;
+    if (clinical) {
+      const suggestion = suggestExercise({ profile: clinical, checkIns: [], now: new Date() });
+      if (suggestion) return suggestion.exercise.id;
+    }
+    return EXERCISES.find((exercise) => exercise.type === 'safe_place')?.id ?? EXERCISES[0].id;
   },
   async archetypeCreate(prompt) {
     const seed = hashStr(prompt);
@@ -86,21 +93,32 @@ async function callCloud(payload: {
   history?: { role: 'user' | 'model'; content: string }[];
 }, options?: { signal?: AbortSignal }): Promise<string> {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new Error('offline');
-  const idToken = await getFirebaseIdToken();
-  const response = await fetch(workerApiUrl('ai'), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${idToken}`,
-    },
-    body: JSON.stringify(payload),
-    signal: options?.signal,
+  const controller = new AbortController();
+  const abort = () => controller.abort(options?.signal?.reason);
+  if (options?.signal?.aborted) abort();
+  options?.signal?.addEventListener('abort', abort, { once: true });
+  const timeout = setTimeout(() => controller.abort(new DOMException('AI request timed out', 'TimeoutError')), 45_000);
+  const aborted = new Promise<never>((_, reject) => {
+    if (controller.signal.aborted) reject(controller.signal.reason);
+    else controller.signal.addEventListener('abort', () => reject(controller.signal.reason), { once: true });
   });
-  const data = await response.json().catch(() => ({})) as { text?: string; error?: string };
-  if (!response.ok || !data.text?.trim()) {
-    throw new Error(data.error || `AI service unavailable (${response.status})`);
+  try {
+    const idToken = await Promise.race([getFirebaseIdToken(), aborted]);
+    const response = await Promise.race([fetch(workerApiUrl('ai'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify(payload), signal: controller.signal,
+    }), aborted]);
+    const data = await Promise.race([response.json().catch(() => ({})), aborted]) as { text?: string; error?: string };
+    if (!response.ok || typeof data.text !== 'string' || !data.text.trim() || data.text.length > 100_000) {
+      throw new Error(data.error || `AI service unavailable (${response.status})`);
+    }
+    return data.text.trim();
+  } finally {
+    clearTimeout(timeout);
+    options?.signal?.removeEventListener('abort', abort);
   }
-  return data.text.trim();
+
 }
 
 const COACH_INSTRUCTIONS = {
@@ -150,8 +168,8 @@ export const ResilientAiAdapter: AI_PORT & { degradation: Degradation; primary: 
   async archetypeCreate(prompt) {
     try {
       const text = await callCloud({
-        prompt: `Create a fictional inner-part character from this short description: "${prompt.slice(0, 300)}". Return only a valid JSON object with keys title, family, role, shape, color, eyes, mouth, head, face, bow, cheeks. Allowed family: manager, firefighter, exile, resource. Allowed shape: cloud, frog, triangle, heart, bean, egg. Allowed eyes: ovals, googly, closed, wink, tiny. Allowed mouth: none, smile, o, flat, grin. Allowed head: none, beret, halo, horns, party. Allowed face: none, glasses, shades. Color must be a six-digit hex code. bow and cheeks must be booleans.`,
-        systemInstruction: 'Return JSON only, with no markdown fences or explanation. Keep the title and role kind, imaginative, and non-clinical.',
+        prompt: `Create a fictional inner-part character from this short description: "${prompt.slice(0, 300)}". Return only a valid JSON object with keys title, family, role, description, invitation, shadow, coordinates, shape, color, eyes, mouth, head, face, bow, cheeks. coordinates must contain four finite numbers from -1 to 1 for agency, emotional temperature, relational focus and attachment. Allowed family: manager, firefighter, exile, resource. Allowed shape: cloud, frog, triangle, heart, bean, egg. Allowed eyes: ovals, googly, closed, wink, tiny. Allowed mouth: none, smile, o, flat, grin. Allowed head: none, beret, halo, horns, party. Allowed face: none, glasses, shades. Color must be a six-digit hex code. bow and cheeks must be booleans.`,
+        systemInstruction: 'Return JSON only, with no markdown fences or explanation. Keep the title and role kind, imaginative, and non-clinical. Respond in the language of the description.',
       });
       this.degradation = { degraded: false, reason: null };
       this.primary = 'cloud';
@@ -164,6 +182,53 @@ export const ResilientAiAdapter: AI_PORT & { degradation: Degradation; primary: 
   },
   predictPart(e, a) { return LocalHeuristicAiAdapter.predictPart(e, a); },
 };
+
+/** Additive V2 chat path: explicit selected-part context, language and lifecycle cancellation. */
+export async function chatWithContext(messages: { role: 'user' | 'ai'; text: string }[], mode: 'parts' | 'general', context: {
+  language: 'en' | 'ru'; part?: { name?: string; family?: string; role?: string; need?: string; voice?: string };
+}, options?: { signal?: AbortSignal }): Promise<string> {
+  const last = [...messages].reverse().find((message) => message.role === 'user')?.text ?? '';
+  const selectedPart = context.part ? Object.fromEntries(['name', 'family', 'role', 'need', 'voice']
+    .filter((key) => typeof (context.part as any)[key] === 'string')
+    .map((key) => [key, (context.part as any)[key].slice(0, 400)])) : null;
+  try {
+    const text = await callCloud({ prompt: last.slice(0, 4000),
+      systemInstruction: `${COACH_INSTRUCTIONS[mode]} Respond in ${context.language === 'ru' ? 'Russian' : 'English'}. ${selectedPart ? `The user selected this part for dialogue: ${JSON.stringify(selectedPart)}. Address its protective intent and ask for permission before exploring.` : ''}`,
+      history: messages.slice(-21, -1).map((message) => ({ role: message.role === 'ai' ? 'model' : 'user', content: message.text.slice(0, 4000) })),
+    }, options);
+    ResilientAiAdapter.degradation = { degraded: false, reason: null };
+    ResilientAiAdapter.primary = 'cloud';
+    return text;
+  } catch (error) {
+    if (options?.signal?.aborted) throw error;
+    ResilientAiAdapter.degradation = { degraded: true, reason: 'AI unavailable' };
+    ResilientAiAdapter.primary = 'heuristic';
+    if (context.language === 'ru') return 'Заметьте эту часть с любопытством. Что она пытается защитить? Можно дать ей немного пространства и не торопиться.';
+    return LocalHeuristicAiAdapter.chat(messages, mode);
+  }
+}
+
+/** Studio V2 uses the same Worker and a complete coordinate-aware DTO; confirmation remains local. */
+export async function createStudioArchetype(prompt: string, language: 'en' | 'ru', options?: { signal?: AbortSignal }): Promise<string> {
+  try {
+    const text = await callCloud({
+      prompt: `Create a kind fictional inner-part character. Description: ${prompt.slice(0, 1500)}. Return JSON with title, family (manager, firefighter, exile, resource), role, description, invitation, shadow, coordinates (four numbers in [-1,1] for agency, emotional temperature, relational focus, attachment). Optional visual keys: shape (cloud, frog, triangle, heart, bean, egg), color (hex), eyes, mouth, head, face, bow, cheeks.`,
+      systemInstruction: `Return a single JSON object, no markdown. Write prose in ${language === 'ru' ? 'Russian' : 'English'}. Use reflective, imaginative language; do not diagnose.`,
+    }, options);
+    const model = JSON.parse(text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, ''));
+    if (!model || typeof model.title !== 'string' || !['manager', 'firefighter', 'exile', 'resource'].includes(model.family)
+      || !Array.isArray(model.coordinates) || model.coordinates.length !== 4 || !model.coordinates.every((v: unknown) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= 1)) throw new Error('Invalid studio response');
+    ResilientAiAdapter.degradation = { degraded: false, reason: null };
+    ResilientAiAdapter.primary = 'cloud';
+    return JSON.stringify(model);
+  } catch (error) {
+    if (options?.signal?.aborted) throw error;
+    ResilientAiAdapter.degradation = { degraded: true, reason: 'AI unavailable' };
+    ResilientAiAdapter.primary = 'heuristic';
+    const local = JSON.parse(await LocalHeuristicAiAdapter.archetypeCreate(prompt));
+    return JSON.stringify({ ...local, title: prompt.slice(0, 40), family: 'manager', role: prompt.slice(0, 200), coordinates: [0, 0, 0, 0] });
+  }
+}
 
 const SYNASTRY_NARRATIVE_SCHEMA = {
   type: 'OBJECT',

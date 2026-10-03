@@ -31,13 +31,14 @@ function Section({ title, kicker, children }) {
 }
 
 export function CustomizerLike({ traits, onChange, disabled }) {
-  const { t } = useApp();
+  const { t, lang } = useApp();
+  const headLabels = lang === 'ru' ? { none: 'Без украшения', beret: 'Лунный гребень', halo: 'Кольцо Сатурна', horns: 'Планета', party: 'Звёздный росток' } : { none: 'No topper', beret: 'Moon crest', halo: 'Saturn ring', horns: 'Planet stalk', party: 'Star sprout' };
   const b = (on) => (on ? ON : BTN);
   return (
     <div>
       <Section title={t('edSil')} kicker={t('edAnat')}>
         {SHAPES.map((s) => (
-          <button key={s} title={s} disabled={disabled} style={b(traits.shape === s)} onClick={() => onChange({ shape: s })}>
+          <button key={s} title={s} aria-label={s} aria-pressed={traits.shape === s} disabled={disabled} style={b(traits.shape === s)} onClick={() => onChange({ shape: s })}>
             <ShapeIcon shape={s} className="" />
           </button>
         ))}
@@ -45,7 +46,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
 
       <Section title={t('edFleece')} kicker={t('edDye')}>
         {COLORS.map((c) => (
-          <button key={c.value} title={c.name} disabled={disabled}
+          <button key={c.value} title={c.name} aria-label={c.name} aria-pressed={traits.color === c.value} disabled={disabled}
             style={{
               width: 40, height: 40, borderRadius: '50%', background: c.value,
               border: '2px solid rgba(0,0,0,.35)',
@@ -60,7 +61,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
 
       <Section title={t('edGaze')} kicker={t('edWindows')}>
         {EYES.map((e) => (
-          <button key={e} title={e} disabled={disabled} style={b(traits.eyes === e)} onClick={() => onChange({ eyes: e })}>
+          <button key={e} title={e} aria-label={e} aria-pressed={traits.eyes === e} disabled={disabled} style={b(traits.eyes === e)} onClick={() => onChange({ eyes: e })}>
             <EyesIcon style={e} />
           </button>
         ))}
@@ -68,7 +69,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
 
       <Section title={t('edMug')} kicker={t('edOpt')}>
         {MOUTHS.map((m) => (
-          <button key={m} title={m} disabled={disabled} style={b(traits.mouth === m)} onClick={() => onChange({ mouth: m })}>
+          <button key={m} title={m} aria-label={m} aria-pressed={traits.mouth === m} disabled={disabled} style={b(traits.mouth === m)} onClick={() => onChange({ mouth: m })}>
             <MouthIcon style={m} />
           </button>
         ))}
@@ -78,7 +79,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
         <div className="grow">
           <Section title={t('edLid')} kicker={t('edHead')}>
             {HEADS.map((h) => (
-              <button key={h} title={h} disabled={disabled} style={b(traits.head === h)} onClick={() => onChange({ head: h })}>
+              <button key={h} title={headLabels[h]} aria-label={headLabels[h]} aria-pressed={traits.head === h} disabled={disabled} style={b(traits.head === h)} onClick={() => onChange({ head: h })}>
                 <HeadIcon style={h} />
               </button>
             ))}
@@ -87,7 +88,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
         <div className="grow">
           <Section title={t('edFace')} kicker={t('edOptic')}>
             {FACES.map((f) => (
-              <button key={f} title={f} disabled={disabled} style={b(traits.face === f)} onClick={() => onChange({ face: f })}>
+              <button key={f} title={f} aria-label={f} aria-pressed={traits.face === f} disabled={disabled} style={b(traits.face === f)} onClick={() => onChange({ face: f })}>
                 <FaceIcon style={f} />
               </button>
             ))}

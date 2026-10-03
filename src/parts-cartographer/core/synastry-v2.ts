@@ -6,6 +6,7 @@ import type { SynastryReport } from '../../app/core/data/synastry';
 import type { SynastryResult as ScoredProfileSynastryResult } from '../../app/core/data/synastry-v2';
 
 export interface SynastryResult {
+  aiReflections?: Partial<Record<'en' | 'ru', string>>;
   codeA: string;
   codeB: string;
   /** Missing on older saved reports created before engine-version tracking. */

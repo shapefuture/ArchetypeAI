@@ -1,11 +1,12 @@
 // parts/pal traits — plush characters as IFS parts (style: cutebuttons)
-export type BodyShape = "cloud" | "frog" | "triangle" | "heart" | "bean" | "egg";
+export type BodyShape = "cloud" | "frog" | "triangle" | "heart" | "bean" | "egg" | "drop" | "crescent" | "square" | "flower" | "mochi" | "pentagon" | "pill";
 export type EyeStyle = "ovals" | "googly" | "closed" | "wink" | "tiny";
 export type MouthStyle = "none" | "smile" | "o" | "flat" | "grin";
 export type Headgear = "none" | "beret" | "halo" | "horns" | "party";
 export type Facewear = "none" | "glasses" | "shades";
 
 export interface Traits {
+  characterSeed?: number;
   shape: BodyShape;
   color: string;
   eyes: EyeStyle;
@@ -33,7 +34,7 @@ export const COLORS: { name: string; value: string }[] = [
   { name: "Chalk", value: "#F3EEE4" },
 ];
 
-export const SHAPES: BodyShape[] = ["cloud", "frog", "triangle", "heart", "bean", "egg"];
+export const SHAPES: BodyShape[] = ["cloud", "frog", "triangle", "heart", "bean", "drop", "crescent", "square", "flower", "mochi", "pentagon", "pill", "egg"];
 export const EYES: EyeStyle[] = ["ovals", "googly", "closed", "wink", "tiny"];
 export const MOUTHS: MouthStyle[] = ["none", "smile", "o", "flat", "grin"];
 export const HEADS: Headgear[] = ["none", "beret", "halo", "horns", "party"];

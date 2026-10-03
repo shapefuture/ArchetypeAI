@@ -1,5 +1,4 @@
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -8,11 +7,13 @@ import {
   limit,
   orderBy,
   query,
-  setDoc,
   writeBatch,
+  runTransaction,
 } from 'firebase/firestore';
 import { getFirestoreDb } from '../../environments/firebase-init';
 import { withResilience } from '../../app/core/adapters/resilience';
+import { validProfile } from './profile-contract';
+import { validMapParts } from './backup';
 import type { SynastryResult } from './synastry-v2';
 
 export interface CloudMapSnapshot {
@@ -22,6 +23,7 @@ export interface CloudMapSnapshot {
   parts: unknown[];
   createdAt: string;
   updatedAt?: string;
+  source?: { schema: 'angular-assessment64'; responses: number[]; results?: unknown };
 }
 
 export interface SharedCloudMap {
@@ -30,13 +32,47 @@ export interface SharedCloudMap {
   assessment?: { responses: number[]; results?: unknown; updatedAt?: string };
 }
 
-function snapshot(profile: unknown, parts: unknown[], at: string): CloudMapSnapshot {
-  const safeProfile = profile && typeof profile === 'object' ? JSON.parse(JSON.stringify(profile)) : {};
-  const safeParts = Array.isArray(parts) ? JSON.parse(JSON.stringify(parts)) : [];
+const pick = (value: unknown, keys: string[]): Record<string, any> => {
+  const record = value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  return Object.fromEntries(keys.filter((key) => record[key] !== undefined).map((key) => [key, record[key]]));
+};
+/** Allowlisted projection: no raw answers, free-text journal, future self, auth or body-map data. */
+export function snapshot(profile: unknown, parts: unknown[], at: string): CloudMapSnapshot {
+  const safeProfile = pick(profile, ['version', 'testModel', 'createdAt', 'parts', 'resources', 'resourceLeaks', 'strongestResource',
+    'selfEnergy', 'selfEnergyRadar', 'burden', 'headlineConstellation', 'headlineRu', 'constellationEssay', 'constellationEssayEn',
+    'constellationEssayRu', 'subtypes', 'subtypesEn', 'subtypesRu', 'polarizations', 'attachment', 'attachmentScores',
+    'complexes', 'activeComplexes', 'needHunger', 'copingStack', 'validity', 'validityFlags', 'crisisFlag', 'clinical']);
+  if (Array.isArray(safeProfile.parts)) safeProfile.parts = safeProfile.parts.map((part: unknown) => pick(part, ['id', 'name', 'nameEn', 'nameRu', 'family', 'energy', 'scoreT', 'felt']));
+  if (safeProfile.clinical) {
+    const clinical = pick(safeProfile.clinical, ['parts', 'resources', 'resourceLeaks', 'strongestResource',
+      'selfEnergy', 'selfRadar', 'burden', 'headline', 'subtypes', 'polarizations', 'attachment', 'complexes', 'activeComplexes',
+      'needHunger', 'topHunger', 'copingStack', 'validity', 'crisis']);
+    const mapValues = (v: unknown, fields: string[]) => Object.fromEntries(Object.entries(pick(v, Object.keys((v as any) ?? {}))).map(([id, item]) => [id, pick(item, fields)]));
+    clinical.parts = mapValues(clinical.parts, ['id', 'raw', 'T', 'tier']);
+    clinical.resources = mapValues(clinical.resources, ['id', 'raw', 'T', 'tier', 'band']);
+    clinical.subtypes = mapValues(clinical.subtypes, ['name', 'slug', 'modifier']);
+    clinical.complexes = mapValues(clinical.complexes, ['id', 'activation', 'tier']);
+    clinical.activeComplexes = Array.isArray(clinical.activeComplexes) ? clinical.activeComplexes.map((c: unknown) => pick(c, ['id', 'activation', 'tier'])) : [];
+    clinical.strongestResource = pick(clinical.strongestResource, ['id', 'raw', 'T', 'tier', 'band']);
+    clinical.headline = pick(clinical.headline, ['protector', 'exile', 'name', 'essay', 'final']);
+    clinical.attachment = pick(clinical.attachment, ['anxious', 'avoidant', 'secure', 'disorganized']);
+    clinical.copingStack = pick(clinical.copingStack, ['l1', 'l2', 'l3', 'floor']);
+    clinical.validity = pick(clinical.validity, ['ok', 'flags']);
+    if (clinical.topHunger) clinical.topHunger = pick(clinical.topHunger, ['need', 'hunger']);
+    clinical.polarizations = Array.isArray(clinical.polarizations) ? clinical.polarizations.map((p: unknown) => pick(p, ['pair', 'name'])) : [];
+    clinical.resourceLeaks = Array.isArray(clinical.resourceLeaks) ? clinical.resourceLeaks.map((p: unknown) => pick(p, ['resource', 'spillPart'])) : [];
+    safeProfile.clinical = clinical;
+  }
+  const safeParts = Array.isArray(parts) ? parts.slice(0, 100).map((part) => {
+    const projected = pick(part, ['id', 'name', 'nameEn', 'nameRu', 'family', 'traits', 'role', 'blurb', 'energy', 'burden', 'need', 'voice', 'star', 'since', 'archetype']);
+    projected.traits = pick(projected.traits, ['characterSeed', 'shape', 'color', 'eyes', 'mouth', 'head', 'face', 'bow', 'cheeks']);
+    if (projected.archetype) projected.archetype = pick(projected.archetype, ['schema', 'sourceAssessment', 'coordinates', 'cluster', 'prominence', 'size', 'partType', 'developmentalOrigin', 'description', 'wound', 'shadow', 'invitation', 'coreBelief', 'attracts']);
+    return projected;
+  }) : [];
   return {
     schema: 'parts-cartographer.v1',
-    profile: safeProfile as Record<string, unknown>,
-    parts: safeParts,
+    profile: JSON.parse(JSON.stringify(safeProfile)),
+    parts: JSON.parse(JSON.stringify(safeParts)),
     createdAt: at,
     updatedAt: at,
   };
@@ -51,13 +87,26 @@ export async function saveCloudMap(
   const db = getFirestoreDb();
   const now = new Date().toISOString();
   const data = snapshot(profile, parts, now);
-  await withResilience(() => setDoc(doc(db, 'users', userId, 'assessment', 'current'), data));
-  const historyRef = await withResilience(() => addDoc(collection(db, 'users', userId, 'history'), data));
+  const historyRef = doc(collection(db, 'users', userId, 'history'));
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'users', userId, 'assessment', 'current'), data);
+  batch.set(historyRef, data);
+  await withResilience(() => batch.commit());
   return { ...data, id: historyRef.id };
 }
 
-function fromDocument(id: string, raw: Record<string, unknown>): CloudMapSnapshot | null {
-  if (!raw || typeof raw !== 'object' || raw.schema !== 'parts-cartographer.v1') return null;
+export async function fromDocument(id: string, raw: Record<string, unknown>): Promise<CloudMapSnapshot | null> {
+  if (!raw || typeof raw !== 'object') return null;
+  if (raw.schema !== 'parts-cartographer.v1') {
+    const responses = raw.responses;
+    if (!Array.isArray(responses) || responses.length !== 64 || !responses.every((n) => Number.isInteger(n) && n >= 1 && n <= 5)) return null;
+    const [{ buildLegacyReportData }, { buildLegacyUniverseParts }] = await Promise.all([import('../screens/legacy-report-data'), import('./legacy-universe-adapter')]);
+    const report = buildLegacyReportData(responses, 'en');
+    return { id, schema: 'parts-cartographer.v1', profile: { headlineConstellation: report.archetypes[0]?.name ?? 'Relational assessment' },
+      parts: buildLegacyUniverseParts(report), createdAt: String(raw.createdAt ?? raw.updatedAt ?? ''),
+      source: { schema: 'angular-assessment64', responses, results: raw.results } };
+  }
+  if (!validProfile(raw.profile) || !validMapParts(raw.parts)) return null;
   return {
     id,
     schema: 'parts-cartographer.v1',
@@ -80,12 +129,12 @@ export async function loadCloudMapHistory(userId: string): Promise<CloudMapSnaps
       )),
       getDoc(doc(db, 'users', userId, 'assessment', 'current')),
     ]);
-    const history = historySnap.docs
-      .map((entry) => fromDocument(entry.id, entry.data()))
+    const history = (await Promise.all(historySnap.docs
+      .map((entry) => fromDocument(entry.id, entry.data()))))
       .filter((entry): entry is CloudMapSnapshot => !!entry);
     if (history.length) return history;
     if (!currentSnap.exists()) return [];
-    const current = fromDocument(currentSnap.id, currentSnap.data());
+    const current = await fromDocument(currentSnap.id, currentSnap.data());
     return current ? [current] : [];
   });
 }
@@ -159,19 +208,36 @@ export async function createCloudMapShareCode(
   profile: unknown,
   parts: unknown[],
 ): Promise<string> {
-  const db = getFirestoreDb();
   const mapSnapshot = snapshot(profile, parts, new Date().toISOString());
+  return createPrivateShareCode({ uid: userId, schema: 'parts-cartographer.v1', mapSnapshot });
+}
+
+/** Legacy comparison requires the response vector; called only after its separate, explicit consent. */
+export async function createCloudLegacy64ShareCode(userId: string, responses: number[]): Promise<string> {
+  if (responses.length !== 64 || !responses.every((n) => Number.isInteger(n) && n >= 1 && n <= 5)) throw new Error('A complete 64-answer assessment is required');
+  return createPrivateShareCode({ uid: userId, assessment: {
+    responses: [...responses], dimensionalExpressions: {}, results: null,
+    scoringMethod: 'deterministic', updatedAt: new Date().toISOString(),
+  } });
+}
+
+async function createPrivateShareCode(payload: Record<string, unknown>): Promise<string> {
+  const db = getFirestoreDb();
   let lastError: unknown;
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newShareCode();
     try {
-      await withResilience(() => setDoc(doc(db, 'shareCodes', code), {
-        uid: userId,
+      const created = await withResilience(() => runTransaction(db, async (transaction) => {
+        const ref = doc(db, 'shareCodes', code);
+        if ((await transaction.get(ref)).exists()) return false;
+        transaction.set(ref, {
+        ...payload,
         createdAt: new Date().toISOString(),
-        schema: 'parts-cartographer.v1',
-        mapSnapshot,
+        });
+        return true;
       }));
-      return code;
+      if (created) return code;
+      lastError = new Error('Share code collision');
     } catch (error) {
       lastError = error;
     }
@@ -190,16 +256,15 @@ export async function redeemCloudMapShareCode(code: string): Promise<SharedCloud
     const data = sharedDoc.data();
     if (typeof data.uid !== 'string') return null;
     if (data.schema === 'parts-cartographer.v1' && data.mapSnapshot && typeof data.mapSnapshot === 'object') {
-      const sharedSnapshot = fromDocument(normalized, data.mapSnapshot as Record<string, unknown>);
+      const sharedSnapshot = await fromDocument(normalized, data.mapSnapshot as Record<string, unknown>);
       return sharedSnapshot ? { uid: data.uid, snapshot: sharedSnapshot } : null;
     }
     // Angular's legacy share-code payload carries a 64-response assessment
-    // snapshot. Keep it typed and bounded; React's report adapter uses only a
-    // deterministic fingerprint until the full scoring model is ported.
+    // snapshot. Keep it typed and bounded for the canonical synastry engine.
     const assessment = data.assessment as Record<string, unknown> | undefined;
     if (assessment && Array.isArray(assessment.responses)
-      && assessment.responses.length <= 200
-      && assessment.responses.every((value) => typeof value === 'number')) {
+      && assessment.responses.length === 64
+      && assessment.responses.every((value) => Number.isInteger(value) && value >= 1 && value <= 5)) {
       return {
         uid: data.uid,
         assessment: {

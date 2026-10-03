@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { SpecialistReport } from './specialist-report.jsx';
 import { useApp } from '../app.jsx';
 import { lookupByEmail, lookupByUid } from '../core/user-directory.ts';
 import {
@@ -50,6 +51,7 @@ export function AdminDashboard() {
   const [error, setError] = useState('');
   const [admins, setAdmins] = useState([]);
   const [clients, setClients] = useState([]);
+  const [historyErrors, setHistoryErrors] = useState({});
   const [historyByClient, setHistoryByClient] = useState({});
   const [selectedSnapshot, setSelectedSnapshot] = useState(null);
   const [adminEmail, setAdminEmail] = useState('');
@@ -77,13 +79,16 @@ export function AdminDashboard() {
       ]);
       setAdmins(adminRows);
       setClients(clientRows);
+      const failedHistories = {};
       const historyEntries = await Promise.all(clientRows.map(async (client) => {
         try { return [client.clientUid, await loadAdminClientHistory(client.clientUid)]; }
         catch (loadError) {
           console.warn('Admin client history could not be loaded', client.clientUid, loadError);
+          failedHistories[client.clientUid] = t('adminLoadFailed');
           return [client.clientUid, []];
         }
       }));
+      setHistoryErrors(failedHistories);
       setHistoryByClient(Object.fromEntries(historyEntries));
       setNotesDrafts(Object.fromEntries(clientRows.map((client) => [client.clientUid, client.notes || ''])));
     } catch (loadError) {
@@ -223,17 +228,7 @@ export function AdminDashboard() {
                   </div>
                   <button className="ibtn" onClick={() => setSelectedSnapshot(null)} aria-label={t('close')}>✕</button>
                 </div>
-                {selectedSnapshot.entry.profile?.constellationEssay && <p className="sub mt10">{selectedSnapshot.entry.profile.constellationEssay}</p>}
-                {selectedSnapshot.entry.results?.analysis && <p className="sub mt10">{selectedSnapshot.entry.results.analysis}</p>}
-                {selectedSnapshot.entry.profile?.selfEnergyRadar && Object.entries(selectedSnapshot.entry.profile.selfEnergyRadar).map(([dimension, value]) => (
-                  <div key={dimension} className="mt8">
-                    <div className="row"><span className="grow faint" style={{ fontSize: 11 }}>{dimension}</span><b style={{ fontSize: 11 }}>{Math.round(Number(value) * 100)}%</b></div>
-                    <div className="bar p mt4"><i style={{ width: `${Math.max(0, Math.min(100, Number(value) * 100))}%` }} /></div>
-                  </div>
-                ))}
-                {Array.isArray(selectedSnapshot.entry.profile?.parts) && selectedSnapshot.entry.profile.parts.slice(0, 20).map((part) => (
-                  <div key={part.id || part.name} className="row mt8"><span className="grow" style={{ fontSize: 12 }}>{part.name || part.id}</span><span className="chip">{part.family || part.tier || '—'}</span></div>
-                ))}
+                <SpecialistReport snapshot={selectedSnapshot.entry} clientLabel={selectedSnapshot.client.clientEmail || selectedSnapshot.client.clientUid} onBack={() => setSelectedSnapshot(null)} />
                 <button className="btn block mt12" onClick={() => downloadSnapshot(selectedSnapshot.entry, selectedSnapshot.client.clientEmail || selectedSnapshot.client.clientUid)}>{t('download')}</button>
               </div>
             )}
@@ -270,13 +265,13 @@ export function AdminDashboard() {
                       <div className="grow">
                         <b>{client.clientEmail || t('emailNone')}</b>
                         <div className="faint mt4" style={{ fontSize: 11, overflowWrap: 'anywhere' }}>{client.clientUid}</div>
-                        <div className="faint mt4" style={{ fontSize: 11 }}>{t('clientLastAssessment')} {latest ? formatTimestamp(latest.createdAt || latest.updatedAt, lang) : t('noAssessmentYet')}</div>
+                        <div className="faint mt4" style={{ fontSize: 11 }}>{t('clientLastAssessment')} {latest ? formatTimestamp(latest.createdAt || latest.updatedAt, lang) : historyErrors[client.clientUid] || t('noAssessmentYet')}</div>
                       </div>
                       <button className="btn ghost small" disabled={busy} onClick={() => deleteClient(client)}>{t('remove')}</button>
                     </div>
                     <div className="field mt10"><textarea rows={3} maxLength={4000} value={currentDraft} onChange={(event) => setNotesDrafts((drafts) => ({ ...drafts, [client.clientUid]: event.target.value }))} placeholder={t('adminPrivateNotesPlaceholder')} /></div>
                     <button className="btn small" disabled={notesBusy === client.clientUid || currentDraft === (client.notes || '')} onClick={() => saveNotes(client)}>{notesBusy === client.clientUid ? '⏳ …' : t('adminSaveNotes')}</button>
-                    {history.length === 0 ? <p className="faint mt10" style={{ fontSize: 12 }}>{t('noAssessmentYet')}</p> : history.map((entry, index) => (
+                    {historyErrors[client.clientUid] ? <p role="alert" className="sub mt10">{historyErrors[client.clientUid]}</p> : history.length === 0 ? <p className="faint mt10" style={{ fontSize: 12 }}>{t('noAssessmentYet')}</p> : history.map((entry, index) => (
                       <div key={entry.id || entry.createdAt || index} className="card flat mt10">
                         <div className="row">
                           <div className="grow">

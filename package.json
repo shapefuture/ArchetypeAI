@@ -17,7 +17,8 @@
     "pretest": "tailwindcss -i src/index.css -o src/styles/tailwind.generated.css --config tailwind.config.cjs",
     "test": "bash scripts/run-with-node-version.sh ./node_modules/vitest/vitest.mjs run",
     "_deploy:headers": "echo 'Verify _headers is in dist/ before wrangler deploy' && test -f dist/_headers",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-archetypeai \"vitest run --config vitest.rules.config.ts\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-archetypeai \"vitest run --config vitest.rules.config.ts\"",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "@angular/animations": "^20.3.33",
@@ -46,9 +47,11 @@
     "@angular/build": "^20.3.33",
     "@angular/cli": "^20.3.33",
     "@angular/compiler-cli": "^20.3.33",
+    "@axe-core/playwright": "^4.13.0",
     "@cloudflare/kv-asset-handler": "^0.4.2",
     "@cloudflare/workers-types": "^5.20260828.1",
     "@firebase/rules-unit-testing": "^5.0.2",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/cli": "4.3.0",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^4.7.0",

@@ -17,7 +17,7 @@ import {
 } from '../../app/core/data/state-v2';
 import { COMPLEXES, SHADOW_PARTS } from '../../app/core/data/parts';
 import { COMPLEX_COPY_RU, STRINGS as SOURCE_STRINGS } from '../../i18n/strings';
-import { currentPushState, enablePushReminder } from '../core/push';
+import { currentPushState, enablePushReminder, disablePushReminder } from '../core/push';
 
 const CHECKIN_KEY = 'INNERVERSE_CHECKINS_V1';
 const VERDICT_KEY = 'INNERVERSE_SEALED_VERDICTS_V1';
@@ -192,6 +192,11 @@ export function CheckIn() {
   };
 
   const requestReminder = async () => {
+    if (pushState === 'enabled') {
+      try { await disablePushReminder(); setPushState('ready'); }
+      catch { toast(lang === 'ru' ? 'Не удалось отключить уведомления. Повторите.' : 'Could not disable reminders. Try again.'); }
+      return;
+    }
     const state = await enablePushReminder();
     setPushState(state);
     if (state === 'enabled') toast('🔔 ' + t('pushDone'));
@@ -322,8 +327,8 @@ export function CheckIn() {
               </div>
             )}
             {pushState !== 'unsupported' && (
-              <button className="btn block mt16" disabled={pushState === 'denied' || pushState === 'enabled'} onClick={requestReminder}>
-                🔔 {pushState === 'enabled' ? t('pushDone') : t('pushOpt')}
+              <button className="btn block mt16" disabled={pushState === 'denied'} onClick={requestReminder}>
+                🔔 {pushState === 'enabled' ? (lang === 'ru' ? 'Отключить уведомления' : 'Disable reminders') : t('pushOpt')}
               </button>
             )}
             {(pushState === 'unsupported' || pushState === 'denied') && (

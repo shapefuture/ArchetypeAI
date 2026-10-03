@@ -6,7 +6,8 @@ import { randomTraits, SEED_PARTS, FAMILY_LABELS } from '../pal/traits.ts';
 import { Ico, Crest, familyColor, Steps, Price } from '../ui/ui.jsx';
 import { uid8 } from '../core/ports.ts';
 import { store, KEYS } from '../core/local-store';
-import { RESOURCES, SHADOW_PARTS } from '../../app/core/data/parts';
+import { exportBackup } from '../core/backup';
+import { downloadText } from '../core/file-download';
 
 /* ═══════════ loading (auto → intro, ~4.2s) ═══════════ */
 export function Loading() {
@@ -131,7 +132,7 @@ function BaseTab() {
   const menu = [
     { ico: '💎', label: premium ? t('premiumOn') : t('subscribe'), sub: premium ? t('manage') : t('pwSub'), on: () => setOverlay('paywall') },
     { ico: '📲', label: t('install'), sub: t('installB'), on: () => setOverlay('install') },
-    { ico: '📤', label: t('restore'), sub: t('exportAll'), on: () => restoreFlow(t, toast) },
+    { ico: '📤', label: t('restore'), sub: t('exportAll'), on: () => setOverlay('restore') },
     { ico: '🧑‍⚕️', label: t('therapist'), sub: t('appointments'), on: () => setOverlay('therapist') },
     { ico: '🌗', label: t('theme'), sub: theme === 'dark' ? t('dark') : t('light'), on: () => setTheme(theme === 'dark' ? 'light' : 'dark') },
     { ico: '🌐', label: t('language'), sub: lang === 'en' ? 'English' : 'Русский', on: () => setLang(lang === 'en' ? 'ru' : 'en') },
@@ -226,85 +227,6 @@ function BaseTab() {
 }
 
 const STR_VER = (t) => t('footVer');
-
-function isCanonicalAssessmentInput(input) {
-  const validAnswers = (values, count) => Array.isArray(values) && values.length === count
-    && values.every((value) => Number.isInteger(value) && value >= 1 && value <= 5);
-  return !!input && typeof input === 'object' && !Array.isArray(input)
-    && SHADOW_PARTS.every((id) => validAnswers(input.shadow?.[id], 8))
-    && RESOURCES.every((id) => validAnswers(input.resources?.[id], 6))
-    && validAnswers(input.self, 8)
-    && Number.isInteger(input.validity?.attention) && input.validity.attention >= 1 && input.validity.attention <= 5
-    && validAnswers(input.validity?.infrequency, 2);
-}
-
-const PORTABLE_KEYS = new Set([
-  'INNERVERSE_DESCENT_V1',
-  'INNERVERSE_FUTURE_SELF_V1',
-  'INNERVERSE_PROFILE_V1',
-  'INNERVERSE_CHECKINS_V1',
-  'INNERVERSE_SEALED_VERDICTS_V1',
-  'INNERVERSE_JITAI_V1',
-  'INNERVERSE_CHARTER_V1',
-  'INNERVERSE_EVENTS_V1',
-  'INNERVERSE_PRACTICE_V1',
-  'INNERVERSE_SYNASTRY_RUNS_V1',
-  'ARCHETYPE_ASSESSMENT_RESPONSES',
-  'ARCHETYPE_ASSESSMENT_INDEX',
-  'ARCHETYPE_SYNASTRY_CONNECTIONS',
-  'ARCHETYPE_SYNASTRY_REPORTS',
-]);
-
-function restoreFlow(t, toast) {
-  const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'application/json';
-  inp.onchange = async () => {
-    const f = inp.files?.[0];
-    if (!f) return;
-    try {
-      const text = await f.text();
-      if (text.length > 20 * 1024 * 1024) throw new Error('Backup is too large');
-      const data = JSON.parse(text);
-      if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Backup is not a supported object');
-      if (data.app === 'ArchetypeAI' && data.type === 'assessment_answers') {
-        const responses = data.assessmentResponses;
-        if (!Array.isArray(responses) || responses.length !== 64
-          || !responses.every((value) => Number.isInteger(value) && value >= 0 && value <= 5)) {
-          throw new Error('Legacy assessment backup is incomplete or invalid');
-        }
-        store.save('ARCHETYPE_ASSESSMENT_RESPONSES', responses);
-        try { localStorage.setItem('ARCHETYPE_ASSESSMENT_INDEX', '0'); } catch { /* optional resume hint */ }
-      } else if (isCanonicalAssessmentInput(data)) {
-        const savedLang = store.load('ifs.lang', 'ru') === 'ru' ? 'ru' : 'en';
-        const [scoring, adapter] = await Promise.all([
-          import('../../app/core/data/scoring-v2'),
-          import('../core/clinical-profile-adapter.ts'),
-        ]);
-        const adapted = adapter.adaptClinicalProfile(scoring.scoreProfile(data), savedLang);
-        const currentParts = store.load(KEYS.parts, SEED_PARTS);
-        const ids = new Set(adapted.parts.map((part) => part.id));
-        const preserved = Array.isArray(currentParts)
-          ? currentParts.filter((part) => !ids.has(part.id) && !String(part.id).startsWith('seed-'))
-          : [];
-        store.save('INNERVERSE_PROFILE_V1', data);
-        store.save(KEYS.parts, [...adapted.parts, ...preserved]);
-        store.save(KEYS.profile, adapted.profile);
-      } else {
-        Object.entries(data).forEach(([k, v]) => {
-          if (!k.startsWith('ifs.') && !PORTABLE_KEYS.has(k)) return;
-          if (k === 'ARCHETYPE_ASSESSMENT_INDEX') {
-            if (Number.isInteger(v) && v >= 0 && v < 64) localStorage.setItem(k, String(v));
-            return;
-          }
-          store.save(k, v);
-        });
-      }
-      toast('✓ ' + t('restoreOk'));
-    } catch { toast('⚠ ' + t('restoreBad')); }
-  };
-  inp.click();
-}
 
 /* ── Sky ── */
 function SkyTab() {
@@ -432,16 +354,5 @@ function YouTab() {
 }
 
 export function downloadBackup() {
-  const dump = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && (k.startsWith('ifs.') || PORTABLE_KEYS.has(k))) {
-      try { dump[k] = JSON.parse(localStorage.getItem(k) ?? 'null'); } catch { /* skip */ }
-    }
-  }
-  const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `parts-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
+  downloadText(JSON.stringify(exportBackup(), null, 2), `parts-backup-${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
 }

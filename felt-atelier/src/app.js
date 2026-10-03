@@ -392,7 +392,12 @@ $('#save').addEventListener('click', () => {
 
 // 2D sticker actions
 async function copyText(t, ok) { try { await navigator.clipboard.writeText(t); toast(ok); } catch { toast('Copy was blocked here. Use Download instead.'); } }
-function download(name, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast('Saved ' + name); }
+async function download(name, blob) {
+  // Published artifact: the viewer mediates saves (downloads capability). Standalone file: a normal browser download.
+  try { const d = window.claude && window.claude.use ? await window.claude.use('downloads') : null; if (d) { await d.save({ filename: name, data: blob }); toast('Saved ' + name); return; } }
+  catch (e) { if (e && e.code === 'declined') { toast('Download cancelled'); return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast('Saved ' + name);
+}
 const slug = () => (dna.name || dna.body.t + '-' + dna.felt).toLowerCase().replace(/[^a-z0-9]+/g, '-');
 $('#svg-copy').addEventListener('click', () => copyText(currentSvg, 'Copied SVG'));
 $('#svg-dl').addEventListener('click', () => download(slug() + '.svg', new Blob([currentSvg], { type: 'image/svg+xml' })));

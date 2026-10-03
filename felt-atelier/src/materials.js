@@ -98,15 +98,19 @@ function sharedFuzz() {
   fuzzAlpha = tex(c, false); return fuzzAlpha;
 }
 
-export function feltMaterial(hex, { collection = 'wool' } = {}) {
-  const key = 'felt' + hex + collection;
+// Shared fibre-luminance maps (one per collection). Colour is a per-material tint, so a new felt colour costs a few
+// microseconds instead of re-painting 34k fibres (TRIZ 10: prior action; TRIZ 1: segment colour from texture).
+const greyMaps = {};
+export function greyFelt(collection = 'wool') {
+  if (!greyMaps[collection]) greyMaps[collection] = tex(fibreCanvas('#f4f4f4', { heather: collection === 'wool' ? 1 : 0.35, seed: collection === 'wool' ? 41 : 43 }), true);
+  return greyMaps[collection];
+}
+export function feltMaterial(hex, { collection = 'wool', vertexColors = false } = {}) {
+  const key = 'felt' + hex + collection + vertexColors;
   if (cache.has(key)) return cache.get(key);
-  const map = tex(fibreCanvas(hex, { heather: collection === 'wool' ? 1 : 0.35, seed: parseInt(hex.slice(1), 16) % 9973 }), true);
-  const col = new THREE.Color(hex);
-  const sheen = col.clone().lerp(new THREE.Color('#ffffff'), 0.22);
-  const m = new THREE.MeshPhysicalMaterial({
-    map, normalMap: sharedFeltNormal(), normalScale: new THREE.Vector2(0.8, 0.8),
-    roughness: 1, metalness: 0, sheen: 0.0, sheenRoughness: 1, sheenColor: sheen, envMapIntensity: 0.26,
+  const m = new THREE.MeshStandardMaterial({
+    map: greyFelt(collection), normalMap: sharedFeltNormal(), normalScale: new THREE.Vector2(0.8, 0.8),
+    color: new THREE.Color(hex), roughness: 1, metalness: 0, envMapIntensity: 0.26, vertexColors,
   });
   cache.set(key, m); return m;
 }
@@ -139,4 +143,17 @@ export function threadMaterial(hex) {
   const key = 'thread' + hex; if (cache.has(key)) return cache.get(key);
   const m = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(hex), map: twistTex(), normalMap: twistNormal(), normalScale: new THREE.Vector2(0.8, 0.8), roughness: 0.62, sheen: 0.8, sheenRoughness: 0.4, sheenColor: new THREE.Color(hex).lerp(new THREE.Color('#fff'), 0.5), envMapIntensity: 0.7 });
   cache.set(key, m); return m;
+}
+
+
+/** Pre-compile every shader program the app will use, so the first Randomize never stalls on the driver. */
+export function warmPrograms(renderer, scene, camera) {
+  const g = new THREE.PlaneGeometry(0.01, 0.01), dummies = [];
+  const add = (m) => { const o = new THREE.Mesh(g, m); o.position.set(0, 0, -50); scene.add(o); dummies.push(o); };
+  for (const col of ['wool', 'bright']) { add(feltMaterial('#888888', { collection: col })); add(feltMaterial('#ffffff', { collection: col, vertexColors: true })); }
+  add(threadMaterial('#aaaaaa')); add(fuzzMaterial('#aaaaaa'));
+  const e = new THREE.MeshStandardMaterial({ color: '#fff', transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide, roughness: 1 }); add(e);
+  const v = new THREE.MeshStandardMaterial({ vertexColors: true, map: greyFelt('wool'), roughness: 1 }); add(v);
+  renderer.compile(scene, camera);
+  for (const o of dummies) scene.remove(o);
 }

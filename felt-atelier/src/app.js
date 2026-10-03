@@ -5,7 +5,7 @@ import { makeGroup } from './assemble.js';
 import { Pool } from './pool.js';
 import { toSVG } from './flat.js';
 import { warmPrograms } from './materials.js';
-import { setupStage } from './stage.js';
+import { setupStage, Scaler, toneSafeBackground } from './stage.js';
 import { SDF, outline } from './shapes.js';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -41,8 +41,10 @@ const edit = (fn) => { const n = structuredClone(dna); fn(n); commit(n); };
 
 // ---------- 3D stage ----------
 const stageEl = $('#stage');
-const MAX_PR = Math.min(2, window.devicePixelRatio || 1);
-const { renderer, scene, camera, key: keyLight } = setupStage(stageEl, stageEl.clientWidth || 600, stageEl.clientHeight || 500, { dpr: MAX_PR });
+const NATIVE = Math.min(2, window.devicePixelRatio || 1), MAX_PR = Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)); // super-sample on 1x screens; the governor backs off if the GPU can't hold 60
+const { renderer, scene, camera, key: keyLight } = setupStage(stageEl, stageEl.clientWidth || 600, stageEl.clientHeight || 500, { dpr: NATIVE });
+const scaler = new Scaler(renderer, MAX_PR);
+renderer.info.autoReset = false; // count the whole frame (scene pass + blit), reset once per frame in the loop
 const pivot = new THREE.Group(); scene.add(pivot);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let view = 'workshop';
@@ -51,11 +53,11 @@ let fitDist = 2.9;
 const C = () => (view === 'cosmos' ? cosC : heroC);
 let current = null, centre = [0, 0], squish = 0, popT = 1, t0 = performance.now(), lastT = t0;
 
-function themeBg() { const c = getComputedStyle(document.documentElement).getPropertyValue('--stage').trim() || '#e9e7e3'; scene.background = new THREE.Color(c); if (cScene) cScene.background = scene.background; }
+function themeBg() { const c = getComputedStyle(document.documentElement).getPropertyValue('--stage').trim() || '#e9e7e3'; scene.background = toneSafeBackground(c, renderer.toneMappingExposure); if (cScene) cScene.background = scene.background; }
 let cScene = null;
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', themeBg);
 new MutationObserver(themeBg).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-function resize() { const w = stageEl.clientWidth, h = stageEl.clientHeight; if (!w || !h) return; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); if (cCam) { cCam.aspect = w / h; cCam.updateProjectionMatrix(); } }
+function resize() { const w = stageEl.clientWidth, h = stageEl.clientHeight; if (!w || !h) return; renderer.setSize(w, h); scaler.resize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); if (cCam) { cCam.aspect = w / h; cCam.updateProjectionMatrix(); } }
 let cCam = null;
 new ResizeObserver(resize).observe(stageEl);
 
@@ -70,6 +72,7 @@ let token = 0, sewTimer = 0, currentFlat = null, currentSvg = '';
 function showSewing(on) { clearTimeout(sewTimer); if (on) sewTimer = setTimeout(() => ($('#sewing').hidden = false), 140); else $('#sewing').hidden = true; }
 
 function attach(res, d) {
+  window.__log.push(['attach', Math.round(performance.now())]);
   if (!res || !res.ok) { $('#msg').textContent = 'Could not sew this combination' + (res && res.error ? ': ' + res.error : ''); showSewing(false); return; }
   const g = makeGroup(res.parts, res.size);
   const [cx, cy, fh, fw] = flatCentre(res.flat); g.position.set(-cx * res.size, -cy * res.size, 0);
@@ -125,17 +128,18 @@ async function randomize() {
 }
 
 // ---- frame loop with an adaptive-resolution governor (60+ fps by feedback) ----
-const perf = { fps: 0, ms: 0, cpu: 0, draws: 0, tris: 0, pr: MAX_PR, frames: 0, minPr: 0.75 };
+const perf = { fps: 0, ms: 0, cpu: 0, draws: 0, tris: 0, pr: MAX_PR, frames: 0, minPr: 0.6 };
 let pr = MAX_PR, win = [], cooldown = 0, probing = false, backoff = 8000, hudAt = 0, cpuAcc = 0;
 function governor(dt, now) {
   win.push(dt); if (win.length < 24) return;
   const avg = win.reduce((a, b) => a + b, 0) / win.length; win = [];
   const target = 1000 / (matchMedia('(min-resolution: 2dppx)').matches ? 60 : 60);
-  if (avg > target * 1.12 && pr > perf.minPr) { pr = Math.max(perf.minPr, pr - 0.25); cooldown = now + backoff; if (probing) backoff = Math.min(60000, backoff * 2); probing = false; applyPR(); }
-  else if (avg < target * 1.05 && pr < MAX_PR && now > cooldown) { pr = Math.min(MAX_PR, pr + 0.25); probing = true; applyPR(); }
+  if (avg > target * 1.12 && pr > perf.minPr) { pr = Math.max(perf.minPr, pr - 0.125); cooldown = now + backoff; if (probing) backoff = Math.min(60000, backoff * 2); probing = false; applyPR(); }
+  else if (avg < target * 1.05 && pr < MAX_PR && now > cooldown) { pr = Math.min(MAX_PR, pr + 0.125); probing = true; applyPR(); }
   else probing = false;
 }
-function applyPR() { renderer.setPixelRatio(pr); resize(); perf.pr = pr; }
+window.__log = [];
+function applyPR() { window.__log.push(['pr', Math.round(performance.now()), pr]); if (scaler.ok) scaler.scale = pr; else { renderer.setPixelRatio(pr); resize(); } perf.pr = pr; }
 function hud(now, dt) {
   perf.frames++; cpuAcc += perf.cpu;
   if (now - hudAt < 500) return; hudAt = now;
@@ -149,15 +153,15 @@ function loop(now) {
   const dt = Math.min(100, now - lastT); lastT = now; avgDt = avgDt * 0.9 + dt * 0.1;
   const t = (now - t0) / 1000, c = C();
   if (!dragging) { c.yaw += c.vyaw; c.vyaw *= 0.94; if ((spin || (view === 'cosmos' && !userTouched)) && !reduced) c.yaw += view === 'cosmos' ? 0.0016 : 0.004; }
-  const c0 = performance.now();
+  const c0 = performance.now(); renderer.info.reset();
   if (view === 'workshop') {
     popT = Math.min(1, popT + dt / 380); const k = popT - 1, pop = 1 + 2.4 * k * k * k + 1.4 * k * k; // easeOutBack: stuffing puffs up
     pivot.rotation.set(c.pitch, c.yaw + (reduced ? 0 : Math.sin(t * 0.6) * 0.04), 0);
     squish *= 0.88; const br = reduced ? 0 : Math.sin(t * 1.7) * 0.008;
     const sc = reduced ? 1 : 0.86 + 0.14 * pop; pivot.scale.set(sc * (1 + squish * 0.06), sc * (1 - squish * 0.08 + br), sc * (1 + squish * 0.04));
     c.dist += (fitDist * c.zoom - c.dist) * Math.min(1, dt / 160); camera.position.set(0, 0, c.dist); camera.lookAt(0, 0, 0);
-    renderer.render(scene, camera);
-  } else { updateCosmos(t, dt, c); renderer.render(cScene, cCam); }
+    scaler.render(scene, camera);
+  } else { updateCosmos(t, dt, c); scaler.render(cScene, cCam); }
   perf.cpu = performance.now() - c0;
   governor(dt, now); hud(now, avgDt);
   requestAnimationFrame(loop);
@@ -350,6 +354,7 @@ function pickCosmos(e) {
   if (best && bd < r.height * 0.1) { setView('workshop'); commit(structuredClone(best.dna)); toast('Loaded into the workshop'); }
 }
 function setView(v) {
+  window.__log.push(['view', Math.round(performance.now()), v]);
   view = v; $$('#views .btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
   document.body.dataset.view = v;
   if (v === 'cosmos') { ensureCosmosScene(); resize(); if (!crowd.length) buildCosmos(); }
@@ -373,7 +378,7 @@ function renderShelf() {
 function snapshot() {
   const c0 = pivot.rotation.clone(), sc = pivot.scale.clone(), cp = camera.position.clone();
   pivot.rotation.set(-0.2, 0.25, 0); pivot.scale.set(1, 1, 1); camera.position.set(0, 0, 2.7); camera.lookAt(0, 0, 0);
-  renderer.render(scene, camera);
+  scaler.render(scene, camera);
   const src = renderer.domElement, cvs = document.createElement('canvas'), S = 160; cvs.width = cvs.height = S;
   const k = Math.min(src.width, src.height); cvs.getContext('2d').drawImage(src, (src.width - k) / 2, (src.height - k) / 2, k, k, 0, 0, S, S);
   pivot.rotation.copy(c0); pivot.scale.copy(sc); camera.position.copy(cp);

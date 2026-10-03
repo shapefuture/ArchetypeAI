@@ -4,8 +4,9 @@
 
 - `customizer.html`: the whole app in one file (open it in a browser). Rebuild with `node build.mjs`.
 - `preview.html`: the self-contained 2D/3D preview — one character on a turntable with the flat sewing record fused
-  over it, plus a twelve-character inner family where every character is shown both as a 3D render and as its 2D sticker.
-  No network at all: three.js, the engine and the sewing worker are all inlined in the file.
+  over it, a twelve-character inner family where every character is shown both as a 3D render and as its 2D sticker,
+  and a constellation view that floats 24 characters in real 3D at crowd LOD with a strip of their 2D stickers
+  (click one to open it on the turntable). No network at all: three.js, the engine and the sewing worker are inlined.
 - `lineup.html`: dev harness that renders a 13-character lineup (`?seed=3&pitch=-0.42`, `&solo=5` for one close-up).
 - `bench.mjs`, `bench2.mjs`: Node benchmarks of the sewing pipeline (`node bench.mjs`).
 - `smoke.mjs`: runs `preview.html` in jsdom with only the WebGL renderer stubbed, then drives the controls and
@@ -21,6 +22,10 @@ record back into 3D: each record gets its height from the same inflation formula
 projected through the live camera. So the preview can draw the 2D paths *on* the plush (Trace), and register the flat
 sticker to the silhouette behind a split slider (Fuse). Front-on they coincide; turn the character and you can watch
 the flat record separate from the volume it describes.
+
+The constellation view is the other end of the same deal: 24 characters at crowd LOD in one scene (about 17k triangles
+and 3 draw calls each, no shadow pass, ~427k triangles for the whole family), each one also cut as a 2D sticker from
+its own sewing record.
 
 ## How it is organised
 

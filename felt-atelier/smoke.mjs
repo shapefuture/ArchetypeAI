@@ -136,6 +136,8 @@ ok(await until(() => !doc.querySelector('#divider').hidden), 'divider shown');
 doc.querySelector('#dice').dispatchEvent(new win.Event('click', { bubbles: true }));
 ok(await until(() => /ms to a new character/.test(doc.querySelector('#swap').textContent), 20000), 'randomise sews a new character', doc.querySelector('#swap').textContent);
 ok(/<dt>/.test(doc.querySelector('#stats').innerHTML), 'stats rebuilt after randomise');
+const heroTris = +(doc.querySelector('#stats').textContent.match(/Triangles\s*([\d,]+)/) || [])[1]?.replace(/,/g, '') || 0;
+ok(heroTris > 40000 && heroTris < 300000, 'hero triangle count is in the hero-LOD range', heroTris.toLocaleString());
 
 // grid: 13 characters, each with a 3D render and a 2D sticker
 ok(await until(() => doc.querySelector('#grid').children.length === 13), 'grid has the whole inner family', doc.querySelector('#grid').children.length + ' cells');
@@ -151,6 +153,24 @@ doc.querySelector('#collection').querySelector('[data-k="bright"]').dispatchEven
 ok(await until(() => /bright/.test(doc.querySelector('#dna').textContent), 30000), 'bright collection rebuild');
 doc.querySelector('#reshuffle').dispatchEvent(new win.Event('click', { bubbles: true }));
 ok(await until(() => doc.querySelector('#grid').children.length === 13), 'reshuffle');
+
+// constellation: 24 characters at crowd LOD in one 3D scene, each with its 2D sticker
+doc.querySelector('#views').querySelector('[data-view="cosmos"]').dispatchEvent(new win.Event('click', { bubbles: true }));
+ok(await until(() => doc.querySelector('#crowd').children.length > 0, 60000), 'constellation starts sewing', doc.querySelector('#crowd').children.length + ' characters');
+ok(doc.querySelector('#crowdbar') && !doc.querySelector('#crowdbar').hidden, 'constellation strip shown');
+ok(doc.querySelector('#fusebar').hidden, 'single-character tools step aside in the constellation');
+ok(await until(() => doc.querySelector('#crowd').children.length === 24, 90000), 'whole family sewn at crowd LOD',
+  doc.querySelector('#crowd').children.length + '/24');
+ok(await until(() => /24 characters · \d+k triangles/.test(doc.querySelector('#crowdnote').textContent), 90000),
+  'crowd reports its real triangle count', doc.querySelector('#crowdnote').textContent);
+const crowdTris = +(doc.querySelector('#crowdnote').textContent.match(/· (\d+)k triangles/) || [])[1];
+ok(crowdTris > 250 && crowdTris < 700, 'crowd triangle count is in the crowd-LOD range (about 17k a character)', crowdTris + 'k');
+ok(await until(() => [...doc.querySelector('#crowd').children].every((c) => (c.querySelector('img')?.src || '').startsWith('data:image/svg'))),
+  'every floating character also has a 2D sticker');
+doc.querySelector('#crowd').children[3].dispatchEvent(new win.Event('click', { bubbles: true }));
+ok(await until(() => doc.querySelector('#views').querySelector('[data-view="single"]').getAttribute('aria-pressed') === 'true'), 'clicking a sticker opens it on the turntable');
+ok(await until(() => !doc.querySelector('#fusebar').hidden && doc.querySelector('#crowdbar').hidden), 'back to the single view');
+ok(await until(() => /<dt>/.test(doc.querySelector('#stats').innerHTML)), 'the clicked character is loaded', doc.querySelector('#desc').textContent);
 
 await sleep(500);
 ok(errors.length === 0, 'no errors in the whole run', errors.join(' | ').slice(0, 600));

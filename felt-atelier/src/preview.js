@@ -5,7 +5,7 @@
 // same sewing record. Here the 2D record is projected back through the live 3D camera, so you can see the paths
 // riding the plush, and the sticker can be registered to the silhouette behind a split slider.
 import * as THREE from 'three';
-import { FELT, generate, generateSet, describe, lint, dnaHash, feltHex, threadHex } from './dna.js';
+import { FELT, generate, generateSet, describe, lint, dnaHash, feltHex, threadHex, rng } from './dna.js';
 import { makeGroup } from './assemble.js';
 import { Pool } from './pool.js';
 import { toSVG } from './flat.js';
@@ -22,11 +22,13 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // ---------- stage ----------
 const stageEl = $('#stage'), box = $('.stagebox');
 const NATIVE = Math.min(2, window.devicePixelRatio || 1), MAX_PR = Math.min(2, Math.max(1.5, window.devicePixelRatio || 1));
-const { renderer, scene, camera } = setupStage(stageEl, stageEl.clientWidth || 640, stageEl.clientHeight || 520, { dpr: NATIVE });
+const { renderer, scene, camera, key } = setupStage(stageEl, stageEl.clientWidth || 640, stageEl.clientHeight || 520, { dpr: NATIVE });
 const scaler = new Scaler(renderer, MAX_PR);
 renderer.info.autoReset = false;
 const pivot = new THREE.Group(); scene.add(pivot);         // the hero on its turntable
 const root = new THREE.Group(); scene.add(root);           // off-stage stand-in for 3D thumbnails
+const crowdRoot = new THREE.Group(); scene.add(crowdRoot); // the whole inner family, floating in real 3D
+crowdRoot.visible = false;
 const pool = new Pool(document.getElementById('wsrc').textContent, Math.min(3, Math.max(1, (navigator.hardwareConcurrency || 4) - 1)));
 warmPrograms(renderer, scene, camera);
 
@@ -34,7 +36,9 @@ warmPrograms(renderer, scene, camera);
 let dna = generate({ seed: 20261003, collection: 'wool' });
 let current = null, currentSvg = '', svgBox = null, items = [], seamItem = null, userSeam = null, dome = null, fitDist = 2.9;
 let lod = 'hero', fuse = false, trace = false, split = 50, spin = false, fuseEase = 0, token = 0, popT = 1;
+let view = 'single';
 const cam = { yaw: 0.34, pitch: -0.24, dist: 3.2, zoom: 1, vyaw: 0 };
+const COSMOS_DIST = 13.5;
 
 function themeBg() {
   const c = getComputedStyle(document.documentElement).getPropertyValue('--stage').trim() || '#e9e7e3';
@@ -106,7 +110,8 @@ function swatch(hex) { return `<i class="sw" style="background:${hex}"></i>`; }
 function fillStats(r, d) {
   let tris = 0;
   for (const p of r.parts) {
-    const n = p.attrs ? (p.attrs.position ? p.attrs.position.length / 3 : 0) : (p.geo ? p.geo.attributes.position.count / 3 : 0);
+    // non-indexed triangles: three vertices each, three components per vertex
+    const n = p.attrs ? (p.attrs.position ? p.attrs.position.length / 9 : 0) : (p.geo ? p.geo.attributes.position.count / 3 : 0);
     tris += n;
   }
   const pieces = r.flat.filter((x) => x.t === 'poly').length + 1;
@@ -186,7 +191,8 @@ function loop(now) {
   const t = (now - t0) / 1000;
   if (!dragging) {
     cam.yaw += cam.vyaw; cam.vyaw *= 0.94;
-    if (spin && !reduced) cam.yaw += 0.0045;
+    if (spin && !reduced) cam.yaw += view === 'cosmos' ? 0.0016 : 0.0045;
+    if (view === 'cosmos' && !reduced) cam.yaw += 0.0008;
     if (fuseEase > 0) {
       cam.yaw += -cam.yaw * 0.12; cam.pitch += -cam.pitch * 0.12;
       if (Math.abs(cam.yaw) < 0.003 && Math.abs(cam.pitch) < 0.003) { cam.yaw = 0; cam.pitch = 0; fuseEase = 0; }
@@ -194,15 +200,23 @@ function loop(now) {
   }
   popT = Math.min(1, popT + dt / 380);
   const k = popT - 1, pop = 1 + 2.4 * k * k * k + 1.4 * k * k;
-  pivot.rotation.set(cam.pitch, cam.yaw + (reduced ? 0 : Math.sin(t * 0.6) * 0.035), 0);
   pivot.scale.setScalar(0.86 + 0.14 * pop);
-  cam.dist += (fitDist * cam.zoom - cam.dist) * Math.min(1, dt / 160);
-  camera.position.set(0, 0, cam.dist); camera.lookAt(0, 0, 0);
+  if (view === 'cosmos') {
+    cam.dist += (COSMOS_DIST * cam.zoom - cam.dist) * Math.min(1, dt / 200);
+    const cp = Math.cos(cam.pitch);
+    camera.position.set(Math.sin(cam.yaw) * cp * cam.dist, Math.sin(cam.pitch) * cam.dist, Math.cos(cam.yaw) * cp * cam.dist);
+    camera.lookAt(0, 0, 0);
+    updateCrowd(t);
+  } else {
+    pivot.rotation.set(cam.pitch, cam.yaw + (reduced ? 0 : Math.sin(t * 0.6) * 0.035), 0);
+    cam.dist += (fitDist * cam.zoom - cam.dist) * Math.min(1, dt / 160);
+    camera.position.set(0, 0, cam.dist); camera.lookAt(0, 0, 0);
+  }
   const c0 = performance.now();
   renderer.info.reset();
   scaler.render(scene, camera);
   perf.cpu = performance.now() - c0;
-  if (current && (fuse || trace)) {
+  if (current && view === 'single' && (fuse || trace)) {
     projectItems(items, current.matrixWorld, camera, stageEl.clientWidth, stageEl.clientHeight);
     if (trace) updateOverlayDom();
     if (fuse) updateSticker();
@@ -218,12 +232,13 @@ box.addEventListener('pointerdown', (e) => {
   box.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); dragging = true; lx = e.clientX; ly = e.clientY; moved = 0; fuseEase = 0;
   if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); }
 });
+const zoomBy = (f) => { const [lo, hi] = view === 'cosmos' ? [0.3, 2.6] : [0.45, 2.2]; cam.zoom = Math.min(hi, Math.max(lo, cam.zoom * f)); };
 box.addEventListener('pointermove', (e) => {
   if (!ptrs.has(e.pointerId)) return;
   ptrs.set(e.pointerId, [e.clientX, e.clientY]);
   if (ptrs.size === 2) {
     const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
-    if (pinch0) cam.zoom = Math.min(2.2, Math.max(0.45, cam.zoom * (pinch0 / d)));
+    if (pinch0) zoomBy(pinch0 / d);
     pinch0 = d; return;
   }
   const dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
@@ -232,8 +247,10 @@ box.addEventListener('pointermove', (e) => {
 });
 const up = (e) => { ptrs.delete(e.pointerId); if (!ptrs.size) { dragging = false; if (moved < 6 && current) popT = 0.4; } pinch0 = 0; };
 box.addEventListener('pointerup', up); box.addEventListener('pointercancel', up);
-box.addEventListener('wheel', (e) => { e.preventDefault(); cam.zoom = Math.min(2.2, Math.max(0.45, cam.zoom * (1 + e.deltaY * 0.001))); }, { passive: false });
-box.addEventListener('dblclick', front);
+box.addEventListener('wheel', (e) => { e.preventDefault(); zoomBy(1 + e.deltaY * 0.001); }, { passive: false });
+box.addEventListener('dblclick', () => {
+  if (view === 'cosmos') { cam.zoom = 1; cam.pitch = 0.18; cam.vyaw = 0; } else front();
+});
 
 function front() { fuseEase = 1; cam.vyaw = 0; }
 $('#front').addEventListener('click', front);
@@ -308,6 +325,82 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'f' || e.key === 'F') front();
 });
 
+// ---------- constellation: the whole inner family in real 3D, crowd LOD, each with its 2D sticker ----------
+const crowd = [];
+let crowdSeq = 0;
+function poisson(n, seed) { // blue-noise scatter in an ellipsoid, so no two characters overlap
+  const r = rng(seed), out = [], rad = [5.4, 2.7, 3.2];
+  let guard = 0, md = 1.45;
+  while (out.length < n && guard++ < 8000) {
+    const p = [(r() * 2 - 1) * rad[0], (r() * 2 - 1) * rad[1], (r() * 2 - 1) * rad[2]];
+    if ((p[0] / rad[0]) ** 2 + (p[1] / rad[1]) ** 2 + (p[2] / rad[2]) ** 2 > 1) continue;
+    if (Math.hypot(p[0], p[1] * 1.3, p[2]) < 1.8) continue;          // a clearing for the Self
+    if (out.some((q) => Math.hypot(p[0] - q[0], (p[1] - q[1]) * 1.3, p[2] - q[2]) < md)) { if (guard % 400 === 0) md *= 0.94; continue; }
+    out.push(p);
+  }
+  return out;
+}
+async function buildCrowd(n = 24) {
+  const my = ++crowdSeq;
+  for (const c of crowd) { crowdRoot.remove(c.g); disposeGroup(c.g); }
+  crowd.length = 0;
+  const strip = $('#crowd'); strip.innerHTML = '';
+  const set = [generate({ seed: 20261003, collection: dna.collection, self: true }), ...generateSet({ seed: randSeed(), collection: dna.collection, n: n - 1 }).slice(1)];
+  const spots = [[0, 0, 0], ...poisson(n - 1, 11)];
+  const jobs = set.map((d) => pool.request({ op: 'build', dna: d, lod: 'map' }, { priority: 'lo' }));
+  let done = 0, tris = 0;
+  $('#crowdnote').textContent = `Sewing 0/${n} at crowd LOD…`;
+  for (let i = 0; i < set.length; i++) {
+    const r = await jobs[i];
+    if (my !== crowdSeq) return;
+    if (!r || !r.ok) continue;
+    const d = set[i], g = makeGroup(r.parts, r.size * (i === 0 ? 1.35 : 0.85));
+    for (const p of r.parts) if (p.attrs) tris += p.attrs.position.length / 9; // three vertices per triangle, xyz each
+    const [cx, cy] = flatCentre(r.flat);
+    g.position.set(-cx * g.scale.x, -cy * g.scale.y, 0);
+    const holder = new THREE.Group(); holder.add(g); holder.position.set(...spots[i]); holder.scale.setScalar(0.001);
+    crowdRoot.add(holder);
+    crowd.push({ g: holder, dna: d, base: new THREE.Vector3(...spots[i]), ph: i * 1.7, born: performance.now() });
+    const chip = document.createElement('button');
+    chip.type = 'button'; chip.className = 'chip2d'; chip.title = `${describe(d)} — open on the turntable`;
+    chip.innerHTML = `<img alt="2D ${describe(d)}" src="${svgUrl(toSVG(r.flat, { id: 'c' + i, title: describe(d) }))}">`;
+    chip.addEventListener('click', () => { setView('single'); load(structuredClone(d)); });
+    strip.appendChild(chip);
+    $('#crowdnote').textContent = ++done < n ? `Sewing ${done}/${n} at crowd LOD…` : `${done} characters · ${Math.round(tris / 1000)}k triangles · ${crowd.length} 2D stickers, all from one DNA each`;
+  }
+}
+function updateCrowd(t) {
+  const now = performance.now();
+  for (const o of crowd) {
+    const age = Math.min(1, (now - o.born) / 480), k = age - 1, pop = 1 + 2.4 * k * k * k + 1.4 * k * k;
+    o.g.scale.setScalar(Math.max(0.001, pop));
+    o.g.position.set(o.base.x, o.base.y + (reduced ? 0 : Math.sin(t * 0.8 + o.ph) * 0.1), o.base.z + (reduced ? 0 : Math.cos(t * 0.6 + o.ph) * 0.06));
+    const face = Math.atan2(camera.position.x - o.g.position.x, camera.position.z - o.g.position.z); // plush turn to look at you
+    o.g.rotation.set(0.04 * Math.sin(t * 0.5 + o.ph), Math.max(-0.7, Math.min(0.7, face)) * 0.85 + (reduced ? 0 : Math.sin(t * 0.45 + o.ph) * 0.1), 0.05 * Math.sin(t * 0.7 + o.ph));
+  }
+}
+function setView(v) {
+  view = v;
+  $$('#views .chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+  const cosmos = v === 'cosmos';
+  crowdRoot.visible = cosmos; pivot.visible = !cosmos;
+  $('#fusebar').hidden = cosmos; $('#crowdbar').hidden = !cosmos;
+  $('#legend3d').hidden = cosmos; $('#hint').textContent = cosmos
+    ? 'drag to orbit the family · wheel to fly · click a sticker below to open that character'
+    : 'drag to turn · wheel to zoom · double-click for the front · R randomise · F front';
+  camera.fov = cosmos ? 30 : 24; camera.updateProjectionMatrix();
+  // the crowd carries its own fill: no shadow pass means 24 characters cost the same as one
+  key.castShadow = !cosmos;
+  if (cosmos) {
+    cam.pitch = Math.max(cam.pitch, 0.05);
+    fuse = false; $('#fuse').checked = false; $('.fusebar').classList.remove('on');
+    $('#sticker').hidden = true; $('#divider').hidden = true; stageEl.style.clipPath = 'none';
+    if (!crowd.length) buildCrowd();
+  }
+}
+$$('#views .chip').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
+$('#reshuffle').addEventListener('click', () => (view === 'cosmos' ? buildCrowd() : sewGrid(randSeed())));
+
 // ---------- 3D thumbnails: every grid character is really rendered, not illustrated ----------
 function capture(r) {
   const g = makeGroup(r.parts, r.size);
@@ -315,15 +408,15 @@ function capture(r) {
   g.position.set(-cx * r.size, -cy * r.size, 0);
   const asp = camera.aspect || 1.2;
   const fit = Math.max(2.4, fh * r.size * 2.7, (fw * r.size * 2.35) / asp);
-  const kr = pivot.rotation.clone(), ks = pivot.scale.clone(), kp = camera.position.clone(), kq = camera.quaternion.clone(), kv = pivot.visible;
-  pivot.visible = false; root.add(g);
+  const kr = pivot.rotation.clone(), ks = pivot.scale.clone(), kp = camera.position.clone(), kq = camera.quaternion.clone(), kv = pivot.visible, kc = crowdRoot.visible;
+  pivot.visible = false; crowdRoot.visible = false; root.add(g);
   camera.position.set(0, 0, fit); camera.lookAt(0, 0, 0);
   scaler.render(scene, camera);
   const src = renderer.domElement, S = 176, c = document.createElement('canvas'); c.width = c.height = S;
   const k = Math.min(src.width, src.height);
   c.getContext('2d').drawImage(src, (src.width - k) / 2, (src.height - k) / 2, k, k, 0, 0, S, S);
   ungroup(g);
-  pivot.visible = kv; pivot.rotation.copy(kr); pivot.scale.copy(ks); camera.position.copy(kp); camera.quaternion.copy(kq);
+  pivot.visible = kv; crowdRoot.visible = kc; pivot.rotation.copy(kr); pivot.scale.copy(ks); camera.position.copy(kp); camera.quaternion.copy(kq);
   scaler.render(scene, camera); // restore the hero before the browser paints, so nothing flickers
   return c.toDataURL('image/jpeg', 0.84);
 }
@@ -354,8 +447,6 @@ async function sewGrid(seed, collection = dna.collection) {
     cell.querySelector('.open').addEventListener('click', () => load(structuredClone(d)));
   }
 }
-$('#reshuffle').addEventListener('click', () => sewGrid(randSeed()));
-
 // ---------- sticker actions ----------
 async function download(name, blob) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;

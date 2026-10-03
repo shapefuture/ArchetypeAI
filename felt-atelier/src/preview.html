@@ -94,6 +94,12 @@ pre { margin: 0; max-height: 190px; overflow: auto; font: 11.5px/1.45 var(--mono
 .legend { color: var(--muted); font-size: 12.5px; margin: 0; }
 #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--ink); color: var(--panel); padding: 9px 16px; border-radius: 999px; font-size: 13.5px; z-index: 9; }
 #swap { font: 11px var(--mono); color: var(--muted); }
+.crowd { display: flex; gap: 6px; overflow-x: auto; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); margin-top: 10px; scrollbar-width: thin; }
+.chip2d { all: unset; flex: 0 0 auto; width: 62px; cursor: pointer; border-radius: 10px; }
+.chip2d img { width: 100%; aspect-ratio: 1; object-fit: contain; background: var(--stage); border-radius: 10px; display: block; }
+.chip2d:hover img { outline: 2px solid var(--accent); outline-offset: -2px; }
+.chip2d:focus-visible img { outline: 2px solid var(--accent); outline-offset: -2px; }
+#crowdbar .legend { margin: 8px 0 0; }
 </style>
 
 <div class="app">
@@ -109,6 +115,10 @@ pre { margin: 0; max-height: 190px; overflow: auto; font: 11.5px/1.45 var(--mono
       <span class="chips" id="collection" role="group" aria-label="Felt collection">
         <button type="button" class="chip" data-k="wool" aria-pressed="true">Wool</button>
         <button type="button" class="chip" data-k="bright" aria-pressed="false">Bright</button>
+      </span>
+      <span class="chips" id="views" role="group" aria-label="View">
+        <button type="button" class="chip" data-view="single" aria-pressed="true">One character</button>
+        <button type="button" class="chip" data-view="cosmos" aria-pressed="false">Constellation</button>
       </span>
       <span class="chips" id="lod" role="group" aria-label="Level of detail">
         <button type="button" class="chip" data-k="hero" aria-pressed="true">Hero</button>
@@ -129,15 +139,19 @@ pre { margin: 0; max-height: 190px; overflow: auto; font: 11.5px/1.45 var(--mono
         <div id="divider" hidden></div>
         <div id="sewing" hidden>Sewing…</div>
         <div id="hud" class="hud">warming up…</div>
-        <div class="hint">drag to turn · wheel to zoom · double-click for the front · <b>R</b> randomise · <b>F</b> front</div>
+        <div class="hint" id="hint">drag to turn · wheel to zoom · double-click for the front · <b>R</b> randomise · <b>F</b> front</div>
       </div>
-      <div class="fusebar">
+      <div class="fusebar" id="fusebar">
         <label><input type="checkbox" id="fuse"> Fuse 2D sticker over 3D</label>
         <input type="range" id="split" min="0" max="100" value="52" aria-label="Split between 3D and 2D">
         <label><input type="checkbox" id="trace"> Trace sewing record</label>
         <span class="note" id="swap"></span>
       </div>
-      <p class="legend" style="margin-top:8px">The trace is the 2D draw list — seam, blanket-stitch ticks, cut pieces and
+      <div id="crowdbar" hidden>
+        <div class="crowd" id="crowd"></div>
+        <p class="legend" id="crowdnote"></p>
+      </div>
+      <p class="legend" id="legend3d" style="margin-top:8px">The trace is the 2D draw list — seam, blanket-stitch ticks, cut pieces and
       thread — with its height taken from the same inflation formula that stuffs the body, then projected through the
       camera. Front-on it lands exactly on the plush; turn the character and you can watch the flat record separate from
       the volume it describes.</p>

@@ -62,3 +62,16 @@ Same characters and world grammar. Each style varies material, light, palette an
 | S4 Glow Jelly Lagoon | translucent jelly-glass | self-lit, twilight | teal dusk plus neon | 3D luminous CG |
 
 Prompts: see the session reply (kept verbatim there).
+
+## 9. Locked character style + four orthogonal map scenes
+Character style is locked to the original plush lineup prompt (flocked velvet felt, one chunky shape, bead/googly eyes, no limbs, one tiny cosmic accessory, golden sun plush at the centre).
+The four map prompts keep those characters identical and vary only the scene:
+
+| Scene | Backdrop | Camera | Map metaphor |
+|---|---|---|---|
+| M1 Studio Orrery | seamless white studio | three-quarter product shot | brass toy orrery arms |
+| M2 Sky Islands | bright pastel daytime sky | eye-level wide | floating felt cloud islands at heights |
+| M3 Night Felt Cosmos | indigo night, stitched stars | low-angle wide | open orbits around a glowing sun |
+| M4 Playmat Map | felt playmat | top-down flat lay | embroidered orbit rings and axis lines |
+
+Prompts are in the session reply.

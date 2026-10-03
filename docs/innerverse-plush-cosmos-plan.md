@@ -75,3 +75,14 @@ The four map prompts keep those characters identical and vary only the scene:
 | M4 Playmat Map | felt playmat | top-down flat lay | embroidered orbit rings and axis lines |
 
 Prompts are in the session reply.
+
+## 10. Review of first generations + three creature styles
+Generated: playmat (flat felt), sky islands (velvet, Pixar light), white lineup (flocked velvet).
+- **Works:** flocked velvet material (lineup), eyelid-driven expression (sky islands: sleepy square, stern triangle), flat felt readability (playmat), embroidered constellation on the crescent, the petal sun.
+- **Fails:** every face uses the same formula (two eyes, smile, blush), so personality reads as generic AI kawaii. Sphere-ish shapes (peach, teal ball) have weak silhouettes. The frog grew legs. Props are random (rocket, magnifier) with no shared material language. Every character is the same size, and the rainbow colour order gives no hierarchy.
+
+Three creature styles (each with an ownable signature):
+1. **Velvet Bean:** smooth flocked velvet, big bead eyes set low and wide, no mouth, appliqué felt eyelids carry the mood, gold-thread cosmic embroidery.
+2. **Stitch Appliqué:** flat pillow felt, contrast blanket-stitch outline used as the line art, embroidered eyes, everything readable as a 2D icon.
+3. **Fluff & Gloss:** long-pile fluffy fur (like the original references), tiny black bead eyes, every prop in glossy black (beret, bowtie, glasses DNA) translated to cosmic objects.
+Prompts are in the session reply.

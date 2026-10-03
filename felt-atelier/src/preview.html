@@ -1,0 +1,174 @@
+<title>Felt Atelier — preview</title>
+<meta name="description" content="One DNA, sewn once: real stuffed-felt geometry in 3D and the same sewing record as a flat 2D sticker, fused in one preview.">
+<style>
+/* Felt Atelier preview. No web fonts, no network: everything is in this file. */
+:root {
+  --bg: #eae6de; --panel: #f7f4ee; --ink: #23202a; --muted: #6b655c; --line: #d9d2c6;
+  --accent: #b4552f; --accent-ink: #fff8f2; --stage: #e6e1d7; --chip: #efeae1;
+  --display: ui-rounded, 'Nunito', 'Quicksand', 'Segoe UI', system-ui, sans-serif;
+  --body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17161a; --panel: #1f1d22; --ink: #f0ece5; --muted: #a49d94; --line: #35323a;
+    --accent: #e08a5f; --accent-ink: #1a1512; --stage: #26232a; --chip: #2a272e; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); padding: 18px 18px 40px; }
+[hidden] { display: none !important; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app { max-width: 1240px; margin: 0 auto; display: grid; gap: 16px; }
+
+header { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; }
+h1 { font: 600 clamp(24px, 3.4vw, 34px)/1 var(--display); margin: 0; letter-spacing: .01em; }
+h1 span { color: var(--accent); }
+.sub { margin: 6px 0 0; max-width: 62ch; color: var(--muted); font-size: 14px; }
+.sub b { color: var(--ink); font-weight: 600; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 8px 15px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; gap: 7px; align-items: center; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.chips { display: inline-flex; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 2px; gap: 2px; }
+.chip { border: 0; background: none; border-radius: 999px; padding: 6px 13px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.tag { font: 600 10px/1 var(--body); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+
+.work { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(290px, .9fr); gap: 16px; align-items: start; }
+@media (max-width: 940px) { .work { grid-template-columns: 1fr; } }
+
+.stagebox { position: relative; background: var(--stage); border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); touch-action: none; }
+#stage { position: absolute; inset: 0; }
+#stage canvas { display: block; width: 100% !important; height: 100% !important; cursor: grab; }
+#stage canvas:active { cursor: grabbing; }
+.stagebox { aspect-ratio: 1 / .92; }
+#sticker { position: absolute; pointer-events: none; }
+#sticker svg { display: block; width: 100%; height: 100%; overflow: visible; }
+#ov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+#divider { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--accent); box-shadow: 0 0 0 1px rgba(0,0,0,.12); pointer-events: none; }
+#divider::after { content: '2D ⇄ 3D'; position: absolute; top: 10px; left: 6px; font: 600 10px/1 var(--body); letter-spacing: .1em; color: var(--accent-ink); background: var(--accent); padding: 4px 7px; border-radius: 999px; white-space: nowrap; }
+#sewing { position: absolute; top: 12px; left: 12px; font: 600 12px var(--body); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; }
+.hud { position: absolute; left: 12px; bottom: 34px; font: 11px/1.4 var(--mono); color: var(--muted); background: color-mix(in srgb, var(--panel) 82%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; }
+.hint { position: absolute; left: 12px; right: 12px; bottom: 10px; font-size: 11.5px; color: var(--muted); pointer-events: none; }
+
+.fusebar { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); }
+.fusebar.on { border-color: var(--accent); }
+.fusebar label { display: inline-flex; gap: 7px; align-items: center; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.fusebar input[type=range] { flex: 1 1 160px; min-width: 120px; accent-color: var(--accent); }
+.fusebar .note { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+.rail { display: grid; gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px 16px; }
+.card h2 { font: 600 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; margin: 0 0 12px; color: var(--muted); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.card h2 small { font: 400 11px/1 var(--body); letter-spacing: .04em; text-transform: none; color: var(--muted); }
+.flat2d { background: var(--stage); border-radius: 10px; padding: 10px; display: grid; place-items: center; }
+.flat2d svg { width: min(100%, 190px); height: auto; display: block; overflow: visible; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+#desc { margin: 0 0 4px; font: 500 14.5px var(--body); }
+#lint { margin: 0; font-size: 12px; color: var(--muted); }
+.stats { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; margin: 0; font-size: 13px; }
+.stats dt { color: var(--muted); }
+.stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
+.sw { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,.25); display: inline-block; }
+pre { margin: 0; max-height: 190px; overflow: auto; font: 11.5px/1.45 var(--mono); background: var(--stage); border-radius: 10px; padding: 10px; }
+
+.family h2 { font: 600 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; display: flex; gap: 10px; align-items: center; }
+.family h2 small { font: 400 11.5px/1 var(--body); letter-spacing: 0; text-transform: none; }
+.family h2 .btn { margin-left: auto; text-transform: none; letter-spacing: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
+.cell { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cell .open { all: unset; display: block; width: 100%; cursor: pointer; }
+.cell .open:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 8px 8px 0; }
+.pair img, .pair .ph3, .pair .ph2 { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; display: block; }
+.pair .two { background: var(--stage); }
+.pair .ph3, .pair .ph2 { display: grid; place-items: center; background: var(--stage); border-radius: 8px; font-size: 10px; color: var(--muted); }
+.meta { display: flex; gap: 6px; justify-content: space-between; align-items: baseline; padding: 8px 10px 9px; font-size: 12px; }
+.meta b { font-weight: 600; }
+.meta i { font-style: normal; color: var(--muted); }
+.legend { color: var(--muted); font-size: 12.5px; margin: 0; }
+#toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--ink); color: var(--panel); padding: 9px 16px; border-radius: 999px; font-size: 13.5px; z-index: 9; }
+#swap { font: 11px var(--mono); color: var(--muted); }
+</style>
+
+<div class="app">
+  <header>
+    <div>
+      <h1>Felt Atelier <span>· preview</span></h1>
+      <p class="sub">One DNA, one sewing pass, two outputs — <b>real stuffed-felt geometry</b> (two cut pieces inflated into
+      domes, blanket-stitched at the rim, felt eyes and patches laid on the surface) and the <b>same sewing record drawn flat
+      as a 2D sticker</b>. This page fuses them: the flat record is lifted back onto the plush and projected through the
+      live camera, so the 2D paths ride the 3D object instead of sitting next to it.</p>
+    </div>
+    <div class="bar">
+      <span class="chips" id="collection" role="group" aria-label="Felt collection">
+        <button type="button" class="chip" data-k="wool" aria-pressed="true">Wool</button>
+        <button type="button" class="chip" data-k="bright" aria-pressed="false">Bright</button>
+      </span>
+      <span class="chips" id="lod" role="group" aria-label="Level of detail">
+        <button type="button" class="chip" data-k="hero" aria-pressed="true">Hero</button>
+        <button type="button" class="chip" data-k="map" aria-pressed="false">Crowd LOD</button>
+      </span>
+      <button type="button" class="btn" id="front">Front view</button>
+      <button type="button" class="btn" id="spin" aria-pressed="false">Turntable</button>
+      <button type="button" class="btn primary" id="dice">🎲 Randomise</button>
+    </div>
+  </header>
+
+  <section class="work">
+    <div>
+      <div class="stagebox">
+        <div id="stage"></div>
+        <div id="sticker" hidden></div>
+        <svg id="ov" hidden aria-hidden="true"></svg>
+        <div id="divider" hidden></div>
+        <div id="sewing" hidden>Sewing…</div>
+        <div id="hud" class="hud">warming up…</div>
+        <div class="hint">drag to turn · wheel to zoom · double-click for the front · <b>R</b> randomise · <b>F</b> front</div>
+      </div>
+      <div class="fusebar">
+        <label><input type="checkbox" id="fuse"> Fuse 2D sticker over 3D</label>
+        <input type="range" id="split" min="0" max="100" value="52" aria-label="Split between 3D and 2D">
+        <label><input type="checkbox" id="trace"> Trace sewing record</label>
+        <span class="note" id="swap"></span>
+      </div>
+      <p class="legend" style="margin-top:8px">The trace is the 2D draw list — seam, blanket-stitch ticks, cut pieces and
+      thread — with its height taken from the same inflation formula that stuffs the body, then projected through the
+      camera. Front-on it lands exactly on the plush; turn the character and you can watch the flat record separate from
+      the volume it describes.</p>
+    </div>
+
+    <aside class="rail">
+      <div class="card">
+        <h2>2D sticker <small>from the same record</small></h2>
+        <div class="flat2d" id="flat2d"></div>
+        <p id="desc" style="min-height:1.4em"></p>
+        <p id="lint"></p>
+        <div class="row">
+          <button type="button" class="btn" id="svg-dl">Download SVG</button>
+          <button type="button" class="btn" id="png-dl">PNG</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Construction <small>what was sewn</small></h2>
+        <dl class="stats" id="stats"></dl>
+      </div>
+      <div class="card">
+        <h2>DNA <small>seed → every stitch</small></h2>
+        <pre id="dna"></pre>
+      </div>
+    </aside>
+  </section>
+
+  <section class="family">
+    <h2>Inner family <small>twelve characters, each one rendered in 3D and drawn flat — click to open one on the turntable</small>
+      <button type="button" class="btn" id="reshuffle">Reshuffle</button></h2>
+    <div class="grid" id="grid"></div>
+  </section>
+</div>
+<div id="toast" hidden></div>

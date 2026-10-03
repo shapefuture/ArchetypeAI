@@ -3,10 +3,24 @@
 3D appliqué-felt character customizer, randomizer and constellation preview. No server needed.
 
 - `customizer.html`: the whole app in one file (open it in a browser). Rebuild with `node build.mjs`.
+- `preview.html`: the self-contained 2D/3D preview — one character on a turntable with the flat sewing record fused
+  over it, plus a twelve-character inner family where every character is shown both as a 3D render and as its 2D sticker.
+  No network at all: three.js, the engine and the sewing worker are all inlined in the file.
 - `lineup.html`: dev harness that renders a 13-character lineup (`?seed=3&pitch=-0.42`, `&solo=5` for one close-up).
 - `bench.mjs`, `bench2.mjs`: Node benchmarks of the sewing pipeline (`node bench.mjs`).
+- `smoke.mjs`: runs `preview.html` in jsdom with only the WebGL renderer stubbed, then drives the controls and
+  asserts the results (`node smoke.mjs`; needs `jsdom` as well).
 
 Build needs `three`, `delaunator` and `esbuild` in `node_modules` (`npm i three@0.183.2 delaunator esbuild`).
+
+## The preview: 2D and 3D are the same object
+
+One sewing pass emits real geometry — two cut pieces inflated into stuffed domes, a blanket stitch wrapping the rim,
+felt eyes and patches laid on the surface — and a flat draw record of everything it sewed. `src/fuse.js` lifts that
+record back into 3D: each record gets its height from the same inflation formula that stuffs the body, then it is
+projected through the live camera. So the preview can draw the 2D paths *on* the plush (Trace), and register the flat
+sticker to the silhouette behind a split slider (Fuse). Front-on they coincide; turn the character and you can watch
+the flat record separate from the volume it describes.
 
 ## How it is organised
 
@@ -18,6 +32,8 @@ Build needs `three`, `delaunator` and `esbuild` in `node_modules` (`npm i three@
 | `src/core.js`, `worker.js`, `pool.js` | Sewing runs in a Web Worker pool (falls back to the main thread) |
 | `src/assemble.js`, `materials.js` | Keyed materials with shared, tinted felt maps; shader pre-compilation |
 | `src/flat.js` | 2D SVG sticker generated from the same draw list as the 3D character |
+| `src/fuse.js` | Binds the two together: height-from-the-dome for each flat record, projection through the live camera, silhouette registration |
+| `src/preview.js`, `src/preview.html` | The 2D/3D preview: turntable, fused sticker + split slider, projected sewing trace, construction stats, twelve-character family |
 | `src/stage.js` | Lights, tone-safe background, fixed-size MSAA render target with sub-rectangle scaling |
 | `src/app.js` | UI, prefetching, constellation view, FPS governor |
 

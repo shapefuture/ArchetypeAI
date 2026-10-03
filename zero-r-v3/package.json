@@ -1,13 +1,23 @@
 {
-  "name":"zero-r-parts-map-v3",
-  "private":true,
-  "version":"3.1.0",
-  "type":"module",
-  "scripts":{
-    "typecheck":"tsc --noEmit",
-    "build":"bash ./scripts/build.sh",
-    "test":"node ./tests/run-tests.mjs",
-    "build:wasm":"bash ./scripts/build-wasm.sh"
+  "name": "zero-r-parts-map-v3",
+  "private": true,
+  "version": "3.1.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "bash ./scripts/build.sh",
+    "test": "node ./tests/run-tests.mjs && node ./tests/smoke-ui.mjs",
+    "build:wasm": "bash ./scripts/build-wasm.sh",
+    "test:unit": "node ./tests/run-tests.mjs",
+    "test:ui": "node ./tests/smoke-ui.mjs",
+    "bundle": "node ./scripts/bundle.mjs",
+    "sheet": "node ./tests/render-svg-sheet.mjs"
   },
-  "devDependencies":{"typescript":"^5.8.3"}
+  "devDependencies": {
+    "delaunator": "^5.1.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.1.1",
+    "three": "^0.183.2",
+    "typescript": "^5.8.3"
+  }
 }

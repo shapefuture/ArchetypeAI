@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { build as esbuild } from 'esbuild';
 const root=process.cwd();
 const required=['index.html','public/sw.js','public/manifest.webmanifest','public/wasm/zero_runtime.wasm','src/domain/model.ts','src/ports/index.ts','src/application/expression.ts','src/adapters/scene/dom.ts','src/adapters/render/canvas.ts','src/adapters/storage/indexeddb.ts','edge/worker.mjs','edge/wrangler.jsonc'];
 for(const f of required) assert.ok(fs.existsSync(path.join(root,f)),`missing ${f}`);
@@ -16,4 +18,45 @@ const model=await import(new URL('file://'+path.join(dist,'assets/domain/model.j
 let s0=model.INITIAL_STATE; let s1=model.transition(s0,{type:'OPEN_PART',id:'planner'}); assert.equal(s1.route,'part'); assert.equal(s1.selectedPartId,'planner'); assert.equal(s1.revision,1); let s2=model.transition(s1,{type:'OPEN_CHECKIN'}); assert.equal(s2.route,'checkin'); assert.equal(s2.selectedPartId,'planner');
 const runtime=await import(new URL('file://'+path.join(dist,'assets/adapters/runtime/static.js')).href); const fsx=new runtime.MemoryFutureStore(); assert.equal(fsx.size(),0); fsx.put({key:'a',probability:.9,cost:1,latencySavedMs:20,depth:1,reason:'test',preparedAt:1}); assert.equal(fsx.size(),1);
 const htmlDist=fs.readFileSync(path.join(dist,'index.html'),'utf8'); assert.ok(htmlDist.includes('/assets/styles.css'));
-console.log('PASS domain transitions'); console.log('PASS hex ports'); console.log('PASS non-blocking interaction persistence invariant'); console.log('PASS future store'); console.log('PASS PWA shell/CSP'); console.log('PASS service worker'); console.log('PASS WASM artifact'); console.log('PASS production dist');
+// ---- sewn characters: real engine output, one doll per part, deterministic ----
+const probe=path.join(os.tmpdir(),`zero-r-felt-${process.pid}.mjs`);
+await esbuild({entryPoints:[path.join(root,'tests/felt-probe-entry.ts')],outfile:probe,bundle:true,format:'esm',platform:'node',target:'es2022',nodePaths:[path.join(root,'node_modules')],alias:{'felt-atelier':path.resolve(root,'../felt-atelier/src')},logLevel:'silent'});
+const felt=await import(new URL('file://'+probe).href); fs.rmSync(probe,{force:true});
+const {PARTS,dnaForPart,dnaForSelf,lint,buildData,toSVG}=felt;
+const sewn=[];
+for(const part of PARTS){
+  const dna=dnaForPart(part);
+  assert.deepEqual(lint(dna,sewn),[],`${part.id} is sewn off-model`);
+  assert.ok(dna.body.t&&dna.felt&&dna.size>0.5&&dna.size<1.4,`${part.id} has no usable DNA`);
+  assert.equal(JSON.stringify(dnaForPart(part)),JSON.stringify(dna),`${part.id} is not deterministic`);
+  const data=buildData(dna,{lod:'map'});
+  assert.ok(data.parts.length>1,`${part.id} has no pieces`);
+  const verts=data.parts.reduce((n,p)=>n+(p.geo?.attributes?.position?.count||0),0);
+  assert.ok(verts>9000,`${part.id} is flat: only ${verts} vertices`);
+  const svg=toSVG(data.flat,{id:part.id});
+  assert.match(svg,/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/,`${part.id} sticker is not an SVG`);
+  assert.ok(svg.length>4000,`${part.id} sticker is too small to be a sewing record`);
+  sewn.push(dna);
+}
+assert.equal(new Set(sewn.map(d=>d.body.t)).size,PARTS.length,'two parts share a body');
+assert.equal(new Set(sewn.map(d=>d.felt)).size,PARTS.length,'two parts share a felt');
+const self=dnaForSelf();
+assert.equal(self.body.t,'sun','Self is not the uncostumed one');
+assert.deepEqual(lint(self,sewn),[],'Self is sewn off-model');
+assert.ok(toSVG(buildData(dnaForPart(PARTS[0]),{lod:'hero'}).flat,{id:'hero'}).length>20000,'hero doll lost detail');
+const bundle=fs.readFileSync(path.join(dist,'assets/main.js'),'utf8');
+assert.doesNotMatch(bundle,/THREE\.WebGLRenderer/,'the map parses the 3D stack up front');
+assert.doesNotMatch(bundle,/["']https?:\/\/(?!www\.w3\.org)/,'the bundle reaches out to the network');
+const workerPath=path.join(dist,'assets/felt-worker.js');
+assert.ok(fs.existsSync(workerPath),'missing felt-worker.js');
+const worker=fs.readFileSync(workerPath,'utf8');
+assert.match(worker,/www\.w3\.org\/2000\/svg/,'the sewing room does not build stickers');
+assert.match(worker,/THREE|BufferGeometry/,'the sewing room does not build geometry');
+assert.doesNotMatch(worker,/from"\.\//,'the sewing room is split, so it cannot be precached for offline');
+const chunks=fs.readdirSync(path.join(dist,'assets/chunks')).map(f=>fs.readFileSync(path.join(dist,'assets/chunks',f),'utf8')).join('');
+assert.match(chunks,/THREE\.WebGLRenderer/,'the 3D stack is missing');
+assert.match(sw,/felt-worker/,'the service worker does not precache the sewing room');
+assert.doesNotMatch(htmlDist,/\$\{/,'the shell still contains an un-evaluated template');
+assert.match(htmlDist,/data-bind="part-layer"/); assert.match(htmlDist,/data-bind="part-figure"/); assert.match(htmlDist,/data-bind="felt-family"/);
+assert.match(fs.readFileSync(path.join(root,'public/assets/styles.css'),'utf8'),/\.part-node-felt/);
+console.log('PASS domain transitions'); console.log('PASS hex ports'); console.log('PASS non-blocking interaction persistence invariant'); console.log('PASS future store'); console.log('PASS PWA shell/CSP'); console.log('PASS service worker'); console.log('PASS WASM artifact'); console.log('PASS production dist'); console.log('PASS sewn characters: 7 dolls + Self, engine-linted, deterministic');

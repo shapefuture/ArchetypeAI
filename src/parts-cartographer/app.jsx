@@ -1,5 +1,6 @@
 import React, { createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { StatusBar } from './ui/ui.jsx';
+import { ModalLayer } from './ui/modal-layer.jsx';
 import { store, KEYS } from './core/local-store';
 import { auth } from './core/auth.service.ts';
 import { AI, ResilientAiAdapter } from './core/ai.adapter.ts';
@@ -9,14 +10,16 @@ import { SEED_PARTS } from './pal/traits.ts';
 import { t as translate, STRINGS } from './i18n/strings.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
 import { Cabinet } from './screens/cabinet.jsx';
-import { AdminDashboard } from './screens/admin.jsx';
+const AdminDashboard = lazy(() => import('./screens/admin.jsx').then((module) => ({ default: module.AdminDashboard })));
 import { Assessment, Gate, Descent, Results } from './screens/assessment.jsx';
 const FullAssessment = lazy(() => import('./screens/full-assessment.jsx').then((module) => ({ default: module.FullAssessment })));
 const Legacy64Assessment = lazy(() => import('./screens/legacy-assessment.jsx').then((module) => ({ default: module.Legacy64Assessment })));
 const Practice = lazy(() => import('./screens/practice.jsx').then((module) => ({ default: module.Practice })));
 const CheckIn = lazy(() => import('./screens/check-in.jsx').then((module) => ({ default: module.CheckIn })));
+const QuickScan = lazy(() => import('./screens/quick-scan.jsx').then((module) => ({ default: module.QuickScan })));
+const BackupRestore = lazy(() => import('./screens/backup-restore.jsx').then((module) => ({ default: module.BackupRestore })));
 import { Innerverse, SpecialistView } from './screens/innerverse.jsx';
-import { Coach, Help, InstallPrompt, SynastryOv, QuickScan, Therapist, Login, MapGate, Paywall, UniverseFail, Journal, Share, Booking } from './overlays.jsx';
+import { Coach, Help, InstallPrompt, SynastryOv, Therapist, Login, MapGate, Paywall, UniverseFail, Journal, Share, Booking } from './overlays.jsx';
 import { PartSheet, PartEditor, Chemistry, CharterSheet } from './screens/cabinet.jsx';
 
 const AppCtx = createContext(null);
@@ -70,9 +73,57 @@ export default function App() {
   const [uniReady, setUniReady] = useState(false);
   const [uniHovered, setUniHovered] = useState(false);
 
+  useEffect(() => () => {
+    uniRef.current?.dispose();
+    uniRef.current = null;
+  }, []);
+  useEffect(() => {
+    const message = (event) => toast([event.detail?.title, event.detail?.body].filter(Boolean).join(' · '));
+    window.addEventListener('ifs:push-message', message);
+    return () => window.removeEventListener('ifs:push-message', message);
+  }, []);
   /* keep <html lang> + theme in sync (RU font fallback, no theme flash) */
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
+  // Restore is an explicit local action. Refresh mounted state immediately;
+  // it must not require a reload or trigger a cloud upload.
+  useEffect(() => {
+    const refresh = () => {
+      setPartsRaw(store.load(KEYS.parts, SEED_PARTS));
+      setProfileRaw(store.load(KEYS.profile, null));
+      setLang(store.load('ifs.lang', 'ru'));
+      setTheme(store.load('ifs.theme', 'light'));
+      setState('intro');
+      setSheet(null);
+      setOverlay(null);
+    };
+    window.addEventListener('ifs:local-restored', refresh);
+    return () => window.removeEventListener('ifs:local-restored', refresh);
+  }, []);
+  useEffect(() => {
+    if (profile?.testModel !== 'angular-v2' || !profile.clinical) return;
+    let active = true;
+    import('./core/clinical-profile-adapter.ts').then(({ adaptClinicalProfile }) => {
+      if (!active) return;
+      const rebuilt = adaptClinicalProfile(profile.clinical, lang);
+      const translated = { ...rebuilt.profile, createdAt: profile.createdAt };
+      setProfileRaw(translated);
+      store.save(KEYS.profile, translated);
+      setPartsRaw((current) => {
+        const byId = new Map(rebuilt.parts.map((part) => [part.id, part]));
+        const next = current.map((part) => {
+          const canonical = byId.get(part.id);
+          if (!canonical) return part;
+          const autoName = !part.name || [part.nameEn, part.nameRu, canonical.nameEn, canonical.nameRu].includes(part.name);
+          return { ...part, name: autoName ? canonical.name : part.name, nameEn: canonical.nameEn, nameRu: canonical.nameRu,
+            archetype: { ...canonical.archetype, ...part.archetype } };
+        });
+        store.save(KEYS.parts, next);
+        return next;
+      });
+    });
+    return () => { active = false; };
+  }, [lang, profile?.createdAt, profile?.testModel]);
   useEffect(() => {
     if (profile) return undefined;
     let active = true;
@@ -92,9 +143,10 @@ export default function App() {
   }, [lang, profile]);
   useEffect(() => {
     let active = true;
+    setPremium(billing.isPremium());
     billing.restore().then((verified) => { if (active) setPremium(verified); });
     return () => { active = false; };
-  }, []);
+  }, [user?.uid]);
   /* debug/introspection hook for smoke probes */
   useEffect(() => { window.__APP_STATE = state; }, [state]);
 
@@ -109,6 +161,7 @@ export default function App() {
   const setProfile = useCallback((next) => {
     setProfileRaw(next);
     if (next) { store.save(KEYS.profile, next); store.archive(KEYS.history, next); }
+    else store.remove(KEYS.profile);
   }, []);
 
   const go = useCallback((next) => {
@@ -120,9 +173,10 @@ export default function App() {
 
   /* ── boot: loading → onboarding | intro (auto ~4.2s) ── */
   useEffect(() => {
-    const bootAt = setTimeout(async () => {
-      const u = await auth.anonymousBootstrap(); // draft: anonymous bootstrap at 4s
-      setUser(u);
+    let active = true;
+    const bootAt = setTimeout(() => {
+      // Local navigation remains available while Firebase connects, including offline.
+      auth.anonymousBootstrap().then((u) => { if (active) setUser(u); });
       const seen = store.load(KEYS.onboarded, false);
       setState(seen ? 'intro' : 'onboarding');
       // PWA shortcut deep-links (?go=assessment | ?go=checkin)
@@ -138,7 +192,7 @@ export default function App() {
         }
       } catch { /* */ }
     }, 4200);
-    return () => clearTimeout(bootAt);
+    return () => { active = false; clearTimeout(bootAt); };
   }, []);
 
   /* ── PWA install prompt (auto-opens once/week after 9s on intro) ── */
@@ -187,14 +241,15 @@ export default function App() {
     openSky,
     universeMode, setUniverseMode,
     retryUniverse: () => { setUniError(false); enterUniverse(); },
-  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, toast, uniReady, uniError, deferredInstall, universeMode]);
+  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode]);
 
   /* ── universe host: outside the switch; renderer chunk on first entry ── */
-  const enterUniverse = useCallback(async () => {
+  const enterUniverse = useCallback(async (isActive = () => true) => {
     try {
       const host = document.getElementById('universe-host');
       if (!host) throw new Error('no host');
       const mod = await import('./services/universe-scene.ts');
+      if (!isActive() || !host.isConnected) return;
       if (!uniRef.current) uniRef.current = mod.initUniverse(host, theme === 'dark');
       uniRef.current.setParts(parts);
       uniRef.current.onPick((id) => setSheet({ type: 'part', id }));
@@ -204,6 +259,7 @@ export default function App() {
       setUniError(false);
       if (!store.load(KEYS.helpSeen, false)) { setOverlay('help'); store.save(KEYS.helpSeen, true); }
     } catch (e) {
+      if (!isActive()) return;
       console.error(e);
       setUniError(true);
       setOverlay('universe-fail');
@@ -211,7 +267,9 @@ export default function App() {
   }, [parts, theme]);
 
   useEffect(() => {
-    if (state === 'universe') enterUniverse();
+    let active = true;
+    if (state === 'universe') enterUniverse(() => active);
+    return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
@@ -264,12 +322,13 @@ export default function App() {
       case 'synastry': return <SynastryOv />;
       case 'practice': return <Suspense fallback={<Loading />}><Practice /></Suspense>;
       case 'checkin': return <Suspense fallback={<Loading />}><CheckIn /></Suspense>;
-      case 'quickscan': return <QuickScan />;
+      case 'restore': return <Suspense fallback={<Loading />}><BackupRestore /></Suspense>;
+      case 'quickscan': return <Suspense fallback={<Loading />}><QuickScan /></Suspense>;
       case 'therapist': return <Therapist />;
       case 'journal': return <Journal />;
       case 'share': return <Share />;
       case 'booking': return <Booking />;
-      case 'admin': return <AdminDashboard />;
+      case 'admin': return <Suspense fallback={<Loading />}><AdminDashboard /></Suspense>;
       case 'login': return <Login onClose={() => setOverlay(null)} />;
       case 'mapgate': return <MapGate />;
       case 'paywall': return <Paywall reason={payload?.reason} />;
@@ -294,21 +353,22 @@ export default function App() {
   return (
     <AppCtx.Provider value={ctx}>
       <div className="stage">
-        <div className="stage-caption">parts cartographer · IFS map PWA — style after cutebuttons</div>
+        <div className="stage-caption">Innerverse · your inner system</div>
         <div className={`phone grain`} data-theme={theme}>
           <StatusBar />
 
           {/* three.js canvas — OUTSIDE the switch */}
           <div id="universe-host" className={`universe-host ${state === 'universe' ? 'on' : ''}`} />
 
-          {screen}
+          <div className="app-content" inert={overlay || sheet ? '' : undefined}>
+            {screen}
+            {showDock && <Dock onSkyHover={prefetchUni} />}
+          </div>
 
-          {showDock && <Dock onSkyHover={prefetchUni} />}
+          {toastMsg && <div className="toast" role="status">{toastMsg}</div>}
 
-          {toastMsg && <div className="toast">{toastMsg}</div>}
-
-          {sheetEl}
-          {ov}
+          {sheetEl && <ModalLayer label={t('parts')} onClose={() => setSheet(null)}>{sheetEl}</ModalLayer>}
+          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(typeof overlay === 'string' ? overlay : overlay?.kind)} onClose={() => setOverlay(null)}>{ov}</ModalLayer>}
         </div>
       </div>
     </AppCtx.Provider>
@@ -365,7 +425,7 @@ function Dock({ onSkyHover }) {
 
 /* ── universe chrome (close · navigate · help) ── */
 function UniverseChrome() {
-  const { t, go, setOverlay, setSheet, parts } = useApp();
+  const { t, lang, go, setOverlay, setSheet, parts } = useApp();
   const [hover, setHover] = useState(null);
   useEffect(() => {
     const api = window.__uni;
@@ -374,17 +434,17 @@ function UniverseChrome() {
   return (
     <div className="universe-chrome" style={{ paddingTop: 50 }}>
       <div className="row" style={{ padding: '6px 16px', gap: 10 }}>
-        <button className="ibtn" onClick={() => go('innerverse')}>✕</button>
+        <button className="ibtn" aria-label={t('close')} onClick={() => go('intro')}>✕</button>
         <div className="grow">
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 17 }}>{t('universe')}</div>
-          <div className="faint" style={{ fontSize: 11, fontWeight: 800 }}>{parts.length} parts in orbit · tap one</div>
+          <div className="faint" style={{ fontSize: 11, fontWeight: 800 }}>{parts.length} {lang === 'ru' ? 'частей на карте · выберите одну' : 'parts on the map · select one'}</div>
         </div>
-        <button className="ibtn" onClick={() => setOverlay('help')}>?</button>
+        <button className="ibtn" aria-label={lang === 'ru' ? 'Помощь' : 'Help'} onClick={() => setOverlay('help')}>?</button>
       </div>
       <div className="grow" />
       <div className="row" style={{ padding: '0 16px 26px', justifyContent: 'center' }}>
         <span className="degraded" style={{ opacity: .9 }}>
-          {ResilientAiAdapter.degradation.degraded ? '◌ degraded narrative' : '◌ live map'}
+          {lang === 'ru' ? '◌ Ваша карта' : '◌ Your map'}
         </span>
       </div>
     </div>

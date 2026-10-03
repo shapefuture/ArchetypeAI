@@ -2,7 +2,6 @@
 import { computeSynastry, type SynastryReport } from '../../app/core/data/synastry';
 import type { SynastryResult } from './synastry-v2';
 
-const RESPONSE_COUNT = 64;
 const AXES: Record<string, { en: string; ru: string }> = {
   AGENCY: { en: 'Agency resonance', ru: 'Резонанс агентности' },
   TEMPERATURE: { en: 'Emotional-temperature resonance', ru: 'Резонанс эмоциональной температуры' },
@@ -10,21 +9,8 @@ const AXES: Record<string, { en: string; ru: string }> = {
   ATTACHMENT: { en: 'Attachment-pattern resonance', ru: 'Резонанс паттернов привязанности' },
 };
 
-export function validateLegacy64Responses(value: unknown): value is number[] {
-  return Array.isArray(value) && value.length === RESPONSE_COUNT
-    && value.every((answer) => Number.isInteger(answer) && answer >= 1 && answer <= 5);
-}
-
-/** Read the old assessment's local answer key without exposing it to network calls. */
-export function readLocalLegacy64Responses(storage: Pick<Storage, 'getItem'> | null = globalThis.localStorage ?? null): number[] | null {
-  if (!storage) return null;
-  try {
-    const parsed = JSON.parse(storage.getItem('ARCHETYPE_ASSESSMENT_RESPONSES') ?? 'null') as unknown;
-    return validateLegacy64Responses(parsed) ? parsed : null;
-  } catch {
-    return null;
-  }
-}
+export { validateLegacy64Responses, readLocalLegacy64Responses } from './legacy64-responses';
+import { validateLegacy64Responses } from './legacy64-responses';
 
 function summary(report: SynastryReport, language: 'en' | 'ru'): string {
   const archetype = report.relationalArchetype;

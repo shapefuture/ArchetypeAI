@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 const COPY = {
   en: {
@@ -32,9 +32,9 @@ function text(value, language) {
   return value?.nameEn ?? value?.en ?? value?.name ?? value?.descriptionEn ?? value?.description ?? '';
 }
 
-function Section({ title, children }) {
+function Section({ id, title, children }) {
   return (
-    <section className="card flat mt10" aria-label={title}>
+    <section id={id} className="card flat mt10" aria-label={title} style={{ scrollMarginTop: 72 }}>
       <div className="kicker" style={{ color: 'var(--accent-text)' }}>{title}</div>
       <div className="mt8">{children}</div>
     </section>
@@ -60,6 +60,7 @@ function PersonIndicators({ report, language, label, copy }) {
 }
 
 export function LegacySynastryDetails({ report, lang = 'en', onDownload }) {
+  const sectionId = useId();
   if (!report) return null;
   const language = lang === 'ru' ? 'ru' : 'en';
   const copy = COPY[language];
@@ -72,21 +73,24 @@ export function LegacySynastryDetails({ report, lang = 'en', onDownload }) {
   const personTwoComplexes = report.person2Complexes?.map((complex) => complex.name) ?? [];
 
   return (
-    <div className="mt12">
-      <Section title={copy.relationalArchetype}>
+    <div className="mt12" data-synastry-details>
+      <nav className="tabs" aria-label={lang === 'ru' ? 'Разделы отчёта' : 'Report sections'} style={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
+        {['relationalArchetype', 'attachment', 'resonance', 'crossTriggers', 'shared', 'pathway', 'diagnostics'].map((key) => <button key={key} onClick={() => document.getElementById(`${sectionId}-${key}`)?.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}>{copy[key]}</button>)}
+      </nav>
+      <Section id={`${sectionId}-relationalArchetype`} title={copy.relationalArchetype}>
         <h3 className="h2" style={{ fontSize: 17 }}>{text(archetype, language)}</h3>
         <p className="sub mt8" style={{ color: 'var(--text)' }}>{language === 'ru' ? archetype.descriptionRu : archetype.descriptionEn}</p>
         <p className="sub mt8"><b>{copy.invitation}: </b>{language === 'ru' ? archetype.invitationRu : archetype.invitationEn}</p>
         <p className="sub mt8"><b>{copy.shadow}: </b>{language === 'ru' ? archetype.shadowRu : archetype.shadowEn}</p>
       </Section>
 
-      <Section title={copy.attachment}>
+      <Section id={`${sectionId}-attachment`} title={copy.attachment}>
         <p className="sub" style={{ color: 'var(--text)' }}>{language === 'ru' ? dance.descriptionRu : dance.descriptionEn}</p>
         <p className="sub mt8"><b>{copy.cycle}: </b>{language === 'ru' ? dance.cycleRu : dance.cycleEn}</p>
         <p className="sub mt8"><b>{copy.deactivation}: </b>{language === 'ru' ? dance.deactivationRu : dance.deactivationEn}</p>
       </Section>
 
-      <Section title={copy.resonance}>
+      <Section id={`${sectionId}-resonance`} title={copy.resonance}>
         {resonance.map((dimension) => (
           <article className="card flat mt8" key={dimension.dimension}>
             <div className="row" style={{ justifyContent: 'space-between', gap: 8 }}>
@@ -100,7 +104,7 @@ export function LegacySynastryDetails({ report, lang = 'en', onDownload }) {
         ))}
       </Section>
 
-      <Section title={copy.crossTriggers}>
+      <Section id={`${sectionId}-crossTriggers`} title={copy.crossTriggers}>
         {triggers.length ? triggers.map((trigger, index) => (
           <article className="card flat mt8" key={`${trigger.person1Trigger}-${trigger.person2Trigger}-${index}`}>
             <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
@@ -113,7 +117,7 @@ export function LegacySynastryDetails({ report, lang = 'en', onDownload }) {
         )) : <p className="sub">{copy.noCrossTriggers}</p>}
       </Section>
 
-      <Section title={copy.shared}>
+      <Section id={`${sectionId}-shared`} title={copy.shared}>
         <p className="sub">{report.sharedComplexes?.length ? report.sharedComplexes.join(' · ') : copy.noShared}</p>
         <div className="kicker mt12" style={{ color: 'var(--accent-text)' }}>{copy.complementary}</div>
         <p className="sub mt8">{report.complementaryComplexes?.length ? report.complementaryComplexes.join(' · ') : copy.noShared}</p>
@@ -125,7 +129,7 @@ export function LegacySynastryDetails({ report, lang = 'en', onDownload }) {
         )}
       </Section>
 
-      <Section title={copy.pathway}>
+      <Section id={`${sectionId}-pathway`} title={copy.pathway}>
         {pathway.length ? pathway.map((step) => (
           <article className="row mt8" key={step.stage} style={{ alignItems: 'flex-start', gap: 10 }}>
             <span className="pill">{step.stage}</span>
@@ -138,7 +142,7 @@ export function LegacySynastryDetails({ report, lang = 'en', onDownload }) {
         )) : <p className="sub">{copy.noPathway}</p>}
       </Section>
 
-      <Section title={copy.diagnostics}>
+      <Section id={`${sectionId}-diagnostics`} title={copy.diagnostics}>
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
           <PersonIndicators report={report} language={language} label={copy.person1} copy={copy} />
           <PersonIndicators report={report} language={language} label={copy.person2} copy={copy} />

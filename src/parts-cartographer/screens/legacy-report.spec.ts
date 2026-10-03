@@ -70,7 +70,7 @@ describe('Legacy clinical report screen', () => {
     expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent?.includes('Clinical report'))).toBe(true);
     expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent?.includes('Download backup'))).toBe(true);
     expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent?.includes('View in universe'))).toBe(true);
-    expect(aiMocks.aiReport).toHaveBeenCalledTimes(1);
+    expect(aiMocks.aiReport).not.toHaveBeenCalled();
   });
 
   it('renders a selected AI pantheon without starting a second report request', () => {

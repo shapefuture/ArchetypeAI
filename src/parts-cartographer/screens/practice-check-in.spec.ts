@@ -167,7 +167,9 @@ describe('React Practice and CheckIn parity', () => {
         reader.onerror = () => reject(reader.error);
         reader.readAsText(blob as Blob);
       });
-      const backup = JSON.parse(json);
+      const exported = JSON.parse(json);
+      expect(exported.schema).toBe('parts-cartographer.backup.v2');
+      const backup = exported.data;
       expect(backup.INNERVERSE_CHECKINS_V1).toHaveLength(1);
       expect(backup.INNERVERSE_PRACTICE_V1.completed).toContain('build-safe-place');
       expect(backup['unrelated.authToken']).toBeUndefined();

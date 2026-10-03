@@ -1,13 +1,24 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character.tsx';
 import { FAMILY_LABELS, randomTraits, pid, SHAPES, EYES, MOUTHS, HEADS, FACES } from '../pal/traits.ts';
 import { familyColor, Crest, Seg, Bars } from '../ui/ui.jsx';
 import { t as tr, EXERCISE_COPY, UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
-import { AI } from '../core/ai.adapter.ts';
+import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapter.ts';
 import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus } from '../core/booking.ts';
+import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates } from '../services/universe-lens';
+import { ModalLayer } from '../ui/modal-layer.jsx';
+
+const CLUSTER_LABELS = {
+  managers: ['Managers', 'Менеджеры'], firefighters: ['Firefighters', 'Пожарные'], exiles: ['Exiles', 'Изгнанники'], resources: ['Resources', 'Ресурсы'],
+  control_shadows: ['Control patterns', 'Паттерны контроля'], emotional_storm_shadows: ['Emotional storms', 'Эмоциональные бури'],
+  avoidant_intellectual_shadows: ['Intellectual distance', 'Интеллектуальная дистанция'], anxious_connection_shadows: ['Anxious connection', 'Тревожная связь'],
+  seductive_avoidance_shadows: ['Seductive avoidance', 'Соблазняющее избегание'], gift_archetypes: ['Resource archetypes', 'Ресурсные архетипы'],
+  disorganized_attachment_shadows: ['Conflicted attachment', 'Противоречивая привязанность'],
+};
+const clusterName = (id, lang) => CLUSTER_LABELS[id]?.[lang === 'ru' ? 1 : 0] ?? id.replaceAll('_', ' ');
 
 const DIMENSION_AXES = [
   { key: 'AGENCY', label: 'agency', low: 'agencyHypo', high: 'agencyHyper', icon: '⚡', color: '#6ED6FF' },
@@ -43,9 +54,22 @@ export function Innerverse() {
   const [dims, setDims] = useState({ energy: 100 });
   const [dimensions, setDimensions] = useState(readUniverseDimensions);
   const [famOn, setFamOn] = useState({ manager: true, firefighter: true, exile: true, resource: true });
+  const [axes, setAxes] = useState(DEFAULT_AXES);
+  const [isolation, setIsolation] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [focusOnly, setFocusOnly] = useState(false);
+  const [reportOnly, setReportOnly] = useState(false);
+  const [cluster, setCluster] = useState('all');
+  const [xrSupported, setXrSupported] = useState(false);
   const dimensionCopy = UNIVERSE_DIMENSIONS_COPY[lang];
 
-  const visible = useMemo(() => filterUniverseParts(parts, famOn, dims.energy), [parts, famOn, dims.energy]);
+  const visible = useMemo(() => filterUniverseParts(parts, famOn, dims.energy)
+    .filter((part) => (!focusOnly || part.id === selectedId) && (!reportOnly || part.archetype?.sourceAssessment !== 'studio' && !!part.archetype)
+      && (cluster === 'all' || part.archetype?.cluster === cluster)), [parts, famOn, dims.energy, focusOnly, selectedId, reportOnly, cluster]);
+  const ranked = useMemo(() => [...visible].sort((a, b) => {
+    const score = (part) => { const coordinates = sanitizeArchetypeCoordinates(part.archetype?.coordinates); return coordinates ? coordinateAffinity(coordinates, dimensions, part.family === 'resource') : 0; };
+    return score(b) - score(a) || normalizedEnergy(b) - normalizedEnergy(a);
+  }), [visible, dimensions]);
   const searchMatches = useMemo(() => searchUniverseParts(parts, q, lang).slice(0, 8), [parts, q, lang]);
   const storyParts = useMemo(() => [...visible]
     .sort((a, b) => normalizedEnergy(b) - normalizedEnergy(a)).slice(0, 3), [visible]);
@@ -63,8 +87,17 @@ export function Innerverse() {
   useEffect(() => {
     if (!uniReady || !uniRef?.current) return;
     uniRef.current.setParts(visible);
+  }, [uniReady, uniRef, visible]);
+  useEffect(() => {
+    if (!uniReady || !uniRef?.current) return;
     uniRef.current.setDimensions(dimensions);
-  }, [uniReady, uniRef, visible, dimensions]);
+    uniRef.current.setView?.({ axes, isolation, selectedId });
+  }, [uniReady, uniRef, dimensions, axes, isolation, selectedId]);
+  useEffect(() => {
+    let active = true;
+    if (uniReady) uniRef?.current?.xrSupported?.().then((supported) => { if (active) setXrSupported(supported); });
+    return () => { active = false; };
+  }, [uniReady, uniRef]);
 
   const openStudio = (idea = '') => {
     setStudioIdea(idea);
@@ -73,6 +106,8 @@ export function Innerverse() {
   };
 
   const openPart = (part) => {
+    setSelectedId(part.id);
+    uniRef?.current?.focus?.(part.id);
     setSheet({ type: 'part', id: part.id });
     setQ('');
   };
@@ -100,18 +135,19 @@ export function Innerverse() {
       <div className="row" style={{ padding: '14px 16px 0', pointerEvents: 'auto', position: 'relative', zIndex: 40 }}>
         <div className="uni-search row grow" style={{ gap: 8 }}>
           <input value={q} onChange={(e) => setQ(e.target.value)}
+            aria-label={t('summon')}
             onKeyDown={(e) => e.key === 'Enter' && summon()}
             placeholder={t('summon')} />
-          {q && <button className="ibtn" style={{ width: 34, height: 34, fontSize: 15 }} onClick={summon}>✦</button>}
+          {q && <button className="ibtn" aria-label={lang === 'ru' ? 'Найти часть' : 'Find part'} style={{ width: 34, height: 34, fontSize: 15 }} onClick={summon}>✦</button>}
         </div>
-        <button className="ibtn" onClick={() => setDrawer(true)}>⚙</button>
-        <button className="ibtn" onClick={() => setOverlay('help')}>?</button>
-        <button className="ibtn" onClick={() => setOverlay('coach')}>✨</button>
-        <button className="ibtn" onClick={() => go('intro')}>‹</button>
+        <button className="ibtn" aria-label={t('filters')} onClick={() => setDrawer(true)}>⚙</button>
+        <button className="ibtn" aria-label={lang === 'ru' ? 'Помощь' : 'Help'} onClick={() => setOverlay('help')}>?</button>
+        <button className="ibtn" aria-label={t('coach')} onClick={() => setOverlay('coach')}>✨</button>
+        <button className="ibtn" aria-label={t('back')} onClick={() => go('intro')}>‹</button>
       </div>
       {q.trim() && (
         <div className="card" role="listbox" aria-label={lang === 'ru' ? 'Результаты поиска частей' : 'Part search results'}
-          style={{ position: 'absolute', top: 94, left: 16, right: 16, zIndex: 55, pointerEvents: 'auto', maxHeight: 230, overflowY: 'auto', background: 'rgba(13,14,24,.96)' }}>
+          style={{ position: 'absolute', top: 94, left: 16, right: 16, zIndex: 55, pointerEvents: 'auto', maxHeight: 230, overflowY: 'auto', background: 'var(--surface)' }}>
           {searchMatches.map((part) => (
             <button key={part.id} type="button" role="option" aria-selected="false" className="row" onClick={() => openPart(part)}
               style={{ width: '100%', padding: '9px 4px', textAlign: 'left', color: 'var(--text)', borderBottom: '1px solid var(--line)' }}>
@@ -136,9 +172,9 @@ export function Innerverse() {
 
       {universeMode === 'parts' && (
         <div className="row" style={{ position: 'absolute', left: 0, right: 0, bottom: 86, padding: '0 16px', gap: 8, overflowX: 'auto', pointerEvents: 'auto', zIndex: 30 }}>
-          {visible.slice(0, 8).map((part) => (
-            <button key={part.id} className="chip" style={{ flex: '0 0 auto', background: 'rgba(7,7,10,.72)', borderColor: familyColor(part.family), color: 'var(--text)', backdropFilter: 'blur(6px)' }}
-              onClick={() => toggleCompare(part.id)}>
+          {ranked.map((part) => (
+            <button key={part.id} className="chip" style={{ flex: '0 0 auto', background: 'var(--surface)', borderColor: familyColor(part.family), color: 'var(--text)', backdropFilter: 'blur(6px)' }}
+              onClick={() => openPart(part)} onDoubleClick={() => toggleCompare(part.id)}>
               {compare.includes(part.id) ? '✓ ' : ''}{FAMILY_LABELS[part.family].icon} {lang === 'ru' ? part.nameRu ?? part.name : part.nameEn ?? part.name}
             </button>
           ))}
@@ -158,7 +194,7 @@ export function Innerverse() {
       )}
 
       {universeMode === 'stories' && (
-        <div className="card" style={{ position: 'absolute', left: 16, right: 16, top: 112, maxHeight: 'calc(100% - 225px)', overflowY: 'auto', zIndex: 32, pointerEvents: 'auto', background: 'rgba(13,14,24,.94)' }}>
+        <div className="card" style={{ position: 'absolute', left: 16, right: 16, top: 112, maxHeight: 'calc(100% - 225px)', overflowY: 'auto', zIndex: 32, pointerEvents: 'auto', background: 'var(--surface)' }}>
           <div className="kicker">{storyHeadline || t('universe')}</div>
           {storyEssay && <p className="sub mt8">{storyEssay}</p>}
           {!storyEssay && <p className="sub mt8">{lang === 'ru' ? 'Изучите части с наибольшей энергией и откройте любую для подробностей.' : 'Meet the most energized visible parts; open any one for its detail card.'}</p>}
@@ -175,18 +211,18 @@ export function Innerverse() {
       )}
 
       {/* bottom action tray */}
-      <div className="row" style={{ position: 'absolute', left: 16, right: 16, bottom: 22, gap: 9, pointerEvents: 'auto', zIndex: 40, justifyContent: 'center', flexWrap: 'wrap' }}>
+      <div className="row universe-actions" style={{ position: 'absolute', left: 16, right: 16, bottom: 22, gap: 9, pointerEvents: 'auto', zIndex: 40, overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: 7 }}>
         <button className="tray-btn" onClick={() => openStudio()}>🎨 {t('archetype')}</button>
         <button className="tray-btn" onClick={() => setOverlay('synastry')}>💞 {t('synastry')}</button>
         <button className="tray-btn" onClick={() => { downloadBackup(); toast('⬇ ' + t('saveBackup')); }}>💾 {t('saveBackup')}</button>
         <button className="tray-btn" onClick={() => setOverlay('practice')}>🏋️ {t('practice')}</button>
         <button className="tray-btn" onClick={() => premium ? setDrawer(true) : openPaywall()}>📊 {t('compare')}</button>
-        <button className="tray-btn" onClick={() => setSheet({ type: 'chemistry' })}>⚗️</button>
+        <button className="tray-btn" aria-label={lang === 'ru' ? 'Химия частей' : 'Part chemistry'} onClick={() => setSheet({ type: 'chemistry' })}>⚗️</button>
       </div>
 
       {/* compare tray */}
       {compare.length === 2 && (
-        <div className="card" style={{ position: 'absolute', left: 16, right: 16, top: 118, zIndex: 45, pointerEvents: 'auto', animation: 'screen-in .3s', background: 'rgba(13,14,24,.94)' }}>
+        <div className="card" style={{ position: 'absolute', left: 16, right: 16, top: 118, zIndex: 45, pointerEvents: 'auto', animation: 'screen-in .3s', background: 'var(--surface)' }}>
           <div className="kicker">{t('compare')}</div>
           <div className="row mt8" style={{ gap: 10 }}>
             {compare.map((id) => {
@@ -200,21 +236,28 @@ export function Innerverse() {
                 </div>
               );
             })}
-            <button className="ibtn" onClick={() => setCompare([])}>✕</button>
+            <button className="ibtn" aria-label={t('close')} onClick={() => setCompare([])}>✕</button>
           </div>
         </div>
       )}
 
       {/* filters drawer */}
       {drawer && (
+        <ModalLayer label={t('filters')} onClose={() => setDrawer(false)}>
         <div className="overlay" style={{ zIndex: 60 }} onClick={() => setDrawer(false)}>
           <div className="sheet" onClick={(e) => e.stopPropagation()}>
             <div className="grab" />
             <div className="row">
               <div className="kicker grow">{t('filters')}</div>
-              <button className="ibtn" onClick={() => setDrawer(false)}>✕</button>
+              <button className="ibtn" aria-label={t('close')} onClick={() => setDrawer(false)}>✕</button>
             </div>
             <div className="mt16">
+              <label className="row mt12"><input type="checkbox" checked={reportOnly} onChange={(event) => setReportOnly(event.target.checked)} />{lang === 'ru' ? 'Только части из оценки' : 'Assessment parts only'}</label>
+              <label className="row mt12"><input type="checkbox" checked={focusOnly} disabled={!selectedId} onChange={(event) => setFocusOnly(event.target.checked)} />{lang === 'ru' ? 'Только выбранная часть' : 'Focus on selected part'}</label>
+              <label className="field mt12">{t('uniClusters')}<select value={cluster} onChange={(event) => setCluster(event.target.value)}><option value="all">{t('filterAll')}</option>{[...new Set(parts.map((part) => part.archetype?.cluster).filter(Boolean))].map((id) => <option key={id} value={id}>{clusterName(id, lang)}</option>)}</select></label>
+              <div className="row mt12" style={{ gap: 8 }}>{compare.map((id) => <span className="chip" key={id}>{parts.find((part) => part.id === id)?.name}</span>)}</div>
+              <label className="field mt12">{t('compare')}<select value="" onChange={(event) => toggleCompare(event.target.value)}><option value="">{t('parts')}</option>{parts.map((part) => <option key={part.id} value={part.id}>{lang === 'ru' ? part.nameRu ?? part.name : part.nameEn ?? part.name}</option>)}</select></label>
+              <button className="btn small mt12" onClick={() => { setFocusOnly(false); setSelectedId(null); setIsolation(null); uniRef?.current?.focus?.(null); }}>{lang === 'ru' ? 'Показать всю карту' : 'Show full map'}</button>
               <div className="row">
                 <span style={{ fontWeight: 900, fontSize: 14 }}>{t('energy')}</span>
                 <span className="grow" />
@@ -229,8 +272,8 @@ export function Innerverse() {
               <div className="kicker">{lang === 'ru' ? 'Четырёхмерная линза' : 'Four-dimensional lens'}</div>
               <p className="faint mt6" style={{ fontSize: 10, lineHeight: 1.5 }}>
                 {lang === 'ru'
-                  ? 'Сдвигайте группы в пространстве. Линза меняет только визуализацию и не пересчитывает ответы или профиль.'
-                  : 'Shift the families through the map. This lens changes the visualization only; it does not change answers or scores.'}
+                  ? 'Подсветка показывает близость частей к выбранным координатам. Ответы и показатели не меняются.'
+                  : 'Highlight parts by their affinity to these coordinates. Answers and scores stay unchanged.'}
               </p>
               {DIMENSION_AXES.map((axis) => (
                 <div key={axis.key} className="mt12">
@@ -238,6 +281,7 @@ export function Innerverse() {
                     <span style={{ fontWeight: 900, fontSize: 12 }}>{axis.icon} {dimensionCopy[axis.label]}</span>
                     <span className="grow" />
                     <b className="faint" style={{ fontSize: 11 }}>{dimensions[axis.key] > 0 ? '+' : ''}{Math.round(dimensions[axis.key] * 100)}%</b>
+                    <button className={`chip ${isolation === axis.key ? 'on' : ''}`} aria-pressed={isolation === axis.key} onClick={() => setIsolation(isolation === axis.key ? null : axis.key)}>{lang === 'ru' ? 'Изолировать' : 'Isolate'}</button>
                   </div>
                   <input aria-label={dimensionCopy[axis.label]} type="range" min={-100} max={100} step={1}
                     value={Math.round(dimensions[axis.key] * 100)} style={{ width: '100%', accentColor: axis.color }}
@@ -247,6 +291,9 @@ export function Innerverse() {
                   </div>
                 </div>
               ))}
+              {axes.map((key, index) => <label className="field mt12" key={index}>{['X', 'Y', 'Z'][index]}<select value={key} onChange={(event) => setAxes((current) => current.map((axis, i) => i === index ? event.target.value : axis))}>{DIMENSION_KEYS.map((axis) => <option key={axis} value={axis}>{dimensionCopy[axis.toLowerCase()]}</option>)}</select></label>)}
+              <p className="sub mt12">{xrSupported ? 'WebXR' : lang === 'ru' ? 'WebXR недоступен в этом браузере. Карта работает в обычном режиме.' : 'WebXR is unavailable in this browser. Explore the map here.'}</p>
+              {xrSupported && <button className="btn block mt8" onClick={async () => { try { await uniRef.current.enterXR(); } catch { toast(lang === 'ru' ? 'Не удалось открыть WebXR' : 'Could not start WebXR'); } }}>WebXR</button>}
             </div>
 
             <div className="kicker mt24">{t('cluster')}</div>
@@ -262,12 +309,15 @@ export function Innerverse() {
             <button className="btn primary block mt24" onClick={() => setDrawer(false)}>{t('close')}</button>
           </div>
         </div>
+        </ModalLayer>
       )}
 
       {/* Archetype Studio */}
       {studio && (
+        <ModalLayer label={t('archetype')} onClose={() => setStudio(false)}>
         <ArchetypeStudio initialIdea={studioIdea} onClose={() => setStudio(false)}
           onCreate={(p) => { setParts([...parts, p]); setStudio(false); toast('🎨 ' + p.name); }} />
+        </ModalLayer>
       )}
     </div>
   );
@@ -279,12 +329,17 @@ function ArchetypeStudio({ initialIdea = '', onClose, onCreate }) {
   const [idea, setIdea] = useState(initialIdea);
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState(null);
+  const studioRequest = useRef(null);
+  useEffect(() => () => studioRequest.current?.abort(), []);
 
   const generate = async () => {
     if (!idea.trim()) return;
     setBusy(true);
     try {
-      const line = await AI.archetypeCreate(idea);
+      const controller = new AbortController();
+      studioRequest.current?.abort(); studioRequest.current = controller;
+      const line = await createStudioArchetype(idea, lang, { signal: controller.signal });
+      if (controller.signal.aborted) return;
       let model = null;
       try {
         const json = line.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
@@ -312,9 +367,11 @@ function ArchetypeStudio({ initialIdea = '', onClose, onCreate }) {
       setDraft({
         id: pid(), name: nm,
         family: fam, traits, role: desc,
+        archetype: { schema: 'archetype-map.v1', sourceAssessment: 'studio', coordinates: sanitizeArchetypeCoordinates(model?.coordinates) ?? [0, 0, 0, 0], cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[fam], prominence: 55, size: 0.8, description: String(model?.description ?? desc).slice(0, 2000), invitation: String(model?.invitation ?? '').slice(0, 2000), shadow: String(model?.shadow ?? '').slice(0, 2000) },
         blurb: '', energy: 55, burden: '—', need: '—', voice: '—', star: false, since: 'today',
       });
     } catch {
+      if (studioRequest.current?.signal.aborted) return;
       const fam = 'manager';
       setDraft({ id: pid(), name: idea.slice(0, 18) || 'New part', family: fam, traits: randomTraits(fam), role: idea.slice(0, 60), blurb: '', energy: 50, burden: '—', need: '—', voice: '—', star: false, since: 'today' });
     }
@@ -338,7 +395,9 @@ function ArchetypeStudio({ initialIdea = '', onClose, onCreate }) {
         <button className="btn primary block mt12" disabled={busy || !idea.trim()} onClick={generate}>
           {busy ? '✨ …' : t('archetype')}
         </button>
+        {busy && <button className="btn ghost block mt8" onClick={() => { studioRequest.current?.abort(); setBusy(false); }}>{lang === 'ru' ? 'Отменить' : 'Cancel'}</button>}
 
+        {draft && ResilientAiAdapter.degradation.degraded && <p className="sub mt12">{lang === 'ru' ? 'Локальный набросок: ИИ сейчас недоступен. Измените часть перед сохранением.' : 'Local draft: AI is currently unavailable. You can edit this part before saving.'}</p>}
         {draft && (
           <div className="card mt16 center" style={{ animation: 'screen-in .3s' }}>
             <div style={{ width: 96, margin: '0 auto' }} className="animate-idle">

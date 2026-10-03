@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   archetypeCoordinatePosition,
   archetypeLensOffset,
+  coordinateAffinity,
   dimensionalLensOffset,
   sanitizeArchetypeCoordinates,
   ZERO_DIMENSIONS,
@@ -18,9 +19,22 @@ describe('universe dimensional lens', () => {
 
   it('projects each four-dimensional archetype point to a distinct stable scene position', () => {
     expect(archetypeCoordinatePosition([0, 0, 0, 0])).toEqual([0, 0, 0]);
-    expect(archetypeCoordinatePosition([1, 0, 0, 0])).toEqual([14, 0, 8]);
-    expect(archetypeCoordinatePosition([0, 0, 1, 0])).toEqual([14, 0, -8]);
-    expect(archetypeCoordinatePosition([0, 0, 0, 1])).toEqual([0, 14, -8]);
+    expect(archetypeCoordinatePosition([1, 0, 0, 0])).toEqual([10, 0, 0]);
+    expect(archetypeCoordinatePosition([0, 0, 1, 0])).toEqual([0, 0, 10]);
+    expect(archetypeCoordinatePosition([0, 0, 0, 1])).toEqual([0, 0, 0]);
+  });
+
+  it('maps selected dimensions and isolates the attachment plane exactly like Angular', () => {
+    expect(archetypeCoordinatePosition([.2, .4, .6, .8], ['ATTACHMENT', 'TEMPERATURE', 'AGENCY'])).toEqual([8, 4, 2]);
+    expect(archetypeCoordinatePosition([.2, .4, .6, .8], undefined, 'ATTACHMENT')).toEqual([2, 8, 0]);
+    expect(archetypeCoordinatePosition([.2, .4, .6, .8], undefined, 'FOCUS')).toEqual([0, 0, 6]);
+  });
+
+  it('uses canonical weighted Gaussian affinity without moving coordinates', () => {
+    expect(coordinateAffinity([1, 0, 0, 0], ZERO_DIMENSIONS)).toBe(0);
+    expect(coordinateAffinity([1, 0, 0, 0], ZERO_DIMENSIONS, true)).toBe(.5);
+    expect(coordinateAffinity([1, 0, 0, 0], dimensions({ AGENCY: 1 }))).toBe(1);
+    expect(coordinateAffinity([-1, 0, 0, 0], dimensions({ AGENCY: 1 }))).toBeCloseTo(Math.exp(-8));
   });
 
   it('applies visual dimension controls against individual coordinates', () => {

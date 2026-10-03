@@ -97,7 +97,7 @@ function downloadFile(content, type, filename) {
 
 export function LegacyClinicalReport({
   result, responses, resultCopy, lang, onBack, onRetake, onNarrativeChange,
-  scoringMethod = 'deterministic', aiAnalysisBusy = false, aiAnalysisError = '',
+  readOnly = false, embedded = false, scoringMethod = 'deterministic', aiAnalysisBusy = false, aiAnalysisError = '',
   onScoringMethodChange = () => {}, onCancelAiAnalysis = () => {}, onViewUniverse = () => {},
 }) {
   const ui = SECTION_COPY[lang] ?? SECTION_COPY.en;
@@ -133,6 +133,12 @@ export function LegacyClinicalReport({
       return undefined;
     }
 
+    if (readOnly || requestVersion === 0) {
+      setNarrative(displayResult.localNarrative || ui.noNarrative);
+      setNarrativeDegraded(true);
+      setNarrativeBusy(false);
+      return undefined;
+    }
     const controller = new AbortController();
     activeRequest.current = controller;
     setNarrative(displayResult.localNarrative || ui.noNarrative);
@@ -177,7 +183,7 @@ export function LegacyClinicalReport({
       controller.abort();
       if (activeRequest.current === controller) activeRequest.current = null;
     };
-  }, [displayResult, lang, requestVersion, scoringMethod, ui.noNarrative, onNarrativeChange]);
+  }, [displayResult, lang, requestVersion, readOnly, scoringMethod, ui.noNarrative, onNarrativeChange]);
 
   const cancelNarrative = () => {
     activeRequest.current?.abort();
@@ -215,7 +221,7 @@ export function LegacyClinicalReport({
   const clusterNames = TRANSLATIONS[lang]?.universe?.clusterNames ?? {};
 
   return (
-    <div className="screen">
+    <div className={embedded ? "report-embedded" : "screen"}>
       <div className="scroll no-dock">
         <div className="row" style={{ paddingTop: 4 }}>
           <button className="ibtn" aria-label={ui.back} onClick={onBack}>‹</button>
@@ -235,7 +241,7 @@ export function LegacyClinicalReport({
           </div>
         </div>
 
-        <div className="card flat mt12">
+        {!readOnly && <div className="card flat mt12">
           <div className="row">
             <div className="kicker grow">{ui.scoringMethod}</div>
             <span className="chip">{scoringMethod === 'fallback' ? ui.aiMode : ui.deterministicMode}</span>
@@ -254,7 +260,7 @@ export function LegacyClinicalReport({
           </div>
           {aiAnalysisBusy && <p className="faint mt8" role="status">{ui.aiRunning}</p>}
           {aiAnalysisError && <p className="sub mt8" role="alert">{aiAnalysisError || ui.aiFailed}</p>}
-        </div>
+        </div>}
 
         <nav className="tabs mt16" aria-label={lang === 'ru' ? 'Разделы отчёта' : 'Report sections'} style={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
           {labels.map(([id, label]) => <button key={id} type="button" onClick={() => navigateTo(id)} style={{ whiteSpace: 'nowrap' }}>{label}</button>)}
@@ -267,9 +273,9 @@ export function LegacyClinicalReport({
           </div>
           <div className="mt8" style={{ fontSize: 13.5, lineHeight: 1.65 }} dangerouslySetInnerHTML={{ __html: parseReportMarkdown(narrative || '') }} />
           <div className="row wrap mt12" style={{ gap: 8 }}>
-            {narrativeBusy
+            {!readOnly && (narrativeBusy
               ? <button className="btn ghost small" onClick={cancelNarrative}>{ui.cancel}</button>
-              : <button className="btn ghost small" onClick={() => setRequestVersion((value) => value + 1)}>{ui.retry}</button>}
+              : <button className="btn ghost small" onClick={() => setRequestVersion((value) => value + 1)}>{ui.retry}</button>)}
             <span className="faint" role="status" style={{ fontSize: 11 }}>
               {narrativeBusy ? ui.narrativeLoading : narrativeDegraded ? ui.narrativeLocal : ui.narrativeCloud}
             </span>
@@ -438,9 +444,9 @@ export function LegacyClinicalReport({
         </section>
 
         <div className="row wrap mt24" style={{ gap: 10 }}>
-          <button className="btn grow" onClick={onRetake}>{ui.retake}</button>
+          {!readOnly && <button className="btn grow" onClick={onRetake}>{ui.retake}</button>}
           <button className="btn grow" onClick={downloadClinical}>{ui.clinicalExport}</button>
-          <button className="btn grow" onClick={onViewUniverse}>{ui.viewUniverse}</button>
+          {!readOnly && <button className="btn grow" onClick={onViewUniverse}>{ui.viewUniverse}</button>}
           <button className="btn primary grow" onClick={onBack}>{ui.back}</button>
         </div>
         <button className="btn ghost block mt12" onClick={downloadBackup}>{ui.downloadBackup}</button>

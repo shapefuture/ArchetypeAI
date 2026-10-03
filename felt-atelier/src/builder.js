@@ -393,6 +393,29 @@ function buildParts(dna) {
   if (E.brow === 'stern' || E.brow === 'worried') {
     eyePos.forEach(([x, y], k) => { const s = k ? 1 : -1, by = y + (E.style === 'dot' ? 0.065 : re + 0.032); const tilt = (E.brow === 'stern' ? -1 : 1) * 0.016; satin(surface, bag, [[x - s * 0.05, by + tilt], [x + s * 0.045, by - tilt]], black, 0.0068); });
   }
+  // Preserve the cartographer's eyewear as sewn felt and thread accessories.
+  if (dna.facewear === 'glasses' || dna.facewear === 'shades') {
+    const radius = re * 1.28;
+    eyePos.forEach(([x, y]) => {
+      if (dna.facewear === 'shades') feltPiece(surface, bag, placed('disc', x, y, radius * 2), black, col, { thick: 0.009 });
+      const rim = Array.from({ length: 33 }, (_, i) => {
+        const a = i / 32 * Math.PI * 2;
+        return [x + Math.cos(a) * radius, y + Math.sin(a) * radius];
+      });
+      satin(surface, bag, rim, black, 0.004);
+    });
+    satin(surface, bag, [[ecx - gap / 2 + radius, ecy], [ecx + gap / 2 - radius, ecy]], black, 0.004);
+  }
+  if (dna.cheeks) {
+    eyePos.forEach(([x, y], i) => feltPiece(surface, bag, placed('disc', x + (i ? 1 : -1) * re * 0.4, y - re * 0.8, re * 0.7), feltHex(col, 'rose'), col, { thick: 0.004 }));
+  }
+  if (dna.bow) {
+    const by = ecy - re - 0.16;
+    const bowHex = feltHex(col, 'rose');
+    feltPiece(surface, bag, [[ecx, by], [ecx - 0.085, by + 0.045], [ecx - 0.085, by - 0.045]], bowHex, col, { thick: 0.006 });
+    feltPiece(surface, bag, [[ecx, by], [ecx + 0.085, by - 0.045], [ecx + 0.085, by + 0.045]], bowHex, col, { thick: 0.006 });
+    feltPiece(surface, bag, placed('disc', ecx, by, 0.035), bowHex, col, { thick: 0.009 });
+  }
   // mouth
   const my = ecy - (E.style === 'dot' || E.style === 'arc' || E.style === 'line' || E.style === 'lash' ? 0.075 : re + 0.055) * (tm.small ? 0.85 : 1);
   const mw = 0.055;

@@ -67,6 +67,12 @@ export async function getFirebaseIdToken(): Promise<string> {
   return user.getIdToken();
 }
 
+export async function getFirebaseIdentity(): Promise<{ uid: string; token: string }> {
+  const { auth: firebaseAuth } = await client();
+  const user = requireFirebaseUser(firebaseAuth.currentUser);
+  return { uid: user.uid, token: await user.getIdToken() };
+}
+
 export const auth: AUTH_PORT = {
   currentUser() {
     return store.load<AuthUser | null>(KEYS.auth, null);
@@ -134,6 +140,8 @@ export const auth: AUTH_PORT = {
 
   async signOut() {
     const { sdk, auth: firebaseAuth } = await client();
+    const { disablePushReminder } = await import('./push');
+    await disablePushReminder();
     await sdk.signOut(firebaseAuth);
     store.remove(KEYS.auth);
   },

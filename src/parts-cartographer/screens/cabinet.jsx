@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character.tsx';
 import { CustomizerLike } from './editor-kit.jsx';
@@ -8,10 +8,14 @@ import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus } from '../core/booking.ts';
 import { loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { checkAdminAccess } from '../core/admin.ts';
+import { prepareBackup, applyBackup } from '../core/backup';
 
 /* ═══════════ Cabinet ═══════════ */
 export function Cabinet() {
   const { t, lang, go, parts, setParts, setSheet, toast, openPaywall, user, setOverlay, profile, setProfile } = useApp();
+  const currentAccount = useRef(user?.uid);
+  currentAccount.current = user?.uid;
+  useEffect(() => () => { currentAccount.current = null; }, []);
   const [filter, setFilter] = useState('all');
   const [cloudBusy, setCloudBusy] = useState(false);
   const [cloudHistory, setCloudHistory] = useState([]);
@@ -29,6 +33,7 @@ export function Cabinet() {
     { v: 'resource', l: FAMILY_LABELS.resource[lang], c: familyColor('resource') },
   ];
   const list = parts.filter((p) => filter === 'all' || p.family === filter);
+  useEffect(() => { setCloudHistory([]); setCloudMessage(''); setCloudBusy(false); }, [user?.uid]);
 
   useEffect(() => {
     if (!user?.linked || !user.uid || !user.emailVerified) {
@@ -67,13 +72,15 @@ export function Cabinet() {
     setAppointmentsError('');
     try {
       await setAppointmentStatus(appointmentId, 'cancelled');
-      setAppointments(await myAppointments(user.uid));
+      const refreshed = await myAppointments(user.uid);
+      if (currentAccount.current !== user.uid) return;
+      setAppointments(refreshed);
       toast('✓ ' + t('appointmentCancelled'));
     } catch (err) {
       console.error('Appointment cancellation failed', err);
-      setAppointmentsError(t('bookingCancelFailed'));
+      if (currentAccount.current === user.uid) setAppointmentsError(t('bookingCancelFailed'));
     } finally {
-      setCancelling('');
+      if (currentAccount.current === user.uid) setCancelling('');
     }
   };
 
@@ -90,13 +97,14 @@ export function Cabinet() {
     setCloudMessage('');
     try {
       const saved = await saveCloudMap(user.uid, profile, parts);
+      if (currentAccount.current !== user.uid) return;
       setCloudHistory((history) => [saved, ...history.filter((entry) => entry.id !== saved.id)].slice(0, 20));
       setCloudMessage(t('cloudSaveOk'));
     } catch (err) {
       console.error('Cloud map save failed', err);
-      setCloudMessage(t('cloudSaveFailed'));
+      if (currentAccount.current === user.uid) setCloudMessage(t('cloudSaveFailed'));
     } finally {
-      setCloudBusy(false);
+      if (currentAccount.current === user.uid) setCloudBusy(false);
     }
   };
 
@@ -106,17 +114,25 @@ export function Cabinet() {
     setCloudMessage('');
     try {
       const history = await loadCloudMapHistory(user.uid);
+      if (currentAccount.current !== user.uid) return;
       setCloudHistory(history);
       setCloudMessage(history.length ? t('cloudHistoryLoaded') : t('cloudHistoryEmpty'));
     } catch (err) {
       console.error('Cloud map history load failed', err);
-      setCloudMessage(t('cloudLoadFailed'));
+      if (currentAccount.current === user.uid) setCloudMessage(t('cloudLoadFailed'));
     } finally {
-      setCloudBusy(false);
+      if (currentAccount.current === user.uid) setCloudBusy(false);
     }
   };
 
-  const restoreCloudSnapshot = (entry) => {
+  const restoreCloudSnapshot = async (entry) => {
+    if (entry.source?.schema === 'angular-assessment64') {
+      try {
+        applyBackup(await prepareBackup(JSON.stringify(entry.source), lang, parts));
+        go('legacy-assessment');
+      } catch { toast('⚠ ' + t('restoreBad')); }
+      return;
+    }
     setProfile(entry.profile);
     setParts(entry.parts);
     toast('✓ ' + t('cloudRestoreOk'));

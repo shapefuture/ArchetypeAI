@@ -1,7 +1,8 @@
 /* Parts Cartographer service worker — stamped post-build from dist/index.html hash */
 const BUILD = '__BUILD_ID__';
 const CACHE = `parts-cartographer-${BUILD}`;
-const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/firebase-messaging-sw.js'];
+const BUILD_ASSETS = [];
+const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/firebase-messaging-sw.js', ...BUILD_ASSETS];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -12,7 +13,7 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('parts-cartographer-') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -22,6 +23,8 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  // Only public app assets belong in this cache. Authenticated API responses never do.
+  if (req.mode !== 'navigate' && !url.pathname.startsWith('/assets/') && !PRECACHE.includes(url.pathname)) return;
 
   // navigations: network-first, offline → cached shell (never cache /sw.js itself)
   if (req.mode === 'navigate') {
@@ -39,10 +42,12 @@ self.addEventListener('fetch', (e) => {
 
   // assets: stale-while-revalidate
   e.respondWith(
-    caches.match(req).then((hit) => {
+    // These allowlisted assets are public and identical across origins. Module
+    // requests can carry Origin while precache requests do not (Vary: Origin).
+    caches.match(req, { ignoreVary: true }).then((hit) => {
       const net = fetch(req)
         .then((res) => {
-          if (res && res.status === 200 && res.type === 'same-origin') {
+          if (res && res.status === 200 && res.type === 'basic') {
             const copy = res.clone();
             caches.open(CACHE).then((c) => c.put(req, copy));
           }

@@ -4,8 +4,24 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    include: ['src/**/*.spec.ts', '*.spec.ts'],
-    exclude: ['node_modules', 'tmp'],
-    setupFiles: ['src/test.ts'],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'angular',
+          include: ['src/**/*.spec.ts'],
+          exclude: ['src/parts-cartographer/**', 'node_modules', 'tmp'],
+          setupFiles: ['src/test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'react',
+          include: ['src/parts-cartographer/**/*.spec.ts', '*.spec.ts'],
+          exclude: ['node_modules', 'tmp'],
+        },
+      },
+    ],
   },
 });

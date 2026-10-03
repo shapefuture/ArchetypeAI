@@ -55,7 +55,7 @@ export function oklab(hex) {
   return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
 }
 export const deltaE = (a, b) => { const A = oklab(a), B = oklab(b); return 100 * Math.hypot(A[0] - B[0], A[1] - B[1], A[2] - B[2]); };
-export const feltHex = (collection, id) => FELT[collection][id] || '#999999';
+export const feltHex = (collection, id) => /^#[\da-f]{6}$/i.test(id) ? id : FELT[collection]?.[id] || '#999999';
 export function threadHex(dna) {
   if (dna.thread && dna.thread.startsWith('#')) return dna.thread;
   if (dna.thread === 'cream') return '#f2ead6';

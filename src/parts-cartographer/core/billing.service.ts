@@ -4,10 +4,13 @@
 import type { BILLING_PORT } from './ports';
 import { store, KEYS } from './local-store';
 import { workerApiUrl } from './api';
-import { getFirebaseIdToken } from './auth.service';
+import { auth, getFirebaseIdToken, getFirebaseIdentity } from './auth.service';
 
 const VERIFY_URL = workerApiUrl('stripe-verify');
-let cachedPremium = store.load<string>(KEYS.billing, '') === 'premium';
+type Receipt = { uid: string; sessionId: string; verifiedAt: number };
+let receipt = store.load<Receipt | null>(KEYS.billing, null);
+let cachedPremium = !!receipt?.uid && receipt.uid === auth.currentUser()?.uid && Date.now() - receipt.verifiedAt < 24 * 3_600_000;
+let verificationVersion = 0;
 
 function clearStripeQuery() {
   const url = new URL(window.location.href);
@@ -19,7 +22,8 @@ function clearStripeQuery() {
 
 function setPremium(on: boolean) {
   cachedPremium = on;
-  store.save(KEYS.billing, on ? 'premium' : '');
+  if (!on) { receipt = null; store.remove(KEYS.billing); }
+  else if (receipt) store.save(KEYS.billing, receipt);
 }
 
 export const billing: BILLING_PORT & {
@@ -51,31 +55,34 @@ export const billing: BILLING_PORT & {
     window.location.assign(data.url);
     return { ok: true, verified: false };
   },
-  isPremium() { return cachedPremium; },
+  isPremium() { return cachedPremium && !!receipt && receipt.uid === auth.currentUser()?.uid && Date.now() - receipt.verifiedAt < 24 * 3_600_000; },
   async restore() {
+    const version = ++verificationVersion;
     const params = new URLSearchParams(window.location.search);
     const status = params.get('stripe');
     const sessionId = params.get('session_id');
-    if (status !== 'success' || !sessionId) {
-      if (status === 'cancel') clearStripeQuery();
-      return cachedPremium;
-    }
+    if (status === 'cancel') clearStripeQuery();
+    const savedSession = receipt?.uid && receipt.uid === auth.currentUser()?.uid ? receipt.sessionId : null;
+    const candidate = status === 'success' && sessionId ? sessionId : savedSession;
+    if (!candidate) { setPremium(false); return false; }
 
     try {
-      const idToken = await getFirebaseIdToken();
-      const response = await fetch(`${VERIFY_URL}?session_id=${encodeURIComponent(sessionId)}`, {
-        headers: { Authorization: `Bearer ${idToken}` },
+      const identity = await getFirebaseIdentity();
+      const response = await fetch(`${VERIFY_URL}?session_id=${encodeURIComponent(candidate)}`, {
+        headers: { Authorization: `Bearer ${identity.token}` },
       });
-      if (!response.ok) return cachedPremium;
+      if (!response.ok) return this.isPremium();
       const result = await response.json() as { status?: string };
+      if (version !== verificationVersion || auth.currentUser()?.uid !== identity.uid) return false;
       if (result.status === 'complete') {
+        receipt = { uid: identity.uid, sessionId: candidate, verifiedAt: Date.now() };
         setPremium(true);
         return true;
       }
       if (result.status === 'open' || result.status === 'expired') setPremium(false);
-      return cachedPremium;
+      return this.isPremium();
     } catch {
-      return cachedPremium;
+      return this.isPremium();
     } finally {
       clearStripeQuery();
     }

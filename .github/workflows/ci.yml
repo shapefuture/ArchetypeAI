@@ -41,8 +41,14 @@ jobs:
       - name: Firestore rules emulator tests
         run: npm run test:rules
 
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+
       - name: Build React/Vite app
         run: npm run build
+
+      - name: Mobile browser parity
+        run: npm run test:browser
 
       - name: Build retained Angular app
         run: npm run build:angular

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character.tsx';
 import { Crest, familyColor, Radar, Bars, Confetti, Seg, Steps } from '../ui/ui.jsx';
@@ -11,6 +11,13 @@ import { store, KEYS } from '../core/local-store';
 import { telemetry } from '../core/telemetry.ts';
 
 const FELT = ['low', 'mid', 'high'];
+const ClinicalReport = lazy(() => import('./clinical-report.jsx').then((m) => ({ default: m.ClinicalReport })));
+export function Results() {
+  const { profile, t } = useApp();
+  return profile?.testModel === 'angular-v2' && profile.clinical
+    ? <Suspense fallback={<p role="status">{t('loading')}</p>}><ClinicalReport /></Suspense>
+    : <QuickResults />;
+}
 const FELT_K = { low: 'feltLow', mid: 'feltMid', high: 'feltHigh' };
 const COMPLEX_K = { 'The Proving Ground': 'cxProving', 'First-Wound Complex': 'cxFirstWound', 'Control Complex': 'cxControl', 'Enoughness Complex': 'cxEnough', 'Mild belonging complex': 'cxBelong' };
 const COMPLEX_NAME_K = { abandonment: 'complexAbandonment', inferiority: 'complexInferiority', power: 'complexPower', performance: 'complexPerformance', engulfment: 'complexEngulfment', invisibility: 'complexInvisibility', vigilance: 'complexVigilance', unlovability: 'complexUnlovability', betrayal: 'complexBetrayal' };
@@ -442,7 +449,7 @@ export function Descent() {
 }
 
 /* ═══════════ Results ═══════════ */
-export function Results() {
+export function QuickResults() {
   const { t, lang, go, setOverlay, setSheet, premium, openPaywall, toast, parts, profile } = useApp();
   const [tab, setTab] = useState('constellation');
   const prof = profile ?? window.__lastProfile ?? null;

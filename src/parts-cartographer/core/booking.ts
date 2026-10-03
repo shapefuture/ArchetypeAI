@@ -24,6 +24,7 @@ import {
   getDoc,
   getDocs,
   query,
+  runTransaction,
   setDoc,
   where,
   writeBatch,
@@ -76,7 +77,7 @@ export function parseHM(hm: string): number {
   if (!m) return -1;
   const h = Number(m[1]);
   const min = Number(m[2]);
-  if (h < 0 || h > 24 || min < 0 || min > 59) return -1;
+  if (h < 0 || h > 24 || (h === 24 && min !== 0) || min < 0 || min > 59) return -1;
   return h * 60 + min;
 }
 
@@ -117,13 +118,13 @@ export function slotsForDate(availability: AvailabilityWindow[], dateISO: string
     if (!w || !(w.days || []).includes(day)) continue;
     const start = parseHM(w.start);
     const end = parseHM(w.end);
-    const minutes = w.minutes > 0 ? w.minutes : 60;
+    const minutes = Number.isFinite(w.minutes) && w.minutes > 0 ? Math.max(1, Math.round(w.minutes)) : 60;
     if (start < 0 || end <= start) continue;
     for (let t = start; t + minutes <= end; t += minutes) {
       out.push(`${dateISO}T${minutesToHM(t)}`);
     }
   }
-  return out.sort();
+  return [...new Set(out)].sort();
 }
 
 /**
@@ -140,7 +141,9 @@ export function freeSlots(
   const busy = (booked || []).filter(b => b && (b.status === 'pending' || b.status === 'approved'));
   return slotsForDate(availability, dateISO).filter(slot => {
     const startAt = new Date(slot);
-    if (!isNaN(startAt.getTime()) && startAt.getTime() <= now.getTime()) return false;
+    // A nonexistent wall time during the DST spring transition must not normalize into another slot.
+    if (isNaN(startAt.getTime()) || localDateISO(startAt) !== dateISO || minutesToHM(startAt.getHours() * 60 + startAt.getMinutes()) !== slot.slice(11)) return false;
+    if (startAt.getTime() <= now.getTime()) return false;
     const slotEndISO = endOfSlot(slot, availability);
     return !busy.some(b => overlaps(slot, slotEndISO, b.start, b.end));
   });
@@ -157,13 +160,13 @@ export function endOfSlot(slotISO: string, availability: AvailabilityWindow[]): 
       const wStart = parseHM(w.start);
       const wMinutes = w.minutes > 0 ? w.minutes : 60;
       // The slot belongs to the window whose grid contains its start.
-      if (wStart >= 0 && (startMin - wStart) % wMinutes === 0) {
+      if (wStart >= 0 && startMin >= wStart && startMin < parseHM(w.end) && (startMin - wStart) % wMinutes === 0) {
         minutes = wMinutes;
         break;
       }
     }
   }
-  return `${dateISO}T${minutesToHM(startMin + minutes)}`;
+  return addSlotMinutes(`${dateISO}T${minutesToHM(startMin)}`, minutes);
 }
 
 /** Next `days` dates (starting tomorrow) whose weekday has availability. */
@@ -185,9 +188,17 @@ export function bookableDays(
   return out;
 }
 
+/** Wall-clock calendar arithmetic keeps midnight rollover explicit in the stored Angular contract. */
+function addSlotMinutes(slotISO: string, minutes: number): string {
+  const base = new Date(`${slotISO}Z`);
+  if (!Number.isFinite(base.getTime()) || !Number.isFinite(minutes)) throw new Error('Invalid slot');
+  base.setUTCMinutes(base.getUTCMinutes() + minutes);
+  return base.toISOString().slice(0, 16);
+}
+
 /** End of a slot the client is about to book (uses DEFAULT grid fallback). */
 export function slotEnd(slotISO: string, minutes = 60): string {
-  return `${slotISO.slice(0, 10)}T${minutesToHM(parseHM(slotISO.slice(11)) + minutes)}`;
+  return addSlotMinutes(slotISO, minutes);
 }
 
 // ---------------------------------------------------------------------------
@@ -328,18 +339,20 @@ export async function ensureTherapistBusySlots(therapistUid: string, appointment
 export async function setAppointmentStatus(id: string, status: AppointmentStatus): Promise<void> {
   const db = getFirestoreDb();
   const appointmentRef = doc(db, 'appointments', id);
-  const snap = await getDoc(appointmentRef);
-  if (!snap.exists()) throw new Error('Appointment not found');
-  const data = snap.data();
-  const batch = writeBatch(db);
-  batch.update(appointmentRef, { status });
-
-  if (status === 'declined' || status === 'cancelled') {
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(appointmentRef);
+    if (!snap.exists()) throw new Error('Appointment not found');
+    const data = snap.data();
+    if (['declined', 'cancelled'].includes(data.status) && ['pending', 'approved'].includes(status)) {
+      throw new Error('This appointment is already closed');
+    }
+    const releasing = status === 'declined' || status === 'cancelled';
     const busyRef = doc(db, 'therapistBusySlots', therapistBusySlotId(String(data.therapistUid), String(data.start)));
-    const busySnap = await getDoc(busyRef);
-    if (busySnap.exists() && busySnap.data().appointmentId === id) batch.delete(busyRef);
-  }
-  await batch.commit();
+    const busySnap = releasing ? await transaction.get(busyRef) : null;
+    transaction.update(appointmentRef, { status });
+    // A retried cancellation must never delete a newer booking's reservation.
+    if (busySnap?.exists() && busySnap.data().appointmentId === id) transaction.delete(busyRef);
+  });
 }
 
 /**

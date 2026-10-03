@@ -94,7 +94,7 @@ export function buildLegacyUniverseParts(report: LegacyAssessmentReport, aiMode 
       id,
       name,
       family,
-      traits: deterministicTraits(id, family),
+      traits: { ...deterministicTraits(id, family), characterSeed: hashStr(id) },
       role: description,
       blurb: String(content.shadow || base.shadow || description).trim().slice(0, 700),
       energy: prominence,

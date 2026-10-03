@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 const COPY = {
   en: {
@@ -71,14 +71,18 @@ function humanize(value, language) {
 }
 
 export function ScoredProfileSynastryDetails({ report, lang = 'en', onDownload }) {
+  const sectionId = useId();
   if (!report) return null;
   const language = lang === 'ru' ? 'ru' : 'en';
   const copy = COPY[language];
   const loop = report.loop;
 
   return (
-    <div className="mt12">
-      <section className="card flat mt10" aria-label={copy.title}>
+    <div className="mt12" data-synastry-details>
+      <nav className="tabs" aria-label={lang === 'ru' ? 'Разделы отчёта' : 'Report sections'} style={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
+        {['title', 'interlocks', 'nourish'].map((key) => <button key={key} onClick={() => document.getElementById(`${sectionId}-${key}`)?.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}>{copy[key]}</button>)}
+      </nav>
+      <section id={`${sectionId}-title`} className="card flat mt10" aria-label={copy.title} style={{ scrollMarginTop: 72 }}>
         <div className="kicker" style={{ color: 'var(--accent-text)' }}>{copy.title}</div>
         <div className="card flat mt8">
           <b>{copy.dance}: {DANCES[report.dance]?.[language] ?? report.dance}</b>
@@ -95,7 +99,7 @@ export function ScoredProfileSynastryDetails({ report, lang = 'en', onDownload }
         </div>
       </section>
 
-      <section className="card flat mt10" aria-label={copy.interlocks}>
+      <section id={`${sectionId}-interlocks`} className="card flat mt10" aria-label={copy.interlocks} style={{ scrollMarginTop: 72 }}>
         <div className="kicker" style={{ color: 'var(--accent-text)' }}>{copy.interlocks}</div>
         {report.noLockedStoryline ? <p className="sub mt8">{copy.noInterlocks}</p> : report.interlocks.map((hit, index) => (
           <article className="card flat mt8" key={`${hit.pair.join('-')}-${index}`}>
@@ -106,7 +110,7 @@ export function ScoredProfileSynastryDetails({ report, lang = 'en', onDownload }
         ))}
       </section>
 
-      <section className="card flat mt10" aria-label={copy.nourish}>
+      <section id={`${sectionId}-nourish`} className="card flat mt10" aria-label={copy.nourish} style={{ scrollMarginTop: 72 }}>
         <div className="kicker" style={{ color: 'var(--accent-text)' }}>{copy.nourish}</div>
         {report.nourishHighlights.length ? report.nourishHighlights.map((hit, index) => (
           <div className="row mt8" key={`${hit.giver}-${hit.need}-${index}`} style={{ justifyContent: 'space-between', gap: 8 }}>

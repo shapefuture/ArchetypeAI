@@ -6,9 +6,11 @@ import { t as tr, BOND_TYPES, SYNASTRY_DIM_LABELS } from './i18n/strings.ts';
 import { FAMILY_LABELS } from './pal/traits.ts';
 import { profileToCode } from './core/scoring-v2.ts';
 import { hashStr } from './core/ports.ts';
-import { synFromProfiles, synastry } from './core/synastry-v2.ts';
-import { createCloudMapShareCode, loadCloudSynastry, redeemCloudMapShareCode, revokeCloudMapShareCode, saveCloudSynastry } from './core/cloud-storage.ts';
-import { ResilientAiAdapter, AI, generateSynastryNarrative } from './core/ai.adapter.ts';
+import { downloadText } from './core/file-download';
+import { prepareBackup } from './core/backup.ts';
+import { readLocalLegacy64Responses } from './core/legacy64-responses';
+import { createCloudLegacy64ShareCode, createCloudMapShareCode, loadCloudSynastry, redeemCloudMapShareCode, revokeCloudMapShareCode, saveCloudSynastry } from './core/cloud-storage.ts';
+import { ResilientAiAdapter, AI, chatWithContext, generateSynastryNarrative } from './core/ai.adapter.ts';
 import { store, KEYS } from './core/local-store';
 import { bookableDays, createBooking, endOfSlot, ensureTherapistBusySlots, freeSlots, getTherapistProfile, saveTherapistAvailability, setAppointmentStatus, therapistAppointments, therapistBusyIntervals } from './core/booking.ts';
 import { lookupByEmail, syncPublicProfile } from './core/user-directory.ts';
@@ -20,13 +22,13 @@ const ovHead = (title, onClose, extra) => (
   <div className="ov-head">
     <div className="ov-title">{title}</div>
     {extra}
-    <button className="ibtn" onClick={onClose}>✕</button>
+    <button className="ibtn" onClick={onClose} aria-label="Close / Закрыть">✕</button>
   </div>
 );
 
 /* ═══════════ Coach (chat · streaming · modes) ═══════════ */
 export function Coach() {
-  const { t, lang, setOverlay, profile, state } = useApp();
+  const { t, lang, setOverlay, profile, state, parts, sheet } = useApp();
   const [mode, setMode] = useState('parts');
   const [input, setInput] = useState('');
   const [msgs, setMsgs] = useState([
@@ -34,7 +36,13 @@ export function Coach() {
   ]);
   const [busy, setBusy] = useState(false);
   const timer = useRef(null);
-  useEffect(() => () => clearInterval(timer.current), []);
+  const request = useRef(null);
+  const [selectedPart, setSelectedPart] = useState(sheet?.type === 'part' ? sheet.id : '');
+  useEffect(() => () => { clearInterval(timer.current); request.current?.abort(); }, []);
+  useEffect(() => {
+    request.current?.abort(); request.current = null;
+    clearInterval(timer.current); setBusy(false); setMsgs([{ role: 'ai', text: tr('sw1', lang) }]);
+  }, [lang, mode, selectedPart]);
 
   const degraded = ResilientAiAdapter.degradation;
 
@@ -54,19 +62,22 @@ export function Coach() {
     setMsgs([...hist, { role: 'ai', text: '' }]);
     setInput('');
     setBusy(true);
+    const controller = new AbortController();
+    request.current?.abort(); request.current = controller;
     try {
-      const full = await AI.chat(hist.map((m) => ({ role: m.role, text: m.text })), mode);
-      stream(full);
+      const part = parts.find((item) => item.id === selectedPart);
+      const full = await chatWithContext(hist, mode, { language: lang, part: part ? { name: part.name, family: part.family, role: part.role, need: part.need, voice: part.voice } : undefined }, { signal: controller.signal });
+      if (!controller.signal.aborted && request.current === controller) stream(full);
     } catch {
-      stream(tr('sw2', lang));
+      if (!controller.signal.aborted && request.current === controller) stream(tr('sw2', lang));
     }
-    setBusy(false);
+    if (request.current === controller) setBusy(false);
   };
 
   return (
     <div className="overlay">
       {ovHead('✨ ' + t('coach'), () => setOverlay(null),
-        <span className="degraded" style={{ fontSize: 10 }}>{degraded.degraded ? '◌ degraded' : '◌ live'}</span>)}
+        <span className="degraded" style={{ fontSize: 10 }}>{degraded.degraded ? (lang === 'ru' ? '◌ локально' : '◌ local') : (lang === 'ru' ? '◌ ИИ' : '◌ AI')}</span>)}
       <div style={{ padding: '0 20px 8px' }}>
         <Seg value={mode} onChange={setMode} options={[
           { v: 'general', l: t('modeGeneral') },
@@ -74,6 +85,7 @@ export function Coach() {
         ]} />
       </div>
       <div className="ov-body">
+        {mode === 'parts' && <label className="field">{lang === 'ru' ? 'Часть для диалога' : 'Part for dialogue'}<select value={selectedPart} onChange={(event) => setSelectedPart(event.target.value)}><option value="">{lang === 'ru' ? 'Исследовать вместе' : 'Explore together'}</option>{parts.map((part) => <option key={part.id} value={part.id}>{part.name}</option>)}</select></label>}
         {msgs.map((m, i) => (
           <div key={i} className={`chat-row ${m.role}`}>
             <div className="chat-bubble">
@@ -90,12 +102,15 @@ export function Coach() {
       </div>
       <div className="ov-foot row" style={{ gap: 10 }}>
         <div className="field grow" style={{ marginBottom: 0 }}>
-          <input value={input} placeholder={t('askAnything')}
+          <input value={input} aria-label={t('askAnything')} placeholder={t('askAnything')}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && send(input)} />
         </div>
-        <button className="btn primary" style={{ minHeight: 48, padding: '0 20px' }}
-          disabled={busy} onClick={() => send(input)}>↑</button>
+        {busy ? <button className="btn" onClick={() => {
+          request.current?.abort(); clearInterval(timer.current); setBusy(false);
+          setMsgs((messages) => [...messages.slice(0, -1), { role: 'ai', text: lang === 'ru' ? 'Запрос отменён.' : 'Request cancelled.' }]);
+        }}>{lang === 'ru' ? 'Отмена' : 'Cancel'}</button> : <button className="btn primary" style={{ minHeight: 48, padding: '0 20px' }}
+          aria-label={lang === 'ru' ? 'Отправить' : 'Send'} onClick={() => send(input)}>↑</button>}
       </div>
     </div>
   );
@@ -175,8 +190,11 @@ export function SynastryOv() {
   const [code, setCode] = useState('');
   const [issuedCodes, setIssuedCodes] = useState(() => {
     const existing = store.load(KEYS.share, []);
-    return [...(Array.isArray(existing) ? existing : [])].filter((entry) => entry?.source === 'cloud-map' && typeof entry.c === 'string').reverse();
+    return [...(Array.isArray(existing) ? existing : [])].filter((entry) => entry?.source === 'cloud-map' && entry.uid === user?.uid && typeof entry.c === 'string').reverse();
   });
+  const legacyResponses = readLocalLegacy64Responses();
+  const [shareKind, setShareKind] = useState(profile ? 'map' : 'legacy64');
+  const canShare = shareKind === 'legacy64' ? !!legacyResponses : !!profile;
   const [shareConfirmed, setShareConfirmed] = useState(false);
   const [shareError, setShareError] = useState('');
   const [result, setResult] = useState(null);
@@ -281,7 +299,17 @@ export function SynastryOv() {
       const text = await generateSynastryNarrative(
         summarizeSynastryForAi(result), lang === 'ru' ? 'ru' : 'en', { signal: controller.signal },
       );
-      if (!controller.signal.aborted) setSynNarrative(text);
+      if (!controller.signal.aborted && synNarrativeAbort.current === controller) {
+        setSynNarrative(text);
+        const updated = { ...result, aiReflections: { ...result.aiReflections, [lang]: text } };
+        setResult(updated);
+        store.save(KEYS.syn, updated);
+        const saved = savedReports.find((entry) => entry.shareCodeUsed === code.trim().toLowerCase());
+        if (saved && user?.uid) {
+          await saveCloudSynastry(user.uid, saved.partnerUid, saved.shareCodeUsed, updated);
+          setSavedReports((entries) => entries.map((entry) => entry.id === saved.id ? { ...entry, result: updated } : entry));
+        }
+      }
     } catch (error) {
       if (!controller.signal.aborted && error?.name !== 'AbortError') setSynNarrativeError(true);
     } finally {
@@ -293,14 +321,14 @@ export function SynastryOv() {
   };
 
   const gen = async () => {
-    if (!profile) { toast(t('empty')); return; }
+    if (!canShare) { toast(t('empty')); return; }
     if (!user?.linked || !user.uid) { setOverlay('login'); return; }
     if (!shareConfirmed || busy) return;
     setBusy(true);
     setShareError('');
     try {
-      const c = await createCloudMapShareCode(user.uid, profile, parts);
-      const entry = { c, at: Date.now(), source: 'cloud-map', partCount: parts.length };
+      const c = shareKind === 'legacy64' ? await createCloudLegacy64ShareCode(user.uid, legacyResponses) : await createCloudMapShareCode(user.uid, profile, parts);
+      const entry = { c, uid: user.uid, at: Date.now(), source: 'cloud-map', assessment: shareKind, partCount: parts.length };
       setIssuedCodes((codes) => [entry, ...codes.filter((item) => item.c !== c)].slice(0, 20));
       store.save(KEYS.share, [
         ...(store.load(KEYS.share, []) ?? []),
@@ -340,11 +368,9 @@ export function SynastryOv() {
     resetSynastryNarrative();
     setSavedError('');
     try {
-      let shared = null;
-      if (user?.linked) {
-        try { shared = await redeemCloudMapShareCode(enteredCode); }
-        catch (error) { console.warn('Private map code lookup failed; using local code compatibility', error); }
-      }
+      if (!user?.linked) throw new Error('Sign in to redeem a private map code');
+      const shared = await redeemCloudMapShareCode(enteredCode);
+      if (!shared) throw new Error('Code is unavailable or revoked');
       const partnerCode = shared?.snapshot
         ? profileToCode(shared.snapshot.profile)
         : shared?.assessment
@@ -366,8 +392,8 @@ export function SynastryOv() {
           profile, shared.snapshot.profile, ownCode, partnerCode, language,
         );
       }
-      const r = legacyReport ?? scoredReport
-        ?? (profile ? synFromProfiles(profile, partnerCode) : synastry(ownCode, partnerCode));
+      const r = legacyReport ?? scoredReport;
+      if (!r) throw new Error('Two complete compatible assessments are required');
       setResult(r);
       rememberSynastryRun(enteredCode);
       if (shared && user?.uid && shared.uid !== user.uid) {
@@ -411,41 +437,45 @@ export function SynastryOv() {
   const openSavedReport = (entry) => {
     resetSynastryNarrative();
     setResult(entry.result);
+    setSynNarrative(entry.result.aiReflections?.[lang] ?? '');
     setCode(entry.shareCodeUsed);
     rememberSynastryRun(entry.shareCodeUsed);
     setTab('paste');
   };
 
-  const upload = (f) => {
-    if (!f) return;
-    const rd = new FileReader();
-    rd.onload = async () => {
-      try {
-        resetSynastryNarrative();
-        const j = JSON.parse(String(rd.result));
-        const importedProfile = j.profile ?? j;
-        const legacyResponses = j.assessment?.responses ?? j.assessmentResponses ?? j.data?.assessmentResponses ?? j.responses;
-        const c = j.code ?? (Array.isArray(importedProfile?.parts)
-          ? profileToCode(importedProfile).slice(0, 8)
-          : hashStr(JSON.stringify(legacyResponses ?? j)).toString(36).toUpperCase().slice(0, 8));
-        setCode(c);
-        const ownCode = profile ? profileToCode(profile) : 'SELF0000';
-        const language = lang === 'ru' ? 'ru' : 'en';
-        const legacyBridge = legacyResponses ? await import('./core/synastry-legacy64-bridge.ts') : null;
-        const legacyReport = legacyBridge?.synastryFromLegacy64Responses(
-          legacyBridge.readLocalLegacy64Responses(), legacyResponses, ownCode, c, language,
-        ) ?? null;
-        const profileBridge = profile && !legacyReport ? await import('./core/synastry-bridge.ts') : null;
-        const scoredReport = profileBridge
-          ? profileBridge.synastryFromSnapshotProfiles(profile, importedProfile, ownCode, c, language)
-          : null;
-        const runResult = legacyReport ?? scoredReport
-          ?? (profile ? synFromProfiles(profile, c) : synastry(ownCode, c));
-        setResult(runResult);
-        rememberSynastryRun(c);
-      } catch { toast('⚠ JSON'); }
-    };
-    rd.readAsText(f);
+  const upload = async (file) => {
+    if (!file || busy) return;
+    setBusy(true);
+    setSavedError('');
+    resetSynastryNarrative();
+    try {
+      if (file.size > 20 * 1024 * 1024) throw new Error('File too large');
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      let importedProfile = parsed.profile ?? parsed;
+      let legacyResponses = parsed.assessment?.responses ?? parsed.assessmentResponses ?? parsed.responses;
+      if (parsed.schema === 'parts-cartographer.backup.v2' || parsed.shadow || parsed.ARCHETYPE_ASSESSMENT_RESPONSES) {
+        const prepared = await prepareBackup(text, lang);
+        importedProfile = prepared.entries[KEYS.profile];
+        legacyResponses = prepared.entries.ARCHETYPE_ASSESSMENT_RESPONSES;
+      }
+      const partnerCode = hashStr(text).toString(36).toUpperCase().slice(0, 8);
+      const ownCode = profile ? profileToCode(profile) : 'SELF0000';
+      const language = lang === 'ru' ? 'ru' : 'en';
+      const legacyBridge = legacyResponses ? await import('./core/synastry-legacy64-bridge.ts') : null;
+      const legacyReport = legacyBridge?.synastryFromLegacy64Responses(
+        legacyBridge.readLocalLegacy64Responses(), legacyResponses, ownCode, partnerCode, language,
+      );
+      const profileBridge = profile && !legacyReport ? await import('./core/synastry-bridge.ts') : null;
+      const computed = legacyReport ?? profileBridge?.synastryFromSnapshotProfiles(profile, importedProfile, ownCode, partnerCode, language);
+      if (!computed) throw new Error('Two complete compatible assessments are required');
+      setCode(partnerCode);
+      setResult(computed);
+      rememberSynastryRun(partnerCode);
+    } catch {
+      setResult(null);
+      setSavedError(lang === 'ru' ? 'Нужны два полных совместимых опросника. Проверьте файл и свой результат.' : 'Two complete compatible assessments are required. Check the file and your own result.');
+    } finally { setBusy(false); }
   };
 
   return (
@@ -464,7 +494,8 @@ export function SynastryOv() {
           <div className="center" style={{ paddingTop: 18 }}>
             <Crest family="exile" size={70} />
             <p className="sub mt12">{tr('sw3', lang)}</p>
-            <p className="sub mt12" style={{ fontSize: 12.5, textAlign: 'left' }}>{t('shareCodeConsent')}</p>
+            {legacyResponses && <label className="field mt12">{lang === 'ru' ? 'Что передать для сравнения' : 'Assessment to compare'}<select value={shareKind} onChange={(event) => { setShareKind(event.target.value); setShareConfirmed(false); }}>{profile && <option value="map">{lang === 'ru' ? 'Карта — только итоговые показатели' : 'Map — aggregate scores only'}</option>}<option value="legacy64">{lang === 'ru' ? 'Опросник отношений — 64 ответа' : 'Relational assessment — 64 answers'}</option></select></label>}
+            <p className="sub mt12" style={{ fontSize: 12.5, textAlign: 'left' }}>{shareKind === 'legacy64' ? (lang === 'ru' ? 'Этот код передаёт все 64 ответа в облако для сравнения. Любой вошедший пользователь с кодом сможет их прочитать до отзыва кода. Создавайте его только с этим согласием.' : 'This code uploads all 64 answers for comparison. Any signed-in person holding it can read them until you revoke it. Create it only if you agree to share those answers.') : t('shareCodeConsent')}</p>
             {!user?.linked ? (
               <button className="btn block mt12" onClick={() => setOverlay('login')}>🔐 {t('loginT')}</button>
             ) : (
@@ -487,7 +518,7 @@ export function SynastryOv() {
               </div>
             ))}
             {shareError && <p className="faint mt8" role="alert" style={{ color: 'var(--danger, #b54a4a)', fontSize: 12 }}>{shareError}</p>}
-            <button className="btn primary block mt16" disabled={!profile || !user?.linked || !shareConfirmed || busy} onClick={gen}>
+            <button className="btn primary block mt16" disabled={!canShare || !user?.linked || !shareConfirmed || busy} onClick={gen}>
               {busy ? '⏳ …' : '⚡ ' + t('generateCode')}
             </button>
           </div>
@@ -545,6 +576,7 @@ export function SynastryOv() {
           </div>
         )}
 
+        {savedError && tab === 'up' && <p className="sub mt12" role="alert">{savedError}</p>}
         {result && (
           <div className="card mt16" style={{ borderColor: 'var(--accent)', animation: 'screen-in .3s' }}>
             <div className="kicker" style={{ color: 'var(--accent-text)' }}>{t('reportTitle')}</div>
@@ -563,6 +595,11 @@ export function SynastryOv() {
             <p className="sub mt8" style={{ color: 'var(--text)' }}>
               {lang === 'ru' ? result.narrativeRu : result.narrativeEn}
             </p>
+            <button className="btn block mt12" onClick={() => {
+              const detailed = document.querySelector('[data-synastry-details]')?.innerText ?? '';
+              const report = [`# ${result.bond[lang]}`, '', ...result.dims.map((dimension) => `- ${dimension[lang === 'ru' ? 'labelRu' : 'labelEn']}: ${dimension.value}/100`), '', result[lang === 'ru' ? 'narrativeRu' : 'narrativeEn'], '', detailed, '', synNarrative].join('\n');
+              downloadText(report, 'synastry-report.md');
+            }}>{lang === 'ru' ? 'Скачать полный отчёт' : 'Download full report'}</button>
             {result.legacy64 && <LegacySynastryDetails report={result.legacy64} lang={lang}
               onDownload={() => {
                 const payload = {
@@ -600,7 +637,7 @@ export function SynastryOv() {
                     <b>{t('synAiReflection')}</b>
                     <p className="faint mt4" style={{ fontSize: 11 }}>{t('synAiDisclosure')}</p>
                   </div>
-                  <button className="btn small" disabled={synNarrativeBusy || busy}
+                  <button className="btn small" disabled={busy}
                     onClick={synNarrativeBusy ? cancelSynastryNarrative : generateAiSynastryNarrative}>
                     {synNarrativeBusy ? t('synAiCancel') : synNarrative ? t('synAiRetry') : t('synAiGenerate')}
                   </button>
@@ -619,61 +656,6 @@ export function SynastryOv() {
         <button className="btn block mt16" onClick={() => (premium ? setOverlay('quickscan') : openPaywall())}>
           ⚡ {t('quickscan')}
         </button>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════ Quick scan (paste code → deterministic result) ═══════════ */
-export function QuickScan() {
-  const { t, lang, setOverlay, toast, profile } = useApp();
-  const [code, setCode] = useState('');
-  const [out, setOut] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  const run = async () => {
-    if (code.trim().length < 4) return;
-    setBusy(true);
-    try {
-      let rep = await AI.quickScan(code.trim().toUpperCase());
-      if (lang === 'ru') {
-        const dims = [['energy sync', 'Синхрон энергий'], ['burden overlap', 'Пересечение бремени'], ['polarization risk', 'Риск поляризации'], ['care flow', 'Поток заботы'], ['exile safety', 'Безопасность изгоев'], ['repair speed', 'Скорость ремонта']];
-        dims.forEach(([en, ru]) => { rep = rep.split(en).join(ru); });
-        rep = rep.replace('Dominant bond', 'Доминирующая связь');
-        rep = rep.replace(/: (mirror|anchor|catalyst|sanctuary|challenger|echo)\./, (m, b) => `: ${(BOND_TYPES.find((x) => x.id === b)?.ru) ?? b}.`);
-      } else {
-        rep = rep.charAt(0).toUpperCase() + rep.slice(1);
-      }
-      setOut(rep);
-    }
-    catch { setOut(tr('sw7', lang)); }
-    setBusy(false);
-  };
-
-  return (
-    <div className="overlay">
-      {ovHead('🔭 ' + t('quickscan'), () => setOverlay(null))}
-      <div className="ov-body">
-        <div className="kicker mt8">{t('scanIn')}</div>
-        <div className="field mt8">
-          <div className="field">
-            <input value={code} maxLength={64} placeholder="AB12CD34"
-              style={{ textTransform: 'uppercase', letterSpacing: '.15em', fontFamily: 'var(--font-display)' }}
-              onChange={(e) => setCode(e.target.value.toUpperCase())} />
-          </div>
-        </div>
-        <button className="btn primary block" disabled={busy || code.trim().length < 4} onClick={run}>
-          {busy ? '✨ …' : '⚡ ' + t('quickscanGo')}
-        </button>
-        {out && (
-          <div className="card mt16" style={{ borderColor: 'var(--yolk)' }}>
-            <div className="kicker" style={{ color: 'var(--accent-text)' }}>{t('reportTitle')}</div>
-            <p style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.55, marginTop: 8, whiteSpace: 'pre-wrap' }}>{out}</p>
-            <button className="btn ghost block mt12" onClick={() => { navigator.clipboard?.writeText(out); toast('📋 ' + t('copied')); }}>
-              ⧉ {t('copy')}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -824,6 +806,7 @@ export function Booking() {
               <div className="kicker">{t('pickDate')}</div>
               <span className="faint" style={{ fontSize: 12 }}>{displayName}</span>
             </div>
+            <p className="faint mt8">{lang === 'ru' ? 'Время по часам этого устройства' : 'Times use this device’s clock'} · {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
             {days.length ? (
               <div className="row wrap mt8" style={{ gap: 8 }}>
                 {days.map((iso) => (

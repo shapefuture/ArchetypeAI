@@ -70,6 +70,10 @@ export function Legacy64Assessment() {
   const [aiAnalysisBusy, setAiAnalysisBusy] = useState(false);
   const [aiAnalysisError, setAiAnalysisError] = useState('');
   const aiAnalysisAbort = useRef(null);
+  useEffect(() => {
+    if (stage !== 'results' || result?.version !== 'angular-assessment-64.v2' || result.language !== lang) return;
+    store.save(RESULT_KEY, result);
+  }, [stage, result, lang]);
   const question = ASSESSMENT_QUESTIONS[index];
   const questionSection = question?.section.split('.').at(-1) ?? 'agency';
   const sectionCopy = copy.questions[questionSection] ?? copy.questions.agency;
@@ -231,8 +235,7 @@ export function Legacy64Assessment() {
           : 'AI analysis could not be completed. Your local deterministic result is unchanged.');
       }
     } finally {
-      if (aiAnalysisAbort.current === controller) aiAnalysisAbort.current = null;
-      setAiAnalysisBusy(false);
+      if (aiAnalysisAbort.current === controller) { aiAnalysisAbort.current = null; setAiAnalysisBusy(false); }
     }
   }, [result, answers, lang, translations, aiAnalysisBusy]);
 

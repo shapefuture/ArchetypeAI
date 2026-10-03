@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { generateSet } from './src/dna.js';
-import { buildCharacter } from './src/builder.js';
+import { buildCharacter } from './src/assemble.js';
 import { setupStage } from './src/stage.js';
 const q = new URLSearchParams(location.search);
 const seed = +(q.get('seed') || 3), collection = q.get('c') || 'wool', yaw = +(q.get('yaw') || 0), pitch = +(q.get('pitch') ?? 0);

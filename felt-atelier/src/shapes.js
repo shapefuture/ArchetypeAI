@@ -161,3 +161,40 @@ export class SegIndex {
     return cr >= 0 ? best : -best;
   }
 }
+
+// ---------- fast signed-distance grid: scanline fill + Felzenszwalb EDT, exact only in a thin band at the edge ----------
+function edt1(f, n, out, v, z) {
+  let k = 0; v[0] = 0; z[0] = -1e20; z[1] = 1e20;
+  for (let q = 1; q < n; q++) {
+    let s;
+    for (;;) { const p = v[k]; s = ((f[q] + q * q) - (f[p] + p * p)) / (2 * q - 2 * p); if (s <= z[k] && k > 0) k--; else break; }
+    if (s <= z[k]) { k = 0; v[0] = q; z[0] = -1e20; z[1] = 1e20; continue; }
+    k++; v[k] = q; z[k] = s; z[k + 1] = 1e20;
+  }
+  k = 0;
+  for (let q = 0; q < n; q++) { while (z[k + 1] < q) k++; const p = v[k]; out[q] = (q - p) * (q - p) + f[p]; }
+}
+function edt2(grid, nx, ny) { // grid holds 0 (source) or 1e20; returns squared cell distances in place
+  const m = Math.max(nx, ny), f = new Float64Array(m), o = new Float64Array(m), v = new Int32Array(m), z = new Float64Array(m + 1);
+  for (let x = 0; x < nx; x++) { for (let y = 0; y < ny; y++) f[y] = grid[y * nx + x]; edt1(f, ny, o, v, z); for (let y = 0; y < ny; y++) grid[y * nx + x] = o[y]; }
+  for (let y = 0; y < ny; y++) { for (let x = 0; x < nx; x++) f[x] = grid[y * nx + x]; edt1(f, nx, o, v, z); for (let x = 0; x < nx; x++) grid[y * nx + x] = o[x]; }
+}
+export function sdfGrid(poly, x0, y0, nx, ny, cs) {
+  const n = poly.length, inside = new Uint8Array(nx * ny);
+  for (let j = 0; j < ny; j++) {
+    const y = y0 + j * cs, xs = [];
+    for (let i = 0; i < n; i++) { const [ax, ay] = poly[i], [bx, by] = poly[(i + 1) % n]; if ((ay > y) !== (by > y)) xs.push(ax + ((y - ay) / (by - ay)) * (bx - ax)); }
+    xs.sort((a, b) => a - b);
+    for (let k = 0; k + 1 < xs.length; k += 2) { const i0 = Math.max(0, Math.ceil((xs[k] - x0) / cs)), i1 = Math.min(nx - 1, Math.floor((xs[k + 1] - x0) / cs)); for (let i = i0; i <= i1; i++) inside[j * nx + i] = 1; }
+  }
+  const dIn = new Float64Array(nx * ny), dOut = new Float64Array(nx * ny);
+  for (let k = 0; k < nx * ny; k++) { dIn[k] = inside[k] ? 1e20 : 0; dOut[k] = inside[k] ? 0 : 1e20; }
+  edt2(dIn, nx, ny); edt2(dOut, nx, ny); // dIn: cells -> nearest outside cell; dOut: -> nearest inside cell
+  const sd = new Float32Array(nx * ny), band = (2.2 * cs) ** 2, idx = new SegIndex(poly, 0.012);
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const k = j * nx + i; const d2 = inside[k] ? dIn[k] : dOut[k];
+    if (d2 <= band * 4) sd[k] = idx.signed(x0 + i * cs, y0 + j * cs); // exact near the edge
+    else sd[k] = (inside[k] ? 1 : -1) * Math.max(0, Math.sqrt(d2) - 0.5) * cs;
+  }
+  return sd;
+}

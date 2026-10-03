@@ -50,3 +50,15 @@ Silhouette (12) × colour (any) × eyes (8 styles × 6 lid moods) × optional mo
 1. **2D lineup sheet:** 12 characters as flat vector fills plus eyes on white. Can you tell them apart and do you like them?
 2. **The same 12 characters as 3D plush renders** (image generator), to check that 2D and 3D match.
 3. **"Which one is you?" test:** 5 people pick the character they identify with and say why. Emotional pull is the success metric.
+
+## 8. Four orthogonal style prompts (full map)
+Same characters and world grammar. Each style varies material, light, palette and medium at once, so the four are maximally different from each other:
+
+| Style | Material | Light | Palette | Medium |
+|---|---|---|---|---|
+| S1 Felt Night Diorama | flocked felt | warm night, tilt-shift | indigo plus vivid | 3D toy photo |
+| S2 Glossy Daylight Vinyl | glossy soft vinyl | bright high-key day | pastel sky plus candy | 3D studio CG |
+| S3 Paper Pop-up Storybook | cut paper and card | flat, soft daylight | cream plus 3 spot inks | 2.5D handmade |
+| S4 Glow Jelly Lagoon | translucent jelly-glass | self-lit, twilight | teal dusk plus neon | 3D luminous CG |
+
+Prompts: see the session reply (kept verbatim there).

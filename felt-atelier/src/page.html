@@ -1,0 +1,209 @@
+<title>Felt Atelier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: a workbench. The felt character floats in an empty stage on the left; the sewing panel sits on the right; both stack on phones. */
+:root {
+  --bg: #e3e5e9; --panel: #f6f7f8; --ink: #1f222a; --muted: #5b6170; --line: #cdd2da;
+  --accent: #3e5ea9; --accent-ink: #ffffff; --stage: #e9e7e3; --chip: #eceef1;
+  --display: 'Fredoka', 'Nunito', ui-rounded, system-ui, sans-serif;
+  --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16171b; --panel: #1f2127; --ink: #eceef2; --muted: #a3a9b6; --line: #343844;
+  --accent: #91a9ee; --accent-ink: #10131c; --stage: #2a2b30; --chip: #282b33; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #16171b; --panel: #1f2127; --ink: #eceef2; --muted: #a3a9b6; --line: #343844;
+  --accent: #91a9ee; --accent-ink: #10131c; --stage: #2a2b30; --chip: #282b33; color-scheme: dark }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.45 var(--body); padding-inline: 16px; padding-block: 12px 24px; box-sizing: border-box; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app { max-width: 1320px; margin: 0 auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+h1 { font: 600 clamp(22px, 3vw, 30px)/1 var(--display); margin: 0; letter-spacing: 0.01em; }
+h1 small { display: block; font: 500 12px/1.3 var(--body); color: var(--muted); letter-spacing: 0.04em; margin-top: 4px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; gap: 6px; align-items: center; }
+.btn:hover { border-color: var(--muted); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.work { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 860px) { .work { grid-template-columns: 1fr; } }
+.stagebox { position: relative; background: var(--stage); border-radius: var(--r); overflow: hidden; min-width: 0; }
+#stage { width: 100%; aspect-ratio: 1 / 0.9; max-width: 100%; }
+#stage canvas { display: block; width: 100% !important; height: 100% !important; cursor: grab; }
+#stage canvas:active { cursor: grabbing; }
+.hint { position: absolute; left: 12px; bottom: 10px; right: 12px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); pointer-events: none; }
+#sewing { position: absolute; top: 12px; left: 12px; font: 500 12px var(--body); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+.status { font-size: 13px; color: var(--muted); min-height: 1.4em; }
+#lint { color: #a5552c; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; }
+[role="tablist"] { display: flex; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+[role="tab"] { flex: 1 0 auto; border: 0; background: none; padding: 12px 12px 10px; font: 600 14px var(--display); letter-spacing: 0.02em; color: var(--muted); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; border-bottom: 3px solid transparent; }
+[role="tab"][aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.lock { border: 0; background: none; padding: 2px; cursor: pointer; color: var(--muted); display: inline-flex; border-radius: 6px; }
+.lock svg { width: 15px; height: 15px; }
+.lock[aria-pressed="true"] { color: var(--accent); }
+.lock .open { display: inline; } .lock .shut { display: none; }
+.lock[aria-pressed="true"] .open { display: none; } .lock[aria-pressed="true"] .shut { display: inline; }
+[role="tabpanel"] { padding: 14px 16px 18px; display: grid; gap: 16px; }
+.group { display: grid; gap: 8px; }
+.label { font: 600 11px/1 var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--chip); border-radius: 999px; padding: 6px 11px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+#shapes { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; }
+.tile { border: 1px solid var(--line); background: var(--chip); border-radius: 10px; padding: 8px 4px 6px; display: grid; justify-items: center; gap: 2px; cursor: pointer; font-size: 12px; }
+.tile svg { width: 42px; height: 42px; }
+.tile path { fill: var(--muted); }
+.tile[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.tile[aria-pressed="true"] path { fill: var(--accent); }
+.sw-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.sw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--panel); background: var(--c); box-shadow: 0 0 0 1px var(--line); cursor: pointer; padding: 0; }
+.sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ink); }
+.sliders { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 16px; }
+.sliders label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+textarea { width: 100%; min-height: 220px; font: 12px/1.45 var(--mono); background: var(--chip); border: 1px solid var(--line); border-radius: 8px; padding: 10px; resize: vertical; }
+input[type="text"] { width: 100%; border: 1px solid var(--line); background: var(--chip); border-radius: 8px; padding: 8px 10px; }
+.shelf h2 { font: 600 17px var(--display); margin: 0 0 8px; }
+#shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.shelf-item { position: relative; }
+.shelf-item .load { width: 100%; border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 6px; cursor: pointer; display: grid; gap: 4px; font-size: 12px; }
+.shelf-item img { display: block; }
+.shelf-item .del { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); cursor: pointer; line-height: 1; }
+.empty { color: var(--muted); margin: 0; font-size: 14px; }
+#hud { position: absolute; top: 12px; right: 12px; font: 12px var(--mono); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-variant-numeric: tabular-nums; }
+#hud-note { position: absolute; top: 46px; right: 12px; font-size: 12px; color: var(--muted); }
+#reshuffle { position: absolute; top: 44px; left: 12px; display: none; padding: 5px 11px; font-size: 13px; }
+body[data-view="cosmos"] #reshuffle { display: inline-flex; }
+body:not([data-view="cosmos"]) #hud-note { display: none; }
+.flat { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; margin-top: 10px; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); align-items: center; }
+.flat h2 { font: 600 16px var(--display); margin: 0 0 2px; }
+.flat-art { width: 160px; max-width: 38vw; aspect-ratio: 1; display: grid; place-items: center; background: repeating-conic-gradient(var(--chip) 0 25%, transparent 0 50%) 0 0 / 16px 16px; border-radius: 10px; }
+.flat-art img { width: 100%; height: 100%; object-fit: contain; }
+.flat-side { display: grid; gap: 8px; min-width: 0; }
+.flat .empty { font-size: 13px; }
+.icons { display: flex; align-items: end; gap: 12px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.pair img { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 6px; background: var(--chip); }
+#toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--panel); padding: 9px 16px; border-radius: 999px; font-size: 14px; z-index: 5; }
+kbd { font: 11px var(--mono); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <header>
+    <h1>Felt Atelier<small>Sew your inner parts: one felt character at a time</small></h1>
+    <div class="bar" id="views" role="group" aria-label="View"><button class="btn" type="button" data-view="workshop" aria-pressed="true">Workshop</button><button class="btn" type="button" data-view="cosmos" aria-pressed="false">Constellation</button></div>
+    <div class="bar">
+      <button class="btn primary" id="dice" type="button" title="Randomize everything that is not locked (R)">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg>Randomize</button>
+      <button class="btn" id="undo" type="button" title="Undo (Ctrl+Z)">Undo</button>
+      <button class="btn" id="redo" type="button" title="Redo (Ctrl+Shift+Z)">Redo</button>
+      <button class="btn" id="spin" type="button" aria-pressed="false">Turntable</button>
+      <button class="btn" id="front" type="button">Front view</button>
+      <button class="btn" id="save" type="button">Save to shelf</button>
+    </div>
+  </header>
+
+  <div class="work">
+    <div>
+      <div class="stagebox">
+        <div id="stage" aria-label="3D preview of the felt character. Drag to turn, scroll or pinch to zoom, tap to squish."></div>
+        <div id="sewing" hidden>Sewing…</div>
+        <div id="hud" aria-live="off">starting…</div>
+        <div id="hud-note"></div>
+        <button class="btn" id="reshuffle" type="button">New constellation</button>
+        <div class="hint"><span>Drag to turn · scroll to zoom · tap to squish · double-click for front</span><span><kbd>R</kbd> randomize</span></div>
+      </div>
+      <p class="status"><span id="msg">Threading the needle…</span> <span id="lint"></span></p>
+      <section class="flat" aria-label="Flat 2D sticker">
+        <div class="flat-art"><img id="flat-main" alt="Flat 2D sticker of this character" width="220" height="220"></div>
+        <div class="flat-side">
+          <h2>2D sticker</h2>
+          <p class="empty">Drawn automatically from the same stitches as the 3D character, so both always match.</p>
+          <div id="flat-icons" class="icons" aria-label="Icon sizes"><img alt="" width="64" height="64"><img alt="" width="32" height="32"><img alt="" width="16" height="16"></div>
+          <div class="row"><button class="btn" id="svg-copy" type="button">Copy SVG</button><button class="btn" id="svg-dl" type="button">Download SVG</button><button class="btn" id="png-dl" type="button">Download PNG</button></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" aria-label="Sewing controls">
+      <div role="tablist" aria-label="Craft steps">
+        <button role="tab" id="t-shape" aria-controls="p-shape" aria-selected="true">Shape <span class="lock" data-lock="shape" role="button" tabindex="0" aria-label="Lock shape"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="open" d="M7 11V8a5 5 0 0 1 9.6-2" fill="none" stroke="currentColor" stroke-width="2"/><path class="shut" d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/></svg></span></button>
+        <button role="tab" id="t-felt" aria-controls="p-felt" aria-selected="false">Felt <span class="lock" data-lock="felt" role="button" tabindex="0" aria-label="Lock felt"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="open" d="M7 11V8a5 5 0 0 1 9.6-2" fill="none" stroke="currentColor" stroke-width="2"/><path class="shut" d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/></svg></span></button>
+        <button role="tab" id="t-face" aria-controls="p-face" aria-selected="false">Face <span class="lock" data-lock="face" role="button" tabindex="0" aria-label="Lock face"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="open" d="M7 11V8a5 5 0 0 1 9.6-2" fill="none" stroke="currentColor" stroke-width="2"/><path class="shut" d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/></svg></span></button>
+        <button role="tab" id="t-acc" aria-controls="p-acc" aria-selected="false">Cosmic bits <span class="lock" data-lock="accessory" role="button" tabindex="0" aria-label="Lock cosmic bits"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="open" d="M7 11V8a5 5 0 0 1 9.6-2" fill="none" stroke="currentColor" stroke-width="2"/><path class="shut" d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/></svg></span></button>
+        <button role="tab" id="t-dna" aria-controls="p-dna" aria-selected="false">DNA</button>
+      </div>
+
+      <div role="tabpanel" id="p-shape" aria-labelledby="t-shape">
+        <div class="group"><span class="label">Body</span><div id="shapes"></div></div>
+        <div class="sliders">
+          <label>Width<input type="range" id="s-w" min="0.75" max="1.3" step="0.01"></label>
+          <label>Height<input type="range" id="s-h" min="0.75" max="1.3" step="0.01"></label>
+          <label>Lean<input type="range" id="s-lean" min="-0.4" max="0.4" step="0.01"></label>
+          <label>Stuffing<input type="range" id="s-depth" min="0.15" max="0.5" step="0.01"></label>
+          <label>Hand-cut wobble<input type="range" id="s-wobble" min="0" max="1.6" step="0.02"></label>
+          <label>Size<input type="range" id="s-size" min="0.7" max="1.3" step="0.01"></label>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="p-felt" aria-labelledby="t-felt" hidden>
+        <div class="group"><span class="label">Felt collection</span><div class="row" id="collection"><button type="button" class="chip" data-k="wool">Wool blend</button><button type="button" class="chip" data-k="bright">Bright craft</button></div></div>
+        <div class="group"><span class="label">Body felt</span><div class="sw-row" id="felts"></div></div>
+        <div class="group"><span class="label">Blanket-stitch thread</span><div class="row" id="thread"></div></div>
+      </div>
+
+      <div role="tabpanel" id="p-face" aria-labelledby="t-face" hidden>
+        <div class="group"><span class="label">Quick mood</span><div class="row" id="moods"></div></div>
+        <div class="group"><span class="label">Eyes</span><div class="row" id="eyes"></div></div>
+        <div class="group"><span class="label">Mouth</span><div class="row" id="mouths"></div></div>
+        <div class="group"><span class="label">Brows</span><div class="row" id="brows"></div></div>
+        <div class="sliders">
+          <label>Eye size<input type="range" id="s-esize" min="0.7" max="1.4" step="0.01"></label>
+          <label>Eye spacing<input type="range" id="s-egap" min="0.7" max="1.4" step="0.01"></label>
+          <label>Eye height<input type="range" id="s-ey" min="-0.12" max="0.12" step="0.005"></label>
+          <label>Look left / right<input type="range" id="s-gx" min="-1" max="1" step="0.05"></label>
+          <label>Look up / down<input type="range" id="s-gy" min="-1" max="1" step="0.05"></label>
+          <label>Eyelid (half-lid)<input type="range" id="s-lid" min="0" max="0.8" step="0.02"></label>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="p-acc" aria-labelledby="t-acc" hidden>
+        <div class="group"><span class="label">Front patch</span><div class="row" id="patches"></div></div>
+        <div class="group"><span class="label">Patch felt</span><div class="sw-row" id="pfelt"></div></div>
+        <div class="group"><span class="label">Second felt (ring, comet tail)</span><div class="sw-row" id="pfelt2"></div></div>
+        <div class="sliders">
+          <label>Patch spot<input type="range" id="s-zone" min="0" max="3" step="1"></label>
+          <label>Patch turn<input type="range" id="s-prot" min="-60" max="60" step="1"></label>
+          <label>Patch size<input type="range" id="s-pscale" min="0.6" max="1.4" step="0.01"></label>
+        </div>
+        <div class="group"><span class="label">On the head</span><div class="row" id="toppers"></div></div>
+        <div class="group"><span class="label">Head piece felt</span><div class="sw-row" id="tfelt"></div></div>
+        <div class="group"><span class="label">Head piece second felt</span><div class="sw-row" id="tfelt2"></div></div>
+        <div class="sliders">
+          <label>Head piece position<input type="range" id="s-tside" min="-1" max="1" step="0.02"></label>
+          <label>Head piece tilt<input type="range" id="s-ttilt" min="-1" max="1" step="0.02"></label>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="p-dna" aria-labelledby="t-dna" hidden>
+        <div class="group"><label class="label" for="name">Part name</label><input type="text" id="name" maxlength="40" placeholder="e.g. The Inner Critic"></div>
+        <div class="group"><label class="label" for="dna">Character DNA</label><textarea id="dna" spellcheck="false"></textarea>
+          <div class="row"><button class="btn" id="copy" type="button">Copy DNA</button><button class="btn" id="apply" type="button">Apply edited DNA</button></div></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="shelf" aria-label="Saved parts"><h2>Your shelf</h2><div id="shelf"></div></section>
+</div>
+<div id="toast" role="status" hidden></div>

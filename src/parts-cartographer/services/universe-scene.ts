@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { Part } from '../pal/traits';
 import { feltGroup } from './felt-engine';
+import { bindReducedMotionDamping } from './reduced-motion';
 import {
   archetypeCoordinatePosition,
   dimensionalLensOffset,
@@ -73,10 +74,10 @@ export function initUniverse(host: HTMLElement, isDark: boolean): UniverseAPI {
   camera.position.set(0, 0, 46);
   renderer.xr.enabled = true;
   const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
   controls.minDistance = 8;
   controls.maxDistance = 110;
   const motion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  const unbindMotionPreference = bindReducedMotionDamping(controls, motion);
   let axes: UniverseAxes = [...DEFAULT_AXES];
   let isolation: DimensionKey | null = null;
   let selectedId: string | null = null;
@@ -270,6 +271,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean): UniverseAPI {
       renderer.setAnimationLoop(null);
       void renderer.xr.getSession()?.end();
       disposed = true;
+      unbindMotionPreference();
       controls.dispose();
       clearParts();
       window.removeEventListener('resize', onResize);

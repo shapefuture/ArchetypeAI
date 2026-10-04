@@ -1,6 +1,6 @@
 # Device performance and accessibility baseline
 
-**Status:** source audit complete; device acceptance is blocked. No app walkthrough, browser run, assistive-technology check, or performance measurement was performed for this record.
+**Status:** source audit complete; user-reported phone smoke test recorded; measured device acceptance remains incomplete.
 
 ## Evidence and conditions available
 
@@ -15,7 +15,9 @@
 
 After this source audit was written, PR #5's GitHub Actions run passed four Playwright parity tests in Chromium at a configured 390×844 viewport, using SwiftShader and `reducedMotion=reduce` ([run 37172320287](https://github.com/shapefuture/ArchetypeAI/actions/runs/37172320287); `tests/browser/parity.spec.mjs`, `playwright.config.mjs`). The tests covered offline restore, a 14-answer scan, completion of the local 147-item assessment into the map, and historical restore. Axe checks exclude color contrast. Routes were blocked from external network access. This is useful automated browser evidence, but not a physical phone, performance telemetry, screen-reader test, live coach session, or booking journey; it does not change the acceptance disposition below.
 
-The source checkout has Vite React scripts (`npm run dev`, `npm run build`) and a separately served Angular app. The intended app origin/build was not provided. No deployed origin, device/browser combination, user role, or fixture was available. No personal profile or live account was accessed.
+The source checkout has Vite React scripts (`npm run dev`, `npm run build`) and a separately served Angular app. A Firebase Hosting deployment was subsequently made from commit `c77f703` on 2026-10-04. Its configured React targets are [archetype-ai-3e43b.web.app](https://archetype-ai-3e43b.web.app) and [innerverseai.web.app](https://innerverseai.web.app). After deployment, the HTML and all four entry assets on both origins were retrieved and byte-compared with the local production build. This verifies the deployed files match that build; it does not establish phone performance, rendered phone behavior, or assistive-technology results. No device/browser combination, role, or fixture has yet been measured, and no personal profile or live account was accessed.
+
+The user reports testing the app on a phone and that it was fine. No device conditions, build, task coverage, or measurements were supplied, so this is recorded as a smoke-test report rather than quantified performance or accessibility evidence.
 
 ## Source-level baseline
 
@@ -39,7 +41,7 @@ A global `:focus-visible` outline and a `prefers-reduced-motion` stylesheet rule
 
 ## Blockers to real-device acceptance
 
-The physical measurement is blocked by the absence of a representative mid-range phone, an available app origin/build, and a safe test account with a repeatable fixture. Before the run, record the chosen device model and hardware tier, OS and browser versions, display size and scale, app commit/build and production or preview origin, account role, fixture identity (synthetic or approved test data), network profile, power/thermal state, and whether the app is installed as a PWA or opened in the browser. An emulator or desktop Chromium run may be useful as a separate diagnostic, but neither closes the real-device criterion.
+The user-reported phone check has no recorded device conditions or browser/remote-inspection evidence, and this workspace has no attached phone to reproduce it or collect telemetry. The production origin and build are available above. The assessment-to-report-to-map path supports a local synthetic profile without account sign-in; use a clean browser profile and synthetic responses for that path. Coach and appointment paths that need cloud identity or booking data require a separately approved test account and fixture; do not substitute personal records. For any measured run, record the chosen device model and hardware tier, OS and browser versions, display size and scale, app commit/build and origin, account role if used, fixture identity (synthetic or approved test data), network profile, power/thermal state, and whether the app is installed as a PWA or opened in the browser. An emulator or desktop Chromium run may be useful as a separate diagnostic, but neither closes the real-device criterion.
 
 ## Minimum reproducible device run
 
@@ -54,4 +56,4 @@ Keep screenshots, recordings, and profiles on the approved test fixture; do not 
 
 ## Acceptance disposition
 
-The Bead acceptance criterion requires named device conditions and blockers to be recorded and forbids substituting software WebGL for physical-device acceptance. The blocker and a minimum repeatable protocol are now documented, with evidence classes kept separate. Because there is no physical-device observation, this document does **not** establish or claim real-device acceptance; the device measurement remains outstanding and the Bead should remain open until that evidence is attached.
+The Bead acceptance criterion requires named device conditions and blockers to be recorded and forbids substituting software WebGL for physical-device acceptance. The user-reported phone smoke test is noted, but this document does **not** establish measured performance or critical accessibility acceptance: device conditions, task coverage, and measurements remain unrecorded. Keep the Bead open until the required evidence is attached.

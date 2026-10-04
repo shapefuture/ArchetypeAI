@@ -57,7 +57,7 @@ This is a navigation index, not a completion checklist. Inspect each issue for f
 | `ArchetypeAI-28h.1.6` | Validate independent sensory controls and unprompted intuitiveness |
 | `ArchetypeAI-28h.1.8` | Review assessment constructs, item confounds and source limitations |
 
-The source/config baseline for the first two Stage 0 tasks is recorded in [core journeys and data](baseline/core-journeys-and-data.md) and [service capabilities and contracts](baseline/service-capabilities-and-contracts.md). These artifacts identify missing production, preview, emulator, account, and device evidence explicitly; they do not claim a live walkthrough.
+Stage 0 evidence artifacts: [core journeys and data](baseline/core-journeys-and-data.md), [service capabilities and contracts](baseline/service-capabilities-and-contracts.md), [loading identity reference](baseline/loading-identity-reference.md), [device/accessibility baseline](baseline/device-performance-accessibility.md), and [assessment construct review](baseline/assessment-construct-review.md). They identify missing production, preview, emulator, account, physical-device, and participant evidence explicitly; they do not claim a live walkthrough or empirical assessment validation.
 
 ### Stage 1: exceptional assessment, map, coach, and booking
 
@@ -194,7 +194,7 @@ The root may exceed the terminal graph row limit as the roadmap grows; use a sta
 
 ## Current execution state
 
-The initial journey/data and service-contract baselines now have source-backed artifacts under `docs/baseline/`. They are discovery evidence only: no production or preview session, Firebase emulator, real account, live appointment, or real-device walk was performed. Beads remains the status and acceptance record; subsequent Stage 0 and Stage 1 tasks must gather the runtime evidence required by their own criteria rather than treating source inspection as a successful user journey.
+Source-based artifacts now cover journey/data contracts, support-service boundaries, the loading identity, device/accessibility constraints, and assessment-item hypotheses. No production or preview session, Firebase emulator, real account, live appointment, physical-device run, participant interview, or psychometric validation was performed. Beads remains the status and acceptance record; later tasks must gather the runtime and research evidence required by their own criteria rather than treating source inspection as a successful user journey or validation study.
 
 ## Installation and remote recovery
 

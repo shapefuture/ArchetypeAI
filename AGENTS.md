@@ -94,3 +94,7 @@ bd close <id>         # Complete work
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
 <!-- END BEADS INTEGRATION -->
+
+## Innerverse roadmap context
+
+The current implementation specification is [docs/80-20-plan.md](docs/80-20-plan.md); the preserved archive is [docs/oldplan.md](docs/oldplan.md). [docs/beads-roadmap.md](docs/beads-roadmap.md) maps the dependency-aware roadmap rooted at `ArchetypeAI-28h`. Use `bd ready --label roadmap --type task` to find actual ready implementation work; do not mark a feature complete because its plan was written. Preserve the authored loading screen, merged Felt identity, independently controllable sensory richness, the plush inner-cosmos grammar, the four core paths, and the therapist's complete 3+1-axis analytical workspace with explicit 64/147 coordinate provenance. Apply the plan's unprompted intuitiveness and real-service acceptance criteria.

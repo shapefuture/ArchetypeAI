@@ -6,6 +6,7 @@ import { auth } from './core/auth.service.ts';
 import { AI, ResilientAiAdapter } from './core/ai.adapter.ts';
 import { billing } from './core/billing.service.ts';
 import { telemetry } from './core/telemetry.ts';
+import { loadSensoryPreferences, saveSensoryPreferences, selectSensoryPreset, updateSensoryPreference } from './core/sensory-preferences.ts';
 import { SEED_PARTS } from './pal/traits.ts';
 import { t as translate, STRINGS } from './i18n/strings.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
@@ -55,6 +56,7 @@ export default function App() {
   /* ── cross-cutting state ── */
   const [lang, setLang] = useState(() => store.load('ifs.lang', 'ru'));
   const [theme, setTheme] = useState(() => store.load('ifs.theme', 'light'));
+  const [sensory, setSensory] = useState(() => loadSensoryPreferences());
   const [state, setState] = useState('loading'); // the @switch
   const [dockTab, setDockTab] = useState('base');
   const [user, setUser] = useState(() => auth.currentUser());
@@ -163,6 +165,20 @@ export default function App() {
     if (next) { store.save(KEYS.profile, next); store.archive(KEYS.history, next); }
     else store.remove(KEYS.profile);
   }, []);
+  const applySensoryPreset = useCallback((preset) => {
+    const next = selectSensoryPreset(preset);
+    setSensory(next);
+    saveSensoryPreferences(next);
+  }, []);
+  const updateSensory = useCallback((key, value) => {
+    setSensory((current) => {
+      const next = updateSensoryPreference(current, key, value);
+      saveSensoryPreferences(next);
+      return next;
+    });
+  }, []);
+  useEffect(() => { import('./pal/sfx.ts').then((module) => module.setSfxEnabled(sensory.sound)); }, [sensory.sound]);
+  useEffect(() => { uniRef.current?.setMotionMode(sensory.motion); }, [sensory.motion]);
 
   const go = useCallback((next) => {
     setState(next);
@@ -228,6 +244,7 @@ export default function App() {
   const ctx = useMemo(() => ({
     lang, setLang: (l) => { setLang(l); store.save('ifs.lang', l); },
     theme, setTheme: (v) => { setTheme(v); store.save('ifs.theme', v); },
+    sensory, applySensoryPreset, updateSensory,
     t, state, go, dockTab, setDockTab,
     user, setUser, premium, setPremiumOn: (v) => { setPremium(v); },
     parts, setParts, profile, setProfile,
@@ -241,7 +258,7 @@ export default function App() {
     openSky,
     universeMode, setUniverseMode,
     retryUniverse: () => { setUniError(false); enterUniverse(); },
-  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode]);
+  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode, sensory, applySensoryPreset, updateSensory]);
 
   /* ── universe host: outside the switch; renderer chunk on first entry ── */
   const enterUniverse = useCallback(async (isActive = () => true) => {
@@ -250,7 +267,8 @@ export default function App() {
       if (!host) throw new Error('no host');
       const mod = await import('./services/universe-scene.ts');
       if (!isActive() || !host.isConnected) return;
-      if (!uniRef.current) uniRef.current = mod.initUniverse(host, theme === 'dark');
+      if (!uniRef.current) uniRef.current = mod.initUniverse(host, theme === 'dark', sensory.motion);
+      uniRef.current.setMotionMode(sensory.motion);
       uniRef.current.setParts(parts);
       uniRef.current.onPick((id) => setSheet({ type: 'part', id }));
       uniRef.current.wake();
@@ -264,7 +282,7 @@ export default function App() {
       setUniError(true);
       setOverlay('universe-fail');
     }
-  }, [parts, theme]);
+  }, [parts, sensory.motion, theme]);
 
   useEffect(() => {
     let active = true;
@@ -354,7 +372,8 @@ export default function App() {
     <AppCtx.Provider value={ctx}>
       <div className="stage">
         <div className="stage-caption">Innerverse · your inner system</div>
-        <div className={`phone grain`} data-theme={theme}>
+        <div className="phone grain" data-theme={theme} data-motion={sensory.motion}
+          data-texture={sensory.texture ? 'rich' : 'quiet'} data-density={sensory.density}>
           <StatusBar />
 
           {/* three.js canvas — OUTSIDE the switch */}

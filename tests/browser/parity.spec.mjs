@@ -114,3 +114,36 @@ test('historical local restore previews before applying and refreshes mounted st
   await expect(page.locator('#legacy-diagnostics')).toHaveCount(1);
   await expect(page.getByRole('button', { name: /AI-generated pantheon/ })).toBeVisible();
 });
+
+test('sensory style presets and individual controls stay independent and persist locally', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'You', exact: true }).click();
+
+  const presets = page.getByRole('group', { name: 'Starting style' });
+  const motion = page.getByRole('group', { name: 'Motion' });
+  const density = page.getByRole('group', { name: 'Layout spacing' });
+  await presets.getByRole('button', { name: 'Still' }).click();
+  await expect(page.locator('.phone')).toHaveAttribute('data-motion', 'still');
+  await expect(page.locator('.phone')).toHaveAttribute('data-texture', 'quiet');
+  await expect(page.getByRole('checkbox', { name: 'Soft interface sounds' })).not.toBeChecked();
+
+  await page.getByRole('checkbox', { name: 'Soft interface sounds' }).check();
+  await page.getByRole('checkbox', { name: 'Decorative felt texture' }).check();
+  await density.getByRole('button', { name: 'Compact' }).click();
+  await expect(page.locator('.phone')).toHaveAttribute('data-motion', 'still');
+  await expect(page.locator('.phone')).toHaveAttribute('data-texture', 'rich');
+  await expect(page.locator('.phone')).toHaveAttribute('data-density', 'compact');
+  await expect(page.getByRole('checkbox', { name: 'Soft interface sounds' })).toBeChecked();
+  await expect(motion.getByRole('button', { name: 'Still' })).toHaveAttribute('aria-pressed', 'true');
+
+  const accessibility = await new AxeBuilder({ page }).include('.phone').disableRules(['color-contrast']).analyze();
+  expect(accessibility.violations.filter((v) => ['critical', 'serious'].includes(v.impact))).toEqual([]);
+  await page.screenshot({ path: 'test-results/sensory-settings-mobile.png' });
+
+  await page.reload();
+  await expect(page.locator('.phone')).toHaveAttribute('data-motion', 'still');
+  await expect(page.locator('.phone')).toHaveAttribute('data-texture', 'rich');
+  await expect(page.locator('.phone')).toHaveAttribute('data-density', 'compact');
+  await page.getByRole('button', { name: 'You', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: 'Soft interface sounds' })).toBeChecked();
+});

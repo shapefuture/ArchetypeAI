@@ -272,7 +272,7 @@ function SkyTab() {
 
 /* ── You ── */
 function YouTab() {
-  const { t, lang, setLang, theme, setTheme, premium, setOverlay, user, go, toast, telemetry } = useApp();
+  const { t, lang, setLang, theme, setTheme, sensory, applySensoryPreset, updateSensory, premium, setOverlay, user, go, toast, telemetry } = useApp();
   const [showData, setShowData] = useState(false);
   return (
     <div className="scroll">
@@ -318,6 +318,52 @@ function YouTab() {
               <button className={theme === 'dark' ? 'on' : ''} onClick={() => setTheme('dark')}>🌙 {t('dark')}</button>
               <button className={theme === 'light' ? 'on' : ''} onClick={() => setTheme('light')}>☀️ {t('light')}</button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="section-title">{t('sensorySettings')}</div>
+      <p className="sub sensory-intro">{t('sensoryIntro')}</p>
+      <div className="card sensory-card">
+        <div className="sensory-label mb8">{t('sensoryPresets')}</div>
+        <div role="group" aria-label={t('sensoryPresets')} className="seg sensory-segment">
+          {['still', 'gentle', 'lively'].map((preset) => (
+            <button key={preset} type="button" className={sensory.preset === preset ? 'on' : ''}
+              aria-pressed={sensory.preset === preset} onClick={() => applySensoryPreset(preset)}>
+              {t(`sensory${preset[0].toUpperCase()}${preset.slice(1)}`)}
+            </button>
+          ))}
+        </div>
+
+        <div className="sensory-label mt16 mb8">{t('sensoryControls')}</div>
+        <div className="sensory-setting">
+          <span className="sensory-label">{t('sensoryMotion')}</span>
+          <div role="group" aria-label={t('sensoryMotion')} className="seg sensory-segment">
+            {['still', 'gentle', 'lively'].map((mode) => (
+              <button key={mode} type="button" className={sensory.motion === mode ? 'on' : ''}
+                aria-pressed={sensory.motion === mode} onClick={() => updateSensory('motion', mode)}>
+                {t(`sensory${mode[0].toUpperCase()}${mode.slice(1)}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="sensory-toggle">
+          <span>{t('sensorySound')}</span>
+          <input type="checkbox" checked={sensory.sound} onChange={(event) => updateSensory('sound', event.target.checked)} />
+        </label>
+        <label className="sensory-toggle">
+          <span>{t('sensoryTexture')}</span>
+          <input type="checkbox" checked={sensory.texture} onChange={(event) => updateSensory('texture', event.target.checked)} />
+        </label>
+        <div className="sensory-setting">
+          <span className="sensory-label">{t('sensoryDensity')}</span>
+          <div role="group" aria-label={t('sensoryDensity')} className="seg sensory-segment">
+            {['open', 'compact'].map((density) => (
+              <button key={density} type="button" className={sensory.density === density ? 'on' : ''}
+                aria-pressed={sensory.density === density} onClick={() => updateSensory('density', density)}>
+                {t(`sensory${density[0].toUpperCase()}${density.slice(1)}`)}
+              </button>
+            ))}
           </div>
         </div>
       </div>

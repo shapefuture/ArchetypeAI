@@ -57,7 +57,7 @@ This is a navigation index, not a completion checklist. Inspect each issue for f
 | `ArchetypeAI-28h.1.6` | Validate independent sensory controls and unprompted intuitiveness |
 | `ArchetypeAI-28h.1.8` | Review assessment constructs, item confounds and source limitations |
 
-Stage 0 evidence artifacts: [core journeys and data](baseline/core-journeys-and-data.md), [service capabilities and contracts](baseline/service-capabilities-and-contracts.md), [loading identity reference](baseline/loading-identity-reference.md), [device/accessibility baseline](baseline/device-performance-accessibility.md), and [assessment construct review](baseline/assessment-construct-review.md). They identify missing production, preview, emulator, account, physical-device, and participant evidence explicitly; they do not claim a live walkthrough or empirical assessment validation.
+Stage 0 evidence artifacts: [core journeys and data](baseline/core-journeys-and-data.md), [service capabilities and contracts](baseline/service-capabilities-and-contracts.md), [loading identity reference](baseline/loading-identity-reference.md), [device/accessibility baseline](baseline/device-performance-accessibility.md), [assessment construct review](baseline/assessment-construct-review.md), and the proposed [authored-world reference slice](baseline/authored-world-reference-slice.md). The reference slice is a design direction, not validated user research or shipped behavior. The evidence artifacts identify missing production, preview, emulator, account, physical-device, and participant evidence explicitly; they do not claim a live walkthrough or empirical assessment validation.
 
 ### Stage 1: exceptional assessment, map, coach, and booking
 

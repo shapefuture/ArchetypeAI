@@ -11,21 +11,21 @@ Updated: 2026-10-04. Companion to [80-20-plan.md](80-20-plan.md). This document 
 - Data synchronization: `git+https://github.com/shapefuture/ArchetypeAI.git`, separate `refs/dolt/data`. Code branches and tracker data are distinct.
 - `.beads/issues.jsonl` is a passive export and may lag; do not use it as a second status database or routinely import it.
 
-Root roadmap epic: **`ArchetypeAI-28h`**. Planning/setup is tracked separately as `ArchetypeAI-j3b`; completing it does not complete an app feature.
+Root roadmap epic: **`ArchetypeAI-28h`**. Planning/setup is tracked separately as `ArchetypeAI-j3b`; assessment-methodology audit as `ArchetypeAI-28h.9`. Completing either does not complete an app feature. Section 19 of the plan records the battery audit and reconciliation decisions.
 
-The graph contains 57 implementation tasks, eight stage epics, eight acceptance milestones, and one root epic. It has 181 explicit blocking dependencies in addition to hierarchy and related-work links. Every task has scope, an implementation-guide reference, and acceptance criteria. No speculative app implementation has been marked complete.
+The implementation roadmap comprises 67 implementation tasks, eight stage epics, eight acceptance milestones, and one root epic. It has 229 explicit blocking dependencies in addition to hierarchy and related-work links. Every task has scope, an implementation-guide reference, and acceptance criteria. No speculative app implementation has been marked complete.
 
 ## Stage navigation
 
 | Stage | Epic | Acceptance gate | Implementation tasks | Guide |
 |---|---|---|---:|---|
-| 0. baseline, service contracts, and authored core slice | `ArchetypeAI-28h.1` | `ArchetypeAI-28h.1.7` | 6 | [Section 8](80-20-plan.md) |
-| 1. exceptional assessment, map, coach, and booking | `ArchetypeAI-28h.2` | `ArchetypeAI-28h.2.19` | 23 | [Section 9](80-20-plan.md) |
+| 0. baseline, service contracts, and authored core slice | `ArchetypeAI-28h.1` | `ArchetypeAI-28h.1.7` | 7 | [Section 8](80-20-plan.md) |
+| 1. exceptional assessment, map, coach, and booking | `ArchetypeAI-28h.2` | `ArchetypeAI-28h.2.19` | 29 | [Section 9](80-20-plan.md) |
 | 2. useful return loop and meaningful progression | `ArchetypeAI-28h.3` | `ArchetypeAI-28h.3.6` | 5 | [Section 10](80-20-plan.md) |
 | 3. authored Replay, Director, and inner negotiation | `ArchetypeAI-28h.4` | `ArchetypeAI-28h.4.5` | 4 | [Section 11](80-20-plan.md) |
 | 4. inspectable personal journey and voluntary seasons | `ArchetypeAI-28h.5` | `ArchetypeAI-28h.5.5` | 4 | [Section 12](80-20-plan.md) |
 | 5. consensual relational support | `ArchetypeAI-28h.6` | `ArchetypeAI-28h.6.5` | 4 | [Section 13](80-20-plan.md) |
-| 6. reviewed content scale and production grammar | `ArchetypeAI-28h.7` | `ArchetypeAI-28h.7.5` | 4 | [Section 14](80-20-plan.md) |
+| 6. reviewed content scale and production grammar | `ArchetypeAI-28h.7` | `ArchetypeAI-28h.7.5` | 7 | [Section 14](80-20-plan.md) |
 | 7. individually evaluated experimental extensions | `ArchetypeAI-28h.8` | `ArchetypeAI-28h.8.8` | 7 | [Section 15](80-20-plan.md) |
 
 ```mermaid
@@ -55,6 +55,7 @@ This is a navigation index, not a completion checklist. Inspect each issue for f
 | `ArchetypeAI-28h.1.4` | Measure real-device performance and critical accessibility baseline |
 | `ArchetypeAI-28h.1.5` | Approve authored world, tactile tokens, and end-to-end reference frames |
 | `ArchetypeAI-28h.1.6` | Validate independent sensory controls and unprompted intuitiveness |
+| `ArchetypeAI-28h.1.8` | Review assessment constructs, item confounds and source limitations |
 
 ### Stage 1: exceptional assessment, map, coach, and booking
 
@@ -83,6 +84,12 @@ This is a navigation index, not a completion checklist. Inspect each issue for f
 | `ArchetypeAI-28h.2.22` | Inspect therapist relationships, full-vector pair comparison and score overlays |
 | `ArchetypeAI-28h.2.23` | Separate reference placement, personalized scores and historical therapist notes |
 | `ArchetypeAI-28h.2.24` | Validate real therapist 3+1 analysis and plush-cosmos visual grammar |
+| `ArchetypeAI-28h.2.25` | Harden assessment numeric boundaries and reproducible version contracts |
+| `ArchetypeAI-28h.2.26` | Correct provisional, relative, reference and single-item score presentation |
+| `ArchetypeAI-28h.2.27` | Allow low-evidence and ambiguous assessment interpretations without forced identities |
+| `ArchetypeAI-28h.2.28` | Review developmental, attachment, crisis and relationship inference claims |
+| `ArchetypeAI-28h.2.29` | Preserve bipolar coexistence, contextual interpretation and analytical identity |
+| `ArchetypeAI-28h.2.30` | Reconcile 64 and 147 through provenance-aware claims and disagreement |
 
 ### Stage 2: useful return loop and meaningful progression
 
@@ -129,6 +136,9 @@ This is a navigation index, not a completion checklist. Inspect each issue for f
 | `ArchetypeAI-28h.7.2` | Build reviewed content editor and reusable authored asset/rig system |
 | `ArchetypeAI-28h.7.3` | Implement eligible bounded AI suggestions and content evidence register |
 | `ArchetypeAI-28h.7.4` | Complete localized content versions, durability and performance acceptance |
+| `ArchetypeAI-28h.7.6` | Design consented joint/paired calibration with adequate data and sampling |
+| `ArchetypeAI-28h.7.7` | Evaluate structure, reliability, fairness, validity and crosswalk uncertainty |
+| `ArchetypeAI-28h.7.8` | Prototype a versioned modular battery only after calibration evidence |
 
 ### Stage 7: individually evaluated experimental extensions
 

@@ -9,6 +9,7 @@
  */
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
@@ -17,6 +18,7 @@ import {
   effect,
   inject,
   input,
+  NgZone,
   output,
   signal,
   viewChild,
@@ -49,10 +51,13 @@ import {
   type PartLook,
 } from './stickers';
 import { STRINGS } from '../../../i18n/strings';
+import { FeltCharacterService } from '../../../services/felt-character.service';
+import { ALL_ARCHETYPES } from '../../../services/universe-state.service';
 
 // ---------------------------------------------------------------- data
 
 const P = Object.fromEntries(IV_PARTS.map((p) => [p.id, p])) as Record<string, IvPart>;
+const ARCHETYPE_BY_ID = new Map(ALL_ARCHETYPES.map((archetype) => [archetype.id, archetype]));
 
 // Catalogs live in src/i18n/strings.ts → STRINGS.landing.* (single EN/RU editing surface).
 const RESOURCE_FACE = STRINGS.landing.resourceFace;
@@ -94,6 +99,9 @@ export class LandingComponent implements OnDestroy {
   readonly ts = inject(TranslationService);
   readonly installService = inject(InstallService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly feltCharacters = inject(FeltCharacterService);
+  private readonly zone = inject(NgZone);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   readonly user = input<User | null>(null);
 
@@ -197,6 +205,9 @@ export class LandingComponent implements OnDestroy {
   readonly chemReady = computed(() => !!this.mxA() && !!this.mxB());
 
   private readonly svgCache = new Map<string, SafeHtml>();
+  private readonly generatedStickerHtml = new Map<string, SafeHtml>();
+  private readonly generatedStickerImages = new Map<string, { image: HTMLImageElement; aspect: number }>();
+  private readonly generatedStickerJobs = new Set<string>();
   private readonly sky = {
     raf: 0,
     running: false,
@@ -214,8 +225,11 @@ export class LandingComponent implements OnDestroy {
 
   constructor() {
     effect(() => {
-      if (this.screen() === 'sky') this.startSky();
+      const screen = this.screen();
+      if (screen === 'sky') this.startSky();
       else this.stopSky();
+      if (screen === 'welcome') this.ensureGeneratedStickerArt(this.welcomeSatellites.map((part) => part.id));
+      else if (screen === 'sky' || screen === 'codex') this.ensureGeneratedStickerArt();
     });
 
     afterNextRender(() => {
@@ -262,6 +276,10 @@ export class LandingComponent implements OnDestroy {
   stickerHtml(id: string): SafeHtml {
     const p = P[id];
     if (!p) return this.customStickerHtml(id);
+    if (!this.looks()[id]) {
+      const generated = this.generatedStickerHtml.get(id);
+      if (generated) return generated;
+    }
     const look = this.lookFor(id);
     const key = `p:${id}:${look.shape}|${look.color}|${look.eye}|${look.mouth}`;
     let v = this.svgCache.get(key);
@@ -277,6 +295,39 @@ export class LandingComponent implements OnDestroy {
       this.svgCache.set(key, v);
     }
     return v;
+  }
+
+  /** Load the map LOD once per part; the same worker output feeds the codex, 2D map and 3D universe. */
+  private ensureGeneratedStickerArt(partIds: readonly string[] = IV_PARTS.map((part) => part.id)): void {
+    for (const id of partIds) {
+      if (!P[id] || this.looks()[id] || this.generatedStickerJobs.has(id) || this.generatedStickerHtml.has(id)) continue;
+      const archetype = ARCHETYPE_BY_ID.get(id);
+      if (!archetype) continue;
+
+      this.generatedStickerJobs.add(id);
+      void this.feltCharacters.svgFor(archetype).then(async (svg) => {
+        if (!svg || this.looks()[id]) return;
+        this.generatedStickerHtml.set(id, this.sanitizer.bypassSecurityTrustHtml(svg));
+        const artwork = await this.loadGeneratedStickerImage(svg);
+        if (artwork && !this.looks()[id]) this.generatedStickerImages.set(id, artwork);
+        if (this.sky.running) this.paintSky(performance.now());
+        this.zone.run(() => this.changeDetector.markForCheck());
+      }).catch(() => undefined).finally(() => this.generatedStickerJobs.delete(id));
+    }
+  }
+
+  private loadGeneratedStickerImage(svg: string): Promise<{ image: HTMLImageElement; aspect: number } | null> {
+    return new Promise((resolve) => {
+      const image = new Image();
+      const viewBox = svg.match(/\bviewBox=["']\s*([^"']+)["']/)?.[1].trim().split(/\s+/).map(Number);
+      const width = viewBox?.[2] ?? 1;
+      const height = viewBox?.[3] ?? 1;
+      const aspect = width > 0 && height > 0 ? width / height : 1;
+      const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+      image.onload = () => { URL.revokeObjectURL(url); resolve({ image, aspect }); };
+      image.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+      image.src = url;
+    });
   }
 
   customPart(id: string): CustomPart | undefined {
@@ -760,46 +811,68 @@ export class LandingComponent implements OnDestroy {
       const look = this.lookFor(s.p.id);
       const avg = (100 - s.p.ax.ag) / 100 * 2.2; // activity drives star size (high ag = Receptive post-fix)
       const rr = 9 + avg * 3 + Math.sin(t / 600 + s.tw) * 0.8;
-      if (dark && !dimmed) {
-        c.shadowColor = look.color;
-        c.shadowBlur = 14;
-      }
-      // mini-sticker: the part's true shape, filled with its current look color
-      const sc = (rr * 2) / 100;
-      c.save();
-      c.translate(pos.x - 50 * sc, pos.y - 50 * sc);
-      c.scale(sc, sc);
-      const path = this.shapePath2D(look.shape);
-      c.fillStyle = look.color;
-      c.fill(path);
-      c.shadowBlur = 0;
-      c.strokeStyle = dark ? '#0A0818' : '#1c1610';
-      c.lineWidth = 2.2 / sc;
-      c.lineJoin = 'round';
-      c.stroke(path);
-      c.restore();
-      // face dots per look
-      c.fillStyle = '#1c1610';
-      c.beginPath();
-      c.arc(pos.x - rr * 0.32, pos.y - rr * 0.15, 1.7, 0, 7);
-      c.fill();
-      c.beginPath();
-      c.arc(pos.x + rr * 0.32, pos.y - rr * 0.15, 1.7, 0, 7);
-      c.fill();
-      c.strokeStyle = '#1c1610';
-      c.lineWidth = 1.5;
-      c.beginPath();
-      if (look.mouth === 'ooh') {
-        c.fillStyle = '#1c1610';
-        c.ellipse(pos.x, pos.y + rr * 0.25, 2, 2.6, 0, 0, 7);
-        c.fill();
-      } else if (look.mouth === 'flat' || look.mouth === 'grit' || look.mouth === 'wavy') {
-        c.moveTo(pos.x - rr * 0.22, pos.y + rr * 0.25);
-        c.lineTo(pos.x + rr * 0.22, pos.y + rr * 0.25);
-        c.stroke();
+      const generatedSticker = !this.looks()[s.p.id] ? this.generatedStickerImages.get(s.p.id) : undefined;
+      if (generatedSticker) {
+        c.save();
+        if (dark && !dimmed) {
+          c.shadowColor = look.color;
+          c.shadowBlur = 14;
+        }
+        const stickerSize = rr * 2.4;
+        const stickerWidth = stickerSize * Math.min(1, generatedSticker.aspect);
+        const stickerHeight = stickerSize * Math.min(1, 1 / generatedSticker.aspect);
+        c.drawImage(
+          generatedSticker.image,
+          pos.x - stickerWidth / 2,
+          pos.y - stickerHeight / 2,
+          stickerWidth,
+          stickerHeight,
+        );
+        c.restore();
       } else {
-        c.arc(pos.x, pos.y + rr * 0.18, rr * 0.32, 0.4, 2.7);
-        c.stroke();
+        // Editable legacy look remains available whenever a user has saved a
+        // custom silhouette or face for this part.
+        c.save();
+        if (dark && !dimmed) {
+          c.shadowColor = look.color;
+          c.shadowBlur = 14;
+        }
+        const sc = (rr * 2) / 100;
+        c.translate(pos.x - 50 * sc, pos.y - 50 * sc);
+        c.scale(sc, sc);
+        const path = this.shapePath2D(look.shape);
+        c.fillStyle = look.color;
+        c.fill(path);
+        c.shadowBlur = 0;
+        c.strokeStyle = dark ? '#0A0818' : '#1c1610';
+        c.lineWidth = 2.2 / sc;
+        c.lineJoin = 'round';
+        c.stroke(path);
+        c.restore();
+
+        // Face marks are kept as a fast fallback for explicitly customized parts.
+        c.fillStyle = '#1c1610';
+        c.beginPath();
+        c.arc(pos.x - rr * 0.32, pos.y - rr * 0.15, 1.7, 0, 7);
+        c.fill();
+        c.beginPath();
+        c.arc(pos.x + rr * 0.32, pos.y - rr * 0.15, 1.7, 0, 7);
+        c.fill();
+        c.strokeStyle = '#1c1610';
+        c.lineWidth = 1.5;
+        c.beginPath();
+        if (look.mouth === 'ooh') {
+          c.fillStyle = '#1c1610';
+          c.ellipse(pos.x, pos.y + rr * 0.25, 2, 2.6, 0, 0, 7);
+          c.fill();
+        } else if (look.mouth === 'flat' || look.mouth === 'grit' || look.mouth === 'wavy') {
+          c.moveTo(pos.x - rr * 0.22, pos.y + rr * 0.25);
+          c.lineTo(pos.x + rr * 0.22, pos.y + rr * 0.25);
+          c.stroke();
+        } else {
+          c.arc(pos.x, pos.y + rr * 0.18, rr * 0.32, 0.4, 2.7);
+          c.stroke();
+        }
       }
       if (s.p.ax.ag <= 15) this.spark(c, pos.x + rr + 5, pos.y - rr - 3, 3.4, ink); // most active stars sparkle (post-fix: low ag = active)
       c.fillStyle = dark ? 'rgba(247,238,218,.85)' : 'rgba(42,28,16,.85)';

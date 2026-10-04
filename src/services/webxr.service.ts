@@ -9,7 +9,8 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { TranslationService } from './translation.service';
-import { sticker } from '../app/features/landing/stickers';
+import { FeltCharacterService } from './felt-character.service';
+import { loadLooks, sticker } from '../app/features/landing/stickers';
 import { gsap } from 'gsap';
 
 
@@ -617,6 +618,7 @@ class QualityGovernor {
 @Injectable({ providedIn: 'root' })
 export class VisualizationService {
   private translationService = inject(TranslationService);
+  private feltCharacters = inject(FeltCharacterService);
   private ngZone = inject(NgZone);
 
 
@@ -1437,6 +1439,7 @@ export class VisualizationService {
 
     this.archetypeObjects.push(group);
     this.scene.add(group);
+    void this.attachFeltCharacter(group, archetype);
     this.universeState.allArchetypes.update(all => [...all, archetype]);
     this.universeState.selectedArchetype.set(archetype);
 
@@ -1849,6 +1852,7 @@ export class VisualizationService {
       const group = this.createSingleArchetypeObject(archetype, isAnimated);
       this.archetypeObjects.push(group);
       this.scene.add(group);
+      void this.attachFeltCharacter(group, archetype);
     });
   }
 
@@ -1867,6 +1871,73 @@ export class VisualizationService {
       h = Math.imul(h, 16777619);
     }
     return (h >>> 0) / 4294967296;
+  }
+
+  private async attachFeltCharacter(group: THREE.Group, archetype: Archetype): Promise<void> {
+    const sphere = group.getObjectByName('blobMesh') as THREE.Mesh | null;
+    const label = group.getObjectByName('archetypeLabel') as CSS2DObject | null;
+    const stickerHost = label?.element.querySelector('.archetype-label__sticker') as HTMLElement | null;
+
+    try {
+      const [svg, character] = await Promise.all([
+        this.feltCharacters.svgFor(archetype),
+        this.feltCharacters.buildMapCharacter(archetype),
+      ]);
+
+      // The scene may have been destroyed while the worker was sewing. Do not
+      // attach late buffers to an obsolete map.
+      if (group.parent !== this.scene) {
+        if (character) this.disposeGroup(character);
+        return;
+      }
+
+      const hasSavedLook = !!loadLooks()[archetype.id];
+      if (svg && stickerHost && !hasSavedLook) {
+        stickerHost.innerHTML = svg;
+        const generatedSvg = stickerHost.querySelector('svg');
+        if (generatedSvg) {
+          generatedSvg.style.width = '100%';
+          generatedSvg.style.height = '100%';
+          generatedSvg.style.display = 'block';
+        }
+      }
+
+      if (!character || !sphere || hasSavedLook) {
+        if (character) this.disposeGroup(character);
+        return;
+      }
+      character.name = 'feltCharacter';
+      // Preserve the DNA's intrinsic size from makeGroup while fitting the
+      // character to the old map node's visual footprint.
+      character.userData.generatorSize = character.scale.x;
+      character.userData.revealScale = 1;
+      const targetScale = (group.userData.baseScale as number) * 1.7 * character.userData.generatorSize;
+      character.position.y = -(group.userData.baseScale as number) * 0.08;
+      character.scale.setScalar(targetScale);
+      group.add(character);
+      group.userData.feltCharacter = character;
+
+      // Keep the old shader mesh as an invisible control surface for the
+      // existing selection/highlight logic; the sewn felt body is now the
+      // visible map node. The attachment shell and soft shadow still layer
+      // around it as before.
+      sphere.visible = false;
+
+      if (!this.prefersReducedMotion) {
+        character.userData.revealScale = 0.001;
+        character.scale.setScalar(targetScale * 0.001);
+        gsap.to(character.userData, {
+          revealScale: 1,
+          duration: 0.62,
+          ease: 'back.out(1.4)',
+          delay: 0.06,
+        });
+      }
+    } catch (error) {
+      // The original celestial mesh is a deliberate fallback on browsers
+      // without module-worker support or if a character fails to sew.
+      console.warn(`Could not add the Felt Atelier character for ${archetype.id}:`, error);
+    }
   }
 
   private createSingleArchetypeObject(archetype: Archetype, isAnimated: boolean = false): THREE.Group {
@@ -2254,6 +2325,16 @@ export class VisualizationService {
     });
   }
 
+  private syncFeltCharacterScale(group: THREE.Group, bodyScale: number, dt: number): void {
+    const character = group.userData.feltCharacter as THREE.Group | undefined;
+    if (!character) return;
+    const generatorSize = (character.userData.generatorSize as number) || 1;
+    const revealScale = (character.userData.revealScale as number) ?? 1;
+    const targetScale = bodyScale * 1.7 * generatorSize * revealScale;
+    const dampedScale = THREE.MathUtils.lerp(character.scale.x, targetScale, 1 - Math.exp(-6 * dt));
+    character.scale.setScalar(dampedScale);
+  }
+
   private updateExplorationVisuals(dt: number, elapsedTime: number): void {
     let totalExpressionMag = 0;
     Object.values(this.dimensionalExpressions()).forEach(v => totalExpressionMag += Math.abs(v));
@@ -2348,6 +2429,7 @@ export class VisualizationService {
       // breathes with highlight, and hover swell stacks on top.
       const targetS = baseScale * hoverScale * (1 + highlightScore * 0.35);
       mesh.scale.lerp(this.vec3_3.set(targetS, targetS, targetS), 1 - Math.exp(-6 * dt));
+      this.syncFeltCharacterScale(group, targetS, dt);
 
       // Bob the mesh vertically
       group.position.y = group.userData.targetPosition.y + bobOffset;
@@ -2457,6 +2539,7 @@ export class VisualizationService {
         const relevanceScale = (0.6 + (match.percentage / 100)) * dimScale;
         const finalScale = baseScale * relevanceScale * (isSelected ? 1.15 : 1.0);
         mesh.scale.lerp(this.vec3_3.set(finalScale, finalScale, finalScale), 1 - Math.exp(-6 * dt));
+        this.syncFeltCharacterScale(group, finalScale, dt);
 
         // Highlight feeds the heart glow here too
         const uniforms = (mesh.material as THREE.ShaderMaterial).uniforms;

@@ -2,7 +2,7 @@
 const EPSILON = Math.pow(2, -52);
 const EDGE_STACK = new Uint32Array(512);
 
-import {orient2d} from 'robust-predicates';
+import { orient2d } from './rp/orient2d.js';
 
 /** @template {ArrayLike<number>} T */
 export default class Delaunator {

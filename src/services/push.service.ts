@@ -6,6 +6,7 @@
  * deploy-time step left; the client round-trip is complete here.
  */
 import { Injectable } from '@angular/core';
+import { getAuth } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { getFirebaseApp } from '../environments/firebase-init';
@@ -38,6 +39,8 @@ export class PushService {
       if (asked !== 'granted') return 'denied';
     }
     try {
+      const userUid = getAuth(getFirebaseApp()).currentUser?.uid;
+      if (!userUid) return 'denied';
       const token = await getToken(getMessaging(getFirebaseApp()), {
         vapidKey: environment.vapidPublicKey,
         // Scope '/fcm/': the messaging worker MUST NOT live at scope '/' —
@@ -51,7 +54,7 @@ export class PushService {
       if (!token) return 'denied';
       localStorage.setItem(TOKEN_KEY, token);
       await setDoc(doc(getFirestoreDb(), 'pushTokens', token), {
-        token, createdAt: new Date().toISOString(),
+        token, uid: userUid, createdAt: new Date().toISOString(),
       });
       return 'enabled';
     } catch {

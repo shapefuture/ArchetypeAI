@@ -1,7 +1,8 @@
-import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NgZone, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { sticker } from '../../../features/landing/stickers';
+import { loadLooks, sticker } from '../../../features/landing/stickers';
 import { type Archetype, effectiveLook } from '../../../../services/universe-state.service';
+import { FeltCharacterService } from '../../../../services/felt-character.service';
 
 /**
  * The part's REAL character — the same per-part shape/color/glyph the 3D
@@ -34,12 +35,21 @@ export class PartStickerComponent implements OnChanges {
   @Input() sizePx = 96;
 
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly feltCharacters = inject(FeltCharacterService);
+  private readonly zone = inject(NgZone);
+  private readonly changeDetector = inject(ChangeDetectorRef);
+  private svgRequest = 0;
 
   stickerHtml = this.sanitizer.bypassSecurityTrustHtml('');
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['archetype'] && !changes['sizePx']) return;
+    const request = ++this.svgRequest;
     if (!this.archetype) { this.stickerHtml = this.sanitizer.bypassSecurityTrustHtml(''); return; } // defensive: required by contract
+
+    // Keep a fast, editable fallback in place while the generated felt SVG is
+    // sewn off-thread. If the part has a saved legacy look override, the
+    // service returns null and this exact look remains the source of truth.
     const look = effectiveLook(this.archetype);
     this.stickerHtml = this.sanitizer.bypassSecurityTrustHtml(sticker({
       name: this.archetype.name,
@@ -47,5 +57,14 @@ export class PartStickerComponent implements OnChanges {
       color: look.color,
       glyph: { e: look.eye, m: look.mouth },
     }));
+
+    const archetype = this.archetype;
+    void this.feltCharacters.svgFor(archetype).then((svg) => {
+      if (!svg || loadLooks()[archetype.id] || request !== this.svgRequest || this.archetype?.id !== archetype.id) return;
+      this.zone.run(() => {
+        this.stickerHtml = this.sanitizer.bypassSecurityTrustHtml(svg);
+        this.changeDetector.markForCheck();
+      });
+    }).catch(() => undefined);
   }
 }

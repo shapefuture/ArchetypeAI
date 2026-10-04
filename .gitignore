@@ -38,3 +38,9 @@ dist-ssr
 
 # Standalone visual-comparison prototype (own package.json/node_modules)
 /starry-sky-visualization-comparison/
+
+# Browser verification artifacts and local Beads import gates
+/test-results/
+/playwright-report/
+/.beads.gate.lock
+/.beads/.auto-import-issues.jsonl

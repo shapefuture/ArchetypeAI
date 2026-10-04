@@ -1,4 +1,9 @@
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
+
+vi.mock('../environments/firebase-id-token', () => ({
+  getFirebaseIdToken: async () => 'firebase-test-id-token',
+}));
 import { GeminiAiAdapter } from '../app/core/adapters/gemini-ai.adapter';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { GeminiService } from './gemini.service';

@@ -269,6 +269,7 @@ export class AppComponent implements OnDestroy {
   readonly currentUser = signal<User | null>(null);
   readonly showSavePrompt = signal(false);
   readonly shareCode = signal<string | null>(null);
+  readonly shareCodeConsent = signal(false);
   readonly shareCodeLoading = signal(false);
   readonly shareCodeError = signal<string | null>(null);
   readonly partnerCode = signal('');
@@ -1582,13 +1583,14 @@ export class AppComponent implements OnDestroy {
 
   async generateShareCode(): Promise<void> {
     const user = this.currentUser();
-    if (!user || this.assessmentResponses().length === 0) return;
+    if (!user || this.assessmentResponses().length === 0 || !this.shareCodeConsent()) return;
     this.shareCodeLoading.set(true);
     this.shareCodeError.set(null);
     try {
       await this.persistToCloud();
       const code = await this.storagePort.createShareCode(user.uid);
       this.shareCode.set(code);
+      this.shareCodeConsent.set(false);
     } catch (err) {
       this.shareCodeError.set('Failed to generate share code');
     } finally {

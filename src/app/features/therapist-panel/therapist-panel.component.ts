@@ -18,7 +18,7 @@ import { PART_NAME_RU, COMPLEX_COPY_RU } from '../../core/data/constellation-cop
 import { COMPLEXES } from '../../core/data/parts';
 import { resistantMetrics, loadEvents } from '../../core/data/state-v2';
 import {
-  getTherapistAvailability, saveTherapistAvailability, therapistAppointments,
+  ensureTherapistBusySlots, getTherapistAvailability, saveTherapistAvailability, therapistAppointments,
   setAppointmentStatus, DEFAULT_AVAILABILITY,
   type Appointment, type AppointmentStatus, type AvailabilityWindow,
 } from '../booking-panel/booking';
@@ -117,6 +117,7 @@ export class TherapistPanelComponent {
 
   private async loadAppointments(): Promise<void> {
     const list = await therapistAppointments(this.uid);
+    await ensureTherapistBusySlots(this.uid, list);
     this.appts.set(list);
   }
 

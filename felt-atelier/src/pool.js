@@ -4,8 +4,16 @@ export class Pool {
   constructor(src, n = 2) {
     this.workers = []; this.hi = []; this.lo = []; this.next = 1; this.pending = new Map(); this.fallback = false;
     try {
-      const url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
-      for (let i = 0; i < n; i++) { const w = new Worker(url); w.busy = false; w.onmessage = (e) => this.done(w, e.data); w.onerror = () => { this.fallback = true; }; this.workers.push(w); }
+      const url = typeof src === 'function' ? null : URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+      for (let i = 0; i < n; i++) { const w = typeof src === 'function' ? src() : new Worker(url); w.busy = false; w.onmessage = (e) => this.done(w, e.data); w.onerror = () => {
+        this.fallback = true;
+        for (const job of this.pending.values()) this.hi.push(job);
+        this.pending.clear();
+        this.workers.forEach((worker) => worker.terminate());
+        this.workers.length = 0;
+        this.pump();
+      }; this.workers.push(w); }
+      if (url) URL.revokeObjectURL(url);
     } catch { this.fallback = true; }
     if (!this.workers.length) this.fallback = true;
   }
@@ -23,4 +31,10 @@ export class Pool {
     }
   }
   done(w, d) { w.busy = false; const job = this.pending.get(d.id); this.pending.delete(d.id); if (job) job.resolve(d); this.pump(); }
+  dispose() {
+    this.workers.forEach((worker) => worker.terminate());
+    for (const job of [...this.hi, ...this.lo, ...this.pending.values()]) job.resolve(null);
+    this.workers.length = this.hi.length = this.lo.length = 0;
+    this.pending.clear();
+  }
 }

@@ -11,7 +11,7 @@ Updated: 2026-10-04. Companion to [80-20-plan.md](80-20-plan.md). This document 
 - Data synchronization: `git+https://github.com/shapefuture/ArchetypeAI.git`, separate `refs/dolt/data`. Code branches and tracker data are distinct.
 - `.beads/issues.jsonl` is a passive export and may lag; do not use it as a second status database or routinely import it.
 
-Root roadmap epic: **`ArchetypeAI-28h`**. Planning/setup is tracked separately as `ArchetypeAI-j3b`; assessment-methodology audit as `ArchetypeAI-28h.9`. Completing either does not complete an app feature. Section 19 of the plan records the battery audit and reconciliation decisions.
+Root roadmap epic: **`ArchetypeAI-28h`**. Planning/setup is tracked separately as `ArchetypeAI-j3b`; assessment-methodology audit as `ArchetypeAI-28h.9`. Completing either does not complete an app feature. Sections 12 and 19 of the plan cover user-controlled evidence memory, assessment-methodology findings, and reconciliation decisions.
 
 The implementation roadmap comprises 69 implementation tasks, eight stage epics, eight acceptance milestones, and one root epic. It has 240 explicit blocking dependencies in addition to hierarchy and related-work links. Every task has scope, an implementation-guide reference, and acceptance criteria. No speculative app implementation has been marked complete.
 

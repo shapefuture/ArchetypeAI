@@ -24,10 +24,12 @@ export function fromArrays(p) {
   for (const [name, arr] of Object.entries(p.attrs)) g.setAttribute(name, new THREE.BufferAttribute(arr, name === 'uv' ? 2 : 3));
   g.computeBoundingSphere(); return g;
 }
-export function makeGroup(parts, size) {
+export function makeGroup(parts, size, { cloneMaterials = false } = {}) {
   const group = new THREE.Group();
   for (const p of parts) {
-    const geo = p.geo || fromArrays(p); const mat = material(p.key);
+    const geo = p.geo || fromArrays(p);
+    const shared = material(p.key);
+    const mat = cloneMaterials ? shared.clone() : shared;
     const mesh = new THREE.Mesh(geo, mat);
     if (p.key[0] === 'z') mesh.renderOrder = 2; else if (p.key[0] === 'e') mesh.renderOrder = 3; else { mesh.castShadow = true; mesh.receiveShadow = true; }
     group.add(mesh);

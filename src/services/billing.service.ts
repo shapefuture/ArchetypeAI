@@ -1,5 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { environment } from '../environments/environment';
+import { getFirebaseIdToken } from '../environments/firebase-id-token';
 
 /** localStorage key caching the verified-subscription flag. */
 export const SUBSCRIPTION_STORAGE_KEY = 'INNERVERSE_SUB_V1';
@@ -75,9 +76,13 @@ export class BillingService {
    * have.
    */
   async startCheckout(email?: string): Promise<void> {
+    const idToken = await getFirebaseIdToken();
     const res = await fetch(environment.stripeApiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
       body: JSON.stringify(buildCheckoutRequest(email)),
     });
     const data = await res.json() as { url?: string; error?: string };
@@ -94,8 +99,10 @@ export class BillingService {
    */
   async verifySession(sessionId: string): Promise<void> {
     try {
+      const idToken = await getFirebaseIdToken();
       const res = await fetch(
         `${deriveVerifyUrl(environment.stripeApiUrl)}?session_id=${encodeURIComponent(sessionId)}`,
+        { headers: { Authorization: `Bearer ${idToken}` } },
       );
       if (!res.ok) {
         this.subscription.set('unknown');

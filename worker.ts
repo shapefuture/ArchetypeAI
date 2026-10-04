@@ -1,201 +1,297 @@
 /// <reference types="@cloudflare/workers-types" />
 import { getMissingApiKeys } from './worker-helpers';
+import {
+  authenticateFirebaseRequest,
+  checkRateLimit,
+  corsHeaders,
+  getAllowedStripeReturnOrigin,
+  type FirebaseIdentity,
+  type RateLimiterBinding,
+} from './worker-security';
 
+const OPENROUTER_TIMEOUT_MS = 100_000;
+const MAX_AI_BODY_BYTES = 256_000;
+const MAX_BILLING_BODY_BYTES = 8_192;
 
-const AI_CORS = {
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Max-Age': '86400',
-};
-function corsHeaders(request: Request): Record<string, string> {
-  return { ...AI_CORS, 'Access-Control-Allow-Origin': request.headers.get('Origin') ?? '*' };
+function jsonResponse(
+  body: unknown,
+  status: number,
+  extraHeaders: Record<string, string> = {},
+): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store',
+      ...extraHeaders,
+    },
+  });
 }
 
-/**
- * Stripe secrets are OPTIONAL for the worker as a whole (the AI router does
- * not need them) — only /api/stripe-* routes check this list and return 503
- * with the missing names. Set with:
- *   wrangler secret put STRIPE_SECRET_KEY
- *   wrangler secret put STRIPE_PRICE_ID
- */
+async function parseJsonBody(
+  request: Request,
+  maximumBytes: number,
+): Promise<{ value: unknown } | { error: string; status: number }> {
+  const contentType = request.headers.get('Content-Type') ?? '';
+  if (!/^application\/json(?:\s*;|$)/i.test(contentType)) {
+    return { error: 'Content-Type must be application/json', status: 415 };
+  }
+
+  const contentLength = Number(request.headers.get('Content-Length'));
+  if (Number.isFinite(contentLength) && contentLength > maximumBytes) {
+    return { error: 'Request body is too large', status: 413 };
+  }
+
+  let text: string;
+  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+  try {
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+    reader = request.body?.getReader();
+    if (reader) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!value) continue;
+        totalBytes += value.byteLength;
+        if (totalBytes > maximumBytes) {
+          try { await reader.cancel(); } catch { /* body already closed */ }
+          return { error: 'Request body is too large', status: 413 };
+        }
+        chunks.push(value);
+      }
+    }
+    const bytes = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    try { await reader?.cancel(); } catch { /* body already closed */ }
+    return { error: 'Could not read request body', status: 400 };
+  }
+  try {
+    return { value: JSON.parse(text) as unknown };
+  } catch {
+    return { error: 'Invalid JSON body', status: 400 };
+  }
+}
+
+function validateAIRequest(value: unknown): AIRequest | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const body = value as Record<string, unknown>;
+  const allowedKeys = new Set(['prompt', 'systemInstruction', 'responseSchema', 'history']);
+  if (Object.keys(body).some((key) => !allowedKeys.has(key))) return null;
+  if (typeof body.prompt !== 'string' || body.prompt.trim().length === 0 || body.prompt.length > 80_000) return null;
+  if (body.systemInstruction !== undefined
+    && (typeof body.systemInstruction !== 'string' || body.systemInstruction.length > 80_000)) return null;
+
+  let textSize = body.prompt.length + (typeof body.systemInstruction === 'string' ? body.systemInstruction.length : 0);
+  if (body.history !== undefined) {
+    if (!Array.isArray(body.history) || body.history.length > 40) return null;
+    for (const item of body.history) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+      const message = item as Record<string, unknown>;
+      if ((message.role !== 'user' && message.role !== 'model')
+        || typeof message.content !== 'string'
+        || message.content.length > 16_000
+        || Object.keys(message).some((key) => key !== 'role' && key !== 'content')) return null;
+      textSize += message.content.length;
+    }
+  }
+  if (body.responseSchema !== undefined) {
+    if (!body.responseSchema || typeof body.responseSchema !== 'object' || Array.isArray(body.responseSchema)) return null;
+    try {
+      textSize += JSON.stringify(body.responseSchema).length;
+    } catch {
+      return null;
+    }
+  }
+  if (textSize > MAX_AI_BODY_BYTES) return null;
+  return body as unknown as AIRequest;
+}
+
+async function authorizeWorkerRequest(
+  request: Request,
+  env: Env,
+  endpoint: string,
+  userLimiter: RateLimiterBinding | undefined,
+  ipLimiter: RateLimiterBinding | undefined,
+  headers: Record<string, string>,
+): Promise<{ identity: FirebaseIdentity } | { response: Response }> {
+  if (!env.FIREBASE_PROJECT_ID) {
+    return { response: jsonResponse({ error: 'Worker authentication is not configured' }, 503, headers) };
+  }
+
+  // Apply the IP bucket before JWT verification so unauthenticated traffic is
+  // bounded too; then apply the per-user bucket after the token is verified.
+  const ip = request.headers.get('CF-Connecting-IP');
+  if (ipLimiter && ip) {
+    const ipLimit = await checkRateLimit(ipLimiter, `${endpoint}:ip:${ip}`);
+    if (ipLimit === 'unavailable') {
+      return { response: jsonResponse({ error: 'Request protection is temporarily unavailable' }, 503, headers) };
+    }
+    if (ipLimit === 'limited') {
+      return { response: jsonResponse({ error: 'Too many requests. Please try again shortly.' }, 429, { ...headers, 'Retry-After': '60' }) };
+    }
+  }
+
+  const identity = await authenticateFirebaseRequest(request, env.FIREBASE_PROJECT_ID);
+  if (!identity) {
+    return { response: jsonResponse({ error: 'A valid Firebase sign-in is required' }, 401, headers) };
+  }
+
+  const userLimit = await checkRateLimit(userLimiter, `${endpoint}:uid:${identity.uid}`);
+  if (userLimit === 'unavailable') {
+    return { response: jsonResponse({ error: 'Request protection is temporarily unavailable' }, 503, headers) };
+  }
+  if (userLimit === 'limited') {
+    return { response: jsonResponse({ error: 'Too many requests. Please try again shortly.' }, 429, { ...headers, 'Retry-After': '60' }) };
+  }
+
+  return { identity };
+}
+
 function getMissingStripeKeys(env: Env): string[] {
   const required: Array<[string, string | undefined]> = [
     ['STRIPE_SECRET_KEY', env.STRIPE_SECRET_KEY],
     ['STRIPE_PRICE_ID', env.STRIPE_PRICE_ID],
   ];
-  return required.filter(([, v]) => !v).map(([k]) => k);
+  return required.filter(([, value]) => !value).map(([name]) => name);
 }
 
-const OPENROUTER_TIMEOUT_MS = 100_000; // 100s: Massive max duration to allow huge model output generation on free tier
-
-// Static-asset response headers (COOP / CORP) are configured in the
-// `_headers` file at the project root, copied to `dist/_headers` by
-// the `postbuild` script. The Cloudflare Workers Static Assets
-// feature parses that file and applies the headers to every static
-// asset response. This is the only supported way to add response
-// headers to static assets — the worker's `fetch` handler is not
-// called for asset URLs when the edge serves them directly.
+// Static-asset response headers (COOP / CORP) are configured in the `_headers`
+// file at the project root and applied by Cloudflare's Static Assets layer.
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    // AI Provider Router with Parallel Racer
-    if (url.pathname.startsWith('/api/ai')) {
-      // The app is served from Firebase Hosting; this worker is called
-      // cross-origin. Same GET-less preflight + permissive JSON CORS.
-      const cors = corsHeaders(request);
-      if (request.method === 'OPTIONS') {
-        return new Response(null, { status: 204, headers: cors });
-      }
-      if (request.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405, headers: cors });
-      }
-      const jsonHeaders = { 'Content-Type': 'application/json', ...cors };
+    if (url.pathname === '/api/ai') return this.handleAI(request, env);
+    if (url.pathname === '/api/stripe-checkout') return this.handleStripeCheckout(request, env);
+    if (url.pathname === '/api/stripe-verify') return this.handleStripeVerify(request, env);
 
-      // Fail fast with a clear, actionable error when secrets are missing.
-      // Without this, every provider returns 401 and the user sees a generic
-      // 502 "All providers failed" — which is what hit production on
-      // 2026-06-06 because `wrangler secret put` was never run after the
-      // empty placeholder vars in wrangler.toml. Returning 503 (not 502)
-      // signals "transient / fixable" instead of "bad gateway".
-      const missingKeys = getMissingApiKeys(env);
-      if (missingKeys.length > 0) {
-        return new Response(JSON.stringify({
-          error:
-            `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. ` +
-            `Set them with: wrangler secret put <KEY_NAME>`,
-          missingKeys,
-        }), { status: 503, headers: jsonHeaders });
-      }
-
-      const body = await request.json() as AIRequest;
-
-      try {
-        // Strategy: Try Ollama first (preferred), fall back to racer if it fails/times out
-        console.log(`[AI] Prompt: "${String(body.prompt ?? '').substring(0, 80)}..."`);
-
-        // Phase 1: Try Ollama models sequentially with short timeout
-        for (const model of ['gemma4:31b-cloud']) {
-          try {
-            console.log(`[AI] Trying Ollama/${model}...`);
-            const ollamaResult = await this.fetchOllama(body, env, model);
-            const data = await ollamaResult.json() as { text: string };
-            if (data.text && data.text.length >= 5) {
-              if (body.responseSchema) {
-                try { JSON.parse(data.text); } catch { throw new Error('Malformed JSON from Ollama'); }
-              }
-              console.log(`[AI] Ollama/${model} SUCCESS, text length: ${data.text.length}`);
-              return new Response(JSON.stringify({
-                text: data.text,
-                provider: `Ollama/${model}`,
-                duration: 0
-              }), { headers: { 'Content-Type': 'application/json', ...corsHeaders(request) } });
-            }
-          } catch (ollamaErr) {
-            console.warn(`[AI] Ollama/${model} failed: ${ollamaErr instanceof Error ? ollamaErr.message : ollamaErr}`);
-          }
-        }
-
-        // Phase 2: Fallback to parallel racer
-        console.log(`[AI] All Ollama models failed, starting racer...`);
-        const result = await this.raceAI(body, env);
-        
-        console.log(`[Racer] WINNER: ${result.provider} in ${result.duration}ms`);
-        
-        return new Response(JSON.stringify({ 
-          text: result.text,
-          provider: result.provider,
-          duration: result.duration
-        }), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders(request) }
-        });
-      } catch (raceError) {
-        console.error('[Racer] All providers failed:', raceError);
-        return new Response(JSON.stringify({
-          error: `All providers failed to respond. Details: ${raceError}`
-        }), { status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders(request) } });
-      }
+    // Retire the old raw Gemini proxy. All supported cloud AI requests now use
+    // the authenticated, rate-limited /api/ai route.
+    if (url.pathname === '/api/gemini' || url.pathname.startsWith('/api/gemini/')) {
+      return new Response('Gone', { status: 410, headers: { 'Cache-Control': 'no-store' } });
     }
 
-    // Stripe subscription checkout (Innerverse PWA). Like /api/ai, called
-    // cross-origin from Firebase Hosting — same permissive JSON CORS.
-    // Stripe keys are OPTIONAL for the worker as a whole (only these
-    // routes need them); missing keys → 503 with an actionable message.
-    if (url.pathname === '/api/stripe-checkout') {
-      return this.handleStripeCheckout(request, env);
-    }
-    if (url.pathname === '/api/stripe-verify') {
-      return this.handleStripeVerify(request, env);
-    }
-
-    // Legacy Gemini endpoint
-    if (url.pathname.startsWith('/api/gemini')) {
-      return this.fetchGeminiRaw(request, env);
-    }
-
-    // All other requests go to Assets. The Cloudflare Static Assets
-    // feature serves these directly from the edge cache; COOP and CORP
-    // headers are applied via the `_headers` file (see the top of this
-    // file for details).
     return env.ASSETS.fetch(request);
   },
 
-  /**
-   * POST /api/stripe-checkout — create a Stripe Checkout Session
-   * (subscription mode) and return {url} for the client to redirect to.
-   *
-   * Body: { origin: string, email?: string, locale?: 'ru' | 'en' }
-   * Secrets required: STRIPE_SECRET_KEY, STRIPE_PRICE_ID
-   * (set with `wrangler secret put STRIPE_SECRET_KEY` / `... STRIPE_PRICE_ID`).
-   */
-  async handleStripeCheckout(request: Request, env: Env): Promise<Response> {
-    const cors = corsHeaders(request);
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: cors });
-    }
-    if (request.method !== 'POST') {
-      return new Response('Method Not Allowed', { status: 405, headers: cors });
-    }
-    const jsonHeaders = { 'Content-Type': 'application/json', ...cors };
+  async handleAI(request: Request, env: Env): Promise<Response> {
+    const cors = corsHeaders(request, env.ALLOWED_APP_ORIGINS);
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: cors });
 
-    // Same fail-fast pattern as /api/ai for missing secrets.
+    const authorization = await authorizeWorkerRequest(
+      request,
+      env,
+      'ai',
+      env.AI_RATE_LIMITER,
+      env.AI_IP_RATE_LIMITER,
+      cors,
+    );
+    if ('response' in authorization) return authorization.response;
+
+    const missingKeys = getMissingApiKeys(env);
+    if (missingKeys.length > 0) {
+      return jsonResponse({
+        error: `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. Set them with: wrangler secret put <KEY_NAME>`,
+        missingKeys,
+      }, 503, cors);
+    }
+
+    const parsed = await parseJsonBody(request, MAX_AI_BODY_BYTES);
+    if ('error' in parsed) return jsonResponse({ error: parsed.error }, parsed.status, cors);
+    const body = validateAIRequest(parsed.value);
+    if (!body) return jsonResponse({ error: 'Invalid AI request payload' }, 400, cors);
+
+    try {
+      const ollamaStartedAt = Date.now();
+      try {
+        const ollamaResult = await this.fetchOllama(body, env, 'gemma4:31b-cloud');
+        const data = await ollamaResult.json() as { text?: string };
+        if (typeof data.text === 'string' && data.text.length >= 5) {
+          if (body.responseSchema) JSON.parse(data.text);
+          return jsonResponse({
+            text: data.text,
+            provider: 'Ollama/gemma4:31b-cloud',
+            duration: Date.now() - ollamaStartedAt,
+          }, 200, cors);
+        }
+      } catch {
+        // Provider failures are intentionally not logged: their error bodies
+        // can contain fragments of the user's sensitive prompt.
+      }
+
+      const result = await this.raceAI(body, env);
+      return jsonResponse({ text: result.text, provider: result.provider, duration: result.duration }, 200, cors);
+    } catch {
+      // Do not log prompts, model outputs, provider bodies, or exception text.
+      console.error('[AI] All configured providers failed');
+      return jsonResponse({ error: 'AI providers are currently unavailable. Please try again.' }, 502, cors);
+    }
+  },
+
+  /** Create a Stripe Checkout Session with an allowlisted return origin. */
+  async handleStripeCheckout(request: Request, env: Env): Promise<Response> {
+    const cors = corsHeaders(request, env.ALLOWED_APP_ORIGINS);
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: cors });
+
+    const authorization = await authorizeWorkerRequest(
+      request,
+      env,
+      'billing',
+      env.BILLING_RATE_LIMITER,
+      env.BILLING_RATE_LIMITER,
+      cors,
+    );
+    if ('response' in authorization) return authorization.response;
+
     const missingKeys = getMissingStripeKeys(env);
     if (missingKeys.length > 0) {
-      return new Response(JSON.stringify({
-        error:
-          `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. ` +
-          `Set them with: wrangler secret put <KEY_NAME>`,
+      return jsonResponse({
+        error: `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. Set them with: wrangler secret put <KEY_NAME>`,
         missingKeys,
-      }), { status: 503, headers: jsonHeaders });
+      }, 503, cors);
     }
 
-    let body: { origin?: string; email?: string; locale?: string };
-    try {
-      body = await request.json() as typeof body;
-    } catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON body' }), { status: 400, headers: jsonHeaders });
+    const parsed = await parseJsonBody(request, MAX_BILLING_BODY_BYTES);
+    if ('error' in parsed) return jsonResponse({ error: parsed.error }, parsed.status, cors);
+    if (!parsed.value || typeof parsed.value !== 'object' || Array.isArray(parsed.value)) {
+      return jsonResponse({ error: 'Invalid checkout request' }, 400, cors);
     }
-    const origin = body.origin || request.headers.get('Origin');
-    if (!origin) {
-      return new Response(JSON.stringify({
-        error: 'Missing "origin" in request body (used for success_url/cancel_url).',
-      }), { status: 400, headers: jsonHeaders });
+    const body = parsed.value as { origin?: unknown; locale?: unknown };
+    if (body.origin !== undefined && typeof body.origin !== 'string') {
+      return jsonResponse({ error: 'Invalid checkout return origin' }, 400, cors);
     }
-    const locale = body.locale === 'ru' ? 'ru' : 'en';
+    const origin = getAllowedStripeReturnOrigin(
+      body.origin as string | undefined,
+      request.headers.get('Origin'),
+      env.ALLOWED_APP_ORIGINS,
+    );
+    if (!origin) return jsonResponse({ error: 'Checkout return origin is not allowed' }, 400, cors);
 
     const params = new URLSearchParams();
     params.set('mode', 'subscription');
     params.set('line_items[0][price]', env.STRIPE_PRICE_ID!);
     params.set('line_items[0][quantity]', '1');
+    params.set('client_reference_id', authorization.identity.uid);
     params.set('success_url', `${origin}/?stripe=success&session_id={CHECKOUT_SESSION_ID}`);
     params.set('cancel_url', `${origin}/?stripe=cancel`);
     params.set('allow_promotion_codes', 'true');
-    params.set('locale', locale);
-    if (body.email) {
-      params.set('customer_email', body.email);
+    params.set('locale', body.locale === 'ru' ? 'ru' : 'en');
+    if (authorization.identity.emailVerified && authorization.identity.email) {
+      params.set('customer_email', authorization.identity.email);
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
     try {
       const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST',
@@ -204,146 +300,131 @@ export default {
           'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
         },
         body: params.toString(),
+        signal: controller.signal,
       });
-      const session = await stripeRes.json() as any;
-      if (!stripeRes.ok || !session.url) {
-        return new Response(JSON.stringify({
-          error: `Stripe checkout session creation failed: ${session?.error?.message ?? stripeRes.status}`,
-        }), { status: 502, headers: jsonHeaders });
+      const session = await stripeRes.json() as { url?: unknown };
+      if (!stripeRes.ok || typeof session.url !== 'string' || !session.url.startsWith('https://checkout.stripe.com/')) {
+        return jsonResponse({ error: 'Stripe checkout session could not be created' }, 502, cors);
       }
-      return new Response(JSON.stringify({ url: session.url }), { headers: jsonHeaders });
-    } catch (err) {
-      return new Response(JSON.stringify({
-        error: `Stripe checkout request failed: ${err instanceof Error ? err.message : err}`,
-      }), { status: 502, headers: jsonHeaders });
+      return jsonResponse({ url: session.url }, 200, cors);
+    } catch {
+      return jsonResponse({ error: 'Stripe checkout service is temporarily unavailable' }, 502, cors);
+    } finally {
+      clearTimeout(timeoutId);
     }
   },
 
-  /**
-   * GET /api/stripe-verify?session_id=... — retrieve a Checkout Session and
-   * return {status, customer, subscription} so the client can mark the
-   * subscription active after a successful redirect.
-   */
+  /** Verify only Checkout Sessions owned by the authenticated Firebase user. */
   async handleStripeVerify(request: Request, env: Env): Promise<Response> {
-    const cors = corsHeaders(request);
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: cors });
-    }
-    if (request.method !== 'GET') {
-      return new Response('Method Not Allowed', { status: 405, headers: cors });
-    }
-    const jsonHeaders = { 'Content-Type': 'application/json', ...cors };
+    const cors = corsHeaders(request, env.ALLOWED_APP_ORIGINS);
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+    if (request.method !== 'GET') return new Response('Method Not Allowed', { status: 405, headers: cors });
+
+    const authorization = await authorizeWorkerRequest(
+      request,
+      env,
+      'billing',
+      env.BILLING_RATE_LIMITER,
+      env.BILLING_RATE_LIMITER,
+      cors,
+    );
+    if ('response' in authorization) return authorization.response;
 
     const missingKeys = getMissingStripeKeys(env);
     if (missingKeys.length > 0) {
-      return new Response(JSON.stringify({
-        error:
-          `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. ` +
-          `Set them with: wrangler secret put <KEY_NAME>`,
+      return jsonResponse({
+        error: `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. Set them with: wrangler secret put <KEY_NAME>`,
         missingKeys,
-      }), { status: 503, headers: jsonHeaders });
+      }, 503, cors);
     }
 
     const sessionId = new URL(request.url).searchParams.get('session_id');
-    if (!sessionId) {
-      return new Response(JSON.stringify({ error: 'Missing session_id query parameter' }), { status: 400, headers: jsonHeaders });
+    if (!sessionId || sessionId.length > 200 || !/^cs_(?:test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
+      return jsonResponse({ error: 'Invalid session_id query parameter' }, 400, cors);
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
     try {
       const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
         headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
+        signal: controller.signal,
       });
-      const session = await stripeRes.json() as any;
-      if (!stripeRes.ok) {
-        return new Response(JSON.stringify({
-          error: `Stripe session retrieval failed: ${session?.error?.message ?? stripeRes.status}`,
-        }), { status: 502, headers: jsonHeaders });
+      const session = await stripeRes.json() as {
+        status?: string;
+        mode?: string;
+        client_reference_id?: string | null;
+        customer_details?: { email?: string | null } | null;
+        payment_status?: string;
+        subscription?: unknown;
+      };
+      if (!stripeRes.ok || session.mode !== 'subscription') {
+        return jsonResponse({ error: 'Checkout Session not found' }, 404, cors);
       }
-      return new Response(JSON.stringify({
-        status: session.status, // 'complete' | 'open' | 'expired'
-        customer: session.customer ?? null,
-        subscription: session.subscription ?? null,
-      }), { headers: jsonHeaders });
-    } catch (err) {
-      return new Response(JSON.stringify({
-        error: `Stripe verify request failed: ${err instanceof Error ? err.message : err}`,
-      }), { status: 502, headers: jsonHeaders });
+
+      const legacyEmailMatch = !session.client_reference_id
+        && authorization.identity.emailVerified
+        && authorization.identity.email
+        && session.customer_details?.email?.toLowerCase() === authorization.identity.email.toLowerCase();
+      if (session.client_reference_id !== authorization.identity.uid && !legacyEmailMatch) {
+        return jsonResponse({ error: 'Checkout Session not found' }, 404, cors);
+      }
+
+      const hasPaidSubscription = !!session.subscription
+        && (session.payment_status === 'paid' || session.payment_status === 'no_payment_required');
+      const status = session.status === 'complete' && hasPaidSubscription
+        ? 'complete'
+        : session.status === 'expired' ? 'expired' : 'open';
+      return jsonResponse({ status }, 200, cors);
+    } catch {
+      return jsonResponse({ error: 'Stripe verification service is temporarily unavailable' }, 502, cors);
+    } finally {
+      clearTimeout(timeoutId);
     }
   },
 
   async raceAI(payload: AIRequest, env: Env): Promise<{ text: string; provider: string; duration: number }> {
-    const start = Date.now();
-
     const providers = [
-      // Ollama is the default — first to try
       { name: 'Ollama/gemma4', fn: () => this.fetchOllama(payload, env, 'gemma4:31b-cloud') },
-      // Fallback providers
       { name: 'OpenRouter/NemotronUltra', fn: () => this.fetchOpenRouter(payload, env, env.OPENROUTER_MODEL) },
       { name: 'OpenRouter/AutoFree', fn: () => this.fetchOpenRouter(payload, env, 'openrouter/auto:free') },
       { name: 'NVIDIA/NimNemotronUltra', fn: () => this.fetchNvidiaNIM(payload, env) },
-      { name: 'Google/Gemini', fn: () => this.fetchGemini(payload, env) }
+      { name: 'Google/Gemini', fn: () => this.fetchGemini(payload, env) },
     ];
 
-    const tasks = providers.map(async (p) => {
-      const pStart = Date.now();
+    const tasks = providers.map(async (provider) => {
+      const startedAt = Date.now();
       try {
-        console.log(`[Racer] ${p.name} started...`);
-        const response = await p.fn();
-        const data = await response.json() as { text: string; _raw?: any };
-
-        // Robustness: catch only truly empty responses. The previous
-        // `< 5` threshold rejected legitimate short answers (e.g. "OK",
-        // "Yes", a 1-2 word archetype) that valid models return for
-        // simple prompts — masking real successes as 502s. The model
-        // output is validated downstream by JSON.parse when a
-        // responseSchema is present.
-        if (!data.text) {
-          // Surface the raw provider response so 502s are diagnosable
-          // (a 200 with `{ error: "..." }` and a 200 with `{ choices: [] }`
-          // look identical from `text` alone).
-          const rawExcerpt = data._raw
-            ? JSON.stringify(data._raw).slice(0, 400)
-            : 'no _raw field';
-          throw new Error(`Empty response (raw: ${rawExcerpt})`);
-        }
-
-        // If it's a JSON request, verify it's parsable
+        const response = await provider.fn();
+        const data = await response.json() as { text?: unknown };
+        if (typeof data.text !== 'string' || !data.text) throw new Error('Empty provider response');
         if (payload.responseSchema) {
-           try {
-             JSON.parse(data.text);
-           } catch (e) {
-             throw new Error(`Malformed JSON response (text: ${data.text.slice(0, 200)})`);
-           }
+          try {
+            JSON.parse(data.text);
+          } catch {
+            throw new Error('Malformed JSON response');
+          }
         }
-
-        const duration = Date.now() - pStart;
-        console.log(`[Racer] ${p.name} finished successfully in ${duration}ms`);
-        return { text: data.text, provider: p.name, duration };
-      } catch (err) {
-        const duration = Date.now() - pStart;
-        console.warn(`[Racer] ${p.name} FAILED after ${duration}ms: ${err instanceof Error ? err.message : err}`);
-        throw err;
+        return {
+          text: data.text,
+          provider: provider.name,
+          duration: Date.now() - startedAt,
+        };
+      } catch {
+        // Provider messages and response bodies may echo user input; never log them.
+        throw new Error(`${provider.name} failed`);
       }
     });
 
-    // Promise.any returns the first fulfilled promise
     try {
-      const result = await Promise.any(tasks);
-      console.log(`[Racer] All provider statuses logged above. Winner: ${result.provider}`);
-      return result;
-    } catch (e) {
-      if (e instanceof AggregateError) {
-        console.error(`[Racer] ALL ${e.errors.length} providers failed:`, e.errors.map((err: any, i: number) => `[${i}] ${err.message}`));
-        throw new Error(e.errors.map(err => err.message).join(' | '));
-      }
-      throw e;
+      return await Promise.any(tasks);
+    } catch {
+      throw new Error('All AI providers failed');
     }
   },
 
   async fetchOllama(payload: AIRequest, env: Env, model: string): Promise<Response> {
-    // Ollama native API uses /api/chat
     const ollamaUrl = 'https://api.ollama.com/api/chat';
-
     let systemContent = payload.systemInstruction || '';
     if (payload.responseSchema) {
       const schemaStr = JSON.stringify(payload.responseSchema, null, 2);
@@ -351,79 +432,49 @@ export default {
     }
 
     const messages: Array<{ role: string; content: string }> = [];
-    if (systemContent) {
-      messages.push({ role: 'system', content: systemContent });
-    }
-
+    if (systemContent) messages.push({ role: 'system', content: systemContent });
     if (payload.history) {
       messages.push(...payload.history
-        .filter(m => m.role === 'user' || m.role === 'model')
-        .map(m => ({
-          role: m.role === 'model' ? 'assistant' : m.role,
-          content: m.content
+        .filter((message) => message.role === 'user' || message.role === 'model')
+        .map((message) => ({
+          role: message.role === 'model' ? 'assistant' : message.role,
+          content: message.content,
         })));
     }
-
     messages.push({ role: 'user', content: payload.prompt });
-
-    // Ollama native format
-    const bodyPayload = {
-      model,
-      messages,
-      stream: false,
-      options: {
-        temperature: 0.1,
-        num_predict: 4096,
-      },
-      ...(payload.responseSchema ? { format: 'json' } : {})
-    };
-
-    console.log(`[Ollama/${model}] Sending to ${ollamaUrl}, msgs: ${messages.length}, sysLen: ${systemContent.length}`);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60_000);
-
     try {
       const response = await fetch(ollamaUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${env.OLLAMA_API_KEY}`
+          'Authorization': `Bearer ${env.OLLAMA_API_KEY}`,
         },
-        body: JSON.stringify(bodyPayload),
-        signal: controller.signal
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: false,
+          options: { temperature: 0.1, num_predict: 4096 },
+          ...(payload.responseSchema ? { format: 'json' } : {}),
+        }),
+        signal: controller.signal,
       });
-
-      console.log(`[Ollama/${model}] Response: ${response.status} ${response.statusText}`);
-
-      if (!response.ok) {
-        const errText = await response.text();
-        console.error(`[Ollama/${model}] Error: ${errText.substring(0, 500)}`);
-        throw new Error(`Ollama/${model} API error: ${response.status} - ${errText}`);
-      }
+      if (!response.ok) throw new Error(`Ollama provider returned ${response.status}`);
 
       const data = await response.json() as any;
-      // Ollama native format: { message: { content: "..." } }
       let text = data.message?.content || data.choices?.[0]?.message?.content || '';
-
-      console.log(`[Ollama/${model}] Text len: ${text.length}, first 200: ${text.substring(0, 200)}`);
-
-      // Robust JSON extraction
       if (payload.responseSchema && text) {
         const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/s);
-        if (jsonMatch) {
-          text = jsonMatch[1].trim();
-        }
+        if (jsonMatch) text = jsonMatch[1].trim();
       }
-
-      return new Response(JSON.stringify({ text, provider: `Ollama/${model}`, _raw: data }), {
-        headers: { 'Content-Type': 'application/json' }
+      return new Response(JSON.stringify({ text, provider: `Ollama/${model}` }), {
+        headers: { 'Content-Type': 'application/json' },
       });
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        throw new Error(`Ollama/${model} timed out after 60s (AbortError)`);
-      }
-      throw err;
+    } catch (error: any) {
+      if (error?.name === 'AbortError') throw new Error('Ollama provider timed out');
+      throw error;
     } finally {
       clearTimeout(timeoutId);
     }
@@ -431,8 +482,6 @@ export default {
 
   async fetchOpenRouter(payload: AIRequest, env: Env, model: string): Promise<Response> {
     const openrouterUrl = 'https://openrouter.ai/api/v1/chat/completions';
-
-    // Build system instruction, injecting schema if present
     let systemContent = payload.systemInstruction || '';
     if (payload.responseSchema) {
       const schemaStr = JSON.stringify(payload.responseSchema, null, 2);
@@ -440,25 +489,19 @@ export default {
     }
 
     const messages: Array<{ role: string; content: string }> = [];
-    if (systemContent) {
-      messages.push({ role: 'system', content: systemContent });
-    }
-
+    if (systemContent) messages.push({ role: 'system', content: systemContent });
     if (payload.history) {
       messages.push(...payload.history
-        .filter(m => m.role === 'user' || m.role === 'model')
-        .map(m => ({
-          role: m.role === 'model' ? 'assistant' : m.role,
-          content: m.content
+        .filter((message) => message.role === 'user' || message.role === 'model')
+        .map((message) => ({
+          role: message.role === 'model' ? 'assistant' : message.role,
+          content: message.content,
         })));
     }
-
     messages.push({ role: 'user', content: payload.prompt });
 
-    // AbortController for strict wall-clock timeout on connection AND body streaming
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT_MS);
-
     try {
       const response = await fetch(openrouterUrl, {
         method: 'POST',
@@ -466,197 +509,135 @@ export default {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
           'HTTP-Referer': 'https://archetypeai-worker.wmobilas.workers.dev',
-          'X-Title': 'ArchetypeAI'
+          'X-Title': 'ArchetypeAI',
         },
         body: JSON.stringify({
-          model: model,
+          model,
           messages,
           temperature: 0.1,
-          ...(payload.responseSchema ? { response_format: { type: 'json_object' } } : {})
+          ...(payload.responseSchema ? { response_format: { type: 'json_object' } } : {}),
         }),
-        signal: controller.signal
+        signal: controller.signal,
       });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`${model} API error: ${response.status} - ${errText}`);
-      }
+      if (!response.ok) throw new Error(`OpenRouter provider returned ${response.status}`);
 
       const data = await response.json() as any;
       let text = data.choices?.[0]?.message?.content || '';
-
-      // Robust JSON extraction
       if (payload.responseSchema && text) {
         const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/s);
-        if (jsonMatch) {
-          text = jsonMatch[1].trim();
-        }
+        if (jsonMatch) text = jsonMatch[1].trim();
       }
-
-      return new Response(JSON.stringify({ text, _raw: data }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        throw new Error(`${model} timed out after ${OPENROUTER_TIMEOUT_MS / 1000}s (AbortError)`);
-      }
-      throw err;
+      return new Response(JSON.stringify({ text }), { headers: { 'Content-Type': 'application/json' } });
+    } catch (error: any) {
+      if (error?.name === 'AbortError') throw new Error('OpenRouter provider timed out');
+      throw error;
     } finally {
       clearTimeout(timeoutId);
     }
   },
 
   async fetchGemini(payload: AIRequest, env: Env): Promise<Response> {
-    const models = [
-      'gemini-3.1-flash-lite'
-    ];
+    const model = 'gemini-3.1-flash-lite';
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+    const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+    if (payload.history) {
+      contents.push(...payload.history
+        .filter((message) => message.role === 'user' || message.role === 'model')
+        .map((message) => ({ role: message.role, parts: [{ text: message.content }] })));
+    }
+    contents.push({
+      role: 'user',
+      parts: [
+        ...(payload.systemInstruction ? [{ text: `SYSTEM INSTRUCTION: ${payload.systemInstruction}\n\n` }] : []),
+        { text: payload.prompt },
+      ],
+    });
 
-    const errors: string[] = [];
-
-    const attempts = models.map(async (model) => {
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GOOGLE_API_KEY}`;
-      
-      const contents = [];
-      if (payload.history) {
-        contents.push(...payload.history
-          .filter(m => m.role === 'user' || m.role === 'model')
-          .map(m => ({
-            role: m.role,
-            parts: [{ text: m.content }]
-          })));
-      }
-      contents.push({
-        role: 'user',
-        parts: [
-          ...(payload.systemInstruction ? [{ text: `SYSTEM INSTRUCTION: ${payload.systemInstruction}\n\n` }] : []),
-          { text: payload.prompt }
-        ]
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const response = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': env.GOOGLE_API_KEY,
+        },
+        body: JSON.stringify({
+          contents,
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 4096,
+            ...(payload.responseSchema ? {
+              responseMimeType: 'application/json',
+              responseSchema: payload.responseSchema,
+            } : {}),
+          },
+        }),
+        signal: controller.signal,
       });
+      if (!response.ok) throw new Error(`Gemini provider returned ${response.status}`);
 
-      const body = {
-        contents,
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 4096,
-          ...(payload.responseSchema ? {
-            responseMimeType: 'application/json',
-            responseSchema: payload.responseSchema
-          } : {})
-        }
-      };
-
-      const controller = new AbortController();
-      // 30s per individual model request in the parallel pool
-      const timeoutId = setTimeout(() => controller.abort(), 30_000);
-
-      try {
-        const response = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(`${model} failed (${response.status}): ${errText}`);
-        }
-
-        const data = await response.json() as any;
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        
-        if (!text || text.length < 10) {
-          throw new Error(`${model} returned invalid or empty content`);
-        }
-
-        return new Response(JSON.stringify({ text, _raw: data }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } catch (e: any) {
-        clearTimeout(timeoutId);
-        throw e;
-      }
-    });
-
-    // Race all Gemini models. First valid success wins.
-    return await Promise.any(attempts);
-  },
-
-  async fetchGeminiRaw(request: Request, env: Env): Promise<Response> {
-    // For direct proxying, we just use the flash-lite primary
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${env.GOOGLE_API_KEY}`;
-    const body = await request.text();
-    return fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body
-    });
+      const data = await response.json() as any;
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (!text || text.length < 10) throw new Error('Gemini provider returned an empty response');
+      return new Response(JSON.stringify({ text }), { headers: { 'Content-Type': 'application/json' } });
+    } catch (error: any) {
+      if (error?.name === 'AbortError') throw new Error('Gemini provider timed out');
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   },
 
   async fetchNvidiaNIM(payload: AIRequest, env: Env): Promise<Response> {
     const nvidiaUrl = 'https://integrate.api.nvidia.com/v1/chat/completions';
-    const models = ['nvidia/nemotron-3-ultra-550b-a55b'];
-    let lastError = '';
+    const model = 'nvidia/nemotron-3-ultra-550b-a55b';
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 40_000);
+    try {
+      const response = await fetch(nvidiaUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.NVIDIA_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            ...(payload.systemInstruction ? [{ role: 'system', content: payload.systemInstruction }] : []),
+            ...(payload.history || []).map((message) => ({
+              role: message.role === 'model' ? 'assistant' : message.role,
+              content: message.content,
+            })),
+            { role: 'user', content: payload.prompt },
+          ],
+          temperature: 0.1,
+          max_tokens: 4096,
+          ...(payload.responseSchema ? { response_format: { type: 'json_object' } } : {}),
+        }),
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error(`NVIDIA provider returned ${response.status}`);
 
-    for (const model of models) {
-      try {
-        const controller = new AbortController();
-        // 40s per NIM model for reasoned generation
-        const timeoutId = setTimeout(() => controller.abort(), 40_000);
-
-        const response = await fetch(nvidiaUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${env.NVIDIA_API_KEY}`
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: [
-              ...(payload.systemInstruction ? [{ role: 'system', content: payload.systemInstruction }] : []),
-              ...(payload.history || []).map(m => ({ role: m.role === 'model' ? 'assistant' : m.role, content: m.content })),
-              { role: 'user', content: payload.prompt }
-            ],
-            temperature: 0.1,
-            max_tokens: 4096,
-            ...(payload.responseSchema ? { response_format: { type: 'json_object' } } : {})
-          }),
-          signal: controller.signal
-        });
-
-        if (!response.ok) {
-          lastError = await response.text();
-          clearTimeout(timeoutId);
-          continue;
-        }
-
-        const data = await response.json() as any;
-        clearTimeout(timeoutId);
-        const msg = data.choices?.[0]?.message;
-        let text = msg?.content || msg?.reasoning || msg?.reasoning_content || '';
-
-        // If content is empty but reasoning is present, treat reasoning as the content
-        // (common in Step-3.5-Flash or GLM-thinking models)
-        if (!msg?.content && (msg?.reasoning || msg?.reasoning_content)) {
-          text = msg.reasoning || msg.reasoning_content;
-        }
-
-        // Robust JSON extraction for NIM
-        if (payload.responseSchema && text) {
-          const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/s);
-          if (jsonMatch) text = jsonMatch[1].trim();
-        }
-
-        return new Response(JSON.stringify({ text, provider: `Nvidia/${model}`, _raw: data }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } catch (err: any) {
-        lastError = err.message;
+      const data = await response.json() as any;
+      const message = data.choices?.[0]?.message;
+      let text = message?.content || message?.reasoning || message?.reasoning_content || '';
+      if (!message?.content && (message?.reasoning || message?.reasoning_content)) {
+        text = message.reasoning || message.reasoning_content;
       }
+      if (payload.responseSchema && text) {
+        const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/s);
+        if (jsonMatch) text = jsonMatch[1].trim();
+      }
+      return new Response(JSON.stringify({ text, provider: `Nvidia/${model}` }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error: any) {
+      if (error?.name === 'AbortError') throw new Error('NVIDIA provider timed out');
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
     }
-    throw new Error(`NVIDIA NIM failed: ${lastError}`);
   }
 };
 
@@ -674,8 +655,12 @@ interface Env {
   OLLAMA_API_KEY: string;
   OPENROUTER_MODEL: string;
   AI_PROVIDER_DEFAULT: string;
-  /** Stripe subscription checkout (optional — only /api/stripe-* needs them).
-   *  Set with: wrangler secret put STRIPE_SECRET_KEY / STRIPE_PRICE_ID */
+  FIREBASE_PROJECT_ID: string;
+  ALLOWED_APP_ORIGINS?: string;
+  AI_RATE_LIMITER?: RateLimiterBinding;
+  AI_IP_RATE_LIMITER?: RateLimiterBinding;
+  BILLING_RATE_LIMITER?: RateLimiterBinding;
+  /** Stripe subscription checkout (optional — only /api/stripe-* needs them). */
   STRIPE_SECRET_KEY?: string;
   STRIPE_PRICE_ID?: string;
   ASSETS: Fetcher;

@@ -13,7 +13,7 @@ Updated: 2026-10-04. Companion to [80-20-plan.md](80-20-plan.md). This document 
 
 Root roadmap epic: **`ArchetypeAI-28h`**. Planning/setup is tracked separately as `ArchetypeAI-j3b`; assessment-methodology audit as `ArchetypeAI-28h.9`. Completing either does not complete an app feature. Sections 12 and 19 of the plan cover user-controlled evidence memory, assessment-methodology findings, and reconciliation decisions.
 
-The implementation roadmap comprises 69 implementation tasks, eight stage epics, eight acceptance milestones, and one root epic. It has 240 explicit blocking dependencies in addition to hierarchy and related-work links. Every task has scope, an implementation-guide reference, and acceptance criteria. No speculative app implementation has been marked complete.
+The implementation roadmap comprises 70 implementation tasks, eight stage epics, eight acceptance milestones, and one root epic. It has 243 explicit blocking dependencies in addition to hierarchy and related-work links. Every task has scope, an implementation-guide reference, and acceptance criteria. No speculative app implementation has been marked complete.
 
 ## Stage navigation
 
@@ -23,7 +23,7 @@ The implementation roadmap comprises 69 implementation tasks, eight stage epics,
 | 1. exceptional assessment, map, coach, and booking | `ArchetypeAI-28h.2` | `ArchetypeAI-28h.2.19` | 30 | [Section 9](80-20-plan.md) |
 | 2. useful return loop and meaningful progression | `ArchetypeAI-28h.3` | `ArchetypeAI-28h.3.6` | 5 | [Section 10](80-20-plan.md) |
 | 3. authored Replay, Director, and inner negotiation | `ArchetypeAI-28h.4` | `ArchetypeAI-28h.4.5` | 4 | [Section 11](80-20-plan.md) |
-| 4. inspectable personal journey and voluntary seasons | `ArchetypeAI-28h.5` | `ArchetypeAI-28h.5.5` | 5 | [Section 12](80-20-plan.md) |
+| 4. inspectable personal journey and voluntary seasons | `ArchetypeAI-28h.5` | `ArchetypeAI-28h.5.5` | 6 | [Section 12](80-20-plan.md) |
 | 5. consensual relational support | `ArchetypeAI-28h.6` | `ArchetypeAI-28h.6.5` | 4 | [Section 13](80-20-plan.md) |
 | 6. reviewed content scale and production grammar | `ArchetypeAI-28h.7` | `ArchetypeAI-28h.7.5` | 7 | [Section 14](80-20-plan.md) |
 | 7. individually evaluated experimental extensions | `ArchetypeAI-28h.8` | `ArchetypeAI-28h.8.8` | 7 | [Section 15](80-20-plan.md) |
@@ -120,6 +120,7 @@ This is a navigation index, not a completion checklist. Inspect each issue for f
 | `ArchetypeAI-28h.5.3` | Build optional practice palette, flexible season and creative endpoints |
 | `ArchetypeAI-28h.5.4` | Deliver Quiet mode, graduation and longitudinal continuity evaluation |
 | `ArchetypeAI-28h.5.6` | Create a user-controlled personal evidence library |
+| `ArchetypeAI-28h.5.7` | Enable user-directed AI edits to personal part memory |
 
 ### Stage 5: consensual relational support
 

@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { Part } from '../pal/traits';
+import type { MotionMode } from '../core/sensory-preferences';
 import { feltGroup } from './felt-engine';
 import { bindReducedMotionDamping } from './reduced-motion';
 import {
@@ -26,6 +27,7 @@ export interface UniverseAPI {
   enterXR(): Promise<void>;
   onPick(cb: (id: string) => void): void;
   resize(): void;
+  setMotionMode(mode: MotionMode): void;
   dispose(): void;
 }
 
@@ -59,7 +61,7 @@ function stableJitter(id: string, axis: number, amplitude = 2.2): number {
   return unit * amplitude;
 }
 
-export function initUniverse(host: HTMLElement, isDark: boolean): UniverseAPI {
+export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMode: MotionMode = 'lively'): UniverseAPI {
   if (api) { api.resize(); return api; }
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -77,7 +79,8 @@ export function initUniverse(host: HTMLElement, isDark: boolean): UniverseAPI {
   controls.minDistance = 8;
   controls.maxDistance = 110;
   const motion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
-  const unbindMotionPreference = bindReducedMotionDamping(controls, motion);
+  let motionMode = initialMotionMode;
+  const motionDamping = bindReducedMotionDamping(controls, motion, motionMode);
   let axes: UniverseAxes = [...DEFAULT_AXES];
   let isolation: DimensionKey | null = null;
   let selectedId: string | null = null;
@@ -206,7 +209,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean): UniverseAPI {
 
   const loop = () => {
     if (!running) return;
-    if (!motion?.matches) t += 0.006;
+    if (!motion?.matches && motionMode !== 'still') t += motionMode === 'gentle' ? 0.002 : 0.006;
     controls.update();
     stars.rotation.y = t * 0.05;
     nodes.forEach((node) => {
@@ -266,12 +269,13 @@ export function initUniverse(host: HTMLElement, isDark: boolean): UniverseAPI {
     },
     onPick(callback) { pickCb = callback; },
     resize: onResize,
+    setMotionMode(mode) { motionMode = mode; motionDamping.setMode(mode); },
     dispose() {
       running = false;
       renderer.setAnimationLoop(null);
       void renderer.xr.getSession()?.end();
       disposed = true;
-      unbindMotionPreference();
+      motionDamping.dispose();
       controls.dispose();
       clearParts();
       window.removeEventListener('resize', onResize);

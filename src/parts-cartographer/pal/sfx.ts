@@ -1,4 +1,9 @@
 let ctx: AudioContext | null = null;
+let enabled = false;
+
+export function setSfxEnabled(value: boolean): void {
+  enabled = value;
+}
 
 function ac() {
   if (typeof window === "undefined") return null;
@@ -17,6 +22,7 @@ function tone(
   vol = 0.08,
   slide?: number,
 ) {
+  if (!enabled) return;
   const c = ac();
   if (!c) return;
   if (c.state === "suspended") void c.resume();

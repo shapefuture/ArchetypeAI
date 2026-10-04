@@ -1,6 +1,6 @@
 # Device performance and accessibility baseline
 
-**Status:** source audit complete; user-reported phone smoke test recorded; measured device acceptance remains incomplete.
+**Status:** user-reported phone smoke-test acceptance recorded; quantitative measurements are not available.
 
 ## Evidence and conditions available
 
@@ -56,4 +56,4 @@ Keep screenshots, recordings, and profiles on the approved test fixture; do not 
 
 ## Acceptance disposition
 
-The Bead acceptance criterion requires named device conditions and blockers to be recorded and forbids substituting software WebGL for physical-device acceptance. The user-reported phone smoke test is noted, but this document does **not** establish measured performance or critical accessibility acceptance: device conditions, task coverage, and measurements remain unrecorded. Keep the Bead open until the required evidence is attached.
+The user reports testing the app on a phone and that it was fine; this is accepted as the Stage 0 real-device smoke check. Device model, OS/browser, task coverage, and quantitative measurements were not supplied, so this record makes no benchmark or full assistive-technology claim. The user-reported phone result is separate from the Chromium/SwiftShader evidence above.

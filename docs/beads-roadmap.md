@@ -202,6 +202,28 @@ On a different machine, install the official Beads CLI using [upstream installat
 
 Normal sync is `bd dolt pull` / `bd dolt push`. If authenticated Git reads work but Git transport writes fail while GitHub API writes are authorized, preserve the pending transport commit and publish its exact blob/tree objects and data ref through that API, with a non-force update and parent/tree verification. This recovery must operate on `refs/dolt/data`, not a code branch or an issue-export replacement. Never put tokens or credential values into task notes or diagnostics.
 
+For this workspace's Git receive-pack HTTP 401, attach `GH_TOKEN` as a secret
+with repository contents write access and run:
+
+```bash
+python3 scripts/beads-github-api-push.py
+bd dolt pull
+```
+
+The fallback runs the normal Beads push and routes only its `refs/dolt/data`
+transport writes through GitHub's Git data API. It checks every blob, tree,
+commit, and parent and refuses forced updates. Other Git operations use the
+existing Git executable. A Dolt push can upload table files before advancing
+the database root in a later manifest write: publishing one dangling commit
+is not sufficient proof of database sync. Verify the issue records through
+an independent remote restore before reporting recovery complete. The
+fallback does not repair the underlying Git receive-pack authentication;
+normal Git pushes may still require the workspace's transport fix.
+
+The exposed legacy push-key follow-up is tracked in `ArchetypeAI-h8c`;
+see [the rotation procedure](push-key-rotation.md). Redaction alone is not
+credential revocation.
+
 ## Completion protocol
 
 After a task, attach evidence, close only the accepted work, and create remaining issues. Commit/push application or documentation changes normally, then sync Beads separately and verify the remote state. An accepted stage gate records what passed and what remains outside scope. A research gate can record a justified stop decision; it does not imply all speculative features shipped.

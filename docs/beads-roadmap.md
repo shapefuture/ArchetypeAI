@@ -57,6 +57,8 @@ This is a navigation index, not a completion checklist. Inspect each issue for f
 | `ArchetypeAI-28h.1.6` | Validate independent sensory controls and unprompted intuitiveness |
 | `ArchetypeAI-28h.1.8` | Review assessment constructs, item confounds and source limitations |
 
+The source/config baseline for the first two Stage 0 tasks is recorded in [core journeys and data](baseline/core-journeys-and-data.md) and [service capabilities and contracts](baseline/service-capabilities-and-contracts.md). These artifacts identify missing production, preview, emulator, account, and device evidence explicitly; they do not claim a live walkthrough.
+
 ### Stage 1: exceptional assessment, map, coach, and booking
 
 | Bead | Scope |
@@ -190,9 +192,9 @@ bd ready --label roadmap --type task --explain
 
 The root may exceed the terminal graph row limit as the roadmap grows; use a stage graph or the CLI limit option described by `bd graph --help`. For an optional local interactive visualization, generate a stage graph with `bd graph ArchetypeAI-28h.2 --html > /tmp/innerverse-core-progress.html`. It is a derived snapshot; regenerate rather than editing it as a tracker.
 
-## First available implementation work
+## Current execution state
 
-The initial ready tasks are `ArchetypeAI-28h.1.1` (journey/data baseline) and `ArchetypeAI-28h.1.2` (configured support services/contracts). Their results unlock the loading reference, authored slice, and subsequent implementation. Neither was claimed or executed by this planning session.
+The initial journey/data and service-contract baselines now have source-backed artifacts under `docs/baseline/`. They are discovery evidence only: no production or preview session, Firebase emulator, real account, live appointment, or real-device walk was performed. Beads remains the status and acceptance record; subsequent Stage 0 and Stage 1 tasks must gather the runtime evidence required by their own criteria rather than treating source inspection as a successful user journey.
 
 ## Installation and remote recovery
 

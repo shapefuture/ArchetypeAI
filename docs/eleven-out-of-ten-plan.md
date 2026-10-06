@@ -2,6 +2,8 @@
 
 Prepared: 2026-10-05. Planning task: `ArchetypeAI-avy`.
 
+Expanded 2026-10-06 into [the twenty-improvement Beads execution plan](plans/first-principles-elevation-beads.md) and [the AAA v7.1 architecture and agent-sweep plan](plans/aaa-v7-architecture-and-agent-sweeps.md). Product root: `ArchetypeAI-d6d`; architecture root: `ArchetypeAI-n0h`. The expansion adds 499 actionable tasks with intermediary handoffs and acceptance criteria; Beads retains live status.
+
 This is an elevation companion to [the implementation roadmap](80-20-plan.md), not a replacement. Beads remains the source of task status. The user has authorized development through the later stages and past implementation gates. Evidence gates remain explicit; a prototype, a polished screen, and a verified service have different acceptance requirements.
 
 ## 1. The experience to aim for

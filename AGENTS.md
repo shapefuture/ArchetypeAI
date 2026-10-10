@@ -1,6 +1,20 @@
 # Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
+This project uses **bd** (beads) for issue tracking. Run `python3 scripts/roadmap/continuity.py session` to recover the full mission, workflow and live scope.
+
+## Full implementation mission and continuity
+
+The persistent user goal is implementation of the **entire approved program**, including later stages, product elevation, architecture and social/creative/practice extensions. Its four live roots are `ArchetypeAI-28h`, `ArchetypeAI-d6d`, `ArchetypeAI-n0h`, and `ArchetypeAI-we2s`. [Mission scope](scripts/roadmap/mission.json) declares the objective and carried-forward user decisions; [execution protocol](docs/roadmap-continuity.md) explains recovery and handoff. Beads remains the sole task-status authority.
+
+1. At session entry, after compaction/resumption, and before choosing the next implementation slice, run `python3 scripts/roadmap/continuity.py session`. It locates the configured Beads binary, supplies a writable Dolt configuration, explicitly recalls the mission/handoff, and reads the entire scope from live Dolt. A bare missing `bd` on PATH is a setup issue to repair. Do not substitute the passive JSONL export or reinitialize/import the tracker.
+2. Inspect the next Bead, acceptance criteria, predecessor outputs and applicable contracts. Validate selection with `python3 scripts/roadmap/continuity.py status --task <id>`. Choose ready enabling work or an already-authorized active slice; the scope report is not an AAA workcell lease.
+3. User authorization to implement through later stages and past implementation gates persists. Keep empirical acceptance pending when evidence is missing. A research, hardware, role or service blocker holds its exact scope; continue independent work, implement its enabling prerequisites, or choose another eligible stream. Do not turn a local blocker into a whole-program stop.
+4. After each coherent slice, compare remaining acceptance criteria and the complete four-root scope. Avoid repeated cosmetic/heuristic-review passes without material criterion progress. After two such passes, explicitly reassess and select enabling or unfinished implementation work; explain any evidence-based exception in the Bead.
+5. Informational/status/critique requests are steering unless the user explicitly pauses, cancels or replaces the program. Answer them briefly, then resume active authorized implementation. At an unavoidable session boundary, persist the full-scope handoff and actual next Bead; a question never silently resets the goal.
+6. Before a session handoff, use `python3 scripts/roadmap/continuity.py handoff --task <id> --next <actual-ready-or-active-id> --completed '<criterion/slice>' --remaining '<criteria/scope>' --evidence '<checks, artifact identity and limits>' --external-blocker '<exact unavailable prerequisite, if any>'`. This appends a Beads comment and saves `full-plan-handoff`; never store private participant data or credentials in it. Record real remaining work, not a vague promise to continue.
+7. A slice's success does not finish the program. `python3 scripts/roadmap/continuity.py status --require-complete` must pass before claiming complete implementation. The command rejects unresolved scope records and acceptance gates. An ambition or heuristic rubric score cannot supply missing empirical evidence.
+
+The Claude startup and pre-compaction hooks run the same recovery command; Codex follows this AGENTS section directly. These checks make omissions detectable and continuity persistent. They do not provide an always-running agent or a guarantee that an agent can never make an error.
 
 > **Architecture in one line:** Issues live in a local Dolt database
 > (`.beads/dolt/`); cross-machine sync uses `bd dolt push/pull` (a
@@ -97,4 +111,4 @@ bd close <id>         # Complete work
 
 ## Innerverse roadmap context
 
-The current implementation specification is [docs/80-20-plan.md](docs/80-20-plan.md); the preserved archive is [docs/oldplan.md](docs/oldplan.md). [docs/beads-roadmap.md](docs/beads-roadmap.md) maps the dependency-aware roadmap rooted at `ArchetypeAI-28h`. Use `bd ready --label roadmap --type task` to find actual ready implementation work; do not mark a feature complete because its plan was written. Preserve the authored loading screen, merged Felt identity, independently controllable sensory richness, the plush inner-cosmos grammar, the four core paths, and the therapist's complete 3+1-axis analytical workspace with explicit 64/147 coordinate provenance. Apply the plan's unprompted intuitiveness and real-service acceptance criteria.
+The core implementation specification is [docs/80-20-plan.md](docs/80-20-plan.md); the preserved archive is [docs/oldplan.md](docs/oldplan.md). [docs/beads-roadmap.md](docs/beads-roadmap.md) maps the dependency-aware core roadmap rooted at `ArchetypeAI-28h`. The elevation, AAA and social/creative roots in the full mission above are equally in scope. Use the continuity guard to account for all roots, then inspect actual ready implementation work; do not mark a feature complete because its plan was written. Preserve the authored loading screen, merged Felt identity, independently controllable sensory richness, the plush inner-cosmos grammar, the four core paths, and the therapist's complete 3+1-axis analytical workspace with explicit 64/147 coordinate provenance. Apply the plan's unprompted intuitiveness and real-service acceptance criteria.

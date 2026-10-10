@@ -4,7 +4,8 @@
       {
         "hooks": [
           {
-            "command": "bd prime",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/roadmap/continuity.py\" session",
+            "timeout": 120,
             "type": "command"
           }
         ],
@@ -15,7 +16,8 @@
       {
         "hooks": [
           {
-            "command": "bd prime",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/roadmap/continuity.py\" session",
+            "timeout": 120,
             "type": "command"
           }
         ],

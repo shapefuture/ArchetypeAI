@@ -9,7 +9,8 @@
   ],
   "source_maps": [
     "docs/plans/elevation-aaa-v7-beads-plan.json",
-    "docs/plans/social-creative-practice-beads-plan.json"
+    "docs/plans/social-creative-practice-beads-plan.json",
+    "docs/plans/creative-commons-beads-plan.json"
   ],
   "linked_integration_tasks": [
     "ArchetypeAI-hi8.5", "ArchetypeAI-a1v", "ArchetypeAI-h8c",

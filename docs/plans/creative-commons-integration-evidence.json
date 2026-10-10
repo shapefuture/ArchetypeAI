@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "mapped_records": 131,
+  "explicit_edges": 334,
+  "total_stored_edges": 464,
+  "covered_proposals": 66,
+  "all_four_roots_accounted": true,
+  "dependency_orientation_verified": true,
+  "fields_and_metadata_match": true,
+  "ready_reconciliation": "ArchetypeAI-w94in",
+  "world_root": "ArchetypeAI-7n0fe",
+  "limitation": "Local live tracker verification, not remote restore, feature implementation or empirical evidence",
+  "verified_at_utc": "2026-10-10T20:27:40.880383+00:00",
+  "planning_control": "ArchetypeAI-we2s.1",
+  "graph_sha256": "39d2b95dd484bb258167d771838f945a51cef6937b50ee384507cdde98f2e955",
+  "independent_review": {
+    "agent": "creative_plan_review",
+    "scope": "requirement coverage, privacy/consent, quiet access, AI, Spark, care/economics and evidence gates",
+    "finding": "No material topic omission found. Initial dependency-direction concern withdrawn after clarification; stored edges and live readiness verified separately."
+  },
+  "checks": [
+    "Generator uniqueness/target/coverage/DAG assertions",
+    "All 131 live records match titles/types/descriptions/criteria/metadata",
+    "All 464 stored edges match specification including parent relations",
+    "All four mission roots and three source maps validate",
+    "D01 ready; C01.2 and G02 blocked as intended",
+    "Python compilation and whitespace checks"
+  ],
+  "limitations": [
+    "No new product feature implementation or deployment",
+    "No participant session, benefit outcome, new phone measurement or independent remote restore claimed"
+  ]
+}

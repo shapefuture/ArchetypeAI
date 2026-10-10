@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "objective": "Implement the complete approved Innerverse program across every core stage, product elevation, AAA architecture, and social/creative/practice expansion. Evaluate each slice against its actual Beads acceptance criteria and the Pattern insight and Duolingo clarity/play/presentation references. Continue through independent work and enabling prerequisites when an evidence or service dependency is unavailable.",
+  "roots": [
+    {"id": "ArchetypeAI-28h", "name": "Core stages 0–7", "spec": "docs/80-20-plan.md"},
+    {"id": "ArchetypeAI-d6d", "name": "Twenty product elevation streams", "spec": "docs/plans/first-principles-elevation-beads.md"},
+    {"id": "ArchetypeAI-n0h", "name": "AAA architecture, contracts and parallel sweeps", "spec": "docs/plans/aaa-v7-architecture-and-agent-sweeps.md"},
+    {"id": "ArchetypeAI-we2s", "name": "Social, creative, progression and practice expansion", "spec": "docs/plans/social-creative-practice-beads-plan.md"}
+  ],
+  "source_maps": [
+    "docs/plans/elevation-aaa-v7-beads-plan.json",
+    "docs/plans/social-creative-practice-beads-plan.json"
+  ],
+  "linked_integration_tasks": [
+    "ArchetypeAI-hi8.5", "ArchetypeAI-a1v", "ArchetypeAI-h8c",
+    "ArchetypeAI-8nz", "ArchetypeAI-8m4"
+  ],
+  "constraints": [
+    "The user authorized implementation through later stages and past implementation gates. Preserve dependencies and pending acceptance evidence; do not equate conditional implementation permission with acceptance.",
+    "The user permits educated guesses for routine design choices. Never invent participant, device, clinician, calibration, independent-review or live-service observations.",
+    "Preserve authored loading/Felt identity, independent sensory choices, assessment-free support, canonical 64/147 provenance and the complete therapist 3+1 analytical scope.",
+    "Firebase use was approved. Cloud Storage was explicitly skipped because it requested billing; do not enable billing or reopen approval already given. Complete technical research-access and consent prerequisites before collection.",
+    "The phone sign-off is exactly tested and fine. The user declined key rotation. Neither instruction supplies unrelated acceptance evidence.",
+    "Use live Beads as task authority. This manifest declares scope and instructions only; it contains no completion state or substitute task queue."
+  ]
+}

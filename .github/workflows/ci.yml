@@ -14,6 +14,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Check full-plan continuity guard
+        run: |
+          python3 scripts/roadmap/continuity.py schema
+          python3 -m unittest discover -s scripts/roadmap -p 'test_*.py'
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

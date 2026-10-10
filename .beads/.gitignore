@@ -3,6 +3,7 @@ dolt/
 embeddeddolt/
 
 # Runtime files
+runtime/
 bd.sock
 bd.sock.startlock
 sync-state.json

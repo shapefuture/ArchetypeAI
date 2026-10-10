@@ -1,0 +1,2780 @@
+[
+  {
+    "key": "F01",
+    "discussion_requirement": "Persistent chosen themes with comments, questions, follow controls, differing experiences and discoverable consenting contributors; implement the Pattern Shared Experiences correction explicitly",
+    "title": "Shared-experience theme spaces",
+    "tasks": [
+      "F01.S01",
+      "F01.S02",
+      "F01.S03",
+      "F01.S04",
+      "F01.S05",
+      "F01.S06",
+      "F01.S07",
+      "F01.S08",
+      "F01.S09",
+      "F01.S10",
+      "F01.S11",
+      "F01.S12",
+      "F01.S13",
+      "F01.S14",
+      "F01.S15",
+      "F01.S16"
+    ],
+    "reuses": [
+      "E19",
+      "X02"
+    ]
+  },
+  {
+    "key": "F02",
+    "discussion_requirement": "Temporary spaces around user-selected transitions with a beginning, activity, follow-up and ending",
+    "title": "Finite life-event gatherings and cohorts",
+    "tasks": [
+      "F02.S01",
+      "F02.S02",
+      "F02.S03",
+      "F02.S04",
+      "F02.S05",
+      "F02.S06",
+      "F02.S07",
+      "F02.S08",
+      "F02.S09",
+      "F02.S10",
+      "F02.S11",
+      "F02.S12",
+      "F02.S13",
+      "F02.S14",
+      "F02.S15",
+      "F02.S16"
+    ],
+    "reuses": [
+      "E01",
+      "X02"
+    ]
+  },
+  {
+    "key": "F03",
+    "discussion_requirement": "Separate approved accounts of preferences and misunderstandings with concrete jointly chosen experiments",
+    "title": "Mutually authored relationship portraits",
+    "tasks": [
+      "F03.S01",
+      "F03.S02",
+      "F03.S03",
+      "F03.S04",
+      "F03.S05",
+      "F03.S06",
+      "F03.S07",
+      "F03.S08",
+      "F03.S09",
+      "F03.S10",
+      "F03.S11",
+      "F03.S12",
+      "F03.S13",
+      "F03.S14",
+      "F03.S15",
+      "F03.S16"
+    ],
+    "reuses": [
+      "X02",
+      "E07",
+      "E16"
+    ]
+  },
+  {
+    "key": "F04",
+    "discussion_requirement": "Separate answers before a consensual reveal, surprising differences and a useful optional question",
+    "title": "Mutual question and perspective reveals",
+    "tasks": [
+      "F04.S01",
+      "F04.S02",
+      "F04.S03",
+      "F04.S04",
+      "F04.S05",
+      "F04.S06",
+      "F04.S07",
+      "F04.S08",
+      "F04.S09",
+      "F04.S10",
+      "F04.S11",
+      "F04.S12",
+      "F04.S13",
+      "F04.S14",
+      "F04.S15",
+      "F04.S16"
+    ],
+    "reuses": [
+      "X02",
+      "E10"
+    ]
+  },
+  {
+    "key": "F05",
+    "discussion_requirement": "Discover consenting people through thoughtful comments, questions and practical contributions",
+    "title": "People discovery through contributions",
+    "tasks": [
+      "F05.S01",
+      "F05.S02",
+      "F05.S03",
+      "F05.S04",
+      "F05.S05",
+      "F05.S06",
+      "F05.S07",
+      "F05.S08",
+      "F05.S09",
+      "F05.S10",
+      "F05.S11",
+      "F05.S12",
+      "F05.S13",
+      "F05.S14",
+      "F05.S15",
+      "F05.S16"
+    ],
+    "reuses": [
+      "X02",
+      "E19"
+    ]
+  },
+  {
+    "key": "F06",
+    "discussion_requirement": "Distinct opted-in modes with explainable criteria, shared interests, user-chosen values and availability",
+    "title": "Purpose-specific friendship, practice and adult dating discovery",
+    "tasks": [
+      "F06.S01",
+      "F06.S02",
+      "F06.S03",
+      "F06.S04",
+      "F06.S05",
+      "F06.S06",
+      "F06.S07",
+      "F06.S08",
+      "F06.S09",
+      "F06.S10",
+      "F06.S11",
+      "F06.S12",
+      "F06.S13",
+      "F06.S14",
+      "F06.S15",
+      "F06.S16"
+    ],
+    "reuses": [
+      "X02",
+      "E19"
+    ]
+  },
+  {
+    "key": "F07",
+    "discussion_requirement": "Short question exchange, cooperative puzzle or creative activity before mutually choosing ongoing contact",
+    "title": "Activity-first introductions and mutual continuation",
+    "tasks": [
+      "F07.S01",
+      "F07.S02",
+      "F07.S03",
+      "F07.S04",
+      "F07.S05",
+      "F07.S06",
+      "F07.S07",
+      "F07.S08",
+      "F07.S09",
+      "F07.S10",
+      "F07.S11",
+      "F07.S12",
+      "F07.S13",
+      "F07.S14",
+      "F07.S15",
+      "F07.S16"
+    ],
+    "reuses": [
+      "E10",
+      "X02"
+    ]
+  },
+  {
+    "key": "F08",
+    "discussion_requirement": "Separate audiences for partner, buddy, friendship circle and practical support with visible sharing scope",
+    "title": "Purpose-specific trusted circles",
+    "tasks": [
+      "F08.S01",
+      "F08.S02",
+      "F08.S03",
+      "F08.S04",
+      "F08.S05",
+      "F08.S06",
+      "F08.S07",
+      "F08.S08",
+      "F08.S09",
+      "F08.S10",
+      "F08.S11",
+      "F08.S12",
+      "F08.S13",
+      "F08.S14",
+      "F08.S15",
+      "F08.S16"
+    ],
+    "reuses": [
+      "X02",
+      "E14"
+    ]
+  },
+  {
+    "key": "F09",
+    "discussion_requirement": "Invitation carries an approved question, support card or shared activity with a bounded guest response",
+    "title": "Useful invitations and limited guest participation",
+    "tasks": [
+      "F09.S01",
+      "F09.S02",
+      "F09.S03",
+      "F09.S04",
+      "F09.S05",
+      "F09.S06",
+      "F09.S07",
+      "F09.S08",
+      "F09.S09",
+      "F09.S10",
+      "F09.S11",
+      "F09.S12",
+      "F09.S13",
+      "F09.S14",
+      "F09.S15",
+      "F09.S16"
+    ],
+    "reuses": [
+      "X02",
+      "E14"
+    ]
+  },
+  {
+    "key": "F10",
+    "discussion_requirement": "Editable how-to-support-me cards, listen/help-think/keep-company requests and recipient-controlled Good Vibes gestures",
+    "title": "Support cards, current support requests and encouragement",
+    "tasks": [
+      "F10.S01",
+      "F10.S02",
+      "F10.S03",
+      "F10.S04",
+      "F10.S05",
+      "F10.S06",
+      "F10.S07",
+      "F10.S08",
+      "F10.S09",
+      "F10.S10",
+      "F10.S11",
+      "F10.S12",
+      "F10.S13",
+      "F10.S14",
+      "F10.S15",
+      "F10.S16"
+    ],
+    "reuses": [
+      "E14",
+      "X02"
+    ]
+  },
+  {
+    "key": "F11",
+    "discussion_requirement": "Mutual commitment, acceptable nudge, cadence, obstacles, fallback, pause and graceful re-entry",
+    "title": "Accountability agreements and flexible shared rhythms",
+    "tasks": [
+      "F11.S01",
+      "F11.S02",
+      "F11.S03",
+      "F11.S04",
+      "F11.S05",
+      "F11.S06",
+      "F11.S07",
+      "F11.S08",
+      "F11.S09",
+      "F11.S10",
+      "F11.S11",
+      "F11.S12",
+      "F11.S13",
+      "F11.S14",
+      "F11.S15",
+      "F11.S16"
+    ],
+    "reuses": [
+      "E01",
+      "E03",
+      "E08",
+      "E09"
+    ]
+  },
+  {
+    "key": "F12",
+    "discussion_requirement": "Trusted-person sessions with a chosen intention, optional quiet presence and clear start/end",
+    "title": "Short shared presence and body doubling",
+    "tasks": [
+      "F12.S01",
+      "F12.S02",
+      "F12.S03",
+      "F12.S04",
+      "F12.S05",
+      "F12.S06",
+      "F12.S07",
+      "F12.S08",
+      "F12.S09",
+      "F12.S10",
+      "F12.S11",
+      "F12.S12",
+      "F12.S13",
+      "F12.S14",
+      "F12.S15",
+      "F12.S16"
+    ],
+    "reuses": [
+      "E03",
+      "E08"
+    ]
+  },
+  {
+    "key": "F13",
+    "discussion_requirement": "Separate approved accounts after misunderstanding and one revisable practical agreement",
+    "title": "Mutual repair rituals and communication agreements",
+    "tasks": [
+      "F13.S01",
+      "F13.S02",
+      "F13.S03",
+      "F13.S04",
+      "F13.S05",
+      "F13.S06",
+      "F13.S07",
+      "F13.S08",
+      "F13.S09",
+      "F13.S10",
+      "F13.S11",
+      "F13.S12",
+      "F13.S13",
+      "F13.S14",
+      "F13.S15",
+      "F13.S16"
+    ],
+    "reuses": [
+      "X02",
+      "E06",
+      "E07"
+    ]
+  },
+  {
+    "key": "F14",
+    "discussion_requirement": "Purposeful small groups with host, participation agreement, short sequence and ending; accountable qualified facilitation when applicable",
+    "title": "Finite facilitated circles and mentorship",
+    "tasks": [
+      "F14.S01",
+      "F14.S02",
+      "F14.S03",
+      "F14.S04",
+      "F14.S05",
+      "F14.S06",
+      "F14.S07",
+      "F14.S08",
+      "F14.S09",
+      "F14.S10",
+      "F14.S11",
+      "F14.S12",
+      "F14.S13",
+      "F14.S14",
+      "F14.S15",
+      "F14.S16"
+    ],
+    "reuses": [
+      "X04",
+      "E15"
+    ]
+  },
+  {
+    "key": "F15",
+    "discussion_requirement": "Edited tools, questions, practice adaptations, gifts and player-authored scenarios with source/context/review and finite collections",
+    "title": "Reviewed community contributions and useful gifts",
+    "tasks": [
+      "F15.S01",
+      "F15.S02",
+      "F15.S03",
+      "F15.S04",
+      "F15.S05",
+      "F15.S06",
+      "F15.S07",
+      "F15.S08",
+      "F15.S09",
+      "F15.S10",
+      "F15.S11",
+      "F15.S12",
+      "F15.S13",
+      "F15.S14",
+      "F15.S15",
+      "F15.S16"
+    ],
+    "reuses": [
+      "E14",
+      "E19",
+      "X07"
+    ]
+  },
+  {
+    "key": "F16",
+    "discussion_requirement": "Source-linked corrected stories of attempts, help and revised intentions with exact audience preview",
+    "title": "Chosen social milestones and personal/shared recaps",
+    "tasks": [
+      "F16.S01",
+      "F16.S02",
+      "F16.S03",
+      "F16.S04",
+      "F16.S05",
+      "F16.S06",
+      "F16.S07",
+      "F16.S08",
+      "F16.S09",
+      "F16.S10",
+      "F16.S11",
+      "F16.S12",
+      "F16.S13",
+      "F16.S14",
+      "F16.S15",
+      "F16.S16"
+    ],
+    "reuses": [
+      "E09",
+      "E11",
+      "E14"
+    ]
+  },
+  {
+    "key": "F17",
+    "discussion_requirement": "One supported observation or saved intention plus a useful optional question/action and why-now explanation",
+    "title": "Occasional grounded insight reminders",
+    "tasks": [
+      "F17.S01",
+      "F17.S02",
+      "F17.S03",
+      "F17.S04",
+      "F17.S05",
+      "F17.S06",
+      "F17.S07",
+      "F17.S08",
+      "F17.S09",
+      "F17.S10",
+      "F17.S11",
+      "F17.S12",
+      "F17.S13",
+      "F17.S14",
+      "F17.S15",
+      "F17.S16"
+    ],
+    "reuses": [
+      "X03",
+      "E07"
+    ]
+  },
+  {
+    "key": "F18",
+    "discussion_requirement": "Chosen reminder around meeting, conversation, visit or appointment with prepared phrase and optional later review",
+    "title": "Before-and-after user-chosen moments",
+    "tasks": [
+      "F18.S01",
+      "F18.S02",
+      "F18.S03",
+      "F18.S04",
+      "F18.S05",
+      "F18.S06",
+      "F18.S07",
+      "F18.S08",
+      "F18.S09",
+      "F18.S10",
+      "F18.S11",
+      "F18.S12",
+      "F18.S13",
+      "F18.S14",
+      "F18.S15",
+      "F18.S16"
+    ],
+    "reuses": [
+      "X03",
+      "E14",
+      "E15"
+    ]
+  },
+  {
+    "key": "F19",
+    "discussion_requirement": "Separate commitments, trusted-person and reflection/discovery settings; digests, quiet hours, pause and welcoming return",
+    "title": "Independent notification streams, budgets and return",
+    "tasks": [
+      "F19.S01",
+      "F19.S02",
+      "F19.S03",
+      "F19.S04",
+      "F19.S05",
+      "F19.S06",
+      "F19.S07",
+      "F19.S08",
+      "F19.S09",
+      "F19.S10",
+      "F19.S11",
+      "F19.S12",
+      "F19.S13",
+      "F19.S14",
+      "F19.S15",
+      "F19.S16"
+    ],
+    "reuses": [
+      "E03",
+      "E07",
+      "X03"
+    ]
+  },
+  {
+    "key": "F20",
+    "discussion_requirement": "Complete small actions from reminder where supported, equivalent in-app inbox, timing reasons and feedback",
+    "title": "Useful notification actions, inbox and relevance feedback",
+    "tasks": [
+      "F20.S01",
+      "F20.S02",
+      "F20.S03",
+      "F20.S04",
+      "F20.S05",
+      "F20.S06",
+      "F20.S07",
+      "F20.S08",
+      "F20.S09",
+      "F20.S10",
+      "F20.S11",
+      "F20.S12",
+      "F20.S13",
+      "F20.S14",
+      "F20.S15",
+      "F20.S16"
+    ],
+    "reuses": [
+      "E14",
+      "E17"
+    ]
+  },
+  {
+    "key": "F21",
+    "discussion_requirement": "Device/recipient authority, cancellation, expiry, deduplication, background limits and travel/DST correctness",
+    "title": "Reliable notification delivery and revocation",
+    "tasks": [
+      "F21.S01",
+      "F21.S02",
+      "F21.S03",
+      "F21.S04",
+      "F21.S05",
+      "F21.S06",
+      "F21.S07",
+      "F21.S08",
+      "F21.S09",
+      "F21.S10",
+      "F21.S11",
+      "F21.S12",
+      "F21.S13",
+      "F21.S14",
+      "F21.S15",
+      "F21.S16"
+    ],
+    "reuses": [
+      "E17",
+      "E18",
+      "X03"
+    ]
+  },
+  {
+    "key": "F22",
+    "discussion_requirement": "Explicit long-message, directness, response rhythm, shared-activity and quiet-company preferences with revisable explanations",
+    "title": "Matching by interaction preferences",
+    "tasks": [
+      "F22.S01",
+      "F22.S02",
+      "F22.S03",
+      "F22.S04",
+      "F22.S05",
+      "F22.S06",
+      "F22.S07",
+      "F22.S08",
+      "F22.S09",
+      "F22.S10",
+      "F22.S11",
+      "F22.S12",
+      "F22.S13",
+      "F22.S14",
+      "F22.S15",
+      "F22.S16"
+    ],
+    "reuses": [
+      "E03",
+      "X02"
+    ]
+  },
+  {
+    "key": "F23",
+    "discussion_requirement": "Specific intersecting interests, chosen depth, personal collections and invitations to explore together",
+    "title": "Interest constellations and enthusiastic deep dives",
+    "tasks": [
+      "F23.S01",
+      "F23.S02",
+      "F23.S03",
+      "F23.S04",
+      "F23.S05",
+      "F23.S06",
+      "F23.S07",
+      "F23.S08",
+      "F23.S09",
+      "F23.S10",
+      "F23.S11",
+      "F23.S12",
+      "F23.S13",
+      "F23.S14",
+      "F23.S15",
+      "F23.S16"
+    ],
+    "reuses": [
+      "E11",
+      "E14"
+    ]
+  },
+  {
+    "key": "F24",
+    "discussion_requirement": "Low-demand shared drawing, research, reading or separate work with optional interaction and bounded artifacts",
+    "title": "Parallel-play spaces and creative jams",
+    "tasks": [
+      "F24.S01",
+      "F24.S02",
+      "F24.S03",
+      "F24.S04",
+      "F24.S05",
+      "F24.S06",
+      "F24.S07",
+      "F24.S08",
+      "F24.S09",
+      "F24.S10",
+      "F24.S11",
+      "F24.S12",
+      "F24.S13",
+      "F24.S14",
+      "F24.S15",
+      "F24.S16"
+    ],
+    "reuses": [
+      "E03",
+      "E10",
+      "E12"
+    ]
+  },
+  {
+    "key": "F25",
+    "discussion_requirement": "Chosen reply expectations, brief acknowledgements, low-capacity status and easy reconnection",
+    "title": "Flexible asynchronous friendship and expectation agreements",
+    "tasks": [
+      "F25.S01",
+      "F25.S02",
+      "F25.S03",
+      "F25.S04",
+      "F25.S05",
+      "F25.S06",
+      "F25.S07",
+      "F25.S08",
+      "F25.S09",
+      "F25.S10",
+      "F25.S11",
+      "F25.S12",
+      "F25.S13",
+      "F25.S14",
+      "F25.S15",
+      "F25.S16"
+    ],
+    "reuses": [
+      "E03",
+      "X02"
+    ]
+  },
+  {
+    "key": "F26",
+    "discussion_requirement": "Structure, group size, duration, sensory/interaction expectations, sample first minute and exit paths",
+    "title": "Social-event previews and participation clarity",
+    "tasks": [
+      "F26.S01",
+      "F26.S02",
+      "F26.S03",
+      "F26.S04",
+      "F26.S05",
+      "F26.S06",
+      "F26.S07",
+      "F26.S08",
+      "F26.S09",
+      "F26.S10",
+      "F26.S11",
+      "F26.S12",
+      "F26.S13",
+      "F26.S14",
+      "F26.S15",
+      "F26.S16"
+    ],
+    "reuses": [
+      "E12",
+      "E13"
+    ]
+  },
+  {
+    "key": "F27",
+    "discussion_requirement": "User-created metaphors/images and editable low-word request cards with optional conventional wording",
+    "title": "Personal experience vocabulary and low-word communication",
+    "tasks": [
+      "F27.S01",
+      "F27.S02",
+      "F27.S03",
+      "F27.S04",
+      "F27.S05",
+      "F27.S06",
+      "F27.S07",
+      "F27.S08",
+      "F27.S09",
+      "F27.S10",
+      "F27.S11",
+      "F27.S12",
+      "F27.S13",
+      "F27.S14",
+      "F27.S15",
+      "F27.S16"
+    ],
+    "reuses": [
+      "E03",
+      "E04",
+      "E12"
+    ]
+  },
+  {
+    "key": "F28",
+    "discussion_requirement": "Independent density, motion, sound, richness and surprise preferences with stable navigation and saved contexts",
+    "title": "Predictable structure with adjustable stimulation and novelty",
+    "tasks": [
+      "F28.S01",
+      "F28.S02",
+      "F28.S03",
+      "F28.S04",
+      "F28.S05",
+      "F28.S06",
+      "F28.S07",
+      "F28.S08",
+      "F28.S09",
+      "F28.S10",
+      "F28.S11",
+      "F28.S12",
+      "F28.S13",
+      "F28.S14",
+      "F28.S15",
+      "F28.S16"
+    ],
+    "reuses": [
+      "E03",
+      "E12",
+      "E13"
+    ]
+  },
+  {
+    "key": "F29",
+    "discussion_requirement": "Explicit unclear/boring/large/uncomfortable/transition obstacle and a chosen clarification, smaller step, environment change or company",
+    "title": "Obstacle-specific help starting",
+    "tasks": [
+      "F29.S01",
+      "F29.S02",
+      "F29.S03",
+      "F29.S04",
+      "F29.S05",
+      "F29.S06",
+      "F29.S07",
+      "F29.S08",
+      "F29.S09",
+      "F29.S10",
+      "F29.S11",
+      "F29.S12",
+      "F29.S13",
+      "F29.S14",
+      "F29.S15",
+      "F29.S16"
+    ],
+    "reuses": [
+      "E02",
+      "E03",
+      "E05"
+    ]
+  },
+  {
+    "key": "F30",
+    "discussion_requirement": "Exact last artifact, open question, possible next action and saved references for unfinished or resting projects",
+    "title": "Creative bookmarks and project incubation",
+    "tasks": [
+      "F30.S01",
+      "F30.S02",
+      "F30.S03",
+      "F30.S04",
+      "F30.S05",
+      "F30.S06",
+      "F30.S07",
+      "F30.S08",
+      "F30.S09",
+      "F30.S10",
+      "F30.S11",
+      "F30.S12",
+      "F30.S13",
+      "F30.S14",
+      "F30.S15",
+      "F30.S16"
+    ],
+    "reuses": [
+      "E07",
+      "E14"
+    ]
+  },
+  {
+    "key": "F31",
+    "discussion_requirement": "Objects, mini-map, image, question, voice or creation with equally expressive text alternative and exact audience choice",
+    "title": "Expressive personal exhibits and multiple creative formats",
+    "tasks": [
+      "F31.S01",
+      "F31.S02",
+      "F31.S03",
+      "F31.S04",
+      "F31.S05",
+      "F31.S06",
+      "F31.S07",
+      "F31.S08",
+      "F31.S09",
+      "F31.S10",
+      "F31.S11",
+      "F31.S12",
+      "F31.S13",
+      "F31.S14",
+      "F31.S15",
+      "F31.S16"
+    ],
+    "reuses": [
+      "E11",
+      "E12",
+      "E14"
+    ]
+  },
+  {
+    "key": "F32",
+    "discussion_requirement": "Chosen participation effort, recovery arrangements, no-demand periods and readiness to return without inferred mood",
+    "title": "Variable capacity, social recovery and protected rest",
+    "tasks": [
+      "F32.S01",
+      "F32.S02",
+      "F32.S03",
+      "F32.S04",
+      "F32.S05",
+      "F32.S06",
+      "F32.S07",
+      "F32.S08",
+      "F32.S09",
+      "F32.S10",
+      "F32.S11",
+      "F32.S12",
+      "F32.S13",
+      "F32.S14",
+      "F32.S15",
+      "F32.S16"
+    ],
+    "reuses": [
+      "E03",
+      "E01"
+    ]
+  },
+  {
+    "key": "F33",
+    "discussion_requirement": "Names, pronouns, labels or no labels selected by user for presentation; plural accommodations distinct from metaphor exercises",
+    "title": "Optional user-authored profiles and terminology",
+    "tasks": [
+      "F33.S01",
+      "F33.S02",
+      "F33.S03",
+      "F33.S04",
+      "F33.S05",
+      "F33.S06",
+      "F33.S07",
+      "F33.S08",
+      "F33.S09",
+      "F33.S10",
+      "F33.S11",
+      "F33.S12",
+      "F33.S13",
+      "F33.S14",
+      "F33.S15",
+      "F33.S16"
+    ],
+    "reuses": [
+      "E06",
+      "E07"
+    ]
+  },
+  {
+    "key": "F34",
+    "discussion_requirement": "What happened, decisions, unfinished work and helpful next context with optional authored attribution and correction",
+    "title": "Continuity notebook and attributable handovers",
+    "tasks": [
+      "F34.S01",
+      "F34.S02",
+      "F34.S03",
+      "F34.S04",
+      "F34.S05",
+      "F34.S06",
+      "F34.S07",
+      "F34.S08",
+      "F34.S09",
+      "F34.S10",
+      "F34.S11",
+      "F34.S12",
+      "F34.S13",
+      "F34.S14",
+      "F34.S15",
+      "F34.S16"
+    ],
+    "reuses": [
+      "E06",
+      "E07",
+      "E14"
+    ]
+  },
+  {
+    "key": "F35",
+    "discussion_requirement": "Shared account plans with differing authored preferences, pending decisions and explicit current agreement",
+    "title": "Commitments, preferences and unresolved decisions board",
+    "tasks": [
+      "F35.S01",
+      "F35.S02",
+      "F35.S03",
+      "F35.S04",
+      "F35.S05",
+      "F35.S06",
+      "F35.S07",
+      "F35.S08",
+      "F35.S09",
+      "F35.S10",
+      "F35.S11",
+      "F35.S12",
+      "F35.S13",
+      "F35.S14",
+      "F35.S15",
+      "F35.S16"
+    ],
+    "reuses": [
+      "E01",
+      "E07"
+    ]
+  },
+  {
+    "key": "F36",
+    "discussion_requirement": "Recipient-specific selected presentation/support cards, previews and clear account/device visibility",
+    "title": "Selective presentation disclosure and honest access boundaries",
+    "tasks": [
+      "F36.S01",
+      "F36.S02",
+      "F36.S03",
+      "F36.S04",
+      "F36.S05",
+      "F36.S06",
+      "F36.S07",
+      "F36.S08",
+      "F36.S09",
+      "F36.S10",
+      "F36.S11",
+      "F36.S12",
+      "F36.S13",
+      "F36.S14",
+      "F36.S15",
+      "F36.S16"
+    ],
+    "reuses": [
+      "X02",
+      "E06",
+      "E17"
+    ]
+  },
+  {
+    "key": "F37",
+    "discussion_requirement": "Predictable chosen next step, actual date/time, familiar artifact, practical info and selected trusted contacts",
+    "title": "Familiar orientation and return page",
+    "tasks": [
+      "F37.S01",
+      "F37.S02",
+      "F37.S03",
+      "F37.S04",
+      "F37.S05",
+      "F37.S06",
+      "F37.S07",
+      "F37.S08",
+      "F37.S09",
+      "F37.S10",
+      "F37.S11",
+      "F37.S12",
+      "F37.S13",
+      "F37.S14",
+      "F37.S15",
+      "F37.S16"
+    ],
+    "reuses": [
+      "E02",
+      "E12",
+      "E13"
+    ]
+  },
+  {
+    "key": "F38",
+    "discussion_requirement": "Usable exports of notes, preferences, support cards and creative artifacts with restoration and shutdown continuity",
+    "title": "Portability, backup, deletion and service durability",
+    "tasks": [
+      "F38.S01",
+      "F38.S02",
+      "F38.S03",
+      "F38.S04",
+      "F38.S05",
+      "F38.S06",
+      "F38.S07",
+      "F38.S08",
+      "F38.S09",
+      "F38.S10",
+      "F38.S11",
+      "F38.S12",
+      "F38.S13",
+      "F38.S14",
+      "F38.S15",
+      "F38.S16"
+    ],
+    "reuses": [
+      "E14",
+      "E17"
+    ]
+  },
+  {
+    "key": "F39",
+    "discussion_requirement": "User-chosen destinations, multiple routes and discover/rehearse/try/revisit labels separate from measured personality",
+    "title": "Branching practical skill trees and evidence levels",
+    "tasks": [
+      "F39.S01",
+      "F39.S02",
+      "F39.S03",
+      "F39.S04",
+      "F39.S05",
+      "F39.S06",
+      "F39.S07",
+      "F39.S08",
+      "F39.S09",
+      "F39.S10",
+      "F39.S11",
+      "F39.S12",
+      "F39.S13",
+      "F39.S14",
+      "F39.S15",
+      "F39.S16"
+    ],
+    "reuses": [
+      "E08",
+      "E09"
+    ]
+  },
+  {
+    "key": "F40",
+    "discussion_requirement": "Temporary practice focus and equipped grounding cue, opening phrase, fallback and support contact",
+    "title": "Flexible builds and situation toolkits",
+    "tasks": [
+      "F40.S01",
+      "F40.S02",
+      "F40.S03",
+      "F40.S04",
+      "F40.S05",
+      "F40.S06",
+      "F40.S07",
+      "F40.S08",
+      "F40.S09",
+      "F40.S10",
+      "F40.S11",
+      "F40.S12",
+      "F40.S13",
+      "F40.S14",
+      "F40.S15",
+      "F40.S16"
+    ],
+    "reuses": [
+      "E08",
+      "E14"
+    ]
+  },
+  {
+    "key": "F41",
+    "discussion_requirement": "Revisit strategy across friendship/work/family and review when it fits with optional cues and spaced returns",
+    "title": "Context-varied transfer and progressively lighter support",
+    "tasks": [
+      "F41.S01",
+      "F41.S02",
+      "F41.S03",
+      "F41.S04",
+      "F41.S05",
+      "F41.S06",
+      "F41.S07",
+      "F41.S08",
+      "F41.S09",
+      "F41.S10",
+      "F41.S11",
+      "F41.S12",
+      "F41.S13",
+      "F41.S14",
+      "F41.S15",
+      "F41.S16"
+    ],
+    "reuses": [
+      "E08",
+      "E07"
+    ]
+  },
+  {
+    "key": "F42",
+    "discussion_requirement": "Shared bounded intention with independently suitable acts, flexible pace, endpoint and useful artifact",
+    "title": "Cooperative purposeful quests and chosen adventures",
+    "tasks": [
+      "F42.S01",
+      "F42.S02",
+      "F42.S03",
+      "F42.S04",
+      "F42.S05",
+      "F42.S06",
+      "F42.S07",
+      "F42.S08",
+      "F42.S09",
+      "F42.S10",
+      "F42.S11",
+      "F42.S12",
+      "F42.S13",
+      "F42.S14",
+      "F42.S15",
+      "F42.S16"
+    ],
+    "reuses": [
+      "E01",
+      "E08",
+      "E09"
+    ]
+  },
+  {
+    "key": "F43",
+    "discussion_requirement": "Rotate questioner, perspective finder, planner and observer in reviewed scenes with explicit results",
+    "title": "Complementary roles and cooperative practical mini-games",
+    "tasks": [
+      "F43.S01",
+      "F43.S02",
+      "F43.S03",
+      "F43.S04",
+      "F43.S05",
+      "F43.S06",
+      "F43.S07",
+      "F43.S08",
+      "F43.S09",
+      "F43.S10",
+      "F43.S11",
+      "F43.S12",
+      "F43.S13",
+      "F43.S14",
+      "F43.S15",
+      "F43.S16"
+    ],
+    "reuses": [
+      "E10",
+      "E11"
+    ]
+  },
+  {
+    "key": "F44",
+    "discussion_requirement": "Failed attempt preserves observations, opens smaller/different route and combines tools for chosen important moment",
+    "title": "Retries, persistent learning and larger encounters",
+    "tasks": [
+      "F44.S01",
+      "F44.S02",
+      "F44.S03",
+      "F44.S04",
+      "F44.S05",
+      "F44.S06",
+      "F44.S07",
+      "F44.S08",
+      "F44.S09",
+      "F44.S10",
+      "F44.S11",
+      "F44.S12",
+      "F44.S13",
+      "F44.S14",
+      "F44.S15",
+      "F44.S16"
+    ],
+    "reuses": [
+      "E08",
+      "E09",
+      "E10"
+    ]
+  },
+  {
+    "key": "F45",
+    "discussion_requirement": "User-chosen objects/scenes grow from concrete actions and retained tools with visual and text equivalents",
+    "title": "Persistent Felt world and useful personal collections",
+    "tasks": [
+      "F45.S01",
+      "F45.S02",
+      "F45.S03",
+      "F45.S04",
+      "F45.S05",
+      "F45.S06",
+      "F45.S07",
+      "F45.S08",
+      "F45.S09",
+      "F45.S10",
+      "F45.S11",
+      "F45.S12",
+      "F45.S13",
+      "F45.S14",
+      "F45.S15",
+      "F45.S16"
+    ],
+    "reuses": [
+      "E11",
+      "E12",
+      "E14"
+    ]
+  },
+  {
+    "key": "F46",
+    "discussion_requirement": "Finite scenario or noticing activity with plausible responses, authored explanation, short/long version and satisfying endpoint",
+    "title": "Bounded puzzle and creative expedition rituals",
+    "tasks": [
+      "F46.S01",
+      "F46.S02",
+      "F46.S03",
+      "F46.S04",
+      "F46.S05",
+      "F46.S06",
+      "F46.S07",
+      "F46.S08",
+      "F46.S09",
+      "F46.S10",
+      "F46.S11",
+      "F46.S12",
+      "F46.S13",
+      "F46.S14",
+      "F46.S15",
+      "F46.S16"
+    ],
+    "reuses": [
+      "E10",
+      "E03"
+    ]
+  },
+  {
+    "key": "F47",
+    "discussion_requirement": "Authored coherent Felt reactions tied to real acts with meaningful milestones and complete quiet equivalents",
+    "title": "Original character humor and sensory-aware celebrations",
+    "tasks": [
+      "F47.S01",
+      "F47.S02",
+      "F47.S03",
+      "F47.S04",
+      "F47.S05",
+      "F47.S06",
+      "F47.S07",
+      "F47.S08",
+      "F47.S09",
+      "F47.S10",
+      "F47.S11",
+      "F47.S12",
+      "F47.S13",
+      "F47.S14",
+      "F47.S15",
+      "F47.S16"
+    ],
+    "reuses": [
+      "E09",
+      "E11",
+      "E12"
+    ]
+  },
+  {
+    "key": "F48",
+    "discussion_requirement": "Selected practical tools or creative gifts, finite seasonal projects and source-linked personal/shared story",
+    "title": "Useful gifts, seasonal stories and corrected recaps",
+    "tasks": [
+      "F48.S01",
+      "F48.S02",
+      "F48.S03",
+      "F48.S04",
+      "F48.S05",
+      "F48.S06",
+      "F48.S07",
+      "F48.S08",
+      "F48.S09",
+      "F48.S10",
+      "F48.S11",
+      "F48.S12",
+      "F48.S13",
+      "F48.S14",
+      "F48.S15",
+      "F48.S16"
+    ],
+    "reuses": [
+      "E01",
+      "E09",
+      "E14"
+    ]
+  },
+  {
+    "key": "F49",
+    "discussion_requirement": "Settle/understand/choose/rehearse/connect entries with reviewed source cards, intensity, alternatives and useful artifacts",
+    "title": "Purpose-organized source-informed practice library",
+    "tasks": [
+      "F49.S01",
+      "F49.S02",
+      "F49.S03",
+      "F49.S04",
+      "F49.S05",
+      "F49.S06",
+      "F49.S07",
+      "F49.S08",
+      "F49.S09",
+      "F49.S10",
+      "F49.S11",
+      "F49.S12",
+      "F49.S13",
+      "F49.S14",
+      "F49.S15",
+      "F49.S16"
+    ],
+    "reuses": [
+      "E02",
+      "X04",
+      "X05"
+    ]
+  },
+  {
+    "key": "F50",
+    "discussion_requirement": "Personal dimensions, symbols, recurring contexts, uncertainty and corrected examples with protected score provenance",
+    "title": "User-authored meaning map alongside formal assessment",
+    "tasks": [
+      "F50.S01",
+      "F50.S02",
+      "F50.S03",
+      "F50.S04",
+      "F50.S05",
+      "F50.S06",
+      "F50.S07",
+      "F50.S08",
+      "F50.S09",
+      "F50.S10",
+      "F50.S11",
+      "F50.S12",
+      "F50.S13",
+      "F50.S14",
+      "F50.S15",
+      "F50.S16"
+    ],
+    "reuses": [
+      "E04",
+      "E06",
+      "E16"
+    ]
+  },
+  {
+    "key": "F51",
+    "discussion_requirement": "Practical setting/activity/support changes stored with when they helped and optional portable request",
+    "title": "Accommodation, support and environmental-fit library",
+    "tasks": [
+      "F51.S01",
+      "F51.S02",
+      "F51.S03",
+      "F51.S04",
+      "F51.S05",
+      "F51.S06",
+      "F51.S07",
+      "F51.S08",
+      "F51.S09",
+      "F51.S10",
+      "F51.S11",
+      "F51.S12",
+      "F51.S13",
+      "F51.S14",
+      "F51.S15",
+      "F51.S16"
+    ],
+    "reuses": [
+      "E05",
+      "E07",
+      "E14"
+    ]
+  },
+  {
+    "key": "F52",
+    "discussion_requirement": "User selects understanding/planning/environment change/rehearsal/company/pause with clarification and reflection endpoint",
+    "title": "Selectable bounded coach and communication rehearsal",
+    "tasks": [
+      "F52.S01",
+      "F52.S02",
+      "F52.S03",
+      "F52.S04",
+      "F52.S05",
+      "F52.S06",
+      "F52.S07",
+      "F52.S08",
+      "F52.S09",
+      "F52.S10",
+      "F52.S11",
+      "F52.S12",
+      "F52.S13",
+      "F52.S14",
+      "F52.S15",
+      "F52.S16"
+    ],
+    "reuses": [
+      "E04",
+      "E05",
+      "E06"
+    ]
+  },
+  {
+    "key": "F53",
+    "discussion_requirement": "Participant-chosen questions, contextual comparisons, small experiments and reviewable contrary outcomes",
+    "title": "Community investigations and practical exception library",
+    "tasks": [
+      "F53.S01",
+      "F53.S02",
+      "F53.S03",
+      "F53.S04",
+      "F53.S05",
+      "F53.S06",
+      "F53.S07",
+      "F53.S08",
+      "F53.S09",
+      "F53.S10",
+      "F53.S11",
+      "F53.S12",
+      "F53.S13",
+      "F53.S14",
+      "F53.S15",
+      "F53.S16"
+    ],
+    "reuses": [
+      "E05",
+      "E19"
+    ]
+  },
+  {
+    "key": "F54",
+    "discussion_requirement": "Separate clinical/spiritual/educational service scope, accountable operator, chosen preparation and real booking states",
+    "title": "Qualified facilitated booking and scoped offerings",
+    "tasks": [
+      "F54.S01",
+      "F54.S02",
+      "F54.S03",
+      "F54.S04",
+      "F54.S05",
+      "F54.S06",
+      "F54.S07",
+      "F54.S08",
+      "F54.S09",
+      "F54.S10",
+      "F54.S11",
+      "F54.S12",
+      "F54.S13",
+      "F54.S14",
+      "F54.S15",
+      "F54.S16"
+    ],
+    "reuses": [
+      "E15",
+      "X04",
+      "X05"
+    ]
+  },
+  {
+    "key": "F55",
+    "discussion_requirement": "Hosted questions, quieter/dissenting views, rotating roles, feedback, moderation appeals and shared useful artifacts",
+    "title": "Inclusive group formats, power awareness and co-creation",
+    "tasks": [
+      "F55.S01",
+      "F55.S02",
+      "F55.S03",
+      "F55.S04",
+      "F55.S05",
+      "F55.S06",
+      "F55.S07",
+      "F55.S08",
+      "F55.S09",
+      "F55.S10",
+      "F55.S11",
+      "F55.S12",
+      "F55.S13",
+      "F55.S14",
+      "F55.S15",
+      "F55.S16"
+    ],
+    "reuses": [
+      "E12",
+      "E13",
+      "E19"
+    ]
+  },
+  {
+    "key": "M01",
+    "discussion_requirement": "User-confirmed stress signs, needs and preferred response; edit personal support playbook",
+    "title": "PCM-inspired stress preferences and playbooks",
+    "scope": "reflective",
+    "consumers": [
+      "F10",
+      "F13",
+      "F51",
+      "F52"
+    ],
+    "tasks": [
+      "M01.S01",
+      "M01.S02",
+      "M01.S03",
+      "M01.S04",
+      "M01.S05",
+      "M01.S06",
+      "M01.S07",
+      "M01.S08",
+      "M01.S09"
+    ]
+  },
+  {
+    "key": "M02",
+    "discussion_requirement": "Express same request through selected pacing, warmth, structure or play while preserving meaning",
+    "title": "PCM-inspired communication translation",
+    "scope": "reflective",
+    "consumers": [
+      "F13",
+      "F25",
+      "F52"
+    ],
+    "tasks": [
+      "M02.S01",
+      "M02.S02",
+      "M02.S03",
+      "M02.S04",
+      "M02.S05",
+      "M02.S06",
+      "M02.S07",
+      "M02.S08",
+      "M02.S09"
+    ]
+  },
+  {
+    "key": "M03",
+    "discussion_requirement": "Optional external or bodily noticing followed by small expressive experiment and reflection",
+    "title": "Gestalt-inspired present awareness experiments",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F27",
+      "F49",
+      "F52"
+    ],
+    "tasks": [
+      "M03.S01",
+      "M03.S02",
+      "M03.S03",
+      "M03.S04",
+      "M03.S05",
+      "M03.S06",
+      "M03.S07",
+      "M03.S08",
+      "M03.S09"
+    ]
+  },
+  {
+    "key": "M04",
+    "discussion_requirement": "User-directed fictional rehearsal and chosen alternative perspective with hypothetical status",
+    "title": "Psychodrama-inspired ordinary rehearsal",
+    "scope": "facilitator-sensitive",
+    "consumers": [
+      "F04",
+      "F43",
+      "F44",
+      "F49"
+    ],
+    "tasks": [
+      "M04.S01",
+      "M04.S02",
+      "M04.S03",
+      "M04.S04",
+      "M04.S05",
+      "M04.S06",
+      "M04.S07",
+      "M04.S08",
+      "M04.S09"
+    ]
+  },
+  {
+    "key": "M05",
+    "discussion_requirement": "Theme-based fictional shared scene with roles, observer rotation and personal takeaways",
+    "title": "Sociodrama and group role rehearsal",
+    "scope": "facilitator-sensitive",
+    "consumers": [
+      "F14",
+      "F43",
+      "F54",
+      "F55"
+    ],
+    "tasks": [
+      "M05.S01",
+      "M05.S02",
+      "M05.S03",
+      "M05.S04",
+      "M05.S05",
+      "M05.S06",
+      "M05.S07",
+      "M05.S08",
+      "M05.S09"
+    ]
+  },
+  {
+    "key": "M06",
+    "discussion_requirement": "Authored competing motivations and chosen broader intention with optional metaphor labels",
+    "title": "Psychosynthesis-inspired inner council",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F27",
+      "F40",
+      "F49",
+      "F52"
+    ],
+    "tasks": [
+      "M06.S01",
+      "M06.S02",
+      "M06.S03",
+      "M06.S04",
+      "M06.S05",
+      "M06.S06",
+      "M06.S07",
+      "M06.S08",
+      "M06.S09"
+    ]
+  },
+  {
+    "key": "M07",
+    "discussion_requirement": "Respect Buddhist context and prototype original mild curiosity/care reflection with no ritual or intense imagery claim",
+    "title": "Chöd contextual source and compassionate relation",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F27",
+      "F49",
+      "F54"
+    ],
+    "tasks": [
+      "M07.S01",
+      "M07.S02",
+      "M07.S03",
+      "M07.S04",
+      "M07.S05",
+      "M07.S06",
+      "M07.S07",
+      "M07.S08",
+      "M07.S09"
+    ]
+  },
+  {
+    "key": "M08",
+    "discussion_requirement": "Distinct contemporary source and original bounded compassionate metaphor; licensed/qualified offering separate",
+    "title": "Feeding Your Demons source-informed exploration",
+    "scope": "facilitator-sensitive",
+    "consumers": [
+      "F49",
+      "F54"
+    ],
+    "tasks": [
+      "M08.S01",
+      "M08.S02",
+      "M08.S03",
+      "M08.S04",
+      "M08.S05",
+      "M08.S06",
+      "M08.S07",
+      "M08.S08",
+      "M08.S09"
+    ]
+  },
+  {
+    "key": "M09",
+    "discussion_requirement": "User chooses value and manageable action with difficult thought present, including revised goal",
+    "title": "ACT-inspired values-guided choice",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F29",
+      "F39",
+      "F44",
+      "F52"
+    ],
+    "tasks": [
+      "M09.S01",
+      "M09.S02",
+      "M09.S03",
+      "M09.S04",
+      "M09.S05",
+      "M09.S06",
+      "M09.S07",
+      "M09.S08",
+      "M09.S09"
+    ]
+  },
+  {
+    "key": "M10",
+    "discussion_requirement": "Own reasons, mixed motivations, confidence and optional plan with autonomy to decline change",
+    "title": "Motivational interviewing-inspired ambivalence",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F29",
+      "F49",
+      "F52"
+    ],
+    "tasks": [
+      "M10.S01",
+      "M10.S02",
+      "M10.S03",
+      "M10.S04",
+      "M10.S05",
+      "M10.S06",
+      "M10.S07",
+      "M10.S08",
+      "M10.S09"
+    ]
+  },
+  {
+    "key": "M11",
+    "discussion_requirement": "User-authored associations and changing meanings with waking facts distinct from dream/fiction",
+    "title": "Jungian personal symbols and voluntary dream material",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F30",
+      "F31",
+      "F45",
+      "F50"
+    ],
+    "tasks": [
+      "M11.S01",
+      "M11.S02",
+      "M11.S03",
+      "M11.S04",
+      "M11.S05",
+      "M11.S06",
+      "M11.S07",
+      "M11.S08",
+      "M11.S09"
+    ]
+  },
+  {
+    "key": "M12",
+    "discussion_requirement": "Explore a quality user admires or limits, with real disagreement and mistreatment also possible",
+    "title": "Jungian underexpressed qualities and shadow lens",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F39",
+      "F49",
+      "F50"
+    ],
+    "tasks": [
+      "M12.S01",
+      "M12.S02",
+      "M12.S03",
+      "M12.S04",
+      "M12.S05",
+      "M12.S06",
+      "M12.S07",
+      "M12.S08",
+      "M12.S09"
+    ]
+  },
+  {
+    "key": "M13",
+    "discussion_requirement": "Represent competing concerns fairly and author a response accommodating useful aspects",
+    "title": "Jungian opposites and third possibilities",
+    "scope": "reflective",
+    "consumers": [
+      "F43",
+      "F46",
+      "F50"
+    ],
+    "tasks": [
+      "M13.S01",
+      "M13.S02",
+      "M13.S03",
+      "M13.S04",
+      "M13.S05",
+      "M13.S06",
+      "M13.S07",
+      "M13.S08",
+      "M13.S09"
+    ]
+  },
+  {
+    "key": "M14",
+    "discussion_requirement": "Deliberately write both fictional sides and choose a practical takeaway; intensive practice separately scoped",
+    "title": "Active-imagination-inspired authored dialogues",
+    "scope": "facilitator-sensitive",
+    "consumers": [
+      "F31",
+      "F43",
+      "F49"
+    ],
+    "tasks": [
+      "M14.S01",
+      "M14.S02",
+      "M14.S03",
+      "M14.S04",
+      "M14.S05",
+      "M14.S06",
+      "M14.S07",
+      "M14.S08",
+      "M14.S09"
+    ]
+  },
+  {
+    "key": "M15",
+    "discussion_requirement": "Optional unfamiliarity exploration and smallest wanted experiment, support or maintained boundary",
+    "title": "Mindell process-work edges",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F29",
+      "F39",
+      "F44"
+    ],
+    "tasks": [
+      "M15.S01",
+      "M15.S02",
+      "M15.S03",
+      "M15.S04",
+      "M15.S05",
+      "M15.S06",
+      "M15.S07",
+      "M15.S08",
+      "M15.S09"
+    ]
+  },
+  {
+    "key": "M16",
+    "discussion_requirement": "Try words, sketch, sound, movement, arrangement or example and check whether it clarifies",
+    "title": "Mindell expressive channels",
+    "scope": "reflective",
+    "consumers": [
+      "F27",
+      "F31",
+      "F49"
+    ],
+    "tasks": [
+      "M16.S01",
+      "M16.S02",
+      "M16.S03",
+      "M16.S04",
+      "M16.S05",
+      "M16.S06",
+      "M16.S07",
+      "M16.S08",
+      "M16.S09"
+    ]
+  },
+  {
+    "key": "M17",
+    "discussion_requirement": "Invite uncertainty, dissent and quieter accounts before a group decision",
+    "title": "Deep democracy and overlooked perspectives",
+    "scope": "community",
+    "consumers": [
+      "F14",
+      "F53",
+      "F55"
+    ],
+    "tasks": [
+      "M17.S01",
+      "M17.S02",
+      "M17.S03",
+      "M17.S04",
+      "M17.S05",
+      "M17.S06",
+      "M17.S07",
+      "M17.S08",
+      "M17.S09"
+    ]
+  },
+  {
+    "key": "M18",
+    "discussion_requirement": "Inspect how popularity, expertise, fluency and host powers affect contribution and feedback",
+    "title": "Process-work rank and power awareness",
+    "scope": "community",
+    "consumers": [
+      "F14",
+      "F55"
+    ],
+    "tasks": [
+      "M18.S01",
+      "M18.S02",
+      "M18.S03",
+      "M18.S04",
+      "M18.S05",
+      "M18.S06",
+      "M18.S07",
+      "M18.S08",
+      "M18.S09"
+    ]
+  },
+  {
+    "key": "M19",
+    "discussion_requirement": "Concrete current sources of care/protection/support; visualization alternatives and scoped clinical source",
+    "title": "DNMS-inspired supportive resources",
+    "scope": "facilitator-sensitive",
+    "consumers": [
+      "F10",
+      "F37",
+      "F51",
+      "F54"
+    ],
+    "tasks": [
+      "M19.S01",
+      "M19.S02",
+      "M19.S03",
+      "M19.S04",
+      "M19.S05",
+      "M19.S06",
+      "M19.S07",
+      "M19.S08",
+      "M19.S09"
+    ]
+  },
+  {
+    "key": "M20",
+    "discussion_requirement": "Identify present acknowledgment, choice, consistency, protection or help and available response",
+    "title": "DNMS-inspired present needs to practical support",
+    "scope": "facilitator-sensitive",
+    "consumers": [
+      "F10",
+      "F29",
+      "F51",
+      "F52"
+    ],
+    "tasks": [
+      "M20.S01",
+      "M20.S02",
+      "M20.S03",
+      "M20.S04",
+      "M20.S05",
+      "M20.S06",
+      "M20.S07",
+      "M20.S08",
+      "M20.S09"
+    ]
+  },
+  {
+    "key": "M21",
+    "discussion_requirement": "Separate observed event, conclusion and available choice while preserving emotion and external constraints",
+    "title": "Stoic event, interpretation and influence reflection",
+    "scope": "philosophical",
+    "consumers": [
+      "F20",
+      "F46",
+      "F49",
+      "F52"
+    ],
+    "tasks": [
+      "M21.S01",
+      "M21.S02",
+      "M21.S03",
+      "M21.S04",
+      "M21.S05",
+      "M21.S06",
+      "M21.S07",
+      "M21.S08",
+      "M21.S09"
+    ]
+  },
+  {
+    "key": "M22",
+    "discussion_requirement": "Explore timing, environment, sequence, scope and where movement is possible as clearly named analogy",
+    "title": "Daoist less-forcing and workable conditions lens",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F29",
+      "F32",
+      "F51"
+    ],
+    "tasks": [
+      "M22.S01",
+      "M22.S02",
+      "M22.S03",
+      "M22.S04",
+      "M22.S05",
+      "M22.S06",
+      "M22.S07",
+      "M22.S08",
+      "M22.S09"
+    ]
+  },
+  {
+    "key": "M23",
+    "discussion_requirement": "User-selected contributing conditions and one chosen contextual change",
+    "title": "Buddhist conditionality-inspired context map",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F50",
+      "F51",
+      "F53"
+    ],
+    "tasks": [
+      "M23.S01",
+      "M23.S02",
+      "M23.S03",
+      "M23.S04",
+      "M23.S05",
+      "M23.S06",
+      "M23.S07",
+      "M23.S08",
+      "M23.S09"
+    ]
+  },
+  {
+    "key": "M24",
+    "discussion_requirement": "Optional caring intention or practical supportive act with chosen recipients and maintained boundaries",
+    "title": "Mettā and chosen goodwill",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F10",
+      "F15",
+      "F48"
+    ],
+    "tasks": [
+      "M24.S01",
+      "M24.S02",
+      "M24.S03",
+      "M24.S04",
+      "M24.S05",
+      "M24.S06",
+      "M24.S07",
+      "M24.S08",
+      "M24.S09"
+    ]
+  },
+  {
+    "key": "M25",
+    "discussion_requirement": "Brief noticing of overlooked details with photograph, sketch or sentence and clear endpoint",
+    "title": "Zen-inspired beginner attention",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F31",
+      "F46",
+      "F49"
+    ],
+    "tasks": [
+      "M25.S01",
+      "M25.S02",
+      "M25.S03",
+      "M25.S04",
+      "M25.S05",
+      "M25.S06",
+      "M25.S07",
+      "M25.S08",
+      "M25.S09"
+    ]
+  },
+  {
+    "key": "M26",
+    "discussion_requirement": "Chosen ethical quality, actual actions and reflection on when another quality matters",
+    "title": "Mussar-inspired context-sensitive quality practice",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F39",
+      "F42",
+      "F49"
+    ],
+    "tasks": [
+      "M26.S01",
+      "M26.S02",
+      "M26.S03",
+      "M26.S04",
+      "M26.S05",
+      "M26.S06",
+      "M26.S07",
+      "M26.S08",
+      "M26.S09"
+    ]
+  },
+  {
+    "key": "M27",
+    "discussion_requirement": "Several accounts with what each reveals, assumes and leaves unanswered; evidence still evaluated",
+    "title": "Jain many-sidedness and perspective limits",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F04",
+      "F43",
+      "F46",
+      "F55"
+    ],
+    "tasks": [
+      "M27.S01",
+      "M27.S02",
+      "M27.S03",
+      "M27.S04",
+      "M27.S05",
+      "M27.S06",
+      "M27.S07",
+      "M27.S08",
+      "M27.S09"
+    ]
+  },
+  {
+    "key": "M28",
+    "discussion_requirement": "Mutually chosen care/respect/responsibilities with revisable inherited expectations",
+    "title": "Confucian reciprocal relationship expectations",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F03",
+      "F11",
+      "F13"
+    ],
+    "tasks": [
+      "M28.S01",
+      "M28.S02",
+      "M28.S03",
+      "M28.S04",
+      "M28.S05",
+      "M28.S06",
+      "M28.S07",
+      "M28.S08",
+      "M28.S09"
+    ]
+  },
+  {
+    "key": "M29",
+    "discussion_requirement": "Choose quality of effort and review actual result without guaranteed success or blame",
+    "title": "Karma-yoga-inspired effort and uncertain outcome",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F39",
+      "F42",
+      "F44"
+    ],
+    "tasks": [
+      "M29.S01",
+      "M29.S02",
+      "M29.S03",
+      "M29.S04",
+      "M29.S05",
+      "M29.S06",
+      "M29.S07",
+      "M29.S08",
+      "M29.S09"
+    ]
+  },
+  {
+    "key": "M30",
+    "discussion_requirement": "User-authored beginning/end/rest sequence with source-specific review for tradition versions",
+    "title": "Protected rest and personal transition rituals",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F18",
+      "F32",
+      "F45"
+    ],
+    "tasks": [
+      "M30.S01",
+      "M30.S02",
+      "M30.S03",
+      "M30.S04",
+      "M30.S05",
+      "M30.S06",
+      "M30.S07",
+      "M30.S08",
+      "M30.S09"
+    ]
+  },
+  {
+    "key": "M31",
+    "discussion_requirement": "Try word/image/example, check fit and revise with alternatives to bodily attention",
+    "title": "Focusing-inspired fitting words and metaphors",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F27",
+      "F49",
+      "F52"
+    ],
+    "tasks": [
+      "M31.S01",
+      "M31.S02",
+      "M31.S03",
+      "M31.S04",
+      "M31.S05",
+      "M31.S06",
+      "M31.S07",
+      "M31.S08",
+      "M31.S09"
+    ]
+  },
+  {
+    "key": "M32",
+    "discussion_requirement": "User-chosen mild assumption and ordinary low-stakes observation; intensive work separately scoped",
+    "title": "Hakomi-inspired gentle assumption experiments",
+    "scope": "facilitator-sensitive",
+    "consumers": [
+      "F29",
+      "F49",
+      "F54"
+    ],
+    "tasks": [
+      "M32.S01",
+      "M32.S02",
+      "M32.S03",
+      "M32.S04",
+      "M32.S05",
+      "M32.S06",
+      "M32.S07",
+      "M32.S08",
+      "M32.S09"
+    ]
+  },
+  {
+    "key": "M33",
+    "discussion_requirement": "Person authors story using actual examples, context and exceptions with source lineage",
+    "title": "Narrative approaches and richer self-accounts",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F16",
+      "F30",
+      "F50"
+    ],
+    "tasks": [
+      "M33.S01",
+      "M33.S02",
+      "M33.S03",
+      "M33.S04",
+      "M33.S05",
+      "M33.S06",
+      "M33.S07",
+      "M33.S08",
+      "M33.S09"
+    ]
+  },
+  {
+    "key": "M34",
+    "discussion_requirement": "Find when something was a little easier and choose one contextual difference to test",
+    "title": "Solution-focused exceptions and useful conditions",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F29",
+      "F51",
+      "F53"
+    ],
+    "tasks": [
+      "M34.S01",
+      "M34.S02",
+      "M34.S03",
+      "M34.S04",
+      "M34.S05",
+      "M34.S06",
+      "M34.S07",
+      "M34.S08",
+      "M34.S09"
+    ]
+  },
+  {
+    "key": "M35",
+    "discussion_requirement": "Separate observation and interpretation, consider plausible alternatives and ask clarification",
+    "title": "Mentalization and uncertainty about other minds",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F03",
+      "F13",
+      "F22",
+      "F52"
+    ],
+    "tasks": [
+      "M35.S01",
+      "M35.S02",
+      "M35.S03",
+      "M35.S04",
+      "M35.S05",
+      "M35.S06",
+      "M35.S07",
+      "M35.S08",
+      "M35.S09"
+    ]
+  },
+  {
+    "key": "M36",
+    "discussion_requirement": "Acknowledge difficulty, fair perspective and chosen support, boundary, practical help or rest",
+    "title": "Compassion-focused warmth and useful action",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F10",
+      "F32",
+      "F49",
+      "F52"
+    ],
+    "tasks": [
+      "M36.S01",
+      "M36.S02",
+      "M36.S03",
+      "M36.S04",
+      "M36.S05",
+      "M36.S06",
+      "M36.S07",
+      "M36.S08",
+      "M36.S09"
+    ]
+  },
+  {
+    "key": "M37",
+    "discussion_requirement": "User-defined importance, unresolved options and chosen action without perfect answers",
+    "title": "Existential choice, uncertainty and meaning",
+    "scope": "reflective",
+    "consumers": [
+      "F29",
+      "F39",
+      "F49"
+    ],
+    "tasks": [
+      "M37.S01",
+      "M37.S02",
+      "M37.S03",
+      "M37.S04",
+      "M37.S05",
+      "M37.S06",
+      "M37.S07",
+      "M37.S08",
+      "M37.S09"
+    ]
+  },
+  {
+    "key": "M38",
+    "discussion_requirement": "People choose what to share, investigate context together and preserve differences and contrary outcomes",
+    "title": "Tojisha-kenkyu participant-led collective inquiry",
+    "scope": "community",
+    "consumers": [
+      "F01",
+      "F53",
+      "F55"
+    ],
+    "tasks": [
+      "M38.S01",
+      "M38.S02",
+      "M38.S03",
+      "M38.S04",
+      "M38.S05",
+      "M38.S06",
+      "M38.S07",
+      "M38.S08",
+      "M38.S09"
+    ]
+  },
+  {
+    "key": "M39",
+    "discussion_requirement": "Compare three chosen situations and describe personally meaningful distinctions alongside formal map",
+    "title": "Personal construct psychology and authored dimensions",
+    "scope": "reflective",
+    "consumers": [
+      "F23",
+      "F50"
+    ],
+    "tasks": [
+      "M39.S01",
+      "M39.S02",
+      "M39.S03",
+      "M39.S04",
+      "M39.S05",
+      "M39.S06",
+      "M39.S07",
+      "M39.S08",
+      "M39.S09"
+    ]
+  },
+  {
+    "key": "M40",
+    "discussion_requirement": "Review current resources, setting and demands and choose accommodation or activity change",
+    "title": "Person-environment-occupation fit",
+    "scope": "occupational",
+    "consumers": [
+      "F26",
+      "F29",
+      "F51"
+    ],
+    "tasks": [
+      "M40.S01",
+      "M40.S02",
+      "M40.S03",
+      "M40.S04",
+      "M40.S05",
+      "M40.S06",
+      "M40.S07",
+      "M40.S08",
+      "M40.S09"
+    ]
+  },
+  {
+    "key": "M41",
+    "discussion_requirement": "Authored observed sequence, provisional links and selected exit/intervention point",
+    "title": "Cognitive analytic recurring sequences",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F13",
+      "F44",
+      "F50"
+    ],
+    "tasks": [
+      "M41.S01",
+      "M41.S02",
+      "M41.S03",
+      "M41.S04",
+      "M41.S05",
+      "M41.S06",
+      "M41.S07",
+      "M41.S08",
+      "M41.S09"
+    ]
+  },
+  {
+    "key": "M42",
+    "discussion_requirement": "Meaningful activity, collaborative goal, try/check/revise and application elsewhere",
+    "title": "CO-OP guided strategy discovery and transfer",
+    "scope": "occupational",
+    "consumers": [
+      "F29",
+      "F39",
+      "F41"
+    ],
+    "tasks": [
+      "M42.S01",
+      "M42.S02",
+      "M42.S03",
+      "M42.S04",
+      "M42.S05",
+      "M42.S06",
+      "M42.S07",
+      "M42.S08",
+      "M42.S09"
+    ]
+  },
+  {
+    "key": "M43",
+    "discussion_requirement": "Questions use user words and avoid imposed interpretations while keeping uncertain metaphors editable",
+    "title": "Clean Language and preserved personal meaning",
+    "scope": "reflective",
+    "consumers": [
+      "F27",
+      "F50",
+      "F52"
+    ],
+    "tasks": [
+      "M43.S01",
+      "M43.S02",
+      "M43.S03",
+      "M43.S04",
+      "M43.S05",
+      "M43.S06",
+      "M43.S07",
+      "M43.S08",
+      "M43.S09"
+    ]
+  },
+  {
+    "key": "M44",
+    "discussion_requirement": "Explore user-confirmed goals that interfere and a workable arrangement as one possible account",
+    "title": "Perceptual control theory and Method of Levels competing goals",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F29",
+      "F40",
+      "F52"
+    ],
+    "tasks": [
+      "M44.S01",
+      "M44.S02",
+      "M44.S03",
+      "M44.S04",
+      "M44.S05",
+      "M44.S06",
+      "M44.S07",
+      "M44.S08",
+      "M44.S09"
+    ]
+  },
+  {
+    "key": "M45",
+    "discussion_requirement": "Chosen partnership, different perspectives, capacity and ability to decline support",
+    "title": "Intentional Peer Support mutual learning",
+    "scope": "community",
+    "consumers": [
+      "F08",
+      "F10",
+      "F11",
+      "F14"
+    ],
+    "tasks": [
+      "M45.S01",
+      "M45.S02",
+      "M45.S03",
+      "M45.S04",
+      "M45.S05",
+      "M45.S06",
+      "M45.S07",
+      "M45.S08",
+      "M45.S09"
+    ]
+  },
+  {
+    "key": "M46",
+    "discussion_requirement": "Pairs test medium, pacing, structure and shared activity and record when communication fits",
+    "title": "Participatory sense-making and interaction conditions",
+    "scope": "conceptual",
+    "consumers": [
+      "F03",
+      "F07",
+      "F22",
+      "F24"
+    ],
+    "tasks": [
+      "M46.S01",
+      "M46.S02",
+      "M46.S03",
+      "M46.S04",
+      "M46.S05",
+      "M46.S06",
+      "M46.S07",
+      "M46.S08",
+      "M46.S09"
+    ]
+  },
+  {
+    "key": "M47",
+    "discussion_requirement": "Both participants express intent/understanding and request changes based on actual preferences",
+    "title": "Double-empathy perspective and reciprocal adaptation",
+    "scope": "conceptual",
+    "consumers": [
+      "F13",
+      "F22",
+      "F25"
+    ],
+    "tasks": [
+      "M47.S01",
+      "M47.S02",
+      "M47.S03",
+      "M47.S04",
+      "M47.S05",
+      "M47.S06",
+      "M47.S07",
+      "M47.S08",
+      "M47.S09"
+    ]
+  },
+  {
+    "key": "M48",
+    "discussion_requirement": "Consented human circle offers observations/questions and recipient chooses what fits",
+    "title": "Reflecting teams and selected tentative perspectives",
+    "scope": "facilitator-sensitive",
+    "consumers": [
+      "F14",
+      "F54",
+      "F55"
+    ],
+    "tasks": [
+      "M48.S01",
+      "M48.S02",
+      "M48.S03",
+      "M48.S04",
+      "M48.S05",
+      "M48.S06",
+      "M48.S07",
+      "M48.S08",
+      "M48.S09"
+    ]
+  },
+  {
+    "key": "M49",
+    "discussion_requirement": "Person requests help with options/consequences/company and retains decision authority",
+    "title": "Supported decision-making and bounded support roles",
+    "scope": "accessibility",
+    "consumers": [
+      "F08",
+      "F10",
+      "F35"
+    ],
+    "tasks": [
+      "M49.S01",
+      "M49.S02",
+      "M49.S03",
+      "M49.S04",
+      "M49.S05",
+      "M49.S06",
+      "M49.S07",
+      "M49.S08",
+      "M49.S09"
+    ]
+  },
+  {
+    "key": "M50",
+    "discussion_requirement": "Brief recent ordinary account, fallible recall, unknown allowed and optional practical detail",
+    "title": "Micro-phenomenology bounded recent-event detail",
+    "scope": "reflective",
+    "consumers": [
+      "F29",
+      "F34",
+      "F53"
+    ],
+    "tasks": [
+      "M50.S01",
+      "M50.S02",
+      "M50.S03",
+      "M50.S04",
+      "M50.S05",
+      "M50.S06",
+      "M50.S07",
+      "M50.S08",
+      "M50.S09"
+    ]
+  },
+  {
+    "key": "M51",
+    "discussion_requirement": "Check whether reflection adds information and choose continue, record question, action or stop",
+    "title": "Metacognitive and rumination-focused reflection endpoint",
+    "scope": "clinical-inspired",
+    "consumers": [
+      "F32",
+      "F46",
+      "F52"
+    ],
+    "tasks": [
+      "M51.S01",
+      "M51.S02",
+      "M51.S03",
+      "M51.S04",
+      "M51.S05",
+      "M51.S06",
+      "M51.S07",
+      "M51.S08",
+      "M51.S09"
+    ]
+  },
+  {
+    "key": "M52",
+    "discussion_requirement": "Chosen manageable action, rest or accommodation without prerequisite emotional state",
+    "title": "Morita-inspired capacity-fitting action with feelings present",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F29",
+      "F32",
+      "F44"
+    ],
+    "tasks": [
+      "M52.S01",
+      "M52.S02",
+      "M52.S03",
+      "M52.S04",
+      "M52.S05",
+      "M52.S06",
+      "M52.S07",
+      "M52.S08",
+      "M52.S09"
+    ]
+  },
+  {
+    "key": "M53",
+    "discussion_requirement": "Specific received/given support and freely chosen appreciation/repair with unmet needs and boundaries added explicitly",
+    "title": "Naikan-inspired support, contribution and effects reflection",
+    "scope": "tradition-sensitive",
+    "consumers": [
+      "F13",
+      "F16",
+      "F48"
+    ],
+    "tasks": [
+      "M53.S01",
+      "M53.S02",
+      "M53.S03",
+      "M53.S04",
+      "M53.S05",
+      "M53.S06",
+      "M53.S07",
+      "M53.S08",
+      "M53.S09"
+    ]
+  },
+  {
+    "key": "M54",
+    "discussion_requirement": "Voluntary group tries changes to social arrangements and discusses prerequisites",
+    "title": "Forum theatre and fictional social change rehearsal",
+    "scope": "community",
+    "consumers": [
+      "F43",
+      "F54",
+      "F55"
+    ],
+    "tasks": [
+      "M54.S01",
+      "M54.S02",
+      "M54.S03",
+      "M54.S04",
+      "M54.S05",
+      "M54.S06",
+      "M54.S07",
+      "M54.S08",
+      "M54.S09"
+    ]
+  },
+  {
+    "key": "M55",
+    "discussion_requirement": "Individual reflection then pairs/small groups/wider contribution with asynchronous/access variants",
+    "title": "Liberating Structures distributed participation",
+    "scope": "community",
+    "consumers": [
+      "F14",
+      "F24",
+      "F55"
+    ],
+    "tasks": [
+      "M55.S01",
+      "M55.S02",
+      "M55.S03",
+      "M55.S04",
+      "M55.S05",
+      "M55.S06",
+      "M55.S07",
+      "M55.S08",
+      "M55.S09"
+    ]
+  },
+  {
+    "key": "M56",
+    "discussion_requirement": "Find community examples that work under similar constraints, describe conditions and preserve failures",
+    "title": "Positive deviance contextual useful exceptions",
+    "scope": "community",
+    "consumers": [
+      "F15",
+      "F51",
+      "F53"
+    ],
+    "tasks": [
+      "M56.S01",
+      "M56.S02",
+      "M56.S03",
+      "M56.S04",
+      "M56.S05",
+      "M56.S06",
+      "M56.S07",
+      "M56.S08",
+      "M56.S09"
+    ]
+  },
+  {
+    "key": "M57",
+    "discussion_requirement": "Evaluate chosen ability to participate, communicate, create, access support or leave unsuitable commitment",
+    "title": "Capability approach and meaningful options",
+    "scope": "philosophical",
+    "consumers": [
+      "F39",
+      "F51",
+      "F53"
+    ],
+    "tasks": [
+      "M57.S01",
+      "M57.S02",
+      "M57.S03",
+      "M57.S04",
+      "M57.S05",
+      "M57.S06",
+      "M57.S07",
+      "M57.S08",
+      "M57.S09"
+    ]
+  }
+]

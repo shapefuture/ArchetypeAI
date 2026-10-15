@@ -45,3 +45,6 @@ dist-ssr
 /.beads.gate.lock
 /.beads/.auto-import-issues.jsonl
 .delivery/runtime/
+
+# Agent worktrees created for isolated subagent runs
+/.claude/worktrees/

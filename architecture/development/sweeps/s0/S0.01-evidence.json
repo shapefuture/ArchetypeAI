@@ -1,0 +1,1384 @@
+{
+  "schema_version": 1,
+  "artifact_type": "S0.01 planning candidate evidence",
+  "captured_at_utc": "2026-10-14T18:13:26Z",
+  "disposition": "proposal-only; independent review of this generation pending",
+  "task": {
+    "bead_id": "ArchetypeAI-hjq1",
+    "status": "in_progress",
+    "revision": "5914031908711646732",
+    "acceptance_criteria": "Eligible task list and conflict decisions, recorded leases, candidate/evidence digests and scoped acceptance/defer reasons exist as applicable to this step. Next-base handoff is attributable; no missing empirical gate is reported passing.",
+    "metadata_base_generation": null,
+    "claim_snapshot": {
+      "assignee": "Виктор П",
+      "owner": "team.agcy@gmail.com",
+      "heartbeat_at": "2026-10-14T18:13:18Z",
+      "lease_expires_at": "2026-10-14T18:18:18Z",
+      "updated_at": "2026-10-14T17:57:50Z",
+      "snapshot_at_utc": "2026-10-14T18:13:26Z",
+      "claim_type": "native Beads issue claim; ephemeral heartbeat lease"
+    },
+    "claim_history": [
+      {
+        "heartbeat_at": "2026-10-14T18:06:27Z",
+        "lease_expires_at": "2026-10-14T18:11:27Z",
+        "state": "expired before v3 refresh"
+      },
+      {
+        "heartbeat_at": "2026-10-14T18:13:18Z",
+        "lease_expires_at": "2026-10-14T18:18:18Z",
+        "state": "refreshed after the preceding lease expired"
+      }
+    ]
+  },
+  "immutable_source": {
+    "revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+    "clean_checkout_at_manifest_capture": true,
+    "source_file_sha256": {
+      "docs/plans/elevation-aaa-v7-beads-plan.json": "88f5ffef002676450518f1cec4e526c9abf0452ecc5023d85613d3d00b39d82e",
+      "docs/plans/aaa-v7-architecture-and-agent-sweeps.md": "a42cf6cdf8fe404392a0320f6be2167058276cef6b4b096dc8d6aba780f5de88",
+      "docs/plans/references/AAA-V7-SPEC.source.md": "e85d85f962c8da8ed110122b4fa236f934b16cdbbc9108f80ca2f32b50be75dc",
+      "docs/eleven-out-of-ten-plan.md": "5ca131d27133525032c9b0010d4d3020d0e8c5d21423f7a7c177b18a151ff839",
+      "docs/80-20-plan.md": "7857691284f337ab2f5119292097a2eae603b296860eeb8584e9d8060fcbf370",
+      "docs/plans/first-principles-elevation-beads.md": "7060ee257031db7dc5f89df5f0f1c35c69c233f627ae670a898da9b0ea6692f7"
+    },
+    "note": "Candidate generated in a separate clean clone; main checkout has unrelated dirty workflow/setup paths and was not the write target."
+  },
+  "live_tracker": {
+    "authority": "configured Beads workspace /workspace/ArchetypeAI/.beads with Dolt root /workspace/.config/dolt",
+    "tracker_snapshot_sha256": "d9e882b6166e1e04806be2239dc7c341a759afce707ec48ac20854bab0863fa0",
+    "ready_snapshot_sha256": "44cdd69875b25d9ec8ee549779b4ff8c8813e2b31f2848f46c1c920ee3bd9f75",
+    "snapshot_files": [
+      "/tmp/innerverse-s0-live-snapshot.json",
+      "/tmp/innerverse-s0-ready-snapshot.json"
+    ],
+    "leaf_candidates": [
+      {
+        "bead_id": "ArchetypeAI-epv",
+        "title": "[E01.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-6511896860445505556",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for personal outcomes and graduation and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Choose a concrete goal, revise it without losing tools, pause, graduate and export; missing real-world outcome remains unknown.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E01.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/practice.jsx",
+            "src/parts-cartographer/screens/cabinet.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e01/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-r7r",
+        "title": "[E02.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "9006407403699676875",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for need-based entry and useful first result and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: New person chooses each of three needs, obtains a useful stopping point, skips assessment, resumes a saved tool and recovers a failed deep link.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E02.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/assessment-entry.jsx",
+            "src/parts-cartographer/screens/landing.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e02/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-4ct",
+        "title": "[E03.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-7415134359408308780",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for capacity-sensitive experience and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Switch capacity mid-inquiry without losing input; compare outcomes in all three modes; independently change sound/motion/density; recover preference write failure.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E03.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/practice.jsx",
+            "src/parts-cartographer/screens/quick-scan.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e03/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-1hj",
+        "title": "[E04.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "7905177372038034830",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for discriminating insight questions and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Exercise all five response types, exact optional words, neither/depends/correction, an exception and sparse sources; correction changes wording without score/history writes.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E04.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/quick-scan.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e04/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-3rd",
+        "title": "[E05.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "2440290485470558721",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for useful action under uncertainty and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Two plausible readings share a modest action; an observation can distinguish them; an inconclusive or contradictory outcome never becomes causal proof.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E05.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/quick-scan.jsx",
+            "src/parts-cartographer/screens/practice.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e05/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-wbc",
+        "title": "[E06.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-2383316732034710119",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for corrections that propagate and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Reject a hypothesis, inspect affected summaries/context, undo it and delete its source; rejected interpretation never reappears through stale retrieval.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E06.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/memory-library.jsx",
+            "src/parts-cartographer/screens/quick-scan.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e06/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-bqm",
+        "title": "[E07.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-3021171360925651860",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for contextual validity of personal knowledge and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Mark one source contextual and another no-longer-fitting; preserve original wording; retrieval previews explain exclusions; declined resurfacing stays declined.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E07.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/memory-library.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e07/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-60s",
+        "title": "[E08.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-3147682397428715122",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for transfer-centered learning and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Try recall, cue, immediate reveal and cannot-recall; vary a practical constraint; adapt the move elsewhere without reducing access to help.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E08.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/practice.jsx",
+            "src/parts-cartographer/screens/replay.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e08/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-lgo",
+        "title": "[E09.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-2708582104191676524",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for satisfying adaptation feedback and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Revise an unhelpful plan, decline recording, choose rest and replay the same event; feedback is truthful, optional and deduplicated.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E09.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/practice.jsx",
+            "src/parts-cartographer/screens/cabinet.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e09/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-aft",
+        "title": "[E10.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "2985262692766748054",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for play with meaningful consequences and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Change a practical limit or sentence and inspect hypothetical branch response; pause/leave clears unsaved rehearsal; guided text produces the same usable tool.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E10.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/replay.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e10/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-qtbi",
+        "title": "[E11.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-848679662105644994",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for recognizable felt dramatic roles and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Character expressions follow actual requested/saved/selected states; all gestures have static equivalents; canonical scored responses receive neutral feedback.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E11.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/pal/FeltCharacter.tsx",
+            "src/parts-cartographer/screens/replay.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e11/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-xu75",
+        "title": "[E12.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-416642302008095763",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for beautiful quiet and accessible presentation and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Finish the same tasks without WebGL/audio/motion, with keyboard/screen reader, large text and narrow EN/RU layouts; preserve source and action information.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E12.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/innerverse.jsx",
+            "src/parts-cartographer/screens/replay.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e12/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-n215",
+        "title": "[E13.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-1362414295731059946",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for universal interaction grammar and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Predict save, undo, pause, inspect and return across four core paths; interrupted modal/Back preserves meaningful focus and accurate persisted state.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E13.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/ui/ui.jsx",
+            "src/parts-cartographer/ui/modal-layer.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e13/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-1kgk",
+        "title": "[E14.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-4311708202772357058",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for tools useful outside the app and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Preview exact exported fields, read accessible file/print, export selected version and recover unsupported shortcut API; copied files have truthful revocation limits.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E14.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/memory-library.jsx",
+            "src/parts-cartographer/screens/practice.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e14/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-ypmu",
+        "title": "[E15.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "4915269238604526210",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for human-session continuity and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Prepare agenda without sending; preview exact share scope; distinguish requested from confirmed; revoke before therapist access; retain only user-chosen post-session next step.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E15.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/overlays.jsx",
+            "src/parts-cartographer/screens/cabinet.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e15/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-jinx",
+        "title": "[E16.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "3321998007401197097",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for therapist analysis of disagreement and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Compare 64 versus 147, two contexts and two times; unknown axes remain unknown; full-vector/table values match 3+1 projection; historical therapist notes retain separate ownership.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E16.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/innerverse.jsx",
+            "src/parts-cartographer/services/therapist-map-scene.ts",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e16/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-ugua",
+        "title": "[E17.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-2224725657366878621",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for understandable reliability and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Exercise save failure/quota, offline read, canceled and late coach reply, duplicate/conflicting booking, revoked grant and restored renderer; acknowledgement matches authority.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E17.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/app.jsx",
+            "src/parts-cartographer/overlays.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e17/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-l8d0",
+        "title": "[E18.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "-3128480898837439893",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for physical-device comfort and economy and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Declare actual handset/OS/network, run repeated entry/background/resume, measure long tasks/frame/memory/heat within available method, and keep complete static alternative.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E18.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/services/universe-scene.ts",
+            "src/parts-cartographer/pal/FeltCharacter.tsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e18/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-bdm4",
+        "title": "[E19.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 2,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "8852597175932064191",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for extensions that earn complexity and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Compare each X01–X07 experiment to its named simpler path with matching purpose/output; record qualified/hardware/community prerequisites and a supported stop decision.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E19.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "src/parts-cartographer/screens/replay.jsx",
+            "src/parts-cartographer/screens/scene-review-workbench.jsx",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e19/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-wvtm",
+        "title": "[E20.01] Audit existing behavior and reconcile original Beads",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": true,
+        "revision": "3678017383123311917",
+        "acceptance_criteria": "Deliverable exists: Existing-code inventory, old-Bead reconciliation, gap/evidence map and smallest useful slice.\nIt addresses audit existing behavior and reconcile original beads for independent multidimensional evaluation and explicitly distinguishes observation, hypothesis, user authorship and canonical measurement where relevant.\nApplicable normal, empty, denied, failed, interrupted and quiet states are specified or exercised at this step's depth. Tests cover meaningful changed boundaries; no unnecessary full-suite repetition.\nConcrete fixtures to resolve and verify as applicable: Review exact-generation rubric evidence; reject transferred old scores, candidate-authored acceptance, absent manual AT/live evidence and average scores hiding a hard failure.\nActual workcell manifest, artifacts, unresolved gaps and next handoff are recorded in Beads. No private context or credentials appear in evidence.\nIndependent review requirements for later steps remain explicit.",
+        "metadata": {
+          "planning_key": "E20.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": "resolve published version before code work",
+          "read_set": [
+            "tests/browser/parity.spec.mjs",
+            "docs/content-evidence-register.md",
+            "docs/80-20-plan.md",
+            "architecture/contracts/**"
+          ],
+          "write_set": [
+            "docs/plans/elevation/e20/**"
+          ],
+          "owned_slots": []
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      }
+    ],
+    "coordination_tasks": [
+      {
+        "bead_id": "ArchetypeAI-hjq1",
+        "title": "[S0.01] Compile the S0 eligible antichain and resolve leases",
+        "status": "in_progress",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": false,
+        "revision": "5914031908711646732",
+        "acceptance_criteria": "Eligible task list and conflict decisions, recorded leases, candidate/evidence digests and scoped acceptance/defer reasons exist as applicable to this step. Next-base handoff is attributable; no missing empirical gate is reported passing.",
+        "metadata": {
+          "planning_key": "S0.S01",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": null,
+          "contract_versions": null,
+          "contract_readiness": null,
+          "read_set": [
+            "docs/plans/elevation-aaa-v7-beads-plan.json"
+          ],
+          "write_set": [
+            "architecture/development/sweeps/s0/**"
+          ],
+          "owned_slots": [
+            "development.scheduler"
+          ]
+        },
+        "dependency_edges": [],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-wkt3",
+        "title": "[S0.02] Collect and integrate S0 immutable outputs",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": false,
+        "revision": "7137265923636417647",
+        "acceptance_criteria": "Eligible task list and conflict decisions, recorded leases, candidate/evidence digests and scoped acceptance/defer reasons exist as applicable to this step. Next-base handoff is attributable; no missing empirical gate is reported passing.",
+        "metadata": {
+          "planning_key": "S0.S02",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": null,
+          "contract_versions": null,
+          "contract_readiness": null,
+          "read_set": [
+            "docs/plans/elevation-aaa-v7-beads-plan.json"
+          ],
+          "write_set": [
+            "architecture/development/sweeps/s0/**"
+          ],
+          "owned_slots": [
+            "integration.broker"
+          ]
+        },
+        "dependency_edges": [
+          {
+            "id": "ArchetypeAI-lgo",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-292r",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-r7r",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-hjq1",
+            "type": "blocks",
+            "status": "in_progress"
+          },
+          {
+            "id": "ArchetypeAI-epv",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-60s",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-xu75",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-qtbi",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-bdm4",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-wbc",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-1kgk",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-bqm",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-4ct",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-jinx",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-l8d0",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-n215",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-ypmu",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-ugua",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-aft",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-wvtm",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-1hj",
+            "type": "blocks",
+            "status": "open"
+          },
+          {
+            "id": "ArchetypeAI-3rd",
+            "type": "blocks",
+            "status": "open"
+          }
+        ],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-h987",
+        "title": "[S0.03] Independently verify S0 handoff and freeze the next base",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": false,
+        "revision": "810542325123711053",
+        "acceptance_criteria": "Eligible task list and conflict decisions, recorded leases, candidate/evidence digests and scoped acceptance/defer reasons exist as applicable to this step. Next-base handoff is attributable; no missing empirical gate is reported passing.",
+        "metadata": {
+          "planning_key": "S0.S03",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": null,
+          "contract_versions": null,
+          "contract_readiness": null,
+          "read_set": [
+            "docs/plans/elevation-aaa-v7-beads-plan.json"
+          ],
+          "write_set": [
+            "architecture/development/sweeps/s0/**"
+          ],
+          "owned_slots": [
+            "verification.independent"
+          ]
+        },
+        "dependency_edges": [
+          {
+            "id": "ArchetypeAI-wkt3",
+            "type": "blocks",
+            "status": "open"
+          }
+        ],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-292r",
+        "title": "[A01.08] Accept baseline and issue unresolved inventory follow-ups",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": false,
+        "revision": "-437962070927282971",
+        "acceptance_criteria": "The named goal is implemented or specified at the correct step: Accept baseline and issue unresolved inventory follow-ups.\nDeclared source requirements §1–3, §7, §44 are traced to artifacts and actual checks; no adopted requirement is silently weakened.\nPositive, denied, stale/conflicting and recovery cases relevant to this mechanism are exercised. Pure design outputs identify unimplemented gates.\nRead/write sets, authority, contract versions, immutable base, output digest and required independent verification are recorded before claiming implementation complete.\nStateful/external operations have actual effect/migration/recovery semantics; profile and risk approval claims require the stated authority/evidence.\nNext workcell can consume the output without editing an unpublished shared contract.",
+        "metadata": {
+          "planning_key": "A01.S08",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": null,
+          "read_set": [
+            "docs/plans/references/AAA-V7-SPEC.source.md",
+            "docs/80-20-plan.md",
+            "src/**",
+            ".github/workflows/ci.yml"
+          ],
+          "write_set": [
+            "architecture/a01/**",
+            "tests/architecture/a01/**"
+          ],
+          "owned_slots": [
+            "architecture.a01"
+          ]
+        },
+        "dependency_edges": [
+          {
+            "id": "ArchetypeAI-k4ln",
+            "type": "blocks",
+            "status": "open"
+          }
+        ],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      },
+      {
+        "bead_id": "ArchetypeAI-k4ln",
+        "title": "[A01.07] Independently review source mapping and migration blast radius",
+        "status": "open",
+        "priority": 1,
+        "ready_in_live_beads_snapshot": false,
+        "revision": "-1227158716538347889",
+        "acceptance_criteria": "The named goal is implemented or specified at the correct step: Independently review source mapping and migration blast radius.\nDeclared source requirements §1–3, §7, §44 are traced to artifacts and actual checks; no adopted requirement is silently weakened.\nPositive, denied, stale/conflicting and recovery cases relevant to this mechanism are exercised. Pure design outputs identify unimplemented gates.\nRead/write sets, authority, contract versions, immutable base, output digest and required independent verification are recorded before claiming implementation complete.\nStateful/external operations have actual effect/migration/recovery semantics; profile and risk approval claims require the stated authority/evidence.\nNext workcell can consume the output without editing an unpublished shared contract.",
+        "metadata": {
+          "planning_key": "A01.S07",
+          "proposed_sweep": "S0",
+          "base_generation": null,
+          "workcell_status": "proposal_requires_resolved_base_and_lease",
+          "contract_versions": [],
+          "contract_readiness": null,
+          "read_set": [
+            "docs/plans/references/AAA-V7-SPEC.source.md",
+            "docs/80-20-plan.md",
+            "src/**",
+            ".github/workflows/ci.yml"
+          ],
+          "write_set": [
+            "architecture/a01/**",
+            "tests/architecture/a01/**"
+          ],
+          "owned_slots": [
+            "architecture.a01"
+          ]
+        },
+        "dependency_edges": [
+          {
+            "id": "ArchetypeAI-yafw",
+            "type": "blocks",
+            "status": "open"
+          }
+        ],
+        "defer_reason": "No task-scoped base, lease, or workcell is bound in live Beads; contract_versions is empty; S0.01 has no authority to perform this leaf audit or claim its acceptance fixtures."
+      }
+    ],
+    "s002_blocking_records": [
+      {
+        "bead_id": "ArchetypeAI-lgo",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-292r",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-r7r",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-hjq1",
+        "status": "in_progress",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-epv",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-60s",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-xu75",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-qtbi",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-bdm4",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-wbc",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-1kgk",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-bqm",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-4ct",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-jinx",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-l8d0",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-n215",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-ypmu",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-ugua",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-aft",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-wvtm",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-1hj",
+        "status": "open",
+        "dependency_type": "blocks"
+      },
+      {
+        "bead_id": "ArchetypeAI-3rd",
+        "status": "open",
+        "dependency_type": "blocks"
+      }
+    ],
+    "s002_blocker_count": 22,
+    "s002_blocker_status_counts": {
+      "open": 21,
+      "in_progress": 1
+    },
+    "s002_status": "open",
+    "s003_status": "open",
+    "s003_blocked_by_s002": true
+  },
+  "antichain_and_conflicts": {
+    "proposal_level_candidates": [
+      {
+        "planning_key": "E01.S01",
+        "bead_id": "ArchetypeAI-epv"
+      },
+      {
+        "planning_key": "E02.S01",
+        "bead_id": "ArchetypeAI-r7r"
+      },
+      {
+        "planning_key": "E03.S01",
+        "bead_id": "ArchetypeAI-4ct"
+      },
+      {
+        "planning_key": "E04.S01",
+        "bead_id": "ArchetypeAI-1hj"
+      },
+      {
+        "planning_key": "E05.S01",
+        "bead_id": "ArchetypeAI-3rd"
+      },
+      {
+        "planning_key": "E06.S01",
+        "bead_id": "ArchetypeAI-wbc"
+      },
+      {
+        "planning_key": "E07.S01",
+        "bead_id": "ArchetypeAI-bqm"
+      },
+      {
+        "planning_key": "E08.S01",
+        "bead_id": "ArchetypeAI-60s"
+      },
+      {
+        "planning_key": "E09.S01",
+        "bead_id": "ArchetypeAI-lgo"
+      },
+      {
+        "planning_key": "E10.S01",
+        "bead_id": "ArchetypeAI-aft"
+      },
+      {
+        "planning_key": "E11.S01",
+        "bead_id": "ArchetypeAI-qtbi"
+      },
+      {
+        "planning_key": "E12.S01",
+        "bead_id": "ArchetypeAI-xu75"
+      },
+      {
+        "planning_key": "E13.S01",
+        "bead_id": "ArchetypeAI-n215"
+      },
+      {
+        "planning_key": "E14.S01",
+        "bead_id": "ArchetypeAI-1kgk"
+      },
+      {
+        "planning_key": "E15.S01",
+        "bead_id": "ArchetypeAI-ypmu"
+      },
+      {
+        "planning_key": "E16.S01",
+        "bead_id": "ArchetypeAI-jinx"
+      },
+      {
+        "planning_key": "E17.S01",
+        "bead_id": "ArchetypeAI-ugua"
+      },
+      {
+        "planning_key": "E18.S01",
+        "bead_id": "ArchetypeAI-l8d0"
+      },
+      {
+        "planning_key": "E19.S01",
+        "bead_id": "ArchetypeAI-bdm4"
+      },
+      {
+        "planning_key": "E20.S01",
+        "bead_id": "ArchetypeAI-wvtm"
+      }
+    ],
+    "proposal_level_count": 20,
+    "executable_leaf_candidates": [],
+    "executable_leaf_count": 0,
+    "pinned_plan_path": "docs/plans/elevation-aaa-v7-beads-plan.json",
+    "dependency_edges_between_candidate_leaves": [],
+    "pairwise_conflict_edges_between_candidate_leaves": [],
+    "pairwise_leaf_conflict_count": 0,
+    "S0_scheduler_slot_conflicts_in_plan_snapshot": [
+      {
+        "a": "S0.S01",
+        "b": "S1.S01",
+        "reason": "owned-slot overlap",
+        "shared_slots": [
+          "development.scheduler"
+        ]
+      },
+      {
+        "a": "S0.S01",
+        "b": "S2.S01",
+        "reason": "owned-slot overlap",
+        "shared_slots": [
+          "development.scheduler"
+        ]
+      },
+      {
+        "a": "S0.S01",
+        "b": "S3.S01",
+        "reason": "owned-slot overlap",
+        "shared_slots": [
+          "development.scheduler"
+        ]
+      },
+      {
+        "a": "S0.S01",
+        "b": "S4.S01",
+        "reason": "owned-slot overlap",
+        "shared_slots": [
+          "development.scheduler"
+        ]
+      },
+      {
+        "a": "S0.S01",
+        "b": "S5.S01",
+        "reason": "owned-slot overlap",
+        "shared_slots": [
+          "development.scheduler"
+        ]
+      },
+      {
+        "a": "S0.S01",
+        "b": "S6.S01",
+        "reason": "owned-slot overlap",
+        "shared_slots": [
+          "development.scheduler"
+        ]
+      }
+    ],
+    "interpretation": "The 20-leaf proposal is conflict-free within the pinned plan graph/snapshot; it is not executable because each live leaf lacks its own base, workcell/lease, and published contract versions."
+  },
+  "workcell": {
+    "declared_manifest_path": ".delivery/runtime/s0-cells.json",
+    "declared_manifest_sha256": "4f8358df4692fbc96bb3c0b5694df2b7ae2f2c3cea4c6cf1ccb1d986af700ec1",
+    "manifest_cell": [
+      {
+        "task_id": "ArchetypeAI-hjq1",
+        "base_revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+        "read_paths": [
+          "docs/plans/elevation-aaa-v7-beads-plan.json",
+          "docs/plans/aaa-v7-architecture-and-agent-sweeps.md",
+          "docs/plans/references/AAA-V7-SPEC.source.md",
+          "docs/eleven-out-of-ten-plan.md",
+          "docs/80-20-plan.md",
+          "docs/plans/first-principles-elevation-beads.md"
+        ],
+        "write_paths": [
+          "architecture/development/sweeps/s0/**"
+        ],
+        "outputs": [
+          "architecture/development/sweeps/s0/S0.01-eligible-antichain.md",
+          "architecture/development/sweeps/s0/S0.01-workcell.json",
+          "architecture/development/sweeps/s0/S0.01-evidence.json"
+        ],
+        "contract_reads": {},
+        "contract_writes": [],
+        "shared_resources": [
+          "slot:development.scheduler"
+        ],
+        "role": "worker",
+        "priority": 1,
+        "critical_path_rank": 10,
+        "acceptance": [
+          "Compile the live S0 eligible task list and dependency/conflict decisions.",
+          "Record the current S0.01 immutable source identity, workcell manifest, lease identity, declared capabilities, and evidence digests.",
+          "Record exact acceptance/defer reasons for every candidate leaf and keep missing empirical gates pending.",
+          "Provide an attributable next-task handoff without claiming S0.02 outputs or a next accepted base."
+        ],
+        "quality_commands": [
+          [
+            "python3",
+            "-m",
+            "json.tool",
+            "architecture/development/sweeps/s0/S0.01-workcell.json"
+          ],
+          [
+            "python3",
+            "-m",
+            "json.tool",
+            "architecture/development/sweeps/s0/S0.01-evidence.json"
+          ]
+        ],
+        "capabilities": [
+          "read only the declared baseline paths and live Beads",
+          "write only architecture/development/sweeps/s0/**",
+          "compute source and evidence digests",
+          "validate JSON outputs"
+        ],
+        "effect_class": "planning-only",
+        "rollback": "Delete unaccepted candidate artifacts in the isolated workcell; no app/runtime/external effects.",
+        "handoff": "Record the actual candidate digest and remaining S0 blockers; keep all leaf tasks and S0.02 open until their real outputs and gates are accepted."
+      }
+    ],
+    "workcell_record_path": "architecture/development/sweeps/s0/S0.01-workcell.json",
+    "local_lease_registry_path": ".delivery/runtime/leases.json",
+    "local_lease_registry_sha256": "53b7e712fe0ccfdf6905f7cf37ba837bf21d3f1d00f75d6645e7a89ea844f20a",
+    "local_advisory_lease": [
+      {
+        "lease_id": "f38d7a3b4d414c448d3df019f7d98b85",
+        "owner": "codex-s0-coordinator",
+        "created_at": "2026-10-14T17:57:45.502561+00:00",
+        "cells": [
+          {
+            "task_id": "ArchetypeAI-hjq1",
+            "base_revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+            "read_paths": [
+              "docs/plans/elevation-aaa-v7-beads-plan.json",
+              "docs/plans/aaa-v7-architecture-and-agent-sweeps.md",
+              "docs/plans/references/AAA-V7-SPEC.source.md",
+              "docs/eleven-out-of-ten-plan.md",
+              "docs/80-20-plan.md",
+              "docs/plans/first-principles-elevation-beads.md"
+            ],
+            "write_paths": [
+              "architecture/development/sweeps/s0/**"
+            ],
+            "outputs": [
+              "architecture/development/sweeps/s0/S0.01-eligible-antichain.md",
+              "architecture/development/sweeps/s0/S0.01-workcell.json",
+              "architecture/development/sweeps/s0/S0.01-evidence.json"
+            ],
+            "contract_reads": {},
+            "contract_writes": [],
+            "shared_resources": [
+              "slot:development.scheduler"
+            ],
+            "role": "worker",
+            "priority": 1,
+            "critical_path_rank": 10,
+            "acceptance": [
+              "Compile the live S0 eligible task list and dependency/conflict decisions.",
+              "Record the current S0.01 immutable source identity, workcell manifest, lease identity, declared capabilities, and evidence digests.",
+              "Record exact acceptance/defer reasons for every candidate leaf and keep missing empirical gates pending.",
+              "Provide an attributable next-task handoff without claiming S0.02 outputs or a next accepted base."
+            ],
+            "quality_commands": [
+              [
+                "python3",
+                "-m",
+                "json.tool",
+                "architecture/development/sweeps/s0/S0.01-workcell.json"
+              ],
+              [
+                "python3",
+                "-m",
+                "json.tool",
+                "architecture/development/sweeps/s0/S0.01-evidence.json"
+              ]
+            ],
+            "capabilities": [
+              "read only the declared baseline paths and live Beads",
+              "write only architecture/development/sweeps/s0/**",
+              "compute source and evidence digests",
+              "validate JSON outputs"
+            ],
+            "effect_class": "planning-only",
+            "rollback": "Delete unaccepted candidate artifacts in the isolated workcell; no app/runtime/external effects.",
+            "handoff": "Record the actual candidate digest and remaining S0 blockers; keep all leaf tasks and S0.02 open until their real outputs and gates are accepted."
+          }
+        ]
+      }
+    ],
+    "filesystem_fencing": "not enforced; no OS-enforced task-scoped filesystem fence was available",
+    "native_task_claim_distinct_from_local_advisory_lease": true,
+    "live_beads_base_generation": null,
+    "coordination_bound_clone_base": "git:09194df5f48326bff14e42a1e4eb8d66c457186d"
+  },
+  "candidate_artifacts": {
+    "markdown_path": "architecture/development/sweeps/s0/S0.01-eligible-antichain.md",
+    "markdown_sha256": "aa2d97238c8159a50b76bb63ef8c017e81a37d4b727fb287f1f5ff45324044f0",
+    "workcell_path": "architecture/development/sweeps/s0/S0.01-workcell.json",
+    "workcell_sha256": "e907c1f149795e449ce0da190f726dcd80e2dbb5777ff1881d8e57c22362a7b2",
+    "evidence_path": "architecture/development/sweeps/s0/S0.01-evidence.json",
+    "evidence_sha256_external": null,
+    "evidence_sha256_note": "Not embedded to avoid self-reference; detached digest is to be recorded in a post-review tracker comment, which does not yet exist."
+  },
+  "review_iterations": [
+    {
+      "generation": "v1",
+      "candidate_sha256": {
+        "markdown": "ef0446954a7b4464ef870f291d3fbebcb9fe43ab9146687edcf84a70531e1393",
+        "workcell": "3c3e5c1994dd9d08ff24929fa031b1b19c025642154c0a934f16edd185aae4d2",
+        "evidence": "fe0988c22d176fe3afd455109fc899cecacb87c49a6def6b315a0d7aee569403"
+      },
+      "review_sha256": "ea4a022574ca091aa5f382da72e6019012f4c7c235fe891719a1eae6f6059a79",
+      "verdict": "reject",
+      "corrections": [
+        "make heartbeat refresh explicit",
+        "align timestamps"
+      ]
+    },
+    {
+      "generation": "v2",
+      "candidate_sha256": {
+        "markdown": "fd3f21d01f41bfe7d66a3a43b5f0b27f20335e2d6c333d69c3a6ce8933a3663f",
+        "workcell": "d095138a0d42dc38723753a6231f9ee137f70e2f4721834a67c25326e3d519f1",
+        "evidence": "08b35a68bac7abff935f253097c2c41293e5d5093d64c18bf3ef980f0e3a42d5"
+      },
+      "review_sha256": "5a395a7cbac7533dc908ec5279900a7400d701b9de2ee4989277876ccdbc04c8",
+      "verdict": "reject",
+      "corrections": [
+        "disambiguate the 22 total blocker edges",
+        "do not claim detached evidence hash is already in Beads",
+        "record claim expiry after snapshot"
+      ]
+    },
+    {
+      "generation": "v3",
+      "verdict": "pending independent review"
+    }
+  ],
+  "handoff": {
+    "sequence": [
+      "ArchetypeAI-hjq1",
+      "ArchetypeAI-wkt3",
+      "ArchetypeAI-h987"
+    ],
+    "next_task": "ArchetypeAI-wkt3",
+    "next_task_status": "open",
+    "next_task_blocker_count": 22,
+    "next_task_blocker_status_counts": {
+      "open": 21,
+      "in_progress": 1
+    },
+    "next_accepted_base_created": false,
+    "disposition": "Keep E01.S01–E20.S01, A01.S08, S0.02 and S0.03 open. S0.02 remains blocked; no accepted immutable output or next base is produced."
+  },
+  "performed": {
+    "read_only_tracker_queries": true,
+    "source_and_artifact_digest_computation": true,
+    "json_parse_validation": "performed after final serialization",
+    "app_product_code_changes": false,
+    "tests_or_builds": false,
+    "firebase_or_deployment": false,
+    "tracker_status_dependency_comment_mutations": false,
+    "native_issue_heartbeat_refresh": true,
+    "native_issue_heartbeat_at_utc": "2026-10-14T18:13:18Z",
+    "external_effects_or_participant_data_collection": false
+  }
+}

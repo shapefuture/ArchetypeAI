@@ -112,3 +112,20 @@ bd close <id>         # Complete work
 ## Innerverse roadmap context
 
 The core implementation specification is [docs/80-20-plan.md](docs/80-20-plan.md); the preserved archive is [docs/oldplan.md](docs/oldplan.md). [docs/beads-roadmap.md](docs/beads-roadmap.md) maps the dependency-aware core roadmap rooted at `ArchetypeAI-28h`. The elevation, AAA and social/creative roots in the full mission above are equally in scope. Use the continuity guard to account for all roots, then inspect actual ready implementation work; do not mark a feature complete because its plan was written. Preserve the authored loading screen, merged Felt identity, independently controllable sensory richness, the plush inner-cosmos grammar, the four core paths, and the therapist's complete 3+1-axis analytical workspace with explicit 64/147 coordinate provenance. Apply the plan's unprompted intuitiveness and real-service acceptance criteria.
+
+<!-- full-plan-delivery:begin -->
+## Full-plan delivery continuity
+
+Use `.agents/skills/full-plan-delivery/SKILL.md` for the approved planning/execution process. The entire mission, scope and carried-forward decisions are in `.delivery/mission.json`; the configured live tracker is the only task-status authority.
+
+- At entry, resumption/compaction and task transitions, run `python3 .agents/skills/full-plan-delivery/scripts/delivery.py session --project .` and inspect the actual selected task, dependencies and acceptance criteria.
+- Recover every approved roadmap root and criterion. Planning is not implementation; closed status alone is not acceptance evidence. Never substitute an export for the live tracker.
+- Continue within existing authorization. Informational questions do not silently cancel the mission; explicit pauses/cancellations do. Setup authorization alone does not authorize implementation or production changes.
+- Attribute missing human/service/hardware evidence to its exact criterion. Prepare enabling work and continue independent eligible slices. Never fabricate observations or silently bypass dependencies.
+- Use bounded sweeps, declared source/write/contract scopes and coordinator reservations before parallel writes. A scheduling proposal is not a lock or sandbox. Serialize shared wiring and integration.
+- After a coherent slice, record criterion progress, candidate identity, checks and limitations in the tracker. After two review/polish passes without material progress, reassess the entire frontier.
+- Before handing off, persist evidence and an actual eligible next task with the skill's `handoff` command. If no eligible work remains, record the exact blockers, owners and unblock actions instead of inventing a next task.
+- Before a full-program completion claim, run the skill's `complete` command and obtain the required independent acceptance review. Publish only through already-authorized transports; report actual failures truthfully.
+
+These controls preserve scope and detect drift. They do not provide an always-running agent.
+<!-- full-plan-delivery:end -->

@@ -44,3 +44,4 @@ dist-ssr
 /playwright-report/
 /.beads.gate.lock
 /.beads/.auto-import-issues.jsonl
+.delivery/runtime/

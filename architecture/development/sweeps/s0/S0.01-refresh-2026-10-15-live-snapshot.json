@@ -1,0 +1,911 @@
+{
+  "rows": {
+    "ArchetypeAI-1hj": {
+      "acceptance_sha256": "4e24f3b693f88f8b2fc97dc4a33aee61c838059415be83661660c498049cf672",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-ina",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-1hj",
+      "owned_slots": [],
+      "planning_key": "E04.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/quick-scan.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "7905177372038034830",
+      "status": "open",
+      "title": "[E04.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e04/**"
+      ]
+    },
+    "ArchetypeAI-1kgk": {
+      "acceptance_sha256": "8ca1a9463b6340283842df53eccf8a8154df3fa5f2d5069ddebe2848eb358ce1",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-va7j",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-1kgk",
+      "owned_slots": [],
+      "planning_key": "E14.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/memory-library.jsx",
+        "src/parts-cartographer/screens/practice.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-4311708202772357058",
+      "status": "open",
+      "title": "[E14.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e14/**"
+      ]
+    },
+    "ArchetypeAI-292r": {
+      "acceptance_sha256": "9da797148cddb46e9572775217d07679e94a3d68ee4f0fb6085d4ce4b7ab0713",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-dckg",
+          "status": "open",
+          "type": "parent-child"
+        },
+        {
+          "id": "ArchetypeAI-k4ln",
+          "status": "open",
+          "type": "blocks"
+        }
+      ],
+      "dependency_count": 2,
+      "id": "ArchetypeAI-292r",
+      "owned_slots": [
+        "architecture.a01"
+      ],
+      "planning_key": "A01.S08",
+      "read_set": [
+        "docs/plans/references/AAA-V7-SPEC.source.md",
+        "docs/80-20-plan.md",
+        "src/**",
+        ".github/workflows/ci.yml"
+      ],
+      "ready": false,
+      "revision": "-437962070927282971",
+      "status": "open",
+      "title": "[A01.08] Accept baseline and issue unresolved inventory follow-ups",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "architecture/a01/**",
+        "tests/architecture/a01/**"
+      ]
+    },
+    "ArchetypeAI-3rd": {
+      "acceptance_sha256": "9174b0a3fa0049485cd60c72bf7a442adea657928db134ea1e4cf9874eacf5c7",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-muh",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-3rd",
+      "owned_slots": [],
+      "planning_key": "E05.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/quick-scan.jsx",
+        "src/parts-cartographer/screens/practice.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "2440290485470558721",
+      "status": "open",
+      "title": "[E05.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e05/**"
+      ]
+    },
+    "ArchetypeAI-4ct": {
+      "acceptance_sha256": "05e19c495d421190e9b0ec6fc9b3352067f9b0e6124293b3ed069b7f29dc14da",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-8gs",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-4ct",
+      "owned_slots": [],
+      "planning_key": "E03.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/practice.jsx",
+        "src/parts-cartographer/screens/quick-scan.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-7415134359408308780",
+      "status": "open",
+      "title": "[E03.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e03/**"
+      ]
+    },
+    "ArchetypeAI-60s": {
+      "acceptance_sha256": "32620b7390bf3e337981f5aed2b464d1a982a769cc9a4e21e2e45ec2c655f7aa",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-q7n",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-60s",
+      "owned_slots": [],
+      "planning_key": "E08.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/practice.jsx",
+        "src/parts-cartographer/screens/replay.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-3147682397428715122",
+      "status": "open",
+      "title": "[E08.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e08/**"
+      ]
+    },
+    "ArchetypeAI-aft": {
+      "acceptance_sha256": "74392b23373ec3c434c933f58072efe98a5a126483056f89c74fbcd95ab021f1",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-al3",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-aft",
+      "owned_slots": [],
+      "planning_key": "E10.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/replay.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "2985262692766748054",
+      "status": "open",
+      "title": "[E10.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e10/**"
+      ]
+    },
+    "ArchetypeAI-bdm4": {
+      "acceptance_sha256": "a026f8a59a57dc057cb78be980c0511ed30dad400a9f1d872f08dff6ba525c82",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-or8b",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-bdm4",
+      "owned_slots": [],
+      "planning_key": "E19.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/replay.jsx",
+        "src/parts-cartographer/screens/scene-review-workbench.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "8852597175932064191",
+      "status": "open",
+      "title": "[E19.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e19/**"
+      ]
+    },
+    "ArchetypeAI-bqm": {
+      "acceptance_sha256": "0f645c7456cc8dba370998e25202dcb2ffbe589c5609e0fd59109441f6bca663",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-cc1",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-bqm",
+      "owned_slots": [],
+      "planning_key": "E07.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/memory-library.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-3021171360925651860",
+      "status": "open",
+      "title": "[E07.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e07/**"
+      ]
+    },
+    "ArchetypeAI-epv": {
+      "acceptance_sha256": "34d1d1dd661d702b7d7f22c6d21121d594af04bddfc32eba8a689357ab179a62",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-5st",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-epv",
+      "owned_slots": [],
+      "planning_key": "E01.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/practice.jsx",
+        "src/parts-cartographer/screens/cabinet.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-6511896860445505556",
+      "status": "open",
+      "title": "[E01.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e01/**"
+      ]
+    },
+    "ArchetypeAI-h987": {
+      "acceptance_sha256": "b2dacdbb4f7bed767015a48e793055336335b517c5802a57b37ff7955b2c0611",
+      "base_generation": null,
+      "contract_versions": null,
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-peek",
+          "status": "open",
+          "type": "parent-child"
+        },
+        {
+          "id": "ArchetypeAI-wkt3",
+          "status": "open",
+          "type": "blocks"
+        }
+      ],
+      "dependency_count": 2,
+      "id": "ArchetypeAI-h987",
+      "owned_slots": [
+        "verification.independent"
+      ],
+      "planning_key": "S0.S03",
+      "read_set": [
+        "docs/plans/elevation-aaa-v7-beads-plan.json"
+      ],
+      "ready": false,
+      "revision": "810542325123711053",
+      "status": "open",
+      "title": "[S0.03] Independently verify S0 handoff and freeze the next base",
+      "workcell_status": null,
+      "write_set": [
+        "architecture/development/sweeps/s0/**"
+      ]
+    },
+    "ArchetypeAI-hjq1": {
+      "acceptance_sha256": "b2dacdbb4f7bed767015a48e793055336335b517c5802a57b37ff7955b2c0611",
+      "base_generation": null,
+      "contract_versions": null,
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-peek",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-hjq1",
+      "owned_slots": [
+        "development.scheduler"
+      ],
+      "planning_key": "S0.S01",
+      "read_set": [
+        "docs/plans/elevation-aaa-v7-beads-plan.json"
+      ],
+      "ready": false,
+      "revision": "-1261145599399054525",
+      "status": "in_progress",
+      "title": "[S0.01] Compile the S0 eligible antichain and resolve leases",
+      "workcell_status": null,
+      "write_set": [
+        "architecture/development/sweeps/s0/**"
+      ]
+    },
+    "ArchetypeAI-jinx": {
+      "acceptance_sha256": "e3cb09af847be6d32c63f7dbd3223289923c6e5e5e681840262772832748c189",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-so00",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-jinx",
+      "owned_slots": [],
+      "planning_key": "E16.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/innerverse.jsx",
+        "src/parts-cartographer/services/therapist-map-scene.ts",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "3321998007401197097",
+      "status": "open",
+      "title": "[E16.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e16/**"
+      ]
+    },
+    "ArchetypeAI-k4ln": {
+      "acceptance_sha256": "e31fe651a7d7a5f99550198e1310ff80640ca387a0efa474d45a2d3c4746a3a5",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-yafw",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-dckg",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 2,
+      "id": "ArchetypeAI-k4ln",
+      "owned_slots": [
+        "architecture.a01"
+      ],
+      "planning_key": "A01.S07",
+      "read_set": [
+        "docs/plans/references/AAA-V7-SPEC.source.md",
+        "docs/80-20-plan.md",
+        "src/**",
+        ".github/workflows/ci.yml"
+      ],
+      "ready": false,
+      "revision": "-1227158716538347889",
+      "status": "open",
+      "title": "[A01.07] Independently review source mapping and migration blast radius",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "architecture/a01/**",
+        "tests/architecture/a01/**"
+      ]
+    },
+    "ArchetypeAI-l8d0": {
+      "acceptance_sha256": "4297565f6c5e029b5dee1782cd2ce53434979b7d820cc8a70a5aefa46e0eb920",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-ue0t",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-l8d0",
+      "owned_slots": [],
+      "planning_key": "E18.S01",
+      "read_set": [
+        "src/parts-cartographer/services/universe-scene.ts",
+        "src/parts-cartographer/pal/FeltCharacter.tsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-3128480898837439893",
+      "status": "open",
+      "title": "[E18.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e18/**"
+      ]
+    },
+    "ArchetypeAI-lgo": {
+      "acceptance_sha256": "1bd2d8fcffd06739a23528737ed886a11ec2e3f77c525af7e47fd85a11314d5c",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-3au",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-lgo",
+      "owned_slots": [],
+      "planning_key": "E09.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/practice.jsx",
+        "src/parts-cartographer/screens/cabinet.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-2708582104191676524",
+      "status": "open",
+      "title": "[E09.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e09/**"
+      ]
+    },
+    "ArchetypeAI-n215": {
+      "acceptance_sha256": "df3f8ba4c2cc4ba50a3469b774319408d38a56d32b5dd9c977b2dde1ac7ddd5a",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-gk0a",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-n215",
+      "owned_slots": [],
+      "planning_key": "E13.S01",
+      "read_set": [
+        "src/parts-cartographer/ui/ui.jsx",
+        "src/parts-cartographer/ui/modal-layer.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-1362414295731059946",
+      "status": "open",
+      "title": "[E13.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e13/**"
+      ]
+    },
+    "ArchetypeAI-qtbi": {
+      "acceptance_sha256": "35862f5510b31d3320abe3e661a1536d3bbfac371df9f8e77af14ff476a8f9d0",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-m129",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-qtbi",
+      "owned_slots": [],
+      "planning_key": "E11.S01",
+      "read_set": [
+        "src/parts-cartographer/pal/FeltCharacter.tsx",
+        "src/parts-cartographer/screens/replay.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-848679662105644994",
+      "status": "open",
+      "title": "[E11.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e11/**"
+      ]
+    },
+    "ArchetypeAI-r7r": {
+      "acceptance_sha256": "126b0b4e453b9a560f69ae140150de2bfc24f0434454727448934c3295d7b97e",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-v0y",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-r7r",
+      "owned_slots": [],
+      "planning_key": "E02.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/assessment-entry.jsx",
+        "src/parts-cartographer/screens/landing.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "9006407403699676875",
+      "status": "open",
+      "title": "[E02.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e02/**"
+      ]
+    },
+    "ArchetypeAI-ugua": {
+      "acceptance_sha256": "2f1318c262edc2d5e07e73a9f0dea18ba01277f777e45adbba79a1dbd819fd30",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-ypjb",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-ugua",
+      "owned_slots": [],
+      "planning_key": "E17.S01",
+      "read_set": [
+        "src/parts-cartographer/app.jsx",
+        "src/parts-cartographer/overlays.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-2224725657366878621",
+      "status": "open",
+      "title": "[E17.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e17/**"
+      ]
+    },
+    "ArchetypeAI-wbc": {
+      "acceptance_sha256": "b5d5c2ac0d6871cb133c6454c3f6092dab664e0c0fac9d543b20d0c81ec7ceaa",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-63e",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-wbc",
+      "owned_slots": [],
+      "planning_key": "E06.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/memory-library.jsx",
+        "src/parts-cartographer/screens/quick-scan.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-2383316732034710119",
+      "status": "open",
+      "title": "[E06.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e06/**"
+      ]
+    },
+    "ArchetypeAI-wkt3": {
+      "acceptance_sha256": "b2dacdbb4f7bed767015a48e793055336335b517c5802a57b37ff7955b2c0611",
+      "base_generation": null,
+      "contract_versions": null,
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-lgo",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-292r",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-r7r",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-hjq1",
+          "status": "in_progress",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-peek",
+          "status": "open",
+          "type": "parent-child"
+        },
+        {
+          "id": "ArchetypeAI-epv",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-60s",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-xu75",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-qtbi",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-bdm4",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-wbc",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-1kgk",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-bqm",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-4ct",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-jinx",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-l8d0",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-n215",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-ypmu",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-ugua",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-aft",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-wvtm",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-1hj",
+          "status": "open",
+          "type": "blocks"
+        },
+        {
+          "id": "ArchetypeAI-3rd",
+          "status": "open",
+          "type": "blocks"
+        }
+      ],
+      "dependency_count": 23,
+      "id": "ArchetypeAI-wkt3",
+      "owned_slots": [
+        "integration.broker"
+      ],
+      "planning_key": "S0.S02",
+      "read_set": [
+        "docs/plans/elevation-aaa-v7-beads-plan.json"
+      ],
+      "ready": false,
+      "revision": "7137265923636417647",
+      "status": "open",
+      "title": "[S0.02] Collect and integrate S0 immutable outputs",
+      "workcell_status": null,
+      "write_set": [
+        "architecture/development/sweeps/s0/**"
+      ]
+    },
+    "ArchetypeAI-wvtm": {
+      "acceptance_sha256": "b29f45efb2adea59083b770e3b9ea4013ee4a35a54c4f590e8e40e0795b7897d",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-adpf",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-wvtm",
+      "owned_slots": [],
+      "planning_key": "E20.S01",
+      "read_set": [
+        "tests/browser/parity.spec.mjs",
+        "docs/content-evidence-register.md",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "3678017383123311917",
+      "status": "open",
+      "title": "[E20.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e20/**"
+      ]
+    },
+    "ArchetypeAI-xu75": {
+      "acceptance_sha256": "189159cfbff281ed35789c168227d9059dd8db8729d882ab0149831d87c58307",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-95l8",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-xu75",
+      "owned_slots": [],
+      "planning_key": "E12.S01",
+      "read_set": [
+        "src/parts-cartographer/screens/innerverse.jsx",
+        "src/parts-cartographer/screens/replay.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "-416642302008095763",
+      "status": "open",
+      "title": "[E12.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e12/**"
+      ]
+    },
+    "ArchetypeAI-ypmu": {
+      "acceptance_sha256": "e55b1fe2be717679626d53f6603b2963c17a86004bc78fcb0e9c580d6b5f494c",
+      "base_generation": null,
+      "contract_versions": [],
+      "dependencies": [
+        {
+          "id": "ArchetypeAI-rhbx",
+          "status": "open",
+          "type": "parent-child"
+        }
+      ],
+      "dependency_count": 1,
+      "id": "ArchetypeAI-ypmu",
+      "owned_slots": [],
+      "planning_key": "E15.S01",
+      "read_set": [
+        "src/parts-cartographer/overlays.jsx",
+        "src/parts-cartographer/screens/cabinet.jsx",
+        "docs/80-20-plan.md",
+        "architecture/contracts/**"
+      ],
+      "ready": true,
+      "revision": "4915269238604526210",
+      "status": "open",
+      "title": "[E15.01] Audit existing behavior and reconcile original Beads",
+      "workcell_status": "proposal_requires_resolved_base_and_lease",
+      "write_set": [
+        "docs/plans/elevation/e15/**"
+      ]
+    }
+  },
+  "summary": {
+    "base_commit_checked": "02859af7ce88e25838fd21e509bc0cef657a40cb",
+    "captured_at_utc": "2026-10-15T18:48:44Z",
+    "changes_vs_2026_10_14_capture": [
+      {
+        "field": "revision",
+        "id": "ArchetypeAI-hjq1",
+        "live": "-1261145599399054525",
+        "prior": "5914031908711646732"
+      }
+    ],
+    "hjq1_status": "in_progress",
+    "leaf_count": 20,
+    "leaf_internal_dependency_edges": [],
+    "leaf_nonempty_base_generation": [],
+    "leaf_nonempty_contract_versions": [],
+    "leaf_ready_count": 20,
+    "leaf_statuses": {
+      "open": 20
+    },
+    "leaf_workcell_status": [
+      "proposal_requires_resolved_base_and_lease"
+    ],
+    "leaf_write_prefix_overlaps": [],
+    "prior_capture_captured_at": "2026-10-14T18:13:26Z",
+    "wkt3_blocker_count": 22,
+    "wkt3_blocker_statuses": {
+      "in_progress": 1,
+      "open": 21
+    },
+    "wkt3_status": "open"
+  }
+}

@@ -35,6 +35,9 @@ def validate_config(config):
     tracker = config.get("tracker", {})
     if not isinstance(tracker, dict) or tracker.get("kind") not in {"beads", "command"}:
         raise DeliveryError("Supported adapters are beads and explicitly configured command adapters.")
+    for key in ["binary", "beads_dir", "dolt_root"]:
+        if key in tracker and (not isinstance(tracker[key], str) or not tracker[key].strip()):
+            raise DeliveryError(f"Configured Beads {key} must be a non-empty string.")
     if tracker["kind"] == "command":
         for name in ["snapshot", "recall", "remember", "comments", "comment"]:
             if not argv_valid(tracker.get("commands", {}).get(name)):
@@ -74,6 +77,34 @@ def load_config(project):
     return config
 
 
+def mission_memory(config, project):
+    """Keep Beads continuity small while binding it to the complete local mission file."""
+    mission_path = safe_path(project, ".delivery/mission.json")
+    coverage = config.get("coverage_notes", {})
+    value = {
+        "objective": config["objective"],
+        "mission_file": ".delivery/mission.json",
+        "mission_sha256": hashlib.sha256(mission_path.read_bytes()).hexdigest(),
+        "root_ids": [row["id"] for row in config["roots"]],
+        "linked_task_ids": config.get("linked_task_ids", []),
+        "authorization": config["authorization"],
+        "constraints": config["constraints"],
+        "requirement_count": len(config.get("requirements", [])),
+        "scope_record_count": coverage.get("scope_record_count"),
+        "unresolved_acceptance_criteria": coverage.get("scope_records_without_acceptance_criteria", []),
+        "contract_versions": config.get("parallel", {}).get("contract_versions", {}),
+    }
+    return json.dumps(value, ensure_ascii=False, sort_keys=True)
+
+
+def mission_memory_mismatches(restored, config, project):
+    """Return pointer fields that no longer describe the canonical mission."""
+    if not isinstance(restored, dict):
+        return ["<not-an-object>"]
+    expected = json.loads(mission_memory(config, project))
+    return [key for key, value in expected.items() if restored.get(key) != value]
+
+
 class Tracker:
     """Only the configured live source supplies status; no export fallback."""
     def __init__(self, project, config):
@@ -89,9 +120,43 @@ class Tracker:
             executable = shutil.which(candidate)
             if not executable:
                 raise DeliveryError("Beads CLI unavailable. Repair configured setup; do not initialize/import or read an export.")
-            if not env.get("DOLT_ROOT_PATH"):
-                dolt_root = safe_path(self.project, self.settings.get("dolt_root", ".delivery/runtime/dolt"))
-                dolt_root.mkdir(parents=True, exist_ok=True)
+            configured_beads_dir = self.settings.get("beads_dir")
+            if configured_beads_dir:
+                beads_path = Path(configured_beads_dir)
+                if beads_path.is_absolute():
+                    try:
+                        beads_dir = beads_path.resolve(strict=True)
+                    except OSError:
+                        raise DeliveryError("Configured live Beads workspace directory is unavailable; refusing tracker auto-discovery.") from None
+                else:
+                    beads_dir = safe_path(self.project, configured_beads_dir)
+                if not beads_dir.is_dir():
+                    raise DeliveryError("Configured live Beads workspace path is not a directory; refusing tracker auto-discovery.")
+                env["BEADS_DIR"] = str(beads_dir)
+            configured_dolt_root = self.settings.get("dolt_root", ".delivery/runtime/dolt")
+            configured_dolt_path = Path(configured_dolt_root)
+            if configured_dolt_path.is_absolute():
+                # An explicit absolute root binds the mission to its existing live
+                # tracker. Never create a database at this path or silently fall
+                # back to Beads' project-local auto-discovery.
+                try:
+                    dolt_root = configured_dolt_path.resolve(strict=True)
+                except OSError:
+                    raise DeliveryError("Configured live Beads Dolt root is unavailable; refusing to initialize or use another database.") from None
+                if not dolt_root.is_dir():
+                    raise DeliveryError("Configured live Beads Dolt root is not a directory; refusing to initialize or use another database.")
+                env["DOLT_ROOT_PATH"] = str(dolt_root)
+            else:
+                selected_dolt_root = env.get("DOLT_ROOT_PATH", configured_dolt_root)
+                selected_dolt_path = Path(selected_dolt_root)
+                if not selected_dolt_path.is_absolute():
+                    selected_dolt_path = safe_path(self.project, selected_dolt_root)
+                try:
+                    dolt_root = selected_dolt_path.resolve(strict=True)
+                except OSError:
+                    raise DeliveryError("Configured live Beads Dolt root is unavailable; refusing to initialize or use another database.") from None
+                if not dolt_root.is_dir():
+                    raise DeliveryError("Configured live Beads Dolt root is not a directory; refusing to initialize or use another database.")
                 env["DOLT_ROOT_PATH"] = str(dolt_root)
             operations = {
                 "list": ["list", "--all", "--limit", "0"], "ready": ["ready", "--limit", "0"],
@@ -222,6 +287,13 @@ def render(config, report, all_items=False):
 def require_complete(config, report, current_candidate=None):
     if any(report["by_id"][item_id]["status"] != "closed" for item_id in report["allowed"]):
         raise DeliveryError("Whole-program completion rejected: unfinished scope records remain.")
+    missing_acceptance = sorted(item_id for item_id in report["allowed"]
+                                if not isinstance(report["by_id"][item_id].get("acceptance_criteria"), str)
+                                or not report["by_id"][item_id]["acceptance_criteria"].strip())
+    if missing_acceptance:
+        sample = ", ".join(missing_acceptance[:10])
+        suffix = " …" if len(missing_acceptance) > 10 else ""
+        raise DeliveryError("Whole-program completion rejected: live acceptance criteria are missing for " + sample + suffix + ".")
     if not config.get("requirements") or not config["quality"]["required_commands"]:
         raise DeliveryError("Whole-program completion rejected: requirement coverage or quality gates are unconfigured.")
     for item_id in report["allowed"]:
@@ -305,8 +377,8 @@ def main(argv=None):
         return 0
     tracker = Tracker(project, config)
     if args.command == "remember-mission":
-        tracker.run("remember", {"key": config["memory_keys"]["mission"], "text": json.dumps(config, ensure_ascii=False)}, json_result=False, write=True)
-        print("Full mission and carried-forward decisions saved in the selected tracker; no task state changed.")
+        tracker.run("remember", {"key": config["memory_keys"]["mission"], "text": mission_memory(config, project)}, json_result=False, write=True)
+        print("Mission reference, scope identity and carried-forward decisions saved in the selected tracker; the complete criteria remain in the hash-bound mission file. No task state changed.")
         return 0
     if args.command == "session":
         print("PERMANENT MISSION: " + config["objective"])
@@ -322,8 +394,12 @@ def main(argv=None):
                     print("RESTORED HANDOFF: " + json.dumps({field: restored.get(field) for field in ["handoff_id", "task", "next", "completed", "remaining", "candidate", "evidence", "blocker", "root_ids"]}, ensure_ascii=False))
                     if set(restored.get("root_ids", [])) != {row["id"] for row in config["roots"]}:
                         print("RECOVERY WARNING: handoff scope differs from permanent mission; recompute and reconcile.")
-                elif restored.get("objective") != config["objective"]:
-                    print("RECOVERY WARNING: remembered mission differs; reconcile approved scope before continuing.")
+                else:
+                    mismatches = mission_memory_mismatches(restored, config, project)
+                    if mismatches:
+                        print("RECOVERY WARNING: remembered mission reference differs in " + ", ".join(mismatches) + "; reconcile approved scope before continuing.")
+                    else:
+                        print("RESTORED MISSION REFERENCE: " + json.dumps({field: restored.get(field) for field in ["mission_file", "mission_sha256", "root_ids", "requirement_count", "scope_record_count", "unresolved_acceptance_criteria", "contract_versions"]}, ensure_ascii=False))
             except (DeliveryError, ValueError, TypeError, subprocess.TimeoutExpired):
                 print(f"Recovery memory {key} unavailable; permanent mission is retained. Repair memory persistence.")
     if args.command in {"leases", "release"}:

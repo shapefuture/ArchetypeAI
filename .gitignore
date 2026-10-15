@@ -48,3 +48,6 @@ dist-ssr
 
 # Agent worktrees created for isolated subagent runs
 /.claude/worktrees/
+
+# Python bytecode caches from local test runs
+__pycache__/

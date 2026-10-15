@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { Part } from '../pal/traits';
-import type { MotionMode } from '../core/sensory-preferences';
+import { sceneClockStep, type MotionMode } from '../core/sensory-preferences';
 import { feltGroup } from './felt-engine';
 import { bindReducedMotionDamping } from './reduced-motion';
 import {
@@ -209,7 +209,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
 
   const loop = () => {
     if (!running) return;
-    if (!motion?.matches && motionMode !== 'still') t += motionMode === 'gentle' ? 0.002 : 0.006;
+    t += sceneClockStep(motionMode, !!motion?.matches);
     controls.update();
     stars.rotation.y = t * 0.05;
     nodes.forEach((node) => {

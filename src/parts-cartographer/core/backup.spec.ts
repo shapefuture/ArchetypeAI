@@ -60,6 +60,16 @@ describe('cross-version local backup and cloud boundaries', () => {
     expect(localStorage.length).toBe(0);
   });
 
+  it('restores canonical reference coordinates over a stale saved archetype while keeping user edits', async () => {
+    const parts = adaptClinicalProfile(scoreProfile(input() as any), 'en').parts;
+    const stale = { ...parts[0], need: 'kept edit', archetype: { ...parts[0].archetype!, coordinates: [0.9, 0.9, 0.9, 0.9] as [number, number, number, number] } };
+    const prepared = await prepareBackup(JSON.stringify(input()), 'en', [stale]);
+    const restored = (prepared.entries[KEYS.parts] as any[]).find((p) => p.id === parts[0].id);
+    expect(restored.archetype).toEqual(parts[0].archetype);
+    expect(restored.archetype.coordinateBasis).toBe('fixed-reference-147');
+    expect(restored.need).toBe('kept edit');
+  });
+
   it('restores full and partial historical 64-item backups without confusing the two result routes', async () => {
     const complete = await prepareBackup(JSON.stringify({ assessmentResponses: Array(64).fill(3), results: { analysis: 'old report' } }), 'ru');
     expect((complete.entries['ifs.legacy64.result'] as any).version).toBe('angular-assessment-64.v2');

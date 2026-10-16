@@ -10,7 +10,7 @@ import {
   dimensionalLensOffset,
   sanitizeArchetypeCoordinates,
   ZERO_DIMENSIONS,
-  coordinateAffinity, DEFAULT_AXES,
+  coordinateAffinity, DEFAULT_AXES, normalizeAxes,
   type UniverseAxes, type DimensionKey,
   type ArchetypeCoordinates,
   type UniverseDimensions,
@@ -239,7 +239,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     sleep() { running = false; renderer.setAnimationLoop(null); },
     setParts: build,
     setView(options) {
-      if (options.axes) axes = options.axes;
+      if (options.axes) axes = normalizeAxes(options.axes);
       if ('isolation' in options) isolation = options.isolation ?? null;
       if ('selectedId' in options) selectedId = options.selectedId ?? null;
     },

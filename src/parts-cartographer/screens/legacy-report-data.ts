@@ -25,6 +25,8 @@ export interface LegacyAssessmentReport {
   createdAt: string;
   poleScores: PoleScores;
   archetypes: ScoredArchetype[];
+  /** Response-derived placement list, kept when an AI pantheon replaces `archetypes` for narrative display. */
+  deterministicArchetypes?: ScoredArchetype[];
   dynamics: ReturnType<typeof generateArchetypes>['dynamics'];
   complexes: ReturnType<typeof detectComplexes>;
   defenseHierarchy: ReturnType<typeof computeDefenseHierarchy>;
@@ -165,6 +167,7 @@ export function applyLegacyAiAnalysis(report: LegacyAssessmentReport, analysis: 
   const partial = {
     ...report,
     archetypes,
+    deterministicArchetypes: report.deterministicArchetypes ?? report.archetypes,
     complexes: detectComplexes(archetypes, report.poleScores, report.language),
     defenseHierarchy: computeDefenseHierarchy(archetypes, report.poleScores, report.language),
     triggerMap: computeTriggerMap(archetypes, report.poleScores, report.language),

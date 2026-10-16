@@ -1,4 +1,6 @@
 // parts/pal traits — plush characters as IFS parts (style: cutebuttons)
+import { hashStr } from '../core/ports';
+
 export type BodyShape = "cloud" | "frog" | "triangle" | "heart" | "bean" | "egg" | "drop" | "crescent" | "square" | "flower" | "mochi" | "pentagon" | "pill";
 export type EyeStyle = "ovals" | "googly" | "closed" | "wink" | "tiny";
 export type MouthStyle = "none" | "smile" | "o" | "flat" | "grin";
@@ -42,6 +44,15 @@ export const FACES: Facewear[] = ["none", "glasses", "shades"];
 
 export const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
+/**
+ * A character without a stored seed sews from its whole trait record, so any edit would re-sew its body.
+ * Freezing the seed a record already renders with keeps its look identical while later edits change only the chosen trait.
+ */
+export function withCharacterSeed(traits: Traits): Traits {
+  if (traits.characterSeed !== undefined) return traits;
+  return { ...traits, characterSeed: hashStr(JSON.stringify(traits)) };
+}
+
 export function randomTraits(family?: Family): Traits {
   const famColor: Record<Family, string> = {
     manager: "#3B9BFF",
@@ -50,6 +61,7 @@ export function randomTraits(family?: Family): Traits {
     resource: "#3EE0B0",
   };
   return {
+    characterSeed: Math.floor(Math.random() * 0x100000000),
     shape: pick(SHAPES),
     color: family ? famColor[family] : pick(COLORS).value,
     eyes: pick(EYES),
@@ -64,6 +76,11 @@ export function randomTraits(family?: Family): Traits {
 export interface ArchetypeMapData {
   schema: 'archetype-map.v1';
   sourceAssessment: 'legacy64' | 'descent147' | 'studio';
+  /**
+   * Where the four coordinates come from. 'response-derived-64' is placed from the 64-item answers;
+   * 'fixed-reference-147' is the shared 147-item part template, not a per-person measurement.
+   */
+  coordinateBasis?: 'response-derived-64' | 'fixed-reference-147';
   coordinates: [number, number, number, number];
   cluster: string;
   prominence: number;

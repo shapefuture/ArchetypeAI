@@ -108,7 +108,8 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
     const rebuilt = adaptClinicalProfile(scoreProfile(entries.INNERVERSE_PROFILE_V1), savedLang);
     const map = validMapParts(entries[KEYS.parts]) ? entries[KEYS.parts] as Part[] : existingParts;
     const ids = new Set(rebuilt.parts.map((part) => part.id));
-    entries[KEYS.parts] = [...rebuilt.parts.map((part) => ({ ...part, ...map.find((old) => old.id === part.id), name: part.name })),
+    // Saved edits (traits, need, star, ...) win; canonical placement and provenance are rebuilt from the assessment.
+    entries[KEYS.parts] = [...rebuilt.parts.map((part) => ({ ...part, ...map.find((old) => old.id === part.id), archetype: part.archetype, name: part.name })),
       ...map.filter((part) => !ids.has(part.id) && !part.id.startsWith('seed-'))];
     entries[KEYS.profile] = { ...rebuilt.profile, createdAt: (entries[KEYS.profile] as any)?.createdAt ?? rebuilt.profile.createdAt };
   }

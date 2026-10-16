@@ -153,8 +153,20 @@ function coordDistance(a: Archetype, b: Archetype): number {
   return Math.sqrt(a.coordinates.reduce((sum, coord, i) => sum + Math.pow(coord - b.coordinates[i], 2), 0));
 }
 
-export function buildDynamicRelationalIds(source: Archetype, archetypes: Archetype[], limit = 4): string[] {
-  const staticIds = RELATIONAL_MAP[source.id] || [];
+/** Where a drawn relation comes from: an authored guard/resonance pair, or a coordinate-distance ranking. */
+export type RelationSource = 'curated-template' | 'computed-proximity';
+/** Every generated relation is an association to inspect, never a verdict about inner conflict. */
+export type RelationStatus = 'association';
+
+export interface PartRelation {
+  targetId: string;
+  source: RelationSource;
+  status: RelationStatus;
+}
+
+export function buildPartRelations(source: Archetype, archetypes: Archetype[], limit = 4): PartRelation[] {
+  const curated = RELATIONAL_MAP[source.id] || [];
+  const curatedIds = new Set(curated);
   const scored = archetypes
     .filter(a => a.id !== source.id)
     .map(a => ({
@@ -166,7 +178,15 @@ export function buildDynamicRelationalIds(source: Archetype, archetypes: Archety
     .sort((a, b) => a.score - b.score)
     .map(a => a.id);
 
-  return Array.from(new Set([...staticIds, ...scored])).slice(0, limit);
+  return Array.from(new Set([...curated, ...scored])).slice(0, limit).map((targetId) => ({
+    targetId,
+    source: curatedIds.has(targetId) ? 'curated-template' : 'computed-proximity',
+    status: 'association',
+  }));
+}
+
+export function buildDynamicRelationalIds(source: Archetype, archetypes: Archetype[], limit = 4): string[] {
+  return buildPartRelations(source, archetypes, limit).map(relation => relation.targetId);
 }
 
 /** Effective sticker look for a part: persisted user override ?? part defaults.

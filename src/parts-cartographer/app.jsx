@@ -2,6 +2,7 @@ import React, { createContext, lazy, Suspense, useCallback, useContext, useEffec
 import { StatusBar } from './ui/ui.jsx';
 import { ModalLayer } from './ui/modal-layer.jsx';
 import { store, KEYS } from './core/local-store';
+import { REMINDERS_KEY, readReminderSettings, reminderDecision } from './core/reminder-policy.ts';
 import { auth } from './core/auth.service.ts';
 import { AI, ResilientAiAdapter } from './core/ai.adapter.ts';
 import { billing } from './core/billing.service.ts';
@@ -350,6 +351,9 @@ export default function App() {
   useEffect(() => {
     const sealed = store.load('ifs.sealed', []);
     const due = sealed.filter((s) => s.until <= Date.now());
+    // Quiet hours and a skip for today hold the resurfacing. It is an in-app note shown on open, so it needs no opt-in.
+    const held = reminderDecision(readReminderSettings(store.load(REMINDERS_KEY, null)), new Date());
+    if (held.reason === 'quiet-hours' || held.reason === 'skipped-today') return;
     if (due.length) {
       const next = sealed.filter((s) => s.until > Date.now());
       store.save('ifs.sealed', next);

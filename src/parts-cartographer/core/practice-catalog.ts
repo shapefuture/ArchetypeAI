@@ -11,7 +11,7 @@
 // The "why" lines in EXERCISE_COPY are not used, because several of them make efficacy claims. Titles and steps only.
 
 import type { Practice } from './contextual-checkin.ts';
-import { EXERCISE_COPY } from '../../i18n/strings';
+import { EXERCISE_COPY } from '../../shared/i18n/strings';
 
 export type CatalogLang = 'en' | 'ru';
 

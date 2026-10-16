@@ -1,4 +1,4 @@
-import { parseReportMarkdown } from './report-parser';
+import { parseReportMarkdown } from '../../../shared/features/results-panel/report-parser';
 
 describe('parseReportMarkdown()', () => {
   // The user reported the AI-written 8-section analysis was rendered as a

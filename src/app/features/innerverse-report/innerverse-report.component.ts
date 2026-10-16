@@ -4,20 +4,20 @@
  * No global verdicts; every insight card ends in something behavioral (§3C.8).
  */
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, computed, inject, input, model, output, signal } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import {
   SHADOW_PARTS, RESOURCES, SELF_QUALITIES, COMPLEXES, RESOURCE_BANDS,
   type ShadowPartId, type Tier, type Need,
-} from '../../core/data/parts';
-import { PART_COPY, LAYERS, type LayerKey } from '../../core/data/part-copy';
-import { constellationName, constellationEssay, subtypeName, resourceName, COMPLEX_COPY_RU, polarizationName as polName, PART_NAME_RU } from '../../core/data/constellation-copy';
+} from '../../../shared/core/data/parts';
+import { PART_COPY, LAYERS, type LayerKey } from '../../../shared/core/data/part-copy';
+import { constellationName, constellationEssay, subtypeName, resourceName, COMPLEX_COPY_RU, polarizationName as polName, PART_NAME_RU } from '../../../shared/core/data/constellation-copy';
 import { generateLinkCode } from '../../core/data/therapist-link';
 import { InnerverseConstellationComponent } from '../constellation/innerverse-constellation.component';
-import type { ScoredProfile } from '../../core/data/scoring-v2';
-import { attributionRatio } from '../../core/data/state-v2';
-import { sticker } from '../landing/stickers';
+import type { ScoredProfile } from '../../../shared/core/data/scoring-v2';
+import { attributionRatio } from '../../../shared/core/data/state-v2';
+import { sticker } from '../../../shared/features/landing/stickers';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 /** Display-only sticker specs (shape/color/glyph mirror of landing IV_PARTS). */

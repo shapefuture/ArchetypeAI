@@ -1,5 +1,5 @@
-import { RESOURCES, SHADOW_PARTS } from '../../app/core/data/parts';
-import type { AssessmentInput } from '../../app/core/data/scoring-v2';
+import { RESOURCES, SHADOW_PARTS } from '../../shared/core/data/parts';
+import type { AssessmentInput } from '../../shared/core/data/scoring-v2';
 import type { Lang } from '../i18n/strings';
 import { KEYS } from './local-store';
 import { validProfile } from './profile-contract';
@@ -106,7 +106,7 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
   if (!Object.keys(entries).length) throw new Error('No supported data in backup');
   const savedLang = entries['ifs.lang'] === 'ru' || entries['ifs.lang'] === 'en' ? entries['ifs.lang'] as Lang : lang;
   if (isCanonicalAssessmentInput(entries.INNERVERSE_PROFILE_V1)) {
-    const [{ scoreProfile }, { adaptClinicalProfile }] = await Promise.all([import('../../app/core/data/scoring-v2'), import('./clinical-profile-adapter')]);
+    const [{ scoreProfile }, { adaptClinicalProfile }] = await Promise.all([import('../../shared/core/data/scoring-v2'), import('./clinical-profile-adapter')]);
     const rebuilt = adaptClinicalProfile(scoreProfile(entries.INNERVERSE_PROFILE_V1), savedLang);
     const map = validMapParts(entries[KEYS.parts]) ? entries[KEYS.parts] as Part[] : existingParts;
     const ids = new Set(rebuilt.parts.map((part) => part.id));

@@ -7,7 +7,7 @@ import {
   OperationCancelledError,
   isRetryableFailure,
   type DegradationDescriptor,
-} from './resilience';
+} from '../../../shared/core/adapters/resilience';
 
 /**
  * Behavioral evidence for the Layer-2 resilience shell (scorecard rule:

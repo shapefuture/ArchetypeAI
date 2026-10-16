@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { computeSynastry } from '../../app/core/data/synastry';
+import { computeSynastry } from '../../shared/core/data/synastry';
 import { readLocalLegacy64Responses, synastryFromLegacy64Responses, validateLegacy64Responses } from './synastry-legacy64-bridge';
 
 const localResponses = Array.from({ length: 64 }, (_, index) => (index % 5) + 1);

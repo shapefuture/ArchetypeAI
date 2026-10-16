@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { applyBackup, exportBackup, prepareBackup } from './backup';
 import { KEYS, store } from './local-store';
-import { SHADOW_PARTS, RESOURCES } from '../../app/core/data/parts';
-import { scoreProfile } from '../../app/core/data/scoring-v2';
+import { SHADOW_PARTS, RESOURCES } from '../../shared/core/data/parts';
+import { scoreProfile } from '../../shared/core/data/scoring-v2';
 import { adaptClinicalProfile } from './clinical-profile-adapter';
-import { IV_PARTS } from '../../app/features/landing/stickers';
+import { IV_PARTS } from '../../shared/features/landing/stickers';
 import { snapshot, fromDocument } from './cloud-storage';
 import { validClinicalScore } from './profile-contract';
 

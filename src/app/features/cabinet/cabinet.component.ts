@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { StoragePort, AssessmentData, SynastrySavedReportData } from '../../core/ports/storage.port';
 import { STORAGE_PORT } from '../../core/ports/storage.port';
@@ -8,7 +8,7 @@ import { AdminAccessService, AdminAllowlistEntry } from '../../../services/admin
 import { TranslationService } from '../../../services/translation.service';
 import { SpecialistClientService, ClientLink } from '../../../services/specialist-client.service';
 import { UserDirectoryService } from '../../../services/user-directory.service';
-import { ASSESSMENT_QUESTIONS, AssessmentQuestion } from '../../core/data/assessment-questions';
+import { ASSESSMENT_QUESTIONS, AssessmentQuestion } from '../../../shared/core/data/assessment-questions';
 import { BookingPanelComponent } from '../booking-panel/booking-panel.component';
 import {
   myAppointments,

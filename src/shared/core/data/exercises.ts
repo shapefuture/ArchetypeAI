@@ -13,7 +13,7 @@
  */
 import { selfServeGate, type CheckIn } from './state-v2';
 import type { ScoredProfile } from './scoring-v2';
-import { EXERCISE_COPY, EXERCISE_TYPE_MAP } from '../../../i18n/strings';
+import { EXERCISE_COPY, EXERCISE_TYPE_MAP } from '../../i18n/strings';
 
 export type ExerciseTypeId =
   | 'regulation' | 'unblending' | 'part_dialogue' | 'polarization' | 'firefighter'

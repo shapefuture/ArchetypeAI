@@ -6,7 +6,7 @@
  * Never frame a part as an enemy — no bad parts.
  */
 import type { ShadowPartId } from './parts';
-import { PART_COPY as PART_COPY_TUPLES } from '../../../i18n/strings';
+import { PART_COPY as PART_COPY_TUPLES } from '../../i18n/strings';
 
 export type LayerKey = 'face' | 'need' | 'shadow' | 'superpower';
 export const LAYERS: LayerKey[] = ['face', 'need', 'shadow', 'superpower'];

@@ -2,8 +2,8 @@
 import { BOND_TYPES, SYNASTRY_DIM_LABELS } from '../i18n/strings';
 import { hashStr, rngFrom, clamp01 } from './ports';
 import type { ScoredProfile } from './scoring-v2';
-import type { SynastryReport } from '../../app/core/data/synastry';
-import type { SynastryResult as ScoredProfileSynastryResult } from '../../app/core/data/synastry-v2';
+import type { SynastryReport } from '../../shared/core/data/synastry';
+import type { SynastryResult as ScoredProfileSynastryResult } from '../../shared/core/data/synastry-v2';
 
 export interface SynastryResult {
   aiReflections?: Partial<Record<'en' | 'ru', string>>;

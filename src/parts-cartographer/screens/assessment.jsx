@@ -6,7 +6,7 @@ import { FAMILY_LABELS, SEED_PARTS, pid, randomTraits } from '../pal/traits.ts';
 import { t as tr, CONSENT_TEXT, LIKERT_TEXTS, PART_COPY, ITEM_TEXTS, SCORING_NAME_POOLS, PART_NAMES } from '../i18n/strings.ts';
 import { scoreSystem, profileToCode } from '../core/scoring-v2.ts';
 import { clinicalNeedName, clinicalPartName, clinicalPolarizationName } from '../core/clinical-display.ts';
-import { COMPLEXES } from '../../app/core/data/parts';
+import { COMPLEXES } from '../../shared/core/data/parts';
 import { store, KEYS } from '../core/local-store';
 import { telemetry } from '../core/telemetry.ts';
 import { ROUTE_KEYS, isSampleProfile, markSample, sampleSavePlan } from '../core/assessment-routes.ts';

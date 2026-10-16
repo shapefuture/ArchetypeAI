@@ -13,8 +13,8 @@ import {
   positivePoleStrength,
   type PoleScores,
   type ScoredArchetype,
-} from '../../app/core/data/scoring';
-import { STRINGS, TRANSLATIONS } from '../../i18n/strings';
+} from '../../shared/core/data/scoring';
+import { STRINGS, TRANSLATIONS } from '../../shared/i18n/strings';
 import type { LegacyAiAnalysis } from '../core/legacy-ai-analysis';
 
 export type LegacyAssessmentLanguage = 'en' | 'ru';

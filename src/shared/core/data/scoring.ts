@@ -2,7 +2,7 @@ import {
   DESCRIPTION_TEMPLATES, WOUND_TEMPLATES, SHADOW_TEMPLATES,
   INVITATION_TEMPLATES, CORE_BELIEF_TEMPLATES, ATTRACTS_TEMPLATES,
   SCORING_NAME_POOLS,
-} from '../../../i18n/strings';
+} from '../../i18n/strings';
 
 /**
  * Deterministic Archetype Scoring Engine

@@ -7,12 +7,12 @@ import { buildClinicalMarkdown, clinicalAttachmentStyle, clinicalSubtype, downlo
 import { adaptClinicalProfile } from '../core/clinical-profile-adapter';
 import { validClinicalScore } from '../core/profile-contract';
 import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY } from '../core/assessment-draft';
-import { STRINGS } from '../../i18n/strings';
-import { PART_COPY, LAYERS } from '../../app/core/data/part-copy';
-import { RESOURCES, SELF_QUALITIES, RESOURCE_BANDS, partClass, COMPLEXES } from '../../app/core/data/parts';
-import { constellationEssay, constellationName, polarizationName, resourceName, COMPLEX_COPY_RU } from '../../app/core/data/constellation-copy';
-import { attributionRatio } from '../../app/core/data/state-v2';
-import { buildLayout } from '../../app/core/data/constellation-layout';
+import { STRINGS } from '../../shared/i18n/strings';
+import { PART_COPY, LAYERS } from '../../shared/core/data/part-copy';
+import { RESOURCES, SELF_QUALITIES, RESOURCE_BANDS, partClass, COMPLEXES } from '../../shared/core/data/parts';
+import { constellationEssay, constellationName, polarizationName, resourceName, COMPLEX_COPY_RU } from '../../shared/core/data/constellation-copy';
+import { attributionRatio } from '../../shared/core/data/state-v2';
+import { buildLayout } from '../../shared/core/data/constellation-layout';
 
 /** The canonical Descent report uses the same score, text and layout as Angular, with React's cards. */
 export function ClinicalReport({ profile: supplied, readOnly = false, embedded = false, onBack, clientLabel = '' }) {

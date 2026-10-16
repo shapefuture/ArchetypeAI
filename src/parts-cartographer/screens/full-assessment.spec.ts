@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   DESCENT_DRAFT_KEY, DESCENT_ITEM_IDS, LEGACY_DESCENT_DRAFT_KEY, itemId, writeDescentDraft, type DescentDraft,
 } from '../core/assessment-draft';
-import { buildItemSequence } from '../../i18n/items';
+import { buildItemSequence } from '../../shared/i18n/items';
 
 const appMock = vi.hoisted(() => ({ current: null as null | Record<string, any> }));
 vi.mock('../app.jsx', () => ({ useApp: () => appMock.current }));

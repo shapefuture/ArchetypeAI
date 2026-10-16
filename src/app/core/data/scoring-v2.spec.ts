@@ -4,11 +4,11 @@
  * Fixture builders: all-3s (neutral), all-5s (max), all-1s (min).
  */
 import { describe, it, expect } from 'vitest';
-import type { ShadowPartId, ResourceId, SelfQuality } from './parts';
-import { SHADOW_PARTS, RESOURCES, SELF_QUALITIES, PROTECTORS } from './parts';
+import type { ShadowPartId, ResourceId, SelfQuality } from '../../../shared/core/data/parts';
+import { SHADOW_PARTS, RESOURCES, SELF_QUALITIES, PROTECTORS } from '../../../shared/core/data/parts';
 import {
   scoreProfile, quickScan, REVERSE_KEYED_INDEXES, type AssessmentInput,
-} from './scoring-v2';
+} from '../../../shared/core/data/scoring-v2';
 
 const n8 = (v: number) => Array(8).fill(v) as number[];
 const n6 = (v: number) => Array(6).fill(v) as number[];

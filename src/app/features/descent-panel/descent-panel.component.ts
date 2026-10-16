@@ -11,21 +11,21 @@ import {
   ChangeDetectionStrategy, Component, computed, inject, output, signal,
   HostListener, OnDestroy,
 } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
-import { localSet, localGet } from '../../core/data/local-store';
-import { novaSvg } from '../landing/stickers';
+import { localSet, localGet } from '../../../shared/core/data/local-store';
+import { novaSvg } from '../../../shared/features/landing/stickers';
 import { TranslationService } from '../../../services/translation.service';
 import {
   LIKERT, buildDescents, buildItemSequence, itemText, isReverseKeyed,
   type ItemRef,
-} from '../../../i18n/items';
-import type { ShadowPartId } from '../../core/data/parts';
-import type { AssessmentInput } from '../../core/data/scoring-v2';
+} from '../../../shared/i18n/items';
+import type { ShadowPartId } from '../../../shared/core/data/parts';
+import type { AssessmentInput } from '../../../shared/core/data/scoring-v2';
 import {
   toAssessmentInput, somaticFollowUpFires, SOMATIC_ZONES, type SomaticZone,
-} from '../../core/data/assessment-adapter';
+} from '../../../shared/core/data/assessment-adapter';
 
 const STORE_KEY = 'INNERVERSE_DESCENT_V1';
 export const FUTURE_SELF_KEY = 'INNERVERSE_FUTURE_SELF_V1';

@@ -9,7 +9,7 @@ import {
   PURSUE_WITHDRAW_1, PURSUE_WITHDRAW_2, MUTUAL_ESCALATION, DEEP_FREEZE,
   VOLATILE_BOND, HEALING_CONTAINER, PARALLEL_SOVEREIGNTY,
   PROJECTION_MATRIX, RELATIONAL_ARCHETYPES, SYNASTRY_DIM_LABELS,
-} from '../../../i18n/strings';
+} from '../../i18n/strings';
 import { PoleScores, ScoredArchetype, PartType, DevelopmentalOrigin, PartsDynamic, Complex, computePoleScores, generateArchetypes, generatePartsDynamics, detectComplexes, computeTriggerMap, DissociationIndicator, RegulationCapacity, BoundaryAssessment, CoherenceIndicator, computeDissociation, computeRegulationCapacity, computeBoundaryStyle, computeNarrativeCoherence, positivePoleStrength, negativePoleStrength } from './scoring';
 
 // --- Types ---

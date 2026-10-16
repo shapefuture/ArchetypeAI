@@ -5,7 +5,7 @@ import { LegacyClinicalReport } from './legacy-report.jsx';
 import { buildLegacyReportData, applyLegacyAiAnalysis } from './legacy-report-data';
 import { sanitizeLegacyAiAnalysis } from '../core/legacy-ai-analysis';
 import { validProfile } from '../core/profile-contract';
-import { TRANSLATIONS } from '../../i18n/strings';
+import { TRANSLATIONS } from '../../shared/i18n/strings';
 
 /** Reuse complete reports without touching the specialist's own profile or starting AI requests. */
 export function SpecialistReport({ snapshot, onBack, clientLabel }) {

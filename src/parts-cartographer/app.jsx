@@ -46,8 +46,8 @@ async function restoreCanonicalProfile(lang) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
   try {
     const [scoring, taxonomy, adapter] = await Promise.all([
-      import('../app/core/data/scoring-v2'),
-      import('../app/core/data/parts'),
+      import('../shared/core/data/scoring-v2'),
+      import('../shared/core/data/parts'),
       import('./core/clinical-profile-adapter.ts'),
     ]);
     const { RESOURCES, SHADOW_PARTS } = taxonomy;

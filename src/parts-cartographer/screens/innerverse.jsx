@@ -17,6 +17,14 @@ import { RestControl } from './rest-control.jsx';
 import { GuardedClientData } from './therapist-guard.jsx';
 import { readableClientMaps } from '../core/therapist-guard.ts';
 
+// Accessible names for the panel host: [en, ru].
+const PANEL_NAMES = {
+  replay: ['Replay', 'Повтор'],
+  negotiation: ['Negotiate', 'Переговоры'],
+  coordinates: ['Coordinates', 'Координаты'],
+  rest: ['Rest', 'Отдых'],
+};
+
 const CLUSTER_LABELS = {
   managers: ['Managers', 'Менеджеры'], firefighters: ['Firefighters', 'Пожарные'], exiles: ['Exiles', 'Изгнанники'], resources: ['Resources', 'Ресурсы'],
   control_shadows: ['Control patterns', 'Паттерны контроля'], emotional_storm_shadows: ['Emotional storms', 'Эмоциональные бури'],
@@ -218,7 +226,7 @@ export function Innerverse() {
       )}
 
       {panel && (
-        <div className="card iv-panel-host" role="dialog" style={{ position: 'absolute', left: 16, right: 16, top: 112, bottom: 96, zIndex: 44, pointerEvents: 'auto', overflowY: 'auto', background: 'var(--surface)' }}>
+        <div className="card iv-panel-host" role="dialog" aria-label={PANEL_NAMES[panel]?.[lang === 'ru' ? 1 : 0]} style={{ position: 'absolute', left: 16, right: 16, top: 112, bottom: 96, zIndex: 44, pointerEvents: 'auto', overflowY: 'auto', background: 'var(--surface)' }}>
           <button className="ibtn iv-panel-close" aria-label={t('close')} onClick={() => setPanel(null)}>✕</button>
           {panel === 'replay' && <ReplayStudio />}
           {panel === 'negotiation' && <InnerNegotiation />}

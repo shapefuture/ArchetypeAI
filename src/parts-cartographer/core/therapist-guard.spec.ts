@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clientMapRequest, decideClientMap, readableClientMaps, relationshipFor, type RosterClientLike } from './therapist-guard.ts';
+import { clientMapRequest, decideClientMap, readableClientMaps, relationshipFor, visibleAppointments, type RosterClientLike } from './therapist-guard.ts';
 
 const THERAPIST = 't1';
 const linkedWithMap: RosterClientLike = { clientUid: 'c1', archived: false, summary: { headline: 'Constellation' } };
@@ -60,5 +60,24 @@ describe('therapist client-map gate (UI only; the server rules are the boundary)
     const readable = readableClientMaps(THERAPIST, THERAPIST, [bookingOnly, linkedWithMap, archivedWithMap]);
     expect(readable.map((client) => client.clientUid)).toEqual(['c1']);
     expect(readableClientMaps(THERAPIST, 'other', [linkedWithMap])).toEqual([]);
+  });
+});
+
+describe('visibleAppointments', () => {
+  const appt = (id: string, clientUid: string) => ({ id, clientUid, start: '2026-10-20T10:00', status: 'pending' });
+
+  it('keeps appointments of linked clients, including booking-only clients, in their original order', () => {
+    const appointments = [appt('a1', 'c2'), appt('a2', 'c1'), appt('a3', 'c2')];
+    expect(visibleAppointments(appointments, [bookingOnly, linkedWithMap]).map((a) => a.id)).toEqual(['a1', 'a2', 'a3']);
+  });
+
+  it('hides appointments of archived clients and of clients not on the roster', () => {
+    const appointments = [appt('a1', 'c1'), appt('a2', 'c3'), appt('a3', 'stranger')];
+    expect(visibleAppointments(appointments, [linkedWithMap, archivedWithMap]).map((a) => a.id)).toEqual(['a1']);
+  });
+
+  it('shows nothing with an empty roster or no appointments', () => {
+    expect(visibleAppointments([appt('a1', 'c1')], [])).toEqual([]);
+    expect(visibleAppointments([], [linkedWithMap])).toEqual([]);
   });
 });

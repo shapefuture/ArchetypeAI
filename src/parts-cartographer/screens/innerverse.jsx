@@ -15,7 +15,7 @@ import { InnerNegotiation } from './negotiation.jsx';
 import { CoordinatesPanel } from './coordinates.jsx';
 import { RestControl } from './rest-control.jsx';
 import { GuardedClientData } from './therapist-guard.jsx';
-import { readableClientMaps } from '../core/therapist-guard.ts';
+import { readableClientMaps, visibleAppointments } from '../core/therapist-guard.ts';
 
 // Accessible names for the panel host: [en, ru].
 const PANEL_NAMES = {
@@ -466,7 +466,9 @@ export function SpecialistView() {
   const exerciseIds = useMemo(() => Object.keys(EXERCISE_COPY), []);
   const activeClients = clients.filter((client) => !client.archived);
   const archivedClients = clients.filter((client) => client.archived);
-  const pendingAppointments = appointments.filter((appointment) => appointment.status === 'pending');
+  // Only appointments of linked, non-archived clients are shown (see visibleAppointments).
+  const shownAppointments = visibleAppointments(appointments, clients);
+  const pendingAppointments = shownAppointments.filter((appointment) => appointment.status === 'pending');
   const summaryClients = readableClientMaps(user?.uid ?? '', user?.uid ?? '', activeClients).filter((client) => client.summary);
   const checkInsDone = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.done) || 0), 0);
   const checkInsSkipped = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.skipped) || 0), 0);
@@ -788,7 +790,7 @@ export function SpecialistView() {
 
         {tab === 'appts' && (
           <div className="mt16">
-            {appointments.length === 0 ? <p className="sub">{t('therapistNoAppointments')}</p> : appointments.map((appointment) => (
+            {shownAppointments.length === 0 ? <p className="sub">{t('therapistNoAppointments')}</p> : shownAppointments.map((appointment) => (
               <div key={appointment.id} className="card flat mt10">
                 <div className="row">
                   <b className="grow">{appointment.clientEmail || appointment.clientUid.slice(0, 12)}</b>

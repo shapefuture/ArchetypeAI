@@ -3,6 +3,7 @@ import type { AssessmentInput } from '../../app/core/data/scoring-v2';
 import type { Lang } from '../i18n/strings';
 import { KEYS } from './local-store';
 import { validProfile } from './profile-contract';
+import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, isDescentDraft } from './assessment-draft';
 import { sanitizeLegacyAiAnalysis } from './legacy-ai-analysis';
 import { SHAPES, EYES, MOUTHS, HEADS, FACES, type Part } from '../pal/traits';
 
@@ -10,7 +11,7 @@ const MAX_BYTES = 20 * 1024 * 1024;
 const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.syn,
   'ifs.lang', 'ifs.theme', 'ifs.onboarded', 'ifs.assessment.draft', 'ifs.legacy64.result',
   'ifs.journal', 'ifs.sealed', 'ifs.sealed.verdict', 'ifs.universe.dimensions.v1',
-  'INNERVERSE_DESCENT_V1', 'INNERVERSE_FUTURE_SELF_V1', 'INNERVERSE_PROFILE_V1',
+  DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, 'INNERVERSE_FUTURE_SELF_V1', 'INNERVERSE_PROFILE_V1',
   'INNERVERSE_CHECKINS_V1', 'INNERVERSE_SEALED_VERDICTS_V1', 'INNERVERSE_JITAI_V1',
   'INNERVERSE_CHARTER_V1', 'INNERVERSE_EVENTS_V1', 'INNERVERSE_PRACTICE_V1', 'INNERVERSE_SYNASTRY_RUNS_V1',
   'ARCHETYPE_ASSESSMENT_RESPONSES', 'ARCHETYPE_ASSESSMENT_INDEX', 'ARCHETYPE_COMPLETED_BACKUP',
@@ -52,7 +53,8 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === KEYS.profile || key === KEYS.history) return value === null || validProfile(value);
   if (key === 'ifs.legacy64.result') return value === null || object(value);
   if (key === 'INNERVERSE_PROFILE_V1') return isCanonicalAssessmentInput(value);
-  if (key === 'INNERVERSE_DESCENT_V1') return object(value) && ratings(value.answers, 147, true);
+  if (key === DESCENT_DRAFT_KEY) return isDescentDraft(value);
+  if (key === LEGACY_DESCENT_DRAFT_KEY) return object(value) && ratings(value.answers, 147, true);
   if (key === 'INNERVERSE_FUTURE_SELF_V1') return Array.isArray(value) && value.length === 3 && value.every((item) => typeof item === 'string' && item.length <= 20_000);
   if (key === 'ARCHETYPE_ASSESSMENT_RESPONSES') return ratings(value, 64, true);
   if (key === 'ARCHETYPE_ASSESSMENT_INDEX') return Number.isInteger(value) && Number(value) >= 0 && Number(value) < 64;

@@ -7,10 +7,11 @@ import { scoreProfile } from '../../app/core/data/scoring-v2';
 import { buildItemSequence, itemText } from '../../i18n/items';
 import { CONSENT_TEXT, DESCENT_UI, FULL_ASSESSMENT_LIKERT_TEXTS } from '../i18n/strings.ts';
 import { adaptClinicalProfile } from '../core/clinical-profile-adapter.ts';
+import { ROUTE_KEYS } from '../core/assessment-routes.ts';
 
-const DRAFT_KEY = 'INNERVERSE_DESCENT_V1';
-const FUTURE_SELF_KEY = 'INNERVERSE_FUTURE_SELF_V1';
-const LEGACY_64_KEY = 'ARCHETYPE_ASSESSMENT_RESPONSES';
+const DRAFT_KEY = ROUTE_KEYS.battery147.draft;
+const FUTURE_SELF_KEY = ROUTE_KEYS.battery147.futureSelf;
+const LEGACY_64_KEY = ROUTE_KEYS.reflection64.responses;
 const LIKERT_EMOTES = ['🙅', '🤏', '🌗', '👋', '🎯'];
 const SEQUENCE = buildItemSequence();
 

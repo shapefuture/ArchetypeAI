@@ -888,6 +888,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .modal-layer .overlay, .modal-layer .sheet { pointer-events: auto; }
 .app-content { display: flex; flex: 1; min-height: 0; width: 100%; }
 .app-content > .screen { width: 100%; min-width: 0; }
+/* main landmark: route transitions focus it, so it is a target rather than a control */
+.app-main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; width: 100%; outline: none; }
+.app-main > .screen { width: 100%; min-width: 0; }
 .grow { min-width: 0; }
 
 .universe-actions { scrollbar-width: none; }

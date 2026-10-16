@@ -26,7 +26,8 @@ describe('account-scoped Stripe verification', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
   it('verifies callback ownership and removes only Stripe callback parameters', async () => {
-    window.history.replaceState(null, '', '/?stripe=success&session_id=cs_test&keep=1#report');
+    const navState = { ifsNav: 1, route: 'intro', overlay: null, sheet: null, from: null };
+    window.history.replaceState(navState, '', '/?stripe=success&session_id=cs_test&keep=1#report');
     const fetch = vi.fn(async () => ({ ok: true, json: async () => ({ status: 'complete' }) }));
     vi.stubGlobal('fetch', fetch);
     const { billing } = await import('./billing.service');
@@ -35,6 +36,7 @@ describe('account-scoped Stripe verification', () => {
     expect(billing.isPremium()).toBe(true);
     expect(window.location.search).toBe('?keep=1');
     expect(window.location.hash).toBe('#report');
+    expect(window.history.state).toEqual(navState);
     identity.uid = 'other'; expect(billing.isPremium()).toBe(false);
   });
   it('ignores a verification that finishes after account switching', async () => {

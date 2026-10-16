@@ -8,6 +8,7 @@ import { billing } from './core/billing.service.ts';
 import { telemetry } from './core/telemetry.ts';
 import { loadSensoryPreferences, saveSensoryPreferences, selectSensoryPreset, updateSensoryPreference } from './core/sensory-preferences.ts';
 import { ambience, bindAmbienceSignals } from './services/ambience-gate.ts';
+import { navEntry, navOverlay, navSheet, planNavigation, readNavEntry, sameSheet } from './core/navigation-history.ts';
 import { SEED_PARTS } from './pal/traits.ts';
 import { t as translate, STRINGS } from './i18n/strings.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
@@ -24,7 +25,7 @@ import { Innerverse, SpecialistView } from './screens/innerverse.jsx';
 import { Coach, Help, InstallPrompt, SynastryOv, Therapist, Login, MapGate, Paywall, UniverseFail, Journal, Share, Booking } from './overlays.jsx';
 import { PartSheet, PartEditor, Chemistry, CharterSheet } from './screens/cabinet.jsx';
 import { RouteBoundary, RouteFrame } from './ui/route-boundary.jsx';
-import { resolveBootRoute, withoutDeepLink } from './core/boot.ts';
+import { homeScreen, resolveBootRoute, withoutDeepLink } from './core/boot.ts';
 
 const AppCtx = createContext(null);
 export const useApp = () => useContext(AppCtx);
@@ -219,6 +220,44 @@ export default function App() {
     authStarted.current = true;
     auth.anonymousBootstrap().then((u) => setUser(u));
   }, [bootRoute]);
+  /* ── browser history: Back/Forward restore the route and open layers; URLs never change ── */
+  const overlayKind = navOverlay(overlay);
+  const sheetPart = navSheet(sheet);
+  const sheetId = sheetPart?.id ?? null;
+  const routeRef = useRef(state);
+  const mainRef = useRef(null);
+  // A deep link to a screen opens above the home entry, so Back from it returns home instead of leaving the app.
+  const homeSeeded = useRef(false);
+  useEffect(() => {
+    routeRef.current = state;
+    let steps = planNavigation(readNavEntry(window.history.state), { route: state, overlay: overlayKind, sheet: sheetPart });
+    const home = { route: homeScreen(Boolean(store.load(KEYS.onboarded, false))), overlay: null, sheet: null };
+    if (!homeSeeded.current && state === bootRoute.screen && home.route !== bootRoute.screen && steps.length === 1 && steps[0].op === 'replace') {
+      homeSeeded.current = true;
+      steps = [{ op: 'replace', view: home, from: null }, { op: 'push', view: steps[0].view, from: home }];
+    }
+    for (const step of steps) {
+      if (step.op === 'back') window.history.back();
+      else window.history[step.op === 'push' ? 'pushState' : 'replaceState'](navEntry(step.view, step.from), '');
+    }
+  }, [state, overlayKind, sheetId]);
+  useEffect(() => {
+    const onPop = (event) => {
+      const target = readNavEntry(event.state);
+      if (!target) return;
+      if (target.route !== routeRef.current) go(target.route);
+      setOverlay((current) => (navOverlay(current) === target.overlay ? current : target.overlay));
+      setSheet((current) => (sameSheet(navSheet(current), target.sheet) ? current : target.sheet));
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [go]);
+  // A route transition moves focus to the main landmark unless a layer owns focus.
+  useEffect(() => {
+    if (state === 'loading' || overlay || sheet) return;
+    mainRef.current?.focus({ preventScroll: true });
+  }, [state]);
+
 
   /* ── PWA install prompt (auto-opens once/week after 9s on intro) ── */
   useEffect(() => {
@@ -389,9 +428,11 @@ export default function App() {
           <div id="universe-host" className={`universe-host ${state === 'universe' ? 'on' : ''}`} />
 
           <div className="app-content" inert={overlay || sheet ? '' : undefined}>
-            <RouteFrame resetKey={state} fallback={<Loading />} onCommit={state === 'loading' ? undefined : settleDeepLink}>
-              {screen}
-            </RouteFrame>
+            <main ref={mainRef} className="app-main" tabIndex={-1}>
+              <RouteFrame resetKey={state} fallback={<Loading />} onCommit={state === 'loading' ? undefined : settleDeepLink}>
+                {screen}
+              </RouteFrame>
+            </main>
             {showDock && <Dock onSkyHover={prefetchUni} />}
           </div>
 

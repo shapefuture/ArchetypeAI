@@ -147,3 +147,23 @@ test('sensory style presets and individual controls stay independent and persist
   await page.getByRole('button', { name: 'You', exact: true }).click();
   await expect(page.getByRole('checkbox', { name: 'Soft interface sounds' })).toBeChecked();
 });
+
+test('browser Back and Forward restore an open layer and a route, with focus on the main landmark and the URL unchanged', async ({ page }) => {
+  await page.goto('/');
+  const start = page.url();
+  await page.getByRole('button', { name: /Quick scan/ }).click();
+  await expect(page.getByRole('dialog').first()).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.goForward();
+  await expect(page.getByRole('dialog').first()).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await page.getByRole('button', { name: /Start.*147/i }).first().click();
+  await expect(page.locator('.app-main')).toBeFocused();
+  await page.goBack();
+  await expect(page.getByRole('button', { name: /Start.*147/i }).first()).toBeVisible();
+  await expect(page.locator('.app-main')).toBeFocused();
+  expect(page.url()).toBe(start);
+});

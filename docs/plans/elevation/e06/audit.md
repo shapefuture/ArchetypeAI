@@ -1,7 +1,7 @@
 # E06.01 audit: Corrections that propagate
 
 - Bead: `ArchetypeAI-wbc` (E06.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -23,13 +23,13 @@
 
 ## 3. Module test names (first eight)
 
-- rejecting a hypothesis marks its derived summary and context stale and writes a receipt naming what was left a
+- rejecting a hypothesis marks its derived summary and context stale and writes a receipt naming what was left alone
 - undo restores the hypothesis, while projections stay stale until rebuilt from active sources
-- deleting a source erases its wording and everything derived from it; undo afterwards is refused and cached cop
+- deleting a source erases its wording and everything derived from it; undo afterwards is refused and cached copies stay blocked
 - a rejected interpretation never reappears through stale or fresh retrieval, by id or by wording
-- revising a reading supersedes its wording, keeps the old wording on record as rejected, and marks its summarie
+- revising a reading supersedes its wording, keeps the old wording on record as rejected, and marks its summaries stale
 - canonical measurements are never modified, corrected, deleted or used as a parent
-- the model may add interpretations and rebuild projections, but cannot reject, undo, revise, delete or author o
+- the model may add interpretations and rebuild projections, but cannot reject, undo, revise, delete or author observations
 - a model rebuild cannot reintroduce rejected wording or build on a rejected source
 
 ## 4. Input beads and their status
@@ -44,12 +44,12 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- Propagation to derived summaries is implemented in the module. The panel shows only counts (`Changed: n · Left alone: n`, `src/parts-cartographer/screens/elevation/e06-corrections.jsx:122-126`), not the affected summaries.
+- The panel lists each node with its status and Reject, Undo and Remove actions (`src/parts-cartographer/screens/elevation/e06-corrections.jsx:100-121`). Whether it also lists the summaries each node affects was not verified.
 - Source deletion has one UI test (`e06-corrections.spec.ts:62-69`). Undo is covered by module tests only.
 
 ## 6. Smallest useful slice (educated guess)
 
-If the step needs it, show each affected summary rather than only counts, and test that list against the module output.
+If the step needs it, show the summaries each node affects, and test that list against the module output.
 
 ## 7. Pending evidence (not claimed)
 

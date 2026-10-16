@@ -1,7 +1,7 @@
 # E20.01 audit: Independent evaluation rubric
 
 - Bead: `ArchetypeAI-wvtm` (E20.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -50,10 +50,11 @@
 
 - The rubric is displayed as a draft. No result is produced and no dimension is passed.
 - An independent evaluator has not run, and manual assistive-technology evidence is absent.
+- Shown only to admins (`src/parts-cartographer/screens/cabinet.jsx:293`).
 
 ## 6. Smallest useful slice (educated guess)
 
-None. The rubric display is the intended end state for this step.
+None in this audit. The display is the step's stated end state. Any further work needs the evaluator review first.
 
 ## 7. Pending evidence (not claimed)
 

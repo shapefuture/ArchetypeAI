@@ -1,7 +1,7 @@
 # E15.01 audit: Session preparation and sharing scope
 
 - Bead: `ArchetypeAI-ypmu` (E15.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -49,11 +49,11 @@
 ## 5. Gaps (judgement, not measurement)
 
 - The agenda is stored locally and nothing is sent. The share-scope preview is not connected to a therapist link.
-- Revocation before therapist access is not exercised.
+- Revocation is tested in `src/parts-cartographer/elevation/e15-session-continuity.spec.ts:145-162`. The panel does not connect to therapist access.
 
 ## 6. Smallest useful slice (educated guess)
 
-Already stated in the panel copy (`src/parts-cartographer/screens/elevation/e15-session-prep.jsx:15, 23`). No further change is needed for this step.
+None. The local-only status is already stated in the panel copy, so this step needs no code change.
 
 ## 7. Pending evidence (not claimed)
 

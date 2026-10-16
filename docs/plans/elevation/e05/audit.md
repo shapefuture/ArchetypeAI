@@ -1,7 +1,7 @@
 # E05.01 audit: Uncertainty and action
 
 - Bead: `ArchetypeAI-3rd` (E05.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 

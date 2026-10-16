@@ -1,7 +1,7 @@
 # E02.01 audit: Need-based entry and first useful result
 
 - Bead: `ArchetypeAI-r7r` (E02.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -23,9 +23,9 @@
 ## 3. Module test names (first eight)
 
 - routes each of the three needs to one first step: a calm practice, a labelled fallback, and the quick scan
-- recovers an unavailable view: the situation need falls back to a labelled calm start, or to the chooser with a
+- recovers an unavailable view: the situation need falls back to a labelled calm start, or to the chooser with a notice
 - keeps the 64 and 147 routes as deeper options only, never as a default for any need
-- never assumes a profile: a teaser may replace nothing when a canonical map exists, and a missing map is not in
+- never assumes a profile: a teaser may replace nothing when a canonical map exists, and a missing map is not invented
 - finishing the first step reaches a useful stop that names what is still unknown, and Back returns to the step
 - skipping the assessment keeps the chosen step, and assessment-free support is on in every state of a walk
 - resumes a saved practice at the same step after an interruption, and refuses resume when nothing is saved
@@ -46,7 +46,7 @@
 
 ## 6. Smallest useful slice (educated guess)
 
-Mount the three-need choice on the first-run path behind the existing entry component.
+Confirm that first-run already offers the three routes on Base (`src/parts-cartographer/screens/landing.jsx:64`). If it does, keep the entry in the cabinet and close this slice as covered.
 
 ## 7. Pending evidence (not claimed)
 

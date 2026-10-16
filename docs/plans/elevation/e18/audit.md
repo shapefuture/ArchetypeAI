@@ -1,7 +1,7 @@
 # E18.01 audit: Device comfort and economy
 
 - Bead: `ArchetypeAI-l8d0` (E18.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -26,7 +26,7 @@
 - rejects any extra field, so a free-text line never enters local instrumentation
 - sends only a bucket label to the existing telemetry store, never a raw value
 - keeps bounded per-metric buffers and drops the oldest values first
-- recovers sustained heat without inventing a reading: no samples is pending no-run, and heat stays pending with
+- recovers sustained heat without inventing a reading: no samples is pending no-run, and heat stays pending with no browser method
 - declares the envelope only with handset, OS, browser and network, and reports invalid labels as pending
 - observations without a complete envelope are not device evidence, and no frozen budget never reads as within
 - repeated entry and exit counts each entry, ignores a second enter while mounted, and disposes on exit

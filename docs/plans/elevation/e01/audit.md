@@ -1,7 +1,7 @@
 # E01.01 audit: Goal and graduation
 
 - Bead: `ArchetypeAI-epv` (E01.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -9,7 +9,7 @@
 
 | Item | Path | Tests |
 | --- | --- | --- |
-| Pure step module | `src/parts-cartographer/elevation/e01-goal.ts` | 16 in 1 spec file(s) |
+| Pure step module | `src/parts-cartographer/elevation/e01-goal.ts` | 15 in 1 spec file(s) |
 | Panel | `src/parts-cartographer/screens/elevation/e01-goal.jsx` | 4 (spec files: e01-goal.spec.ts) |
 | Mounted in | `src/parts-cartographer/screens/practice.jsx` | - |
 | Storage key | `INNERVERSE_GOAL_V1` | - |

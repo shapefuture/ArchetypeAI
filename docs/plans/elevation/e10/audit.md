@@ -1,7 +1,7 @@
 # E10.01 audit: Rehearsal branches
 
 - Bead: `ArchetypeAI-aft` (E10.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -26,10 +26,10 @@
 
 - moves along an authored exit with the scene text, its text alternative and the hypothetical label
 - rejects a target that is not an exit of the current frame, including any move out of a terminal frame
-- a practical limit changes the hypothetical options and blocks the branch it constrains until it is switched of
+- a practical limit changes the hypothetical options and blocks the branch it constrains until it is switched off
 - refuses an undeclared limit, so no invented constraint can block a branch
 - previews the person\
-- rejects a sentence that predicts or reconstructs a real event and an empty sentence; an empty edit keeps the e
+- rejects a sentence that predicts or reconstructs a real event and an empty sentence; an empty edit keeps the earlier sentence
 - saves only an explicit move as the person\
 - guided text offers the same choices as the scene, and the choice it offers moves the same way
 

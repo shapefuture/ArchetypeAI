@@ -1,7 +1,7 @@
 # E12.01 audit: Presentation without WebGL, audio or motion
 
 - Bead: `ArchetypeAI-xu75` (E12.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -12,7 +12,7 @@
 | Pure step module | `src/parts-cartographer/elevation/e12-quiet-presentation.ts` | 15 in 1 spec file(s) |
 | Panel | `src/parts-cartographer/screens/elevation/e12-presentation.jsx` | 3 (spec files: e12-presentation.spec.ts) |
 | Mounted in | `src/parts-cartographer/screens/innerverse.jsx` | - |
-| Storage key | `INNERVERSE_PRESENTATION_V1` | - |
+| Storage key | `INNERVERSE_PRESENTATION_V1` Also reads the sensory key (`src/parts-cartographer/screens/elevation/e12-presentation.jsx:33, 60`) and the parts key (`:49`). | - |
 
 ## 2. Observable scenarios from the bead
 
@@ -25,9 +25,9 @@
 
 - no WebGL: the accessible list carries the same rows, source and action as the map
 - a failed or lost WebGL context mid-session keeps the selected item and the chosen sensory settings
-- no audio: sound is off with reason unavailable, motion and texture stay, and sound returns without a new choic
+- no audio: sound is off with reason unavailable, motion and texture stay, and sound returns without a new choice
 - system reduced motion stops decorative motion and camera inertia whatever the preset or motion setting
-- mixed sensory settings: each choice keeps its own reason, and the preset label never overrides the motion fiel
+- mixed sensory settings: each choice keeps its own reason, and the preset label never overrides the motion field
 - extreme text expansion keeps every row, uses one column and opens compact density without rewriting the choice
 - a 400 percent zoom on a 1280 px window reflows to a single column at 320 CSS px
 - narrow Russian layout keeps long labels with their source and action
@@ -44,12 +44,12 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- jsdom has no WebGL, so the no-WebGL path is tested. The WebGL path is tested with a stub only.
+- The panel is shown in the list view when WebGL is absent, and the WebGL path is tested with a stub only.
 - Keyboard, screen-reader and large-text behaviour were not checked with real assistive technology.
 
 ## 6. Smallest useful slice (educated guess)
 
-Add this panel to `tests/browser/phone-panels.spec.mjs`, which covers the Cabinet and four other Innerverse panels, then record the result.
+Add this panel to `tests/browser/phone-panels.spec.mjs`, which covers Replay, Negotiate, Coordinates and Rest only, then record the result.
 
 ## 7. Pending evidence (not claimed)
 

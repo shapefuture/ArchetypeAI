@@ -1,7 +1,7 @@
 # E11.01 audit: Felt roles and expressions
 
 - Bead: `ArchetypeAI-qtbi` (E11.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -12,7 +12,7 @@
 | Pure step module | `src/parts-cartographer/elevation/e11-felt-expression.ts` | 15 in 1 spec file(s) |
 | Panel | `src/parts-cartographer/screens/elevation/e11-felt-roles.jsx` | 2 (spec files: e11-felt-roles.spec.ts) |
 | Mounted in | `src/parts-cartographer/screens/cabinet.jsx` | - |
-| Storage key | `INNERVERSE_FELT_ROLE_V1` | - |
+| Storage key | `INNERVERSE_FELT_ROLE_V1` Also reads the parts key (`src/parts-cartographer/screens/elevation/e11-felt-roles.jsx:45`). | - |
 
 ## 2. Observable scenarios from the bead
 
@@ -31,7 +31,7 @@
 - a canonical scored item is neutral and still: no saved, selected or requested state changes it
 - every gesture has a static equivalent, and a gap in a catalogue is reported
 - is deterministic and never reads randomness: the authored role set is fixed
-- interrupted animation: suspended ambience (hidden, typing or error) keeps the still pose and the gesture resta
+- interrupted animation: suspended ambience (hidden, typing or error) keeps the still pose and the gesture restarts on resume
 
 ## 4. Input beads and their status
 

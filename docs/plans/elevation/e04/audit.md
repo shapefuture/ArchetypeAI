@@ -1,7 +1,7 @@
 # E04.01 audit: Discriminating insight questions
 
 - Bead: `ArchetypeAI-1hj` (E04.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -42,7 +42,7 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- The panel is mounted in the check-in screen. Its five response types are covered by module tests. Two UI tests check the five labels and one click.
+- The panel is mounted in the check-in screen. Its five response types are covered by module tests. One UI test checks the five labels and one click (`e04-discriminator.spec.ts:64-80`).
 - The panel has no correction control and does not import a correction function, so the correction behaviour is not reachable from the UI.
 - Whether the questions discriminate usefully is not measured with participants.
 

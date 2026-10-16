@@ -1,7 +1,7 @@
 # E09.01 audit: Feedback without recording pressure
 
 - Bead: `ArchetypeAI-lgo` (E09.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -49,7 +49,7 @@
 
 ## 6. Smallest useful slice (educated guess)
 
-Resolve the mismatch: either stop saving on decline or correct the copy. Then add a test that declining leaves no stored feedback.
+Resolve the mismatch. If the copy is right, stop saving on decline and add a test that declining leaves no stored feedback. If saving is right, correct the copy instead.
 
 ## 7. Pending evidence (not claimed)
 

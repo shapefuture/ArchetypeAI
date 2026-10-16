@@ -1,7 +1,7 @@
 # E03.01 audit: Capacity modes and sensory independence
 
 - Bead: `ArchetypeAI-4ct` (E03.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -46,7 +46,7 @@
 ## 5. Gaps (judgement, not measurement)
 
 - No other screen reads the capacity key. `CAPACITY_KEY` appears only in the panel and its spec, so the chosen mode affects only the cabinet.
-- Independent sound, motion and density controls are covered by module tests only. No device check has been made.
+- Sensory controls have a UI test for sound and the still preset (`src/parts-cartographer/screens/sensory-settings.spec.ts:58-78`). Density has no UI test. Independent sound, motion and density behaviour is otherwise covered by module tests.
 
 ## 6. Smallest useful slice (educated guess)
 

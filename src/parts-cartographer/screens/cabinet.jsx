@@ -11,6 +11,8 @@ import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
 import { EntryPanel } from './elevation/e02-entry.jsx';
 import { CapacityPanel } from './elevation/e03-capacity.jsx';
+import { CorrectionsPanel } from './elevation/e06-corrections.jsx';
+import { ValidityPanel } from './elevation/e07-validity.jsx';
 import { MemoryPanel } from './memory-panel.jsx';
 import { SharedSupportPanel } from './shared-support.jsx';
 import { ReminderSettings } from './reminder-settings.jsx';
@@ -269,6 +271,8 @@ export function Cabinet() {
         <EntryPanel />
         <CapacityPanel />
         <MemoryPanel />
+        <CorrectionsPanel />
+        <ValidityPanel />
         <SharedSupportPanel />
         <ReminderSettings />
         {adminAccess && (

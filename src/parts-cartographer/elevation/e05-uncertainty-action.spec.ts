@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  emptyState, evaluateAction, eligibleProbes, loadOrEmpty, markUnhelpful, nextProbe, offerActions, parseState, RECOVERY,
+  addUserReading, emptyState, evaluateAction, eligibleProbes, loadOrEmpty, markUnhelpful, nextProbe, offerActions, parseState, RECOVERY,
   RECOVERY_CASES, recordObservation, rejectReading, type ActionOption, type E05State, type EvidenceKind, type Probe, type Reading, type Result,
 } from './e05-uncertainty-action.ts';
 import type { ExperimentCard } from '../core/experiment-outcome.ts';
@@ -160,5 +160,19 @@ describe('E05 reviewed action eligibility across alternative explanations', () =
       expect(RECOVERY[c].next.length).toBeGreaterThan(0);
       expect(`${RECOVERY[c].handled} ${RECOVERY[c].next}`).not.toMatch(/streak|missed|points|rank|badge/i);
     }
+  });
+});
+
+describe('E05 user readings', () => {
+  it('lets only the person add a reading, with a matching revision and a unique id', () => {
+    const s0 = emptyState();
+    const added = addUserReading(s0, { id: 'r1', text: 'I was tired' }, 'user', 0);
+    expect(added.ok).toBe(true);
+    if (!added.ok) return;
+    expect(added.state.readings[0]).toMatchObject({ kind: 'user-authored', standing: 'open', sources: ['user-authored'] });
+    expect(addUserReading(added.state, { id: 'r2', text: 'x' }, 'model', added.state.revision)).toEqual({ ok: false, reason: 'not-authorized' });
+    expect(addUserReading(added.state, { id: 'r2', text: 'x' }, 'user', 0)).toEqual({ ok: false, reason: 'stale-revision' });
+    expect(addUserReading(added.state, { id: 'r1', text: 'again' }, 'user', added.state.revision)).toEqual({ ok: false, reason: 'invalid-input' });
+    expect(addUserReading(s0, { id: 'r9', text: '   ' }, 'user', 0)).toEqual({ ok: false, reason: 'invalid-input' });
   });
 });

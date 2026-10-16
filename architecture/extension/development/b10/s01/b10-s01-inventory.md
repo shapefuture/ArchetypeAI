@@ -17,7 +17,7 @@ Accommodations partly exist: sensory and reduced-motion preferences are implemen
 | Sensory and motion accommodations | `src/parts-cartographer/core/sensory-preferences.ts` | Implemented: presets and individual controls, device-local storage. Reusable for accommodations. |
 | Reduced-motion gating | `src/parts-cartographer/core/sensory-preferences.ts` (`sceneClockStep`) | Implemented: the ambient clock stops for Still and for system reduced motion. |
 | Ambience suspension | `src/parts-cartographer/services/ambience-gate.ts` | Implemented: suspends ambience for hidden pages, text entry, and errors. |
-| Measured need category `meaning` | `src/app/core/data/parts.ts:25`, `src/app/core/data/scoring-v2.ts:208` | A scored need. Must not be treated as personal meaning notes. |
+| Measured need category `meaning` | `src/shared/core/data/parts.ts:25`, `src/shared/core/data/scoring-v2.ts:208` | A scored need. Must not be treated as personal meaning notes. |
 | Personal meaning notes and context | none | Absent. |
 
 **Reuse packages named by the task.** The planning documents define these codes inconsistently across streams (the B01 inventory recorded the same ambiguity). Each code is an unresolved reuse claim until the coordinator confirms its mapping.

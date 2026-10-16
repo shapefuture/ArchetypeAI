@@ -16,7 +16,7 @@ Authored presentation exists in one narrow form: AI-authored text may replace ma
 |---|---|---|
 | AI-authored text replaces matching entries | `src/parts-cartographer/core/legacy-universe-adapter.ts:60` | Existing authored-overlay pattern. Reusable as a precedent. |
 | Anonymous cross-device continuity | `src/app.component.ts:1118` (comment) | Describes cookie-based continuity; no creative state is involved. |
-| Part data (authored character content) | `src/app/core/data/parts.ts` | Existing authored content catalogue for parts. Not a creative-work model. |
+| Part data (authored character content) | `src/shared/core/data/parts.ts` | Existing authored content catalogue for parts. Not a creative-work model. |
 | Creative-work state (drafts, versions, presentation choices) | none | Absent. |
 
 **Reuse packages named by the task.** The planning documents define these codes inconsistently across streams (the B01 inventory recorded the same ambiguity). Each code is an unresolved reuse claim until the coordinator confirms its mapping.

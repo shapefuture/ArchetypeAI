@@ -23,10 +23,10 @@ No quest, skill graph, repertoire or shared quest state exists. Optional rewards
 |---|---|---|
 | Artifact progression model | `src/parts-cartographer/core/artifact-progression.ts` (`progressFor`, `revise`, `chooseReward`, `isEssentialLocked`) | Present at HEAD (9df2be4, after base). Reusable as the progression model. Essentials are never locked (`isEssentialLocked` returns false). |
 | Guidance progression | `src/parts-cartographer/elevation/e08-transfer.ts` (`progressAfter`) | Present as a pure function with unit tests. Not called by the mounted transfer panel. One lighter help step after an unaided recall, if called. No points. |
-| Practice toolkit storage | `src/parts-cartographer/screens/practice-toolkit.jsx:22` (`TOOLKIT_KEY`), `:370` (`normalizeToolkit`) | Stores `artifacts`, `rewardOptions` and `rewardChoice` alongside cards, outcomes and reviews. Device-local. |
+| Practice toolkit storage | `src/parts-cartographer/screens/practice-toolkit.jsx:22` (HEAD) (`TOOLKIT_KEY`), `:370` (`normalizeToolkit`) | Stores `artifacts`, `rewardOptions` and `rewardChoice` alongside cards, outcomes and reviews. Device-local. |
 | Event-type label `achievement` | `src/app/features/checkin-panel/checkin-panel.component.ts:156` | Label only. Not a reward event; no points, unlocks or state. |
-| Storage port | `src/parts-cartographer/core/ports.ts:15`, `src/parts-cartographer/core/local-store.ts:15` (`store`) | Reusable for device-local state. |
-| Part identity and stickers | `src/shared/features/landing/stickers.ts:223` (`sticker`) | Identity rendering. Not progression. |
+| Storage port | `src/parts-cartographer/core/ports.ts:39`, `src/parts-cartographer/core/local-store.ts:15` (`store`) | Reusable for device-local state. |
+| Part identity and stickers | `src/shared/features/landing/stickers.ts:223` (HEAD) (`sticker`) | Identity rendering. Not progression. |
 
 **Reuse packages (`C02`, `C08`).** The task metadata names them, but the planning documents do not define them consistently. The B01 inventory recorded the same ambiguity. This inventory does not resolve it. Until the coordinator confirms the mapping, `C02` and `C08` are unmapped reuse claims, not verified reuse.
 

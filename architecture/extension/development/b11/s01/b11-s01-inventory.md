@@ -189,7 +189,7 @@ Verdict: **reuse** (use as is), **adapt** (use with declared changes), **avoid**
 | Worker routes | `worker.ts:172-180` | AI, Stripe, 410 for old Gemini proxy | absent for social | No route for sessions or presence |
 | Worker security | `worker-security.ts:65` (`authenticateFirebaseRequest`), `:162` (`checkRateLimit`) | Firebase ID-token verification and rate limit | reuse if a server route is needed | |
 | Firestore init | `src/environments/firebase-init.ts:29-35` | `initializeFirestore` with long-polling detection | adapt | No persistence configured (F14) |
-| Resilience wrapper | `src/shared/core/adapters/resilience.ts:8-14` | 10-second timeout, 3 retries with jitter | reuse | Used by `cloud-storage.ts`; not by `booking.ts` or `therapist-link.ts` (F14) |
+| Resilience wrapper | `src/shared/core/adapters/resilience.ts:17-23` (HEAD) | 10-second timeout, 3 retries with jitter | reuse | Used by `cloud-storage.ts`; not by `booking.ts` or `therapist-link.ts` (F14) |
 
 ### 6.5 Tests that exist
 
@@ -260,7 +260,7 @@ The acceptance criteria require these scenarios: normal and denied grant; stale 
 
 | ID | Scenario | Existing behavior (source) | Evidence | Gap for B11 |
 | --- | --- | --- | --- | --- |
-| G1 | Normal booking grant | `createBooking` writes appointment `pending`, busy slot, `clientShares` (booking), `therapistClients` (booking) (`booking.ts:375-424`). Therapist reads `users/{client}/assessment` and `history` while pending (rules 166, 171, 43-46, 62-69) | Test-covered: emulator 414-419 (therapist reads pending client's records) | Access starts at request, not confirmation (F4). Whole-history read, not selected items. The 80-20 plan requires exact disclosure and separate consent (`docs/80-20-plan.md:375`, `:434`). Consent copy: `strings.ts:351` |
+| G1 | Normal booking grant | `createBooking` writes appointment `pending`, busy slot, `clientShares` (booking), `therapistClients` (booking) (`booking.ts:375-424`). Therapist reads `users/{client}/assessment` and `history` while pending (rules 166, 171, 43-46, 62-69) | Test-covered: emulator 414-419 (therapist reads pending client's records) | Access starts at request, not confirmation (F4). Whole-history read, not selected items. The 80-20 plan requires exact disclosure and separate consent (`docs/80-20-plan.md:355`, `:434`). Consent copy: `strings.ts:351` |
 | G2 | Normal invite grant | Client creates `therapistLinks/{code}` with summary (`therapist-link.ts:86-102`). Therapist claims (`:105-126`) and gets a roster row with summary copy | Test-covered: emulator 454-474 (positive path only) | No expiry (F2). No unlink (F2). Summary copy persists (F3) |
 | G3 | Normal share-code grant (peer) | Owner confirms (checkbox), creates code (`overlays.jsx:323-345`). Redeemer resolves code (`cloud-storage.ts:249-279`), computes synastry, saves copy (`overlays.jsx:364-412`) | Test-covered: emulator 260-293 (create, get, list denied, revoke) | No expiry. Registry cap (F6). Copies not recalled (F12) |
 | G4 | Denied booking grant | Without an active appointment, grant create and roster create are denied (rules 444-453, 475-486) | Test-covered: emulator 325-352 (fake share and roster rows denied) | Read after cancel is denied by rule (43-46) but **not asserted** by any test. Read after decline is asserted (414-425) |

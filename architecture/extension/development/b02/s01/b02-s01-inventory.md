@@ -1,5 +1,10 @@
 # B02.S01 inventory: current ownership and actual reuse for opt-in explainable matching
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because the consent-seam absence is false at HEAD and the eligibility search overstated. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
+>
+> - Base note: citations to `src/shared/...` or `src/parts-cartographer/...` paths are HEAD paths that did not exist at base 09194df.
+> - Not corrected in this pass: other overbroad "decline" and "block" wording was not rechecked line by line.
+
 **Status: candidate awaiting independent review. This is not an acceptance claim.**
 No participant, device, live-account, community, practitioner or independent-review evidence exists for this artifact. Those items are listed as pending in section 9.
 
@@ -25,7 +30,7 @@ No participant, device, live-account, community, practitioner or independent-rev
 - **Booking is the strongest grant precedent.** A booking grant (`clientShares`, `therapistClients`) is tied to a live appointment. A deterministic busy-slot document acts as a concurrency lock. Decline or cancel revokes read access through rules. The create path has a non-atomic write window (F-03).
 - **Bearer codes carry copies.** Map share codes and therapist invite codes contain copies of the data they expose. Neither has an expiry. Neither follows the source when it changes. A code issued by one account cannot be revoked by another (F-02, F-04).
 - **Synastry is the existing "compatibility" feature.** The shipped React path uses the canonical scored-profile and 64-item bridges. A hash-seeded generator (`code-seed-v1`) also exists in `core/synastry-v2.ts`. It has no React call site in this tree and must not be reused as matching evidence (F-07).
-- **The reuse keys C01 and C08 are ambiguous.** Three planning documents use them for different packages. This inventory adopts the reading supported by the social plan's own graph edges: the elevation plan's slot packages C01 (auth identity, ArchetypeAI-zzmm) and C08 (consent and provenance, ArchetypeAI-v2tj). Only `auth.service.ts` exists as a seam. The consent seam path `core/personal-memory.ts` is absent (F-08, F-11).
+- **The reuse keys C01 and C08 are ambiguous.** Three planning documents use them for different packages. This inventory adopts the reading supported by the social plan's own graph edges: the elevation plan's slot packages C01 (auth identity, ArchetypeAI-zzmm) and C08 (consent and provenance, ArchetypeAI-v2tj). Only `auth.service.ts` exists as a seam. The consent seam path `core/personal-memory.ts` was absent at the base 09194df (F-08, F-11). HEAD adds it in commit 3670a3a; it is not reviewed against this inventory.
 - **Several required states are absent.** Eligibility, decline and block suppression, revocation propagation, quiet discovery and criteria provenance have no implementation. Section 5 records each with its nearest analogue.
 - **No tests were executed.** Claims marked *static trace* come from reading source and rules. The worktree has no installed dependencies, and installing them would write outside the write set.
 
@@ -52,7 +57,7 @@ The coordinator should confirm the intended referent before S02 is dispatched (F
 ### 3.2 What the adopted packages contain
 
 - **C01 (auth.identity).** The seam exists at `core/auth.service.ts` (148 lines). It covers anonymous bootstrap, Google and email sign-in, linking an anonymous account while keeping its UID, and sign-out (`auth.service.ts:81-147`). The only contract is `AUTH_PORT` (`core/ports.ts:6-13`). No versioned contract, compatibility suite or registry entry was found. Server-side identity is Firebase ID-token verification (`worker-security.ts:30-79`), which yields `uid`, `email` and `email_verified`.
-- **C08 (consent.provenance).** The seam path `core/personal-memory.ts` is absent from this worktree. Consent exists only as UI controls and copy:
+- **C08 (consent.provenance).** The seam path `core/personal-memory.ts` was absent at the base 09194df (added at HEAD in 3670a3a). Consent exists only as UI controls and copy:
   - share-code checkbox (`overlays.jsx:503`; copy `i18n/strings.ts:193`);
   - booking checkbox that gates the confirm button (`overlays.jsx:842-852`; copy `i18n/strings.ts:351`);
   - therapist consent text (`core/therapist-link.ts:201`);
@@ -275,7 +280,7 @@ No behavior was changed. Severity is for S02 input only.
 - **F-08 (high for planning). Ambiguous reuse keys.** See section 3.1. The adopted reading is supported by graph edges, but the three planning sources must be reconciled before S02 uses `C01` or `C08`.
 - **F-09 (medium). Reuse list may be incomplete.** `C04` (creative commons) names B02; B02.S01 does not list it.
 - **F-10 (low). Write-set mismatch.** The B02 epic metadata lists `docs/plans/extension/b02/**` (node `B02`); B02.S01 lists `architecture/extension/development/b02/s01/**`. This artifact follows the S01 value. No proposed conflicts involve B02.S01 in the 16,341-entry snapshot.
-- **F-11 (medium). Consent seam absent.** `core/personal-memory.ts` (the seam for `consent.provenance`) does not exist. The C08 audit step (`C08.S01`, elevation plan) is the sibling reconciliation for this inventory.
+- **F-11 (medium). Consent seam absent at the base.** `core/personal-memory.ts` (the seam for `consent.provenance`) did not exist at 09194df. HEAD adds it (3670a3a), so this finding is superseded pending reconciliation. The C08 audit step (`C08.S01`, elevation plan) is the sibling reconciliation for this inventory.
 - **F-12 (medium). No port for consent or matching.** Section 5.8.
 - **F-13 (low). Silent local write failure.** `store.save` swallows quota errors (`local-store.ts:22-23`). Matching state would inherit this unless handled.
 - **F-14 (high). No eligibility or entitlement gate.** No age, adult or minor logic exists in `src/parts-cartographer`, the rules or the worker (grep). Entitlement is a client-side cached receipt (`billing.service.ts:12`, `:58`; `ports.ts:42-44`). The AI handler authenticates and rate-limits but does not check entitlement as read (`worker.ts:185-`). Eligibility must be server-side.
@@ -414,9 +419,9 @@ Searches were run in this worktree at commit `09194df`. Word-boundary matches we
 | `matching`, `matchmaking`, `discovery`, `discoverable`, `blocked`, `block list`, `decline` (`src/`, non-spec) | Only appointment decline in therapist UI and copy (`strings.ts:418`) | No opt-in matching or discovery feature |
 | `block`, `report`, `mute`, `unfollow`, `purpose` (`firestore.rules`) | 0 hits | No block, report or purpose concept in rules |
 | `expedition`, `shared experience`, `theme space` (`src/`, `firestore.rules`) | 0 hits | Creative-commons feature families not implemented |
-| `personal-memory`, `personalMemory`; filenames matching `personal`, `consent`, `provenance` (`src/`) | 0 source hits; one unrelated doc filename (`docs/personal-growth-master-plan.md`) | Consent and provenance seam absent (F-11) |
+| `personal-memory`, `personalMemory`; filenames matching `personal`, `consent`, `provenance` (`src/`) | 0 source hits at base 09194df; at HEAD `core/personal-memory.ts` matches (3670a3a) | Consent and provenance seam absent at base (F-11, superseded) |
 | `deleteUser`, `delete account`, `deleteAccount`, `deleteAll` (`src/`) | 0 hits | No account deletion path |
-| `adult`, `minor`, `eligib`, `dateOfBirth`, `age verification` (`src/parts-cartographer`, rules, worker) | 0 hits | No eligibility gate (F-14) |
+| `adult`, `minor`, `eligib`, `dateOfBirth`, `age verification` (`src/parts-cartographer`, rules, worker) | 0 person-eligibility hits at base 09194df; at HEAD `eligib` matches only action eligibility (`src/parts-cartographer/elevation/e05-uncertainty-action.ts:39-56`) | No person-eligibility gate (F-14) |
 | `deleteDoc`, `deleteUser` (`user-directory.ts`, `src/services/user-directory.service.ts`) | 0 hits | No in-app withdrawal of `publicProfiles` (F-01) |
 | `synastry(`, `synFromProfiles` call sites (React tree) | Definitions only; bridge imports the Angular engine under an alias | `code-seed-v1` has no React call site (F-07) |
 | `quiet` (`src/parts-cartographer`) | Sensory texture attribute (`app.jsx:376`) and copy | No social or discovery quiet mode |

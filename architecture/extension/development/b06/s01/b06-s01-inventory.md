@@ -1,5 +1,9 @@
 # B06.S01 — Inventory: optional practical progression and quests
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL (minor)**: the search list missed UI `badge` hits. Corrected. Status is still **candidate, not accepted**.
+>
+> - Base note: `src/shared/features/landing/stickers.ts:223` is a HEAD path; the file was under `src/app/` at base 10d9608.
+
 - Bead: `ArchetypeAI-ntjo` (B06.S01, planning key `B06.S01`, planning task `ArchetypeAI-cyqe`).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq` (the commit before this candidate).
 - Disposition: **candidate inventory; awaiting independent review.** No acceptance is claimed. No application code changed.
@@ -8,7 +12,7 @@
 
 ## 1. Finding in one paragraph
 
-The codebase contains **no** quest, reward-event, skill-graph, progression-repertoire or practice-progression implementation. A whole-word search of `src/` (non-spec) for `quest`, `quests`, `reward`, `rewards`, `progression`, `repertoire`, `achievement`, `achievements` and `badge` finds only: an event-type label `achievement` in the check-in panel, and sticker/character rendering (which is identity, not progression). Therefore this slice is a **gap statement plus a reuse map**, not a reconciliation of existing behaviour. Nothing here should be read as evidence that progression exists or works.
+The codebase contains **no** quest, reward-event, skill-graph, progression-repertoire or practice-progression implementation. A whole-word search of `src/` (non-spec) for `quest`, `quests`, `reward`, `rewards`, `progression`, `repertoire`, `achievement`, `achievements` and `badge` finds only: an event-type label `achievement` in the check-in panel, sticker/character rendering (which is identity, not progression), and a `badge` label in the practice panel UI (`src/app/features/practice-panel/practice-panel.component.html:15`, not progression). Therefore this slice is a **gap statement plus a reuse map**, not a reconciliation of existing behaviour. Nothing here should be read as evidence that progression exists or works.
 
 ## 2. Existing code and what can be reused
 

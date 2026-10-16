@@ -1,5 +1,9 @@
 # B05.S01 inventory: notification policy, scheduling and delivery
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because the quiet-hours absence is false for the in-app note. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
+>
+> - Not corrected in this pass: the 47-test claim is not reproducible as written.
+
 **Status: candidate awaiting independent review.** This file records what the code, documents and local unit checks show. It is not an acceptance claim. No participant, device, real-service, live-account, practitioner or independent-review evidence was collected. No `bd` command was run and no Beads status was changed; the coordinator owns the tracker.
 
 Evidence tags used below:
@@ -22,13 +26,13 @@ Evidence tags used below:
 
 ## 1. Summary
 
-- The repository has no `notification.delivery` slot, port, versioned contract, sender, scheduler, quiet-hours rule, per-stream preference, or delivery ledger. What exists is one opt-in Firebase Cloud Messaging (FCM) "daily check-in" reminder: a client token registry in Firestore, a service worker that displays background messages, and timing rules that run only while the app is open.
+- The repository has no `notification.delivery` slot, port, versioned contract, sender, scheduler, per-stream preference, or delivery ledger, and no quiet-hours rule applied to delivery. Quiet hours do exist for the in-app due-task note: `reminderDecision` in `src/parts-cartographer/core/reminder-policy.ts` (quiet check at line 74) is called from `src/parts-cartographer/app.jsx:355`. What exists is one opt-in Firebase Cloud Messaging (FCM) "daily check-in" reminder: a client token registry in Firestore, a service worker that displays background messages, and timing rules that run only while the app is open.
 - "Enabled" is decided on the device: a localStorage token plus browser permission (`src/parts-cartographer/core/push.ts:24-29`). It is never reconciled with the Firestore registry or with the FCM token's validity.
 - Withdrawal (`disablePushReminder`) runs only inside the React `auth.service.ts` `signOut` (`src/parts-cartographer/core/auth.service.ts:141-147`). No production caller of that `signOut` was found. Angular logout and direct account switches leave the token owned by the previous Firebase uid. (N-03)
 - Every failure and every refused or dismissed prompt is reported as `denied`, and the React button is disabled for the rest of the session (`src/parts-cartographer/screens/check-in.jsx:329-331`). (N-04)
 - The local nudge fallback exists in both React and Angular code but has no runtime caller. Its unit tests pass, but the product cannot reach it. (N-06)
 - Real background delivery, the sender, and the VAPID key rotation are unverified. A key-exposure incident is recorded in `docs/push-key-rotation.md`. (N-16, N-20)
-- Checks: 47 existing unit tests in five spec files pass. The push specs mock the Firebase SDK, so they do not establish delivery.
+- Checks: the candidate reports 47 existing unit tests in five spec files passing. The document does not name the five files, so the independent review could not reproduce this. The push specs mock the Firebase SDK, so they do not establish delivery.
 
 ## 2. Reuse reconciliation: packages C01 and C08
 
@@ -132,7 +136,7 @@ The booking flow identifies the device clock and keeps naive wall-clock appointm
 |---|---|---|---|
 | Local decision versus external delivery | not separated. The React and Angular modules mix permission, token issuance, registry writes and display. | `push.ts`, `push.service.ts` | Need a pure decision layer and a delivery adapter (S02, S05). |
 | Device authority | the browser profile, through S-2 and S-3; the server registry (S-4) is not reconciled with it | S-2 to S-4 | Need a stated authority and reconciliation rule (N-02). |
-| Quiet hours | none | not present | New work (N-11). |
+| Quiet hours for delivery | none | not present | New work (N-11). The in-app due-task note has a quiet check (`reminder-policy.ts:74`). |
 | Timezone | device clock, implicitly | `state-v2.ts` | Need a stored policy and DST semantics (N-12). |
 | Dedupe | constant display tag; per-device 20-hour cap that is unwired; token-keyed document | E-10, S-5, S-4 | Need occurrence-level identity and a send ledger (N-07, S-10). |
 | Cancellation | token withdrawal only; cancellation of queued sends has no mechanism because no sends are scheduled in repo | `push.ts:87-99` | Need an external sender contract and a send-cancellation path (B05.S03, S05). |
@@ -204,7 +208,7 @@ Each finding ID (N-xx) is defined in section 10. Status values: **specified** (s
 |---|---|---|---|
 | Offline enable | `getToken` needs the network. Failure becomes `denied` (`push.ts:80-83`). Firestore `setDoc` resolves only after server acknowledgement [S, SDK behaviour to verify]. No timeout exists. | none | gap (N-21) |
 | In-app fallback while offline | verdict resurfacing and card caps are local and run on app open (`checkin-panel.component.ts:138-146`). The nudge that would use the browser notification is unwired. | [T] for rules; the nudge is untested in the product path | partly exercised; no notification fallback (N-06) |
-| Quiet alternative | none. Quiet mode (`docs/80-20-plan.md:530`) and quiet hours (`docs/oldplan.md:279-295`) are not implemented. The only quiet alternative is disabling reminders, which has the ordering issues in section 8.5. | [T] withdrawal test only | gap (N-11) |
+| Quiet alternative | none. Quiet mode (`docs/80-20-plan.md:530`) and quiet hours (`docs/oldplan.md:279-295`) are not implemented for delivery; the in-app due-task note has a quiet check (`reminder-policy.ts:74`). The only delivery quiet alternative is disabling reminders, which has the ordering issues in section 8.5. | [T] withdrawal test only | gap (N-11) |
 | Service-worker offline shell | `src/sw.js:61-75` and `public/sw.js:29-38` serve the cached shell. Neither covers FCM. | none | specified |
 
 ### 8.7 Six compatibility dimensions for `notification.delivery`
@@ -230,7 +234,7 @@ Dimensions are those of AAA v7.1 section 11C.2: interface, state, effects, opera
 | enabled | permission `granted` and marker | "Disable reminders" | `push.ts:27`; `check-in.jsx:331` | [T] `push.spec.ts:96-108` |
 | denied | refused at prompt, browser refused, no user, no token, or any error | button disabled; notice shown | `push.ts:26, 34, 40, 54, 61, 82`; `push.service.ts:28, 39, 43, 54, 61` | [T] only for browser-already-refused (N-04) |
 | interrupted | error during enable or withdrawal | `denied` on enable (N-04); toast on withdrawal (`check-in.jsx:197`) | `push.ts:80-83`, `:96-98` | not tested |
-| quiet | no quiet mode exists; disabling is the only quiet state | as for enabled | not implemented | not applicable (N-11) |
+| quiet | no delivery quiet mode exists; disabling is the only delivery quiet state | as for enabled | not implemented | not applicable (N-11) |
 
 ## 9. Reuse verdicts
 

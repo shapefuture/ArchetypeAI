@@ -1,6 +1,6 @@
 # B04.S01 — Inventory: messages, invitations and reviewed contributions
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because the "no matches for contribution or reviewed" premise is false at HEAD. Round 2 at `b36bde2`: FAIL. The dangling "F-05" reference (a finding from B02) is now named as such. The header cites base 10d9608, but `src/parts-cartographer/screens/elevation/e02-entry.jsx` and `src/parts-cartographer/screens/suggestion-review.jsx` were added after it. Those are HEAD paths. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because the "no matches for contribution or reviewed" premise was false at HEAD. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The §4 and §5 rows were still generic, and the quiet-hours row overstated B05. Both are rewritten to name files and identifiers. Base note: `src/parts-cartographer/screens/elevation/e02-entry.jsx` and `src/parts-cartographer/screens/suggestion-review.jsx` are HEAD paths, not present at base 10d9608. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-3mdv` (B04.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -36,17 +36,17 @@ Peer messaging and shared contributions do not exist. The coach conversation and
 
 ## 4. Scenario matrix (planned, not exercised)
 
-Each row is a planned behaviour for peer messages and invitations. None exists today. The reference points are the nearest existing mechanisms: the coach conversation (`src/app.component.html:499`) and the therapist invite claim (`src/app/features/therapist-panel/therapist-panel.component.ts:3`).
+Each row is planned behaviour for peer messages and invitations. No messages collection exists today. The nearest existing mechanisms are named in each row.
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
-| Normal grant | A message or invitation is delivered only when the sender holds an accepted relationship or the recipient has issued an invite code. The thread is visible to the two participants and to no one else. | No |
-| Denied grant | A send without a grant is refused by the server rule, not by the client. The sender sees "not delivered", the recipient's inbox is unchanged, and the reply is identical whether or not the recipient exists, so the refusal does not reveal membership. | No |
-| Stale contract | A client on an older message schema reads a thread as legacy text. It does not reinterpret review-status fields, and it keeps unknown fields when it writes back. | No |
-| Account change | Threads and invitations are readable only by the owning uid. Signing out or switching accounts clears the in-memory thread list. The sign-out gap recorded in the B02 inventory (F-05: only `ifs.auth` is removed) must not extend to thread caches. | No |
-| Deleted source | When a sender deletes their account or withdraws a contribution, the recipient keeps the message with a "removed by sender" marker. Invitations the sender issued are marked withdrawn, not silently dropped. | No |
-| Duplicate or cancelled operation | A repeated send or accept carries one operation id and creates one message or one acceptance. An invitation cancelled before acceptance cannot be accepted afterwards. | No |
-| Offline or quiet alternative | Composed messages queue locally and send when the connection returns. The thread stays readable offline. Quiet hours (B05) suppress notifications only, never the thread itself. | No |
+| Normal grant | A message or invitation is accepted only when a server rule for the relationship allows it. The nearest rules are the therapist link and roster blocks (`firestore.rules`, `therapistLinks` and `therapistClients`, near lines 458-533) and `hasTrustedTherapistClientLink`, used at `firestore.rules:560`. A `messages` rule would be new. | No |
+| Denied grant | A send without a grant is refused by the planned `messages` rule. The nearest existing refusal is the therapist claim (`claimTherapistLink`, `src/parts-cartographer/core/therapist-link.ts:105`), which is keyed to a code, not to a person, so it does not reveal whether a recipient exists. | No |
+| Stale contract | A client on an older schema reads a thread as legacy text. The nearest pattern is `normalizeToolkit` (`src/parts-cartographer/screens/practice-toolkit.jsx:370`), which keeps known fields and drops malformed ones. Keeping unknown fields on write-back is not in that pattern and is planned. | No |
+| Account change | Threads would be readable only by the owning uid. Sign-out removes only `ifs.auth` (`src/parts-cartographer/core/auth.service.ts:141-147`), so a thread cache needs its own clearing step on sign-out. | No |
+| Deleted source | When a sender deletes an account, the recipient keeps the message with a "removed by sender" marker. The nearest pattern deletes outright: the share-code revoke (`src/parts-cartographer/core/cloud-storage.ts:286`, `deleteDoc` on `shareCodes`). The planned messages must mark, not delete. | No |
+| Duplicate or cancelled operation | A repeated send or accept carries one operation id and creates one record. The nearest duplicate guard is the one-holder reservation lock (`src/parts-cartographer/core/booking.ts:378-399`, with rules 340-364), which refuses a second reservation of the same slot. | No |
+| Offline or quiet alternative | A composed message would be kept in the device-local store (`src/parts-cartographer/core/local-store.ts`) until the connection returns, and the thread stays readable offline. The B05 policy governs notifications, and no delivery quiet hours exist yet (N-11). Notifications never hide the thread. | No |
 
 ## 5. Six compatibility dimensions for `messages, invitations and contributions`
 
@@ -54,12 +54,12 @@ The plan's fixture task names six dimensions: **interface, state, effects, opera
 
 | Dimension | Planned case for `messages, invitations and contributions` | Exercised today |
 |---|---|---|
-| Interface | Thread and invitation views are reachable from the existing navigation. They do not displace the coach conversation at `src/app.component.html:499`, and an empty inbox does not hide core screens. | No |
+| Interface | Thread and invitation views are reached from the existing navigation without displacing the coach conversation bound at `src/app.component.html:499` (`[messages]="coachMessages()"`). | No |
 | State | The message record carries a schema version. Coach messages stay in their current store and are not migrated implicitly. | No |
-| Effects | Sending writes one message document keyed by its operation id, so retries are idempotent. Notification is a separate effect routed through the B05 policy. | No |
-| Operations | A sender can retract a message within a fixed window; after that it is one-way. Either party can revoke an accepted invitation. | No |
-| Performance | Thread lists page by cursor in batches of 50. The invitation list is bounded by the owner's open invitations. | No |
-| Failure | A storage refusal marks the message unsent and keeps its text in the composer. A failed acceptance leaves the invitation unclaimed. | No |
+| Effects | A send writes one document keyed by its operation id, so retries are idempotent. Notification is a separate effect routed through the B05 policy. | No |
+| Operations | A sender can retract a message within a fixed window (planned). The nearest existing reversible write is the share-code revoke at `src/parts-cartographer/core/cloud-storage.ts:286`. | No |
+| Performance | Thread lists would page by cursor in batches of 50 (planned). The therapist roster read is bounded by the `therapistClients` rule (`firestore.rules`, near line 532). | No |
+| Failure | A storage refusal would mark the message unsent and keep its text in the composer. The nearest existing save-state display is the save-status panel (`src/parts-cartographer/screens/elevation/e17-save-status.jsx`). | No |
 
 ## 6. Source provenance
 

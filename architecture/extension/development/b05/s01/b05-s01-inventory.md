@@ -1,6 +1,6 @@
 # B05.S01 inventory: notification policy, scheduling and delivery
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because the quiet-hours absence is false for the in-app note. Round 2 at `b36bde2`: FAIL. The N-11 row still said no quiet hours exist, and the 47-test wording overstated what was measured. Both are now corrected. The five spec files named in the Checks line are HEAD paths, and several did not exist at base 09194df. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because the quiet-hours absence was false for the in-app note. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The §13 set of five files gave 47 under the candidate's run and 48 at HEAD, and my earlier "37" set was a guess, now removed. The reminder settings screen also has a configurable quiet-hours control (`src/parts-cartographer/screens/reminder-settings.jsx:16`, `:35`), which the body does not mention. The five spec paths are HEAD paths, and several did not exist at base 09194df. Status is still **candidate, not accepted**; re-review is required.
 
 **Status: candidate awaiting independent review.** This file records what the code, documents and local unit checks show. It is not an acceptance claim. No participant, device, real-service, live-account, practitioner or independent-review evidence was collected. No `bd` command was run and no Beads status was changed; the coordinator owns the tracker.
 
@@ -30,7 +30,7 @@ Evidence tags used below:
 - Every failure and every refused or dismissed prompt is reported as `denied`, and the React button is disabled for the rest of the session (`src/parts-cartographer/screens/check-in.jsx:329-331`). (N-04)
 - The local nudge fallback exists in both React and Angular code but has no runtime caller. Its unit tests pass, but the product cannot reach it. (N-06)
 - Real background delivery, the sender, and the VAPID key rotation are unverified. A key-exposure incident is recorded in `docs/push-key-rotation.md`. (N-16, N-20)
-- Checks: the candidate reports 47 existing unit tests in five spec files passing. The document does not name the five files. Running the five push and reminder spec files it most plausibly refers to (`src/parts-cartographer/core/push.spec.ts`, `src/services/push.service.spec.ts`, `src/parts-cartographer/core/reminder-policy.spec.ts`, `src/parts-cartographer/core/return-loop.spec.ts`, `src/parts-cartographer/screens/reminder-settings.spec.ts`) gives **37 passing tests** (run 2026-10-16). The candidate did not name its five files, so the reported 47 is not reproduced from them. The push specs mock the Firebase SDK, so they do not establish delivery.
+- Checks: §13 records 47 passing tests across five spec files (`src/parts-cartographer/core/push.spec.ts` 5, `src/services/push.service.spec.ts` 2, `src/parts-cartographer/core/backup.spec.ts` 8, `firestore.rules.spec.ts` 8, `src/app/core/data/state-v2.spec.ts` 24), reported with vitest 3.2.7 at base 09194df. The 5 files and 47 are the candidate's own record; this review re-ran the same five files at HEAD `930edc1` with vitest 4.1.12 and got **48 passing**. Both results are recorded and neither is a regression.
 
 ## 2. Reuse reconciliation: packages C01 and C08
 
@@ -352,7 +352,7 @@ All runs used the parent checkout's installed `vitest` 3.2.7 (`/home/user/Archet
 | Registry rules, static | `vitest run firestore.rules.spec.ts --cache=false` | 8 passed | Regex over the rules text, not rule evaluation |
 | In-app timing | `vitest run src/app/core/data/state-v2.spec.ts --cache=false` | 24 passed | No DST or timezone-change cases |
 
-Total: 47 passed across five spec files. No code was changed, so no regression comparison was needed.
+Total: 47 passed across five spec files, as the candidate reported at base 09194df. At HEAD on 2026-10-16 the same files gave 48 passed with vitest 4.1.12. No code was changed for the candidate's run.
 
 Not run: `firestore.rules.emulator.spec.ts` (requires the Firestore emulator, pending); `tests/browser` (Playwright); production builds; `tsc`; any FCM, service-worker or device runtime; the sender.
 
@@ -388,7 +388,7 @@ Not run: `firestore.rules.emulator.spec.ts` (requires the Firestore emulator, pe
 
 Draft Beads note for the coordinator (not posted by this worker):
 
-> B05.S01 candidate awaiting independent review. Artifact: `architecture/extension/development/b05/s01/b05-s01-inventory.md` on branch `worktree-agent-aaa4d8ae9b4a1157d`, commit recorded in the worker report. Base `09194df5f48326bff14e42a1e4eb8d66c457186d`. Checks: 47 existing unit tests passed in five specs (mocked; static rules). Not run: rules emulator, browser, build, device, sender. Pending: real FCM delivery, participant J05, independent review. Findings N-01 to N-23 recorded. Rollback: revert the commit. Next handoff: B05.S02 (`ArchetypeAI-uffz`), inputs listed in section 11, prerequisites C01 contract (`ArchetypeAI-bgdg`) and C08 seam (absent).
+> B05.S01 candidate awaiting independent review. Artifact: `architecture/extension/development/b05/s01/b05-s01-inventory.md` on branch `worktree-agent-aaa4d8ae9b4a1157d`, commit recorded in the worker report. Base `09194df5f48326bff14e42a1e4eb8d66c457186d`. Checks (candidate's report): 47 existing unit tests passed in five specs (mocked; static rules). Not run: rules emulator, browser, build, device, sender. Pending: real FCM delivery, participant J05, independent review. Findings N-01 to N-23 recorded. Rollback: revert the commit. Next handoff: B05.S02 (`ArchetypeAI-uffz`), inputs listed in section 11, prerequisites C01 contract (`ArchetypeAI-bgdg`) and C08 seam (absent).
 
 ## 17. Next handoff: B05.S02 (`ArchetypeAI-uffz`)
 

@@ -1,6 +1,6 @@
 # B07.S01 — Inventory: authored presentation and creative continuity
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the continuity search omitted the draft-backup resume. Round 2 at `b36bde2`: FAIL (minor). The denied, duplicate and offline rows were still generic. They now name the nearest existing mechanism (the assessment draft). Base note: `src/shared/core/data/parts.ts` is a HEAD path; it was `src/app/core/data/parts.ts` at base 10d9608. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the continuity search omitted the draft-backup resume. Round 2 at `b36bde2`: FAIL (minor). Round 3 at `930edc1`: FAIL. The copy-aside was described as a refusal, which is wrong: the draft is copied aside, then overwritten. The §4 and §5 rows were generic and now name `assessment-draft.ts`. Base note: `src/shared/core/data/parts.ts` is a HEAD path; it was `src/app/core/data/parts.ts` at base 10d9608. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-h13n` (B07.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -34,17 +34,17 @@ Authored presentation exists in one narrow form: AI-authored text may replace ma
 
 ## 4. Scenario matrix (planned, not exercised)
 
-Each row is planned behaviour for the creative workspace. None exists today. The nearest existing mechanisms are the legacy universe overlay (`src/parts-cartographer/core/legacy-universe-adapter.ts:60`) and the assessment draft backup (`src/parts-cartographer/core/assessment-draft.ts`).
+No creative workspace exists. Each row names the nearest existing mechanism, which is the assessment draft in `src/parts-cartographer/core/assessment-draft.ts`.
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
-| Normal grant | An authored presentation is visible to others only after its owner chooses to share it. Continuity restores the owner's own work on the owner's device. | No |
-| Denied grant | Sharing does not exist yet. The nearest refusal is the assessment draft's copy-aside path (`src/parts-cartographer/core/assessment-draft.ts:156`), which refuses to overwrite an unreadable draft. A planned share would be refused by a rule keyed to the recipient's grant. | No |
-| Stale contract | A presentation saved under an older layout schema opens read-only with its original fields kept. It is not re-laid-out silently. | No |
-| Account change | A continuity record belongs to the uid that created it. Another account on the same device sees no prior work. Device-local sensory settings stay per device. | No |
-| Deleted source | Deleting a presentation removes its shares. A continuity banner for a deleted draft disappears on the next open rather than showing an empty page. | No |
-| Duplicate or cancelled operation | The assessment draft writes one key (`DESCENT_DRAFT_KEY`), so a repeated save overwrites rather than appends. The planned workspace would key versions by revision number, so a repeated save writes one version. A cancelled edit leaves the last saved version intact. | No |
-| Offline or quiet alternative | The assessment draft is device-local under `DESCENT_DRAFT_KEY` and resumes with no network. The planned workspace would do the same and stay optional; the assessment flow is unaffected. | No |
+| Normal grant | No share exists. Continuity would restore the owner's own work from the device-local draft under `DESCENT_DRAFT_KEY` (`assessment-draft.ts:14`), written by `writeDescentDraft`. | No |
+| Denied grant | Sharing does not exist yet. The nearest refusal is the copy-aside in `writeDescentDraft` (`assessment-draft.ts:163`): an unreadable draft is copied to a prefixed key (`UNREADABLE_DESCENT_DRAFT_PREFIX`) before the new draft is written under the same key (`:165`). A planned share would be refused by a rule keyed to the recipient's grant. | No |
+| Stale contract | A draft under the older key `LEGACY_DESCENT_DRAFT_KEY` (`assessment-draft.ts:15`) is the existing example of a legacy read. A planned presentation would keep its original fields the same way and never re-lay it out silently. | No |
+| Account change | The draft key is a single constant, not keyed by uid, so every account on a device shares it. The planned workspace would scope records by uid. | No |
+| Deleted source | Drafts are removed with `storage.removeItem(DESCENT_DRAFT_KEY)` (`assessment-draft.ts:177`). A planned presentation delete would remove its shares and leave no empty continuity banner. | No |
+| Duplicate or cancelled operation | `writeDescentDraft` writes one key, so a repeated save overwrites rather than appends (`:165`). The planned workspace would key versions by revision number, so a repeated save writes one version, and a cancelled edit leaves the last saved version intact. | No |
+| Offline or quiet alternative | The draft is device-local under `DESCENT_DRAFT_KEY` and resumes with no network. The planned workspace would do the same and stay optional; the assessment flow is unaffected. | No |
 
 ## 5. Six compatibility dimensions for `authored presentation and creative continuity`
 
@@ -52,12 +52,13 @@ The plan's fixture task names six dimensions: **interface, state, effects, opera
 
 | Dimension | Planned case for `authored presentation and creative continuity` | Exercised today |
 |---|---|---|
-| Interface | The presentation editor is reached from an optional entry point. It never blocks the assessment or the map. | No |
-| State | Presentations carry a schema version. The legacy universe text overlay stays a separate layer. | No |
-| Effects | Autosave writes at most one version per change burst, keyed by revision number, so retries are idempotent. | No |
-| Operations | Any earlier saved version can be restored. Restoring creates a new version rather than rewriting history. | No |
-| Performance | A workspace opens its latest version only. Version history pages in batches of 20. | No |
-| Failure | A failed autosave keeps the draft in memory and shows "not saved" until it succeeds. A corrupt local record is copied aside and never overwritten, as the draft backup does. | No |
+| Interface | The presentation editor is reached from an optional entry point and never blocks the assessment (`src/parts-cartographer/screens/assessment.jsx`). | No |
+| State | Presentations would carry a schema version. The legacy universe overlay (`src/parts-cartographer/core/legacy-universe-adapter.ts:60`) stays a separate layer. | No |
+| Effects | Autosave writes at most one version per change burst, keyed by revision number (planned). The existing writer writes one key and reads it back to verify (`writeDescentDraft`, `:165-168`). | No |
+| Operations | Restoring an earlier version creates a new version (planned). The only restore path today is the draft backup for assessment answers (`src/app.component.ts:1672`). | No |
+| Performance | A workspace opens its latest version only, and version history would page in batches of 20 (planned). | No |
+| Failure | A failed write is reported: `writeDescentDraft` returns `{ ok: false, reason: 'verify-failed' }` when the read-back differs (`:165-168`). An unreadable existing draft is copied aside before the overwrite (`:163`), so no draft is silently lost. | No |
+
 
 ## 6. Source provenance
 

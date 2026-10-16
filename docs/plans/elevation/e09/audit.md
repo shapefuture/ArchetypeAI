@@ -1,8 +1,8 @@
 # E09.01 audit: Feedback without recording pressure
 
 - Bead: `ArchetypeAI-lgo` (E09.01). Tracker status at audit: open.
-- Checked at: HEAD `d481c3e`, regenerated after an independent review of the first version.
-- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Checked at: HEAD `56088ca`, corrected after the second and third independent reviews.
+- Disposition: **candidate audit, awaiting a final independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
@@ -54,4 +54,4 @@ Resolve the mismatch. If the copy is right, stop saving on decline and add a tes
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).
+- Independent review of this audit: **pending** (reviews one to three found errors, now corrected; a final review is needed).

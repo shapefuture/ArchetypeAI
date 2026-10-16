@@ -155,16 +155,28 @@ describe('therapist availability zones', () => {
     expect(() => stampWindowZones([hourWindow()], null)).toThrow(/valid IANA time zone/);
   });
 
-  it('keeps a valid stored zone, drops an invalid one, and never assumes a zone for legacy windows', () => {
+  it('keeps a valid stored zone and gives an invalid or missing one the fallback zone', () => {
     const normalized = normalizeAvailability([
       { days: [1], start: '09:00', end: '17:00', minutes: 60, timeZone: 'Europe/Paris' },
       { days: [2], start: '09:00', end: '17:00', minutes: 60, timeZone: '+01:00' },
       { days: [3], start: '09:00', end: '17:00', minutes: 60 },
-    ]);
+    ], 'America/New_York');
     expect(normalized[0].timeZone).toBe('Europe/Paris');
-    expect(normalized[1].timeZone).toBeUndefined();
-    expect('timeZone' in normalized[2]).toBe(false);
-    expect(therapistTimeZone(normalizeAvailability(undefined))).toBeNull();
+    expect(normalized[1].timeZone).toBe('America/New_York');
+    expect(normalized[2].timeZone).toBe('America/New_York');
+    expect(normalized.map((w) => w.zoneFallback)).toEqual([undefined, true, true]);
+  });
+
+  it('uses the device zone for legacy windows and the default schedule by default', () => {
+    const device = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    expect(therapistTimeZone(normalizeAvailability([{ days: [3], start: '09:00', end: '17:00', minutes: 60 }]))).toBe(device);
+    expect(therapistTimeZone(normalizeAvailability(undefined))).toBe(device);
+  });
+
+  it('keeps legacy windows zone-less only when the caller passes no fallback zone', () => {
+    const normalized = normalizeAvailability([{ days: [3], start: '09:00', end: '17:00', minutes: 60 }], null);
+    expect('timeZone' in normalized[0]).toBe(false);
+    expect(therapistTimeZone(normalized)).toBeNull();
   });
 });
 

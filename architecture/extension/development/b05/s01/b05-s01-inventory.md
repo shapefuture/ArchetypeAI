@@ -1,8 +1,6 @@
 # B05.S01 inventory: notification policy, scheduling and delivery
 
-> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because the quiet-hours absence is false for the in-app note. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
->
-> - The 47-test claim was checked against the five most plausible spec files: 37 pass. The claim is wrong as written and is corrected in the Checks line.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because the quiet-hours absence is false for the in-app note. Round 2 at `b36bde2`: FAIL. The N-11 row still said no quiet hours exist, and the 47-test wording overstated what was measured. Both are now corrected. The five spec files named in the Checks line are HEAD paths, and several did not exist at base 09194df. Status is still **candidate, not accepted**; re-review is required.
 
 **Status: candidate awaiting independent review.** This file records what the code, documents and local unit checks show. It is not an acceptance claim. No participant, device, real-service, live-account, practitioner or independent-review evidence was collected. No `bd` command was run and no Beads status was changed; the coordinator owns the tracker.
 
@@ -32,7 +30,7 @@ Evidence tags used below:
 - Every failure and every refused or dismissed prompt is reported as `denied`, and the React button is disabled for the rest of the session (`src/parts-cartographer/screens/check-in.jsx:329-331`). (N-04)
 - The local nudge fallback exists in both React and Angular code but has no runtime caller. Its unit tests pass, but the product cannot reach it. (N-06)
 - Real background delivery, the sender, and the VAPID key rotation are unverified. A key-exposure incident is recorded in `docs/push-key-rotation.md`. (N-16, N-20)
-- Checks: the candidate reports 47 existing unit tests in five spec files passing. The document does not name the five files. Running the five push and reminder spec files it most plausibly refers to (`src/parts-cartographer/core/push.spec.ts`, `src/services/push.service.spec.ts`, `src/parts-cartographer/core/reminder-policy.spec.ts`, `src/parts-cartographer/core/return-loop.spec.ts`, `src/parts-cartographer/screens/reminder-settings.spec.ts`) gives **37 passing tests, not 47** (run 2026-10-16). The push specs mock the Firebase SDK, so they do not establish delivery.
+- Checks: the candidate reports 47 existing unit tests in five spec files passing. The document does not name the five files. Running the five push and reminder spec files it most plausibly refers to (`src/parts-cartographer/core/push.spec.ts`, `src/services/push.service.spec.ts`, `src/parts-cartographer/core/reminder-policy.spec.ts`, `src/parts-cartographer/core/return-loop.spec.ts`, `src/parts-cartographer/screens/reminder-settings.spec.ts`) gives **37 passing tests** (run 2026-10-16). The candidate did not name its five files, so the reported 47 is not reproduced from them. The push specs mock the Firebase SDK, so they do not establish delivery.
 
 ## 2. Reuse reconciliation: packages C01 and C08
 
@@ -270,7 +268,7 @@ Severity is a planning judgement for B05.S02 prioritisation, not a release gate.
 | N-08 | No `notificationclick` handler exists in any worker, so tapping a reminder has no app-defined destination or action. | grep over `src/sw.js`, `public/sw.js`, `src/firebase-messaging-sw.js` | Medium |
 | N-09 | Two app-shell workers share the URL `/sw.js` and the output path `dist/sw.js`. The Firebase config is copied into the FCM worker by hand. Two hosting targets serve `dist`. | `public/sw.js:2-5`; `src/sw.js:16-18`; `angular.json` assets; `firebase.json`; `firebase-messaging-sw.js:5-12` | Medium |
 | N-10 | Worker defaults are English-only; the worker has no language signal. | `firebase-messaging-sw.js:16, 25` | Low-Medium |
-| N-11 | No quiet hours, digest, budget, pause, per-stream control or delivery timezone exists. Quiet mode and quiet hours are required by the plans. | section 6; `docs/80-20-plan.md:484, 530`; `docs/oldplan.md:279-295` | High for B05 scope (new work) |
+| N-11 | No delivery quiet hours, digest, budget, pause, per-stream control or delivery timezone exists. An in-app quiet check exists for the due-task note (`src/parts-cartographer/core/reminder-policy.ts:74`). Quiet mode and quiet hours are required by the plans for delivery. | section 6; `docs/80-20-plan.md:484, 530`; `docs/oldplan.md:279-295` | High for B05 scope (new work) |
 | N-12 | In-app timing is correct on its own terms (absolute 48-hour and 24-hour intervals, local-day helpers). It has no DST-boundary or timezone-change tests. | `state-v2.ts:86-91, 158, 162-171, 239-241`; `state-v2.spec.ts` | Low |
 | N-13 | The registry schema is fixed in rules with `hasOnly`, and has no version field. Any schema change needs coordinated rules, clients and sender changes. | `firestore.rules:200-214` | Medium |
 | N-14 | Positive: the device token is excluded from backups; registry writes are owner-bound and client reads are denied. | `backup.ts:10-18`; `firestore.rules:198-215`; `backup.spec.ts:38-54` | Positive |

@@ -1,5 +1,7 @@
 # B11.S01 inventory: current ownership and actual reuse for shared presence and finite group activities
 
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: PASS. Round 2 at `b36bde2`: FAIL on one absence claim. The expiry claim was true at base 09194df but false at HEAD, because the E16 report grant has `expiresAt` and a `grant-expired` check. It is now scoped to base and the E16 grant is noted. Test counts were not verified. Status is still **candidate, not accepted**; re-review is required.
+
 **Status: candidate awaiting independent review.** This is a static source trace at a fixed base. No acceptance is claimed. No runtime, emulator, browser, device, live-service, participant, community, or practitioner evidence was collected for this step. Those rows are marked *pending* or *not collected*.
 
 | Field | Value |
@@ -26,8 +28,8 @@ Labels used below:
 
 ## 1. Summary
 
-1. **No shared presence, group session, participant-role, quiet-participation, or expiry mechanism exists** in `src/**`, `worker*.ts`, or `firestore.rules`. The closest existing structure is a **two-party booking** (`appointments`) with a status lifecycle and a per-therapist, per-start reservation lock.
-2. **Existing grants are per party and checked by Firestore rules.** These are booking grants (`clientShares`), invite summaries (`therapistLinks` and `therapistClients`), share codes (`shareCodes`), and exercise assignments. **None has an expiry field.** Revocation happens by appointment status, by deleting a document, or not at all (invite summary copies).
+1. **No shared presence, group session, participant-role or quiet-participation mechanism exists** in `src/**`, `worker*.ts`, or `firestore.rules`. At base 09194df there was no expiry mechanism. At HEAD the E16 report grant has one: `ReportGrant.expiresAt` and a `grant-expired` check (`src/parts-cartographer/elevation/e16-disagreement.ts:150-158`, used by `src/parts-cartographer/screens/elevation/e16-report-read.jsx:42`). The closest existing structure is a **two-party booking** (`appointments`) with a status lifecycle and a per-therapist, per-start reservation lock.
+2. **Existing grants are per party and checked by Firestore rules.** These are booking grants (`clientShares`), invite summaries (`therapistLinks` and `therapistClients`), share codes (`shareCodes`), and exercise assignments. **At base 09194df none has an expiry field.** At HEAD the E16 report grant has one (see item 1). Revocation happens by appointment status, by deleting a document, or not at all (invite summary copies).
 3. **A booked therapist can read the client's saved assessment and history from the moment the request is created**, while the appointment is still pending. The read is not limited to the items the client selects (section 8.1, F4).
 4. **Host control is incomplete.** The client can cancel a pending or approved session. The therapist can only approve or decline a pending one. Neither rules nor either UI lets a therapist cancel an approved session (F5).
 5. **Role authority is client-asserted.** Therapist attestation is a `localStorage` flag. Any signed-in user can write `therapists/{uid}`. The UI copy says a license is verified at first claim, and no code does that (F9).
@@ -44,7 +46,7 @@ Labels used below:
 - **Also traced:** `firestore.rules` (all match blocks), `firestore.rules.emulator.spec.ts`, `firestore.rules.spec.ts`, `worker.ts`, `worker-security.ts`, the React retained surface (`src/parts-cartographer/**`), and the Angular retained surface (`src/app/**`, `src/services/**`) at the booking, cabinet, therapist, and synastry call sites.
 - **Keyword search (src, worker files, rules, scripts):** presence, participant, invite, guest, expir, cancel, quiet, group, session, host, room, social, friend, member, block, report, consent, grant, therapist, synastry, community, thread, expedition, match.
   - *Presence:* only hits are prose ("presence") in i18n strings and a code comment. No presence model exists.
-  - *Expiry:* hits are only the in-memory directory cache TTL (`user-directory.ts:12`) and billing receipt freshness (`billing.service.ts`). No TTL or expiry applies to any shared object.
+  - *Expiry:* at base 09194df, hits are only the in-memory directory cache TTL (`user-directory.ts:12`) and billing receipt freshness (`billing.service.ts`). At HEAD the E16 report grant (`src/parts-cartographer/elevation/e16-disagreement.ts:150-158`) adds an expiry to one shared object.
   - *Group, participant, room, expedition, community, thread:* no group or multi-party session model. The only multi-party objects are two-party: the appointment, and the synastry pair.
 - **Firestore TTL:** `firebase.json`, `firestore.indexes.json`, and the source contain no TTL policy.
 - **Server routes:** `worker.ts:172-180` serves `/api/ai`, `/api/stripe-checkout`, `/api/stripe-verify`, and returns 410 for `/api/gemini`. No session, presence, or sharing route exists.

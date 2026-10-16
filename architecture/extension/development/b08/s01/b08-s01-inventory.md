@@ -14,7 +14,7 @@ No practice catalogue exists. The codebase has a catalogue of archetype and cons
 
 | Area | Evidence (file:line) | Status |
 |---|---|---|
-| Archetype and constellation content | `src/app/core/data/constellations.ts` | Authored archetype content. Not practices. Reusable as the pattern for an authored catalogue. |
+| Archetype and constellation content | `src/shared/core/data/constellations.ts` | Authored archetype content. Not practices. Reusable as the pattern for an authored catalogue. |
 | Localised string catalogue | `src/parts-cartographer/i18n/strings.ts` | Copy catalogue. Not a practice or source catalogue. |
 | Practice catalogue | none | Absent. |
 | Source references with review status | none | Absent. |

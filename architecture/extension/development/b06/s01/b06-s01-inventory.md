@@ -18,7 +18,7 @@ The codebase contains **no** quest, reward-event, skill-graph, progression-reper
 | Storage port | `src/parts-cartographer/core/ports.ts:15` (`STORAGE_PORT`) and `src/parts-cartographer/core/local-store.ts:15` (`store`) | Reusable for device-local progression state, if B06 chooses device-local storage. |
 | Store keys | `src/parts-cartographer/core/local-store.ts:56` (`KEYS`) | No progression key exists. A new key would be a new contract. |
 | AI and billing ports | `src/parts-cartographer/core/ports.ts:24` (`AI_PORT`), `:35` (`BILLING_PORT`) | Not progression; listed so the coordinator does not treat them as reusable progression surfaces. |
-| Part identity and stickers | `src/app/features/landing/stickers.ts:223` (`sticker`) | Identity rendering. Not progression. |
+| Part identity and stickers | `src/shared/features/landing/stickers.ts:223` (`sticker`) | Identity rendering. Not progression. |
 
 **Reuse packages (`C02`, `C08`).** The task metadata names them, but the planning documents do not define them consistently. The B01 inventory recorded the same ambiguity. This inventory does not resolve it. Until the coordinator confirms the mapping, `C02` and `C08` are unmapped reuse claims, not verified reuse.
 

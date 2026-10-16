@@ -67,8 +67,8 @@ Surfaces: **React** is `src/parts-cartographer/**` (active). **Angular** is `src
 | C-10 | Rules tests | `firestore.rules.spec.ts:47-54` (static text assertions); `firestore.rules.emulator.spec.ts:245-258` (emulator) | Test | Static spec run in section 13. Emulator spec not run. |
 | C-11 | Logout hook for withdrawal | React `auth.service.ts:141-147`; Angular `src/app/core/adapters/firebase-auth.adapter.ts:90-92` (no hook); Angular logout `src/app.component.ts:1331-1336` | Both | React hook has no production caller (N-03). Angular has none. |
 | C-12 | Backup allowlist | `src/parts-cartographer/core/backup.ts:10-18` (`BASE_KEYS`, `PORTABLE_KEYS`); push keys not listed | React | Excludes the token (positive, see N-14). |
-| C-13 | In-app timing rules | `src/app/core/data/state-v2.ts:84-91` (day helpers), `:136` (`sameLocalDay`), `:143-152` (verdict lock), `:162-171` (48-hour seal and resurfacing), `:239-241` (24-hour card cap) | Shared | Used by `src/app/features/checkin-panel/checkin-panel.component.ts:76-103, 138-146` and imported by `check-in.jsx:17`. |
-| C-14 | Port layer | `src/parts-cartographer/core/ports.ts` (AUTH, STORAGE, AI, BILLING); `src/app/core/ports/{auth,ai,storage}.port.ts` | Both | No notification port on either surface. (N-17) |
+| C-13 | In-app timing rules | `src/shared/core/data/state-v2.ts:84-91` (day helpers), `:136` (`sameLocalDay`), `:143-152` (verdict lock), `:162-171` (48-hour seal and resurfacing), `:239-241` (24-hour card cap) | Shared | Used by `src/app/features/checkin-panel/checkin-panel.component.ts:76-103, 138-146` and imported by `check-in.jsx:17`. |
+| C-14 | Port layer | `src/parts-cartographer/core/ports.ts` (AUTH, STORAGE, AI, BILLING); `src/app/core/ports/auth.port.ts, src/app/core/ports/ai.port.ts, src/app/core/ports/storage.port.ts` | Both | No notification port on either surface. (N-17) |
 | C-15 | Worker (Cloudflare) | `worker.ts:168-180`: routes `/api/ai`, `/api/stripe-checkout`, `/api/stripe-verify`, `/api/gemini`. No `scheduled` export. | Server | No notification route, scheduled handler or sender. |
 | C-16 | Sender and scheduler | Not in repository: no `functions/` directory, no cron in `wrangler.toml` or `wrangler.api.toml`. `src/services/push.service.ts:3-6` says the sending side (a scheduled function) "is the only deploy-time step left". | External | [X] Owner and deployment status unknown. |
 | C-17 | Configuration | `src/environments/environment.ts:9` and `environment.prod.ts:10` (public VAPID key); Firebase client config duplicated in `src/firebase-messaging-sw.js:5-12`. Values are not reproduced here. | Both | Duplicated config is a drift risk (N-09). |
@@ -317,7 +317,7 @@ These are the inputs S02 must resolve. This worker did not decide them.
 | `05482a4baebc` | `src/app/features/checkin-panel/checkin-panel.component.html` |
 | `5591b67cc092` | `src/parts-cartographer/core/auth.service.ts` |
 | `e680e162d058` | `src/app/core/adapters/firebase-auth.adapter.ts` |
-| `3cfa3b30e42a` | `src/app/core/data/state-v2.ts` |
+| `3cfa3b30e42a` | `src/shared/core/data/state-v2.ts` |
 | `7917f0a360c6` | `src/parts-cartographer/core/backup.ts` |
 | `47910dc9f1cb` | `src/parts-cartographer/core/backup.spec.ts` |
 | `68e6214a0ec9` | `src/parts-cartographer/core/ports.ts` |

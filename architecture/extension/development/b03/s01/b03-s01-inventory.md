@@ -173,7 +173,7 @@ Each finding is a code-reading observation unless marked otherwise. "Test assert
 
 **F14. Moderation, reporting, appeal and blocks are absent (high as a scope gap).** No collection, route, port or rule exists (firestore.rules:162-556; worker.ts:172-182; ports.ts:6-40). The only operator role is isAdmin (rules 29-35), with a hard-coded bootstrap address (rules 32; admin.ts:18) and no capability scoping and no audit trail. This is a gap, not a regression. The word "report" appears only as aiReport (ports.ts:26) and "block" only as CSS or UI class names.
 
-**F15. Consent records carry no version (medium).** clientShares, shareCodes and therapistLinks accept only fixed fields (rules 80-82; 239-249; 445-446; 459-460). Nothing records which consent text was accepted. Consent text lives in several copies: i18n/strings.ts:193 and :351; therapist-link.ts:202; src/i18n/strings.ts:109 and :5981. Relevant to stale contract (section 8, scenario C).
+**F15. Consent records carry no version (medium).** clientShares, shareCodes and therapistLinks accept only fixed fields (rules 80-82; 239-249; 445-446; 459-460). Nothing records which consent text was accepted. Consent text lives in several copies: i18n/strings.ts:193 and :351; therapist-link.ts:202; src/shared/i18n/strings.ts:109 and :5981. Relevant to stale contract (section 8, scenario C).
 
 **F16. Strict summary shape couples client and rules releases (medium).** validTherapistSummary requires an exact key set (rules 146-159), used for invite and roster writes (rules 249, 494, 516). A client that adds or removes a summary field is rejected until rules and client are deployed together. No version field exists. TherapistClientSummary is defined at therapist-link.ts:33-41.
 
@@ -253,9 +253,9 @@ Git blob identities are from `git ls-files -s` at HEAD 09194df. They identify th
 | src/parts-cartographer/screens/cabinet.jsx | c7c91dbdc57433c802c4c2770c4c77b21d1c3cd0 | Cabinet appointments |
 | src/parts-cartographer/i18n/strings.ts | 8b83c660b91c327f6f0eda764c8698019cfa908c | Consent and admin copy |
 | src/services/user-directory.service.ts | 3bdd1116a764aebf8fb5bc1c0ced1044f359f484 | Angular directory duplicate |
-| src/app/core/adapters/resilience.ts | bb7f4b4e5ffb7e422e18bf4bf7ebac1fa9390a54 | withResilience |
+| src/shared/core/adapters/resilience.ts | bb7f4b4e5ffb7e422e18bf4bf7ebac1fa9390a54 | withResilience |
 
-Other sources cited (not all read in full): src/services/specialist-client.service.ts, src/services/admin-access.service.ts, src/app/features/booking-panel/booking.ts, src/app/core/data/therapist-link.ts, src/app/features/cabinet/cabinet.component.ts, src/app/features/therapist-panel/therapist-panel.component.ts, src/app/features/booking-panel/booking-panel.component.ts, src/parts-cartographer/core/push.ts, src/i18n/strings.ts, firebase.json, wrangler.toml, firestore.indexes.json.
+Other sources cited (not all read in full): src/services/specialist-client.service.ts, src/services/admin-access.service.ts, src/app/features/booking-panel/booking.ts, src/app/core/data/therapist-link.ts, src/app/features/cabinet/cabinet.component.ts, src/app/features/therapist-panel/therapist-panel.component.ts, src/app/features/booking-panel/booking-panel.component.ts, src/parts-cartographer/core/push.ts, src/shared/i18n/strings.ts, firebase.json, wrangler.toml, firestore.indexes.json.
 
 Live Bead status was not read. The bd tool is out of scope for this subagent. The passive export .beads/issues.jsonl (128 records) contains none of quc8, tica, i4aa, cyqe, xs263 or frd2b, so it provides no status evidence either way.
 

@@ -187,7 +187,7 @@ Verdict: **reuse** (use as is), **adapt** (use with declared changes), **avoid**
 | Worker routes | `worker.ts:172-180` | AI, Stripe, 410 for old Gemini proxy | absent for social | No route for sessions or presence |
 | Worker security | `worker-security.ts:65` (`authenticateFirebaseRequest`), `:162` (`checkRateLimit`) | Firebase ID-token verification and rate limit | reuse if a server route is needed | |
 | Firestore init | `src/environments/firebase-init.ts:29-35` | `initializeFirestore` with long-polling detection | adapt | No persistence configured (F14) |
-| Resilience wrapper | `src/app/core/adapters/resilience.ts:8-14` | 10-second timeout, 3 retries with jitter | reuse | Used by `cloud-storage.ts`; not by `booking.ts` or `therapist-link.ts` (F14) |
+| Resilience wrapper | `src/shared/core/adapters/resilience.ts:8-14` | 10-second timeout, 3 retries with jitter | reuse | Used by `cloud-storage.ts`; not by `booking.ts` or `therapist-link.ts` (F14) |
 
 ### 6.5 Tests that exist
 
@@ -245,7 +245,7 @@ Consequence: any additive field in these documents fails closed until rules and 
 
 ### 7.4 Write implications for B11 (not bound here)
 
-- **Broker-owned (no B11 cell may write):** `firestore.rules` (appointments, roster, public profiles, invite links, share codes), shared locales (`src/parts-cartographer/i18n/strings.ts`, `src/i18n/strings.ts`), application composition (`app.jsx`, `overlays.jsx`), worker routes (`worker.ts`), and integration fixtures (`firestore.rules.emulator.spec.ts`).
+- **Broker-owned (no B11 cell may write):** `firestore.rules` (appointments, roster, public profiles, invite links, share codes), shared locales (`src/parts-cartographer/i18n/strings.ts`, `src/shared/i18n/strings.ts`), application composition (`app.jsx`, `overlays.jsx`), worker routes (`worker.ts`), and integration fixtures (`firestore.rules.emulator.spec.ts`).
 - **Cell-owned (after binding):** a new B11 module and its tests under a path to be narrowed by the coordinator. No lease exists.
 
 ---

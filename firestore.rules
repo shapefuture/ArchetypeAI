@@ -50,6 +50,20 @@ service cloud.firestore {
       return /databases/$(database)/documents/therapistBusySlots/$(therapistUid + '_' + start);
     }
 
+    // Optional schemaVersion-2 zone time written by the booking flow (see core/appointment-time.ts).
+    // Bounded keys and sizes only; the zone name is checked by the client's IANA validator.
+    function validZoneTime(time) {
+      return time is map
+        && time.keys().hasOnly(['schemaVersion', 'startUtc', 'endUtc', 'durationMinutes', 'timeZone', 'wallStart', 'repeatedWallTime', 'source'])
+        && time.schemaVersion == 2
+        && time.startUtc is string && time.startUtc.size() <= 40
+        && time.endUtc is string && time.endUtc.size() <= 40
+        && time.durationMinutes is int
+        && time.timeZone is string && time.timeZone.size() <= 64
+        && time.wallStart is string && time.wallStart.size() <= 16
+        && time.source is map && time.source.size() <= 8;
+    }
+
     function hasMatchingBusySlotAfter(therapistUid, start, end, appointmentId) {
       let busyPath = therapistBusySlotPath(therapistUid, start);
       return existsAfter(busyPath)
@@ -387,7 +401,7 @@ service cloud.firestore {
         && (resource.data.clientUid == request.auth.uid || resource.data.therapistUid == request.auth.uid);
       allow create: if isSignedIn()
         && request.resource.data.keys().hasAll(['clientUid', 'clientEmail', 'therapistUid', 'therapistEmail', 'start', 'end', 'status', 'createdAt', 'accessGranted'])
-        && request.resource.data.keys().hasOnly(['clientUid', 'clientEmail', 'therapistUid', 'therapistEmail', 'start', 'end', 'status', 'createdAt', 'accessGranted'])
+        && request.resource.data.keys().hasOnly(['clientUid', 'clientEmail', 'therapistUid', 'therapistEmail', 'start', 'end', 'status', 'createdAt', 'accessGranted', 'time'])
         && request.resource.data.clientUid == request.auth.uid
         && request.resource.data.clientEmail == request.auth.token.email
         && request.resource.data.therapistUid is string
@@ -403,6 +417,7 @@ service cloud.firestore {
         && request.resource.data.createdAt is string
         && request.resource.data.createdAt.size() <= 40
         && request.resource.data.accessGranted == true
+        && (!('time' in request.resource.data) || validZoneTime(request.resource.data.time))
         && hasMatchingBusySlotAfter(
           request.resource.data.therapistUid,
           request.resource.data.start,

@@ -14,6 +14,8 @@ import { ReplayStudio } from './replay.jsx';
 import { InnerNegotiation } from './negotiation.jsx';
 import { CoordinatesPanel } from './coordinates.jsx';
 import { RestControl } from './rest-control.jsx';
+import { GuardedClientData } from './therapist-guard.jsx';
+import { readableClientMaps } from '../core/therapist-guard.ts';
 
 const CLUSTER_LABELS = {
   managers: ['Managers', 'Менеджеры'], firefighters: ['Firefighters', 'Пожарные'], exiles: ['Exiles', 'Изгнанники'], resources: ['Resources', 'Ресурсы'],
@@ -457,7 +459,7 @@ export function SpecialistView() {
   const activeClients = clients.filter((client) => !client.archived);
   const archivedClients = clients.filter((client) => client.archived);
   const pendingAppointments = appointments.filter((appointment) => appointment.status === 'pending');
-  const summaryClients = activeClients.filter((client) => client.summary);
+  const summaryClients = readableClientMaps(user?.uid ?? '', user?.uid ?? '', activeClients).filter((client) => client.summary);
   const checkInsDone = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.done) || 0), 0);
   const checkInsSkipped = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.skipped) || 0), 0);
   const selfEnergyValues = summaryClients.map((client) => Number(client.summary?.selfEnergy)).filter(Number.isFinite);
@@ -596,17 +598,19 @@ export function SpecialistView() {
         </button>
       </div>
       {client.summary ? (
-        <div className="card flat mt10" style={{ padding: 11 }}>
-          <div className="kicker" style={{ color: 'var(--accent-text)' }}>{client.summary.headline}</div>
-          <div className="row wrap mt8" style={{ gap: 6 }}>
-            <span className="chip">{t('burden')}: {Math.round(Number(client.summary.burden) || 0)}</span>
-            <span className="chip">{t('energy')}: {Math.round(Number(client.summary.selfEnergy) || 0)}</span>
-            <span className="chip">{t('activeComplexes')}: {client.summary.activeComplexes?.length ?? 0}</span>
+        <GuardedClientData therapistUid={user?.uid ?? ''} client={client}>
+          <div className="card flat mt10" style={{ padding: 11 }}>
+            <div className="kicker" style={{ color: 'var(--accent-text)' }}>{client.summary.headline}</div>
+            <div className="row wrap mt8" style={{ gap: 6 }}>
+              <span className="chip">{t('burden')}: {Math.round(Number(client.summary.burden) || 0)}</span>
+              <span className="chip">{t('energy')}: {Math.round(Number(client.summary.selfEnergy) || 0)}</span>
+              <span className="chip">{t('activeComplexes')}: {client.summary.activeComplexes?.length ?? 0}</span>
+            </div>
+            <div className="faint mt8" style={{ fontSize: 11.5 }}>
+              {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {Number(client.summary.adherence?.done) || 0} {t('checkinsDone')}
+            </div>
           </div>
-          <div className="faint mt8" style={{ fontSize: 11.5 }}>
-            {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {Number(client.summary.adherence?.done) || 0} {t('checkinsDone')}
-          </div>
-        </div>
+        </GuardedClientData>
       ) : <p className="faint mt8" style={{ fontSize: 12 }}>{t('clientSummaryNotShared')}</p>}
       {!archived && (
         <>

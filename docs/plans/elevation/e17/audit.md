@@ -1,7 +1,7 @@
 # E17.01 audit: Save status and operations
 
 - Bead: `ArchetypeAI-ugua` (E17.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -27,10 +27,10 @@
 - an ambiguous timeout of a non-idempotent write without a key becomes unknown and is never re-sent
 - an ambiguous write with an idempotency key retries with the same key
 - recovers a duplicate booking: the same key returns the existing confirmation, not a second booking
-- recovers a competing booking: a clash is a conflict, a declined slot is released, and a server conflict never 
+- recovers a competing booking: a clash is a conflict, a declined slot is released, and a server conflict never auto-retries
 - recovers a late coach reply after cancel: the reply is ignored and never shown
 - recovers a superseded request: a reply to the earlier request id is stale and the newer request stays pending
-- recovers quota and verify failures: the draft is kept, and a save is acknowledged only after a matching read-b
+- recovers quota and verify failures: the draft is kept, and a save is acknowledged only after a matching read-back
 
 ## 4. Input beads and their status
 
@@ -45,13 +45,13 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- The panel shows local save state and the note draft. A read-back mismatch shows a failed state and is tested (`e17-save-status.spec.ts:54`).
-- The store swallows quota errors (`src/parts-cartographer/core/local-store.ts:23`), so the panel cannot show them.
+- The panel shows local save state and the note draft. A failed write is read back and shown as not saved (`src/parts-cartographer/screens/elevation/e17-save-status.jsx:61-62`; tested at `e17-save-status.spec.ts:54`).
+- The store swallows the quota cause (`src/parts-cartographer/core/local-store.ts:23`), so only that reason is hidden from the panel.
 - Remote save failure and offline read are not wired.
 
 ## 6. Smallest useful slice (educated guess)
 
-Surface quota failures: pass them up from `local-store.ts:23` to the panel status, with a test.
+Show the quota reason: pass the cause up from `local-store.ts:23` to the status, with a test.
 
 ## 7. Pending evidence (not claimed)
 

@@ -1,7 +1,7 @@
 # E07.01 audit: Validity, context and resurfacing
 
 - Bead: `ArchetypeAI-bqm` (E07.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -27,12 +27,12 @@
 
 - marks one source as fitting in some contexts and another as no longer fitting, and keeps both
 - preserves the original wording through every validity change, including after a later edit
-- never downgrades the person
+- never downgrades the person's own certainty when validity changes
 - denied: a context-specific mark is refused until the person names the context
 - authority: the model cannot change validity, certainty or resurfacing
 - separates observation, hypothesis, user wording and canonical measurement, and validity never changes them
 - canonical measurement: a no-longer-fits note is kept beside the result, with no score field
-- retrieval preview explains each exclusion, considers only selected sources, and infers nothing when none are s
+- retrieval preview explains each exclusion, considers only selected sources, and infers nothing when none are selected
 
 ## 4. Input beads and their status
 
@@ -44,8 +44,8 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- The panel reads the memory key (`INNERVERSE_MEMORY_V1`) and writes its own validity key. A change to the memory shape affects this panel's reads.
-- Declined resurfacing is stored locally only. The panel has no resurfacing control (`e07-validity.jsx:45-47, 74-75`), so the decline cannot be exercised from the UI.
+- The panel reads the memory key and writes its own validity key. A change to the memory shape affects this panel's reads.
+- Declined resurfacing is stored locally only. A search of `e07-validity.jsx` found no resurfacing control, so the decline cannot be exercised from the UI.
 
 ## 6. Smallest useful slice (educated guess)
 

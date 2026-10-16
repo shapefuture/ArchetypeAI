@@ -1,7 +1,7 @@
 # E13.01 audit: Interaction grammar
 
 - Bead: `ArchetypeAI-n215` (E13.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -27,7 +27,7 @@
 - keeps coach pause, return and inspect available without a completed assessment
 - distinguishes observation, hypothesis, user authorship and canonical measurement
 - produces no canonical result from an incomplete assessment and resumes at the stored item
-- keeps canonical coordinates through a rename, an addition and an undo, and refuses a moved or deleted placemen
+- keeps canonical coordinates through a rename, an addition and an undo, and refuses a moved or deleted placement
 - marks a save as saved only after the read-back matches what was written
 - shows an undone value as unsaved until it is saved again, so the stored value never changes silently
 - pause with unsaved edits is not safe to leave; after a verified save it is
@@ -45,7 +45,7 @@
 ## 5. Gaps (judgement, not measurement)
 
 - The interaction registry is local only, so save and undo across the four core paths do not reach a remote store.
-- Focus restoration after a modal or Back has not been checked in a real browser.
+- Focus after closing a modal has not been checked in a browser. Focus after Back is checked (`tests/browser/parity.spec.mjs:153-170`).
 
 ## 6. Smallest useful slice (educated guess)
 

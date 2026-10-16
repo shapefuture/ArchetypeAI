@@ -1,7 +1,7 @@
 # E08.01 audit: Transfer across situations
 
 - Bead: `ArchetypeAI-60s` (E08.01). Tracker status at audit: open.
-- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d02d7f6`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -30,7 +30,7 @@
 - cannot-recall is a complete answer: cue and reveal stay open afterwards, and nothing is locked at the start
 - denied: declining the invitation is a clean outcome, and it is allowed only as the first step
 - varies one practical constraint into an if-then card the person wrote, and refuses an empty constraint
-- adapting the move elsewhere keeps every help option and the move itself, and adds a season endpoint only when 
+- adapting the move elsewhere keeps every help option and the move itself, and adds a season endpoint only when asked
 - authority: the model cannot author a variation, record a recall, record a revisit or choose guidance
 
 ## 4. Input beads and their status
@@ -49,7 +49,7 @@
 
 ## 6. Smallest useful slice (educated guess)
 
-None beyond the recorded measurement plan.
+None in this audit. A measurement plan must be written before any measurement; none exists in the repository or in the four input beads.
 
 ## 7. Pending evidence (not claimed)
 

@@ -5,6 +5,7 @@ import { myAssignments } from '../core/therapist-link.ts';
 import { EXERCISES, EXERCISE_TYPES, chapterUnlocked, ladderRung, redAllowed, suggestExercise } from '../../app/core/data/exercises';
 import { selfServeGate, storeEvent } from '../../app/core/data/state-v2';
 import { STRINGS as SOURCE_STRINGS } from '../../i18n/strings';
+import { PracticeToolkit } from './practice-toolkit.jsx';
 
 const PRACTICE_KEY = 'INNERVERSE_PRACTICE_V1';
 const CHECKIN_KEY = 'INNERVERSE_CHECKINS_V1';
@@ -316,6 +317,7 @@ export function Practice() {
 
         <div className="kicker mt24">{copy.chapters} · {practiceState.completed.length} ✓</div>
         {[1, 2, 3, 4, 5].map(chapterSection)}
+        <div className="mt24"><PracticeToolkit /></div>
       </div>
     </div>
   );

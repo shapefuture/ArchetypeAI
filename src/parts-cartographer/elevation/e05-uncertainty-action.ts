@@ -133,6 +133,16 @@ export function rejectReading(s: E05State, readingId: string, actor: Actor, expe
   return ok({ ...s, revision: s.revision + 1, readings: s.readings.map((x) => (x.id === readingId ? withStanding(x, 'rejected') : x)) });
 }
 
+/** The person writes a reading in their own words. Only the person may add one, and the revision must match. */
+export function addUserReading(s: E05State, input: { id: string; text: string }, actor: Actor, expectedRevision: number): Result {
+  const refused = guard(s, actor, expectedRevision);
+  if (refused) return fail(refused);
+  const text = input.text.trim();
+  if (!input.id || !text || readingOf(s, input.id)) return fail('invalid-input');
+  const reading: Reading = { id: input.id, text, kind: 'user-authored', standing: 'open', sources: ['user-authored'] };
+  return ok({ ...s, revision: s.revision + 1, readings: [...s.readings, reading] });
+}
+
 /** Only the person marks an action unhelpful. That withdraws this action alone, with no penalty. */
 export function markUnhelpful(s: E05State, actionId: string, actor: Actor, expectedRevision: number): Result {
   const refused = guard(s, actor, expectedRevision);

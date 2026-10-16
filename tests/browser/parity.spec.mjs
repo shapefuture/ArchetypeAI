@@ -103,6 +103,8 @@ test('147-answer assessment resumes, completes locally, exports, and opens the c
 
 test('historical local restore previews before applying and refreshes mounted state', async ({ page }) => {
   await page.goto('/');
+  // Wait for the app to finish loading, so the Restore control is the mounted one and not a pre-hydration node.
+  await page.waitForLoadState('networkidle');
   await page.getByRole('button', { name: /Restore.*JSON|Restore/i }).first().click();
   await page.locator('input[type=file]').setInputFiles({ name: 'angular-backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ assessmentResponses: Array(64).fill(3) })) });
   await expect(page.getByText('Review local restore')).toBeVisible();

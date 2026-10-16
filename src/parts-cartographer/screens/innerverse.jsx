@@ -10,6 +10,10 @@ import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } 
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus } from '../core/booking.ts';
 import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates, setAxisChoice } from '../services/universe-lens';
 import { ModalLayer } from '../ui/modal-layer.jsx';
+import { ReplayStudio } from './replay.jsx';
+import { InnerNegotiation } from './negotiation.jsx';
+import { CoordinatesPanel } from './coordinates.jsx';
+import { RestControl } from './rest-control.jsx';
 
 const CLUSTER_LABELS = {
   managers: ['Managers', 'Менеджеры'], firefighters: ['Firefighters', 'Пожарные'], exiles: ['Exiles', 'Изгнанники'], resources: ['Resources', 'Ресурсы'],
@@ -53,6 +57,7 @@ export function Innerverse() {
   const [compare, setCompare] = useState([]);
   const [dims, setDims] = useState({ energy: 100 });
   const [dimensions, setDimensions] = useState(readUniverseDimensions);
+  const [panel, setPanel] = useState(null);
   const [famOn, setFamOn] = useState({ manager: true, firefighter: true, exile: true, resource: true });
   const [axes, setAxes] = useState(DEFAULT_AXES);
   const [isolation, setIsolation] = useState(null);
@@ -210,6 +215,16 @@ export function Innerverse() {
         </div>
       )}
 
+      {panel && (
+        <div className="card iv-panel-host" role="dialog" style={{ position: 'absolute', left: 16, right: 16, top: 112, bottom: 96, zIndex: 44, pointerEvents: 'auto', overflowY: 'auto', background: 'var(--surface)' }}>
+          <button className="ibtn iv-panel-close" aria-label={t('close')} onClick={() => setPanel(null)}>✕</button>
+          {panel === 'replay' && <ReplayStudio />}
+          {panel === 'negotiation' && <InnerNegotiation />}
+          {panel === 'coordinates' && <CoordinatesPanel />}
+          {panel === 'rest' && <RestControl />}
+        </div>
+      )}
+
       {/* bottom action tray */}
       <div className="row universe-actions" style={{ position: 'absolute', left: 16, right: 16, bottom: 22, gap: 9, pointerEvents: 'auto', zIndex: 40, overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: 7 }}>
         <button className="tray-btn" onClick={() => openStudio()}>🎨 {t('archetype')}</button>
@@ -218,6 +233,10 @@ export function Innerverse() {
         <button className="tray-btn" onClick={() => setOverlay('practice')}>🏋️ {t('practice')}</button>
         <button className="tray-btn" onClick={() => premium ? setDrawer(true) : openPaywall()}>📊 {t('compare')}</button>
         <button className="tray-btn" aria-label={lang === 'ru' ? 'Химия частей' : 'Part chemistry'} onClick={() => setSheet({ type: 'chemistry' })}>⚗️</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'replay' ? null : 'replay')}>🎬 {lang === 'ru' ? 'Повтор' : 'Replay'}</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'negotiation' ? null : 'negotiation')}>🤝 {lang === 'ru' ? 'Переговоры' : 'Negotiate'}</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'coordinates' ? null : 'coordinates')}>🧭 {lang === 'ru' ? 'Координаты' : 'Coordinates'}</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'rest' ? null : 'rest')}>🌙 {lang === 'ru' ? 'Отдых' : 'Rest'}</button>
       </div>
 
       {/* compare tray */}

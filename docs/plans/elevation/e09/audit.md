@@ -1,7 +1,7 @@
 # E09.01 audit: Feedback without recording pressure
 
 - Bead: `ArchetypeAI-lgo` (E09.01). Tracker status at audit: open.
-- Checked at: HEAD `56088ca`, corrected after the second and third independent reviews.
+- Checked at: HEAD `675118c`, corrected after the second and third independent reviews.
 - Disposition: **candidate audit, awaiting a final independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -43,13 +43,14 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- Declining recording writes to the feedback key from the panel (`src/parts-cartographer/screens/elevation/e09-feedback.jsx:74-76`), while the module copy says Nothing was saved (`src/parts-cartographer/elevation/e09-feedback.ts:59`). This is a defect to resolve.
+- Declining recording writes a feedback entry from the panel (`src/parts-cartographer/screens/elevation/e09-feedback.jsx:76`). The module copy now says 'No outcome was written.' (`src/parts-cartographer/elevation/e09-feedback.ts:59`), which matches that behaviour. The earlier copy said 'Nothing was saved', which was false.
 - Feedback and its preference are stored locally. There is no remote feedback sink.
 - Deduplication is covered by module tests only.
+- The panel shows the English feedback copy in the Russian interface (`src/parts-cartographer/screens/elevation/e09-feedback.jsx:77`), because the copy catalogue in `e09-feedback.ts` has English text only. Russian wording needs native review.
 
 ## 6. Smallest useful slice (educated guess)
 
-Resolve the mismatch. If the copy is right, stop saving on decline and add a test that declining leaves no stored feedback. If saving is right, correct the copy instead.
+Saving is right: the ledger stops a repeated acknowledgement and keeps the person's choice, so the copy changed instead. Still open: the Russian copy, which needs native review.
 
 ## 7. Pending evidence (not claimed)
 

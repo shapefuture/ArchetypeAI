@@ -1,7 +1,7 @@
 # E01.01 audit: Goal and graduation
 
 - Bead: `ArchetypeAI-epv` (E01.01). Tracker status at audit: open.
-- Checked at: HEAD `56088ca`, corrected after the second and third independent reviews.
+- Checked at: HEAD `675118c`, corrected after the second and third independent reviews.
 - Disposition: **candidate audit, awaiting a final independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -11,7 +11,7 @@
 | --- | --- | --- |
 | Pure step module | `src/parts-cartographer/elevation/e01-goal.ts` | 15 in 1 spec file(s) |
 | Panel | `src/parts-cartographer/screens/elevation/e01-goal.jsx` | 4 (spec files: e01-goal.spec.ts) |
-| Mounted in | `src/parts-cartographer/screens/practice.jsx` | - |
+| Mounted in | `src/parts-cartographer/core/backup.ts`, `src/parts-cartographer/screens/practice.jsx` | - |
 | Storage key | `INNERVERSE_GOAL_V1` | - |
 
 ## 2. Observable scenarios from the bead
@@ -43,12 +43,12 @@
 ## 5. Gaps (judgement, not measurement)
 
 - The chosen goal is stored on this device only (`INNERVERSE_GOAL_V1`). Nothing reads it from a remote store.
-- The goal key is not in the backup allowlist (`src/parts-cartographer/core/backup.ts:11-19`), so a backup does not carry it.
+- The goal key is in the backup allowlist (`src/parts-cartographer/core/backup.ts:17`), and its restore validator uses the goal reader (`src/parts-cartographer/core/backup.ts:57`). A round-trip test covers it (`src/parts-cartographer/core/backup.spec.ts`).
 - A real-world outcome is recorded as unknown. Nothing measures whether the goal helped.
 
 ## 6. Smallest useful slice (educated guess)
 
-Decide whether the goal belongs in the backup allowlist (`backup.ts:11-19`). If yes, add it with one round-trip test; if no, record that the goal is device-only.
+Smallest useful slice, now implemented: the goal belongs in the backup allowlist, because it is the person's own content, as the charter and journal already are. It is added with a restore validator and a round-trip test. Not tested: restoring a backup onto a device that already has a goal.
 
 ## 7. Pending evidence (not claimed)
 

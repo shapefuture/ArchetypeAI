@@ -87,12 +87,13 @@ describe('E09 fixtures and deduplication', () => {
     expect(selectFeedback(help, dismissed, full)).toEqual({ status: 'refused', reason: 'duplicate' });
   });
 
-  it('decline recording: an unsaved decline says nothing was saved, and a recorded outcome is not acknowledged here', () => {
+  it('decline recording: says no outcome was written, and a recorded outcome is not acknowledged here', () => {
     const card = createCard({ id: 'card-1', situation: 'When a meeting runs late', action: 'I will send one short message' })!;
     const action = actionFromOutcome(recordOutcome(card, 'do-not-record'), 'ev-decline-1', card.id, true)!;
     const item = shown(selectFeedback(action, [], full));
     expect(item.basis.observation).toContain('not to record');
-    expect(item.basis.observation).toContain('Nothing was saved');
+    expect(item.basis.observation).toContain('No outcome was written');
+    expect(item.basis.observation).not.toContain('Nothing was saved');
     expect(actionFromOutcome(recordOutcome(card, 'tried', 'a note'), 'ev-x', card.id, true)).toBeNull();
     expect(actionFromOutcome(recordOutcome(card, 'do-not-record'), 'ev-y', card.id, false)).toMatchObject({ confirmed: false });
   });

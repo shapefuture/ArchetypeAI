@@ -56,7 +56,7 @@ export const CATALOG: Catalog = {
   'exception-noticed': { observation: 'You noticed a time when things went differently.', hypothesis: 'That difference may be worth a look, if you want one.' },
   'help-requested': { observation: 'You asked for help. Asking is a complete step on its own.', hypothesis: null },
   'rest-chosen': { observation: 'You chose to rest. Resting is a complete choice, and nothing is owed.', hypothesis: null },
-  'recording-declined': { observation: 'You chose not to record this. Nothing was saved and no outcome was written.', hypothesis: null },
+  'recording-declined': { observation: 'You chose not to record this. No outcome was written.', hypothesis: null },
 };
 
 const FORBIDDEN = /\b(improv\w*|worked|works|helped|progress\w*|streaks?|points?|scores?|scoring|rank\w*|badges?|missed|should have|proves?|cures?|treat\w*|therap\w*|valid\w*|clinical\w*|effective\w*|benefit\w*|because|caus\w*)\b|\d/i;

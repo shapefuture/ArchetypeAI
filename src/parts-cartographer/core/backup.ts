@@ -6,6 +6,7 @@ import { validProfile } from './profile-contract';
 import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, isDescentDraft } from './assessment-draft';
 import { sanitizeLegacyAiAnalysis } from './legacy-ai-analysis';
 import { SHAPES, EYES, MOUTHS, HEADS, FACES, type Part } from '../pal/traits';
+import { readGoalRecord } from '../elevation/e01-goal';
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.syn,
@@ -13,7 +14,7 @@ const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.sy
   'ifs.journal', 'ifs.sealed', 'ifs.sealed.verdict', 'ifs.universe.dimensions.v1',
   DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, 'INNERVERSE_FUTURE_SELF_V1', 'INNERVERSE_PROFILE_V1',
   'INNERVERSE_CHECKINS_V1', 'INNERVERSE_SEALED_VERDICTS_V1', 'INNERVERSE_JITAI_V1',
-  'INNERVERSE_CHARTER_V1', 'INNERVERSE_EVENTS_V1', 'INNERVERSE_PRACTICE_V1', 'INNERVERSE_SYNASTRY_RUNS_V1',
+  'INNERVERSE_CHARTER_V1', 'INNERVERSE_EVENTS_V1', 'INNERVERSE_GOAL_V1', 'INNERVERSE_PRACTICE_V1', 'INNERVERSE_SYNASTRY_RUNS_V1',
   'ARCHETYPE_ASSESSMENT_RESPONSES', 'ARCHETYPE_ASSESSMENT_INDEX', 'ARCHETYPE_COMPLETED_BACKUP',
   'archetype_scoring_method', 'ARCHETYPE_SYNASTRY_CONNECTIONS', 'ARCHETYPE_SYNASTRY_REPORTS', 'ARCHETYPE_SYNASTRY_PARTNER'];
 export const PORTABLE_KEYS = new Set([...BASE_KEYS, ...BASE_KEYS.map((key) => `${key}.hist`)]);
@@ -53,6 +54,7 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === KEYS.profile || key === KEYS.history) return value === null || validProfile(value);
   if (key === 'ifs.legacy64.result') return value === null || object(value);
   if (key === 'INNERVERSE_PROFILE_V1') return isCanonicalAssessmentInput(value);
+  if (key === 'INNERVERSE_GOAL_V1') return readGoalRecord(value).status !== 'rejected';
   if (key === DESCENT_DRAFT_KEY) return isDescentDraft(value);
   if (key === LEGACY_DESCENT_DRAFT_KEY) return object(value) && ratings(value.answers, 147, true);
   if (key === 'INNERVERSE_FUTURE_SELF_V1') return Array.isArray(value) && value.length === 3 && value.every((item) => typeof item === 'string' && item.length <= 20_000);

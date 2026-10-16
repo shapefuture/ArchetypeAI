@@ -1,7 +1,7 @@
 # E05.01 audit: Uncertainty and action
 
 - Bead: `ArchetypeAI-3rd` (E05.01). Tracker status at audit: open.
-- Checked at: HEAD `5de92d4`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d481c3e`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
@@ -29,8 +29,8 @@
 - inconclusive and contradictory outcomes never confirm a reading or become causal proof
 - empty: with no readings, or with every reading rejected, nothing is offered
 - denied: overclaiming, irreversible or large actions are refused with a plain reason
-- canonical measurements are refused as a basis, even for the person\
-- model-authored actions need app review first, while the person\
+- canonical measurements are refused as a basis, even for the person's own action, and are never a reading
+- model-authored actions need app review first, while the person's own action is their choice
 - quiet presentation shows at most one action and asks no probe
 
 ## 4. Input beads and their status

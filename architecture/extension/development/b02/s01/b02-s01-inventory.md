@@ -182,7 +182,7 @@ Columns: existing evidence; status (*implemented*, *partial*, *absent*, or *conf
 
 | Aspect | Existing evidence | Status | Gap | Reuse | Pending |
 |---|---|---|---|---|---|
-| Normal grant, booking | Consent checkbox gates confirm (`overlays.jsx:842-852`); `createBooking` writes `clientShares` (`booking.ts:401-412`); rules allow therapist read while appointment is pending or approved (`firestore.rules:62-71`, `:133-138`); test definition at `firestore.rules.emulator.spec.ts:414-416` | implemented (booking only) | Purpose-specific to one appointment; not a matching grant | Pattern | Emulator run; two-account run |
+| Normal grant, booking | Consent checkbox gates confirm (`overlays.jsx:842-852`); `createBooking` writes `clientShares` (`booking.ts:401-412`); rules allow therapist read while appointment is pending or approved (`firestore.rules:62-71`, `:133-138`); test definition at `firestore.rules.emulator.spec.ts:327-329` | implemented (booking only) | Purpose-specific to one appointment; not a matching grant | Pattern | Emulator run; two-account run |
 | Normal grant, share code | Consent checkbox (`overlays.jsx:503`) gates generation (`:326`) | implemented (one-off) | Bearer; no recipient scope; no expiry | Pattern for consent UI | Recipient-scope test |
 | Implicit grant, public identity | `publicProfiles` written on linked sign-in (`user-directory.ts:34-46`); no consent step | **conflicts** | No consent, no field choice, no opt-out path in code | None | Consent review (B01, B02.S02) |
 | Denied grant, booking | Non-appointment read denied (`firestore.rules:62-71`, `:441-465`); test definition `emulator.spec.ts:325-352` (fake shares denied) | implemented | None for booking | Pattern | Emulator run |

@@ -1,5 +1,10 @@
 # B01.S01 candidate inventory: social.profile ownership and actual reuse
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, on the consent-seam absence claim, which is false at HEAD. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
+>
+> - Base note: several citations use `src/shared/...`, `src/parts-cartographer/...` or `src/i18n/...` paths that did not exist at this document's base commit. Those are HEAD paths (git rename map `09194df..HEAD`).
+> - Not corrected in this pass: the §12 checker results depend on scripts outside the repository and were not reproduced.
+
 **Status: CANDIDATE, awaiting independent review. Not accepted.**
 
 | Field | Value |
@@ -22,7 +27,7 @@ Labels used below: **[fact]** = read directly from the cited file. **[inference]
 1. **Public presentation exists only as an identity projection.** On every linked sign-in, the client writes the user's email and display name to `publicProfiles/{uid}` without a purpose-specific consent step, a field choice, a block or a withdrawal control. Firestore rules let any signed-in session, including an anonymous Firebase session, read every such document. (Findings B01-S01-F01, F02.)
 2. **Private preferences are device-local.** Sensory preferences live in `localStorage` under `ifs.sensory.v1` and are not account-owned, synced or included in backup export. Other private content (assessment, parts map, journal) is device-local and included in plain-JSON backup export.
 3. **The only deliberate cross-user disclosures are bearer share codes and therapist invite summaries.** Both have an explicit consent checkbox. Share codes can be revoked by deletion. Therapist-invite copies cannot be revoked by the client. Booking grants end when the appointment is declined.
-4. **Reuse is partial.** C01 (auth identity) is reusable as an identity source. C02 (local storage) is reusable as a key/value seam, but sensory preferences bypass it and it swallows save errors. C08 (consent and provenance) has no seam: the path named in the elevation metadata does not exist in the repository.
+4. **Reuse is partial.** C01 (auth identity) is reusable as an identity source. C02 (local storage) is reusable as a key/value seam, but sensory preferences bypass it and it swallows save errors. C08 (consent and provenance) had no seam at the base commit 09194df: the path named in the elevation metadata did not exist there. HEAD adds `src/parts-cartographer/core/personal-memory.ts` (commit 3670a3a, after the base). Whether that module satisfies C08 is not assessed here.
 5. **Package-ID collision.** The creative-commons plan reuses the IDs C01, C02 and C08 for unrelated packages. The B01.S01 reuse IDs resolve to the elevation-plan slot streams (live Beads `ArchetypeAI-zzmm`, `ArchetypeAI-j60z`, `ArchetypeAI-v2tj`) because the social plan's B01 `relates_to` edges point to those IDs. The coordinator should confirm this mapping before the reuse decision is recorded in Beads.
 6. **Items needing B01.S02 decisions** are listed in the findings register (section 9) and the handoff (section 14). The highest-priority items are automatic email publication, unrestricted directory reads, the absence of client-side withdrawal for public and therapist-invite data, and placeholder values in the therapist summary that the consent copy describes as an adherence summary.
 
@@ -58,7 +63,7 @@ Labels used below: **[fact]** = read directly from the cited file. **[inference]
 |---|---|---|---|---|
 | C01 | `auth.identity`, "Auth identity and account lifecycle". Path `src/parts-cartographer/core/auth.service.ts` | ArchetypeAI-zzmm | `AUTH_PORT` declared in `src/parts-cartographer/core/ports.ts:6-13`. Implemented by `src/parts-cartographer/core/auth.service.ts`. Angular equivalent `src/app/core/ports/auth.port.ts` with `src/app/core/adapters/firebase-auth.adapter.ts`. | **Reuse as identity source only** (uid, linked status, provider). Publication of email into a directory is a B01 behaviour, but it sits inside `persistUser` (`auth.service.ts:41-47`). No published contract and no six-dimension suite exist. |
 | C02 | `storage.local`, "Local authoritative storage and backup". Path `src/parts-cartographer/core/local-store.ts` | ArchetypeAI-j60z | `STORAGE_PORT` at `ports.ts:15-21`. Implemented by `local-store.ts` (`store`, `KEYS` at lines 56-72). Angular: `src/shared/core/data/local-store.ts` (write-behind) and `src/app/core/ports/storage.port.ts`. | **Reuse for device-local private preferences as a key/value seam, with gaps.** Sensory preferences bypass it (`sensory-preferences.ts:59-61` calls `localStorage.setItem` directly). `store.save` swallows quota errors (`local-store.ts:22-24`). The port has no owner (uid) parameter and no schema version. |
-| C08 | `consent.provenance`, "Consent, source lineage and corrections". Declared path `src/parts-cartographer/core/personal-memory.ts` | ArchetypeAI-v2tj | **The declared path does not exist.** It is not tracked by git, and `git log --all -- '*personal-memory*'` is empty. Consent logic is distributed across `cloud-storage.ts` (allowlisted snapshot, lines 40-62), `overlays.jsx` (checkboxes), `therapist-link.ts` (invite summary) and `firestore.rules`. | **No reusable seam.** Treat C08 as absent. B01 must define its own field allowlist and consent state, or do so jointly with the C08 owner. The stale path in the elevation metadata must not be treated as satisfied. |
+| C08 | `consent.provenance`, "Consent, source lineage and corrections". Declared path `src/parts-cartographer/core/personal-memory.ts` | ArchetypeAI-v2tj | **The declared path did not exist at the base commit 09194df.** At the base it was not tracked by git and `git log --all -- '*personal-memory*'` was empty. HEAD adds the file in commit 3670a3a. Consent logic is distributed across `cloud-storage.ts` (allowlisted snapshot, lines 40-62), `overlays.jsx` (checkboxes), `therapist-link.ts` (invite summary) and `firestore.rules`. | **No reusable seam at the base.** Treat C08 as absent at the base. HEAD has a memory module, which this inventory does not assess. B01 must define its own field allowlist and consent state, or do so jointly with the C08 owner. The stale path in the elevation metadata must not be treated as satisfied. |
 
 ### 3.2 Namespace collision (finding B01-S01-F20)
 
@@ -400,7 +405,7 @@ Checks are static and were run in this worktree.
 |---|---|---|
 | Read-set existence | `ls` on the five read-set paths | 5 of 5 exist |
 | Reuse ID resolution | Python read of `elevation-aaa-v7-beads-plan.json` `beads_ids` and `slot_streams`; `creative-commons-beads-plan.json` `beads_ids` | C01, C02, C08 resolve to two different sets of live IDs (section 3) |
-| Declared C08 path | `git ls-files` and `git log --all -- '*personal-memory*'` | Not tracked; no history |
+| Declared C08 path | `git ls-files` and `git log --all -- '*personal-memory*'` at base 09194df | Not tracked at base; added at HEAD in 3670a3a |
 | Namespace of B01 relations | Python read of social plan JSON `graph.edges` for `from_key == "B01"` | `relates_to` to `ArchetypeAI-zzmm`, `ArchetypeAI-j60z`, `ArchetypeAI-v2tj` |
 | Absence checks | Grep over `src/` for `deleteDoc` on `publicProfiles`, `therapistLinks`, `therapistClients`, `clientShares`, synastry; for `auth.signOut` callers; for `pronoun`, `plural`, `deleteUser` | Absence confirmed as stated in section 4 and 8 |
 | Citation check | Python checker `b01s01_check.py` in the coordinator scratchpad, not in the repository. Resolves each `path:line` citation to a tracked file, checks the range, and checks 187 key quoted tokens on their cited lines. Output saved as `b01s01_check.out` beside it. | 301 of 301 citations resolve and are in range. 187 of 187 token assertions match. |
@@ -417,7 +422,7 @@ Checks are static and were run in this worktree.
 2. **Partial UI trace.** Overlays, landing, app state and Angular share and cabinet call sites were traced. The full Cabinet and Booking screens and the Angular booking flow were not traced in depth.
 3. **Rules not executed.** Rule statements are read from `firestore.rules`. The emulator suite that would assert them was not run.
 4. **Six dimensions are a framework, not a suite.** The dimensions come from AAA §11C.2. No compatibility suite exists for any slot. Section 7 records current positions, not passes.
-5. **C08 seam absent.** The C08 declared path does not exist. Any statement that consent or provenance is "reused" would be incorrect.
+5. **C08 seam absent at the base.** The C08 declared path did not exist at 09194df (added at HEAD in 3670a3a). Any statement that consent or provenance is "reused" at the base would be incorrect.
 6. **Creative-commons and elevation IDs.** The mapping in section 3 rests on the social plan's `relates_to` edges and slot semantics. It is not confirmed by the task body.
 7. **Dates and policies.** The "User-approved 2026-10-06 discussion" is not in the repository. Requirements are taken from the planning documents and roadmap that are present.
 8. **No user or practitioner input.** Nothing here reflects what users, therapists or community members understand, expect or consent to.

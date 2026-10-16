@@ -1,5 +1,9 @@
 # B10.S01 — Inventory: personal meaning, context and accommodations
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because "no personal meaning notes" is false at HEAD. Corrected. Status is still **candidate, not accepted**.
+>
+> - Not corrected in this pass: the 13 scenario rows use generic expectations with no feature-specific content.
+
 - Bead: `ArchetypeAI-cpfa` (B10.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
 - Disposition: **candidate inventory; awaiting independent review.** No acceptance is claimed. No application code changed.
@@ -8,7 +12,7 @@
 
 ## 1. Finding
 
-Accommodations partly exist: sensory and reduced-motion preferences are implemented and tested. Personal meaning and context notes do not exist. `meaning` appears only as a measured need category, which must not be confused with a person's own meaning notes.
+Accommodations partly exist: sensory and reduced-motion preferences are implemented and tested. At the base 10d9608, personal meaning and context notes did not exist. HEAD adds a personal memory module (`src/parts-cartographer/core/personal-memory.ts`, commit 3670a3a) with `addMemory` and `contextMemories`, shown in `src/parts-cartographer/screens/memory-panel.jsx`. Whether it meets the meaning-note and context requirements is not assessed here. `meaning` appears only as a measured need category, which must not be confused with a person's own meaning notes.
 
 ## 2. Existing code and reuse
 
@@ -18,7 +22,7 @@ Accommodations partly exist: sensory and reduced-motion preferences are implemen
 | Reduced-motion gating | `src/parts-cartographer/core/sensory-preferences.ts` (`sceneClockStep`) | Implemented: the ambient clock stops for Still and for system reduced motion. |
 | Ambience suspension | `src/parts-cartographer/services/ambience-gate.ts` | Implemented: suspends ambience for hidden pages, text entry, and errors. |
 | Measured need category `meaning` | `src/shared/core/data/parts.ts:25`, `src/shared/core/data/scoring-v2.ts:208` | A scored need. Must not be treated as personal meaning notes. |
-| Personal meaning notes and context | none | Absent. |
+| Personal meaning notes and context | At base 10d9608: none. At HEAD: `src/parts-cartographer/core/personal-memory.ts` (commit 3670a3a), not assessed against meaning-note semantics | Partly present at HEAD; not assessed. |
 
 **Reuse packages named by the task.** The planning documents define these codes inconsistently across streams (the B01 inventory recorded the same ambiguity). Each code is an unresolved reuse claim until the coordinator confirms its mapping.
 

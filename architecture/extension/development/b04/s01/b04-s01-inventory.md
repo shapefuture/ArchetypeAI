@@ -1,5 +1,9 @@
 # B04.S01 — Inventory: messages, invitations and reviewed contributions
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because the "no matches for contribution or reviewed" premise is false at HEAD. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
+>
+> - Not corrected in this pass: the 13 scenario rows in §4 and the six-dimension rows in §5 use generic expectations with no feature-specific content. They need to be rewritten before this matrix can support acceptance.
+
 - Bead: `ArchetypeAI-3mdv` (B04.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
 - Disposition: **candidate inventory; awaiting independent review.** No acceptance is claimed. No application code changed.
@@ -8,7 +12,7 @@
 
 ## 1. Finding
 
-Peer messaging and shared contributions do not exist. The coach conversation and therapist client invite codes are the only nearby mechanisms, and both are scoped to a single relationship. No reviewed-contribution workflow exists: non-spec source has no matches for `contribution` or `reviewed`.
+Peer messaging and shared contributions do not exist. The coach conversation and therapist client invite codes are the only nearby mechanisms, and both are scoped to a single relationship. No reviewed-contribution workflow exists. The words `reviewed` and `review` do appear in non-spec source, for example in coach-evidence copy (`src/parts-cartographer/screens/elevation/e02-entry.jsx:23`, `src/parts-cartographer/screens/suggestion-review.jsx:18`), but none is a shared-contribution or review-queue feature.
 
 ## 2. Existing code and reuse
 

@@ -1,5 +1,9 @@
 # B07.S01 — Inventory: authored presentation and creative continuity
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL (minor)**: "only continuity code" omitted the draft-backup resume. Corrected. Status is still **candidate, not accepted**.
+>
+> - Not corrected in this pass: the 13 scenario rows use generic expectations with no feature-specific content.
+
 - Bead: `ArchetypeAI-h13n` (B07.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
 - Disposition: **candidate inventory; awaiting independent review.** No acceptance is claimed. No application code changed.
@@ -8,7 +12,7 @@
 
 ## 1. Finding
 
-Authored presentation exists in one narrow form: AI-authored text may replace matching entries in the legacy universe, and missing entries stay local. Creative continuity is not implemented. The only continuity code is a comment about anonymous users keeping cross-device state while cookies are retained.
+Authored presentation exists in one narrow form: AI-authored text may replace matching entries in the legacy universe, and missing entries stay local. Creative continuity is not implemented. The continuity code is a comment about anonymous users keeping cross-device state while cookies are retained (`src/app.component.ts:1118`), and a draft-backup resume for assessment answers (`src/app.component.ts:1672`; `src/parts-cartographer/core/assessment-draft.ts`). Neither holds creative work-in-progress.
 
 ## 2. Existing code and reuse
 

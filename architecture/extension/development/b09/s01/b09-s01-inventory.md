@@ -1,5 +1,10 @@
 # B09.S01 — Current ownership and actual reuse: accessible bounded practice runner
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL (minor)**: "unit-tested" conflicted with §13, where the tests were not run. Corrected. Status is still **candidate, not accepted**.
+>
+> - Base note: seven cited paths exist only at HEAD, although §3 says anchors refer to the base commit.
+> - Not corrected in this pass: some anchors are wrong (for example `practice.jsx:43` supports only the score check, and `testModel` is not at the cited line). Re-anchor before acceptance.
+
 **Status: candidate awaiting independent review. Not an acceptance claim.**
 
 - Evidence basis: static reading of the repository at base commit `09194df5f48326bff14e42a1e4eb8d66c457186d`, plus parsing of the planning JSON files. No runner behavior was executed.
@@ -124,8 +129,8 @@ Classes come from `docs/plans/references/AAA-V7-SPEC.source.md:330-335` (E0 PURE
 
 | Class | State | Condition and source | What the user sees (copy key) | Status |
 | --- | --- | --- | --- | --- |
-| Normal | Clinical profile, suggestion available | `practice.jsx:111-119`; `exercises.ts:120-134` | "Today's practice" card with Continue (`copy.today`, `continue`) | Coded; unit-tested with mocks |
-| Normal | Clinical profile, assignment present | `practice.jsx:296-315` | Assigned button, enabled if the gate passes | Coded; unit-tested with mocks |
+| Normal | Clinical profile, suggestion available | `practice.jsx:111-119`; `exercises.ts:120-134` | "Today's practice" card with Continue (`copy.today`, `continue`) | Coded; unit test claimed (not run in this review) |
+| Normal | Clinical profile, assignment present | `practice.jsx:296-315` | Assigned button, enabled if the gate passes | Coded; unit test claimed (not run in this review) |
 | Unknown | No clinical profile, or other `testModel` | `practice.jsx:64`; `profile-contract.ts:31-33` | Library and assigned items locked; hint "Complete the 147-item descent first" (`:187`) | Coded. Assessment-coupled (Q1). |
 | Unknown | Assigned ID not in the catalog | `practice.jsx:300-301` | "Not in this practice library" (`assignedPracticeNotAvailable`) | Coded. Triggered by the ID mismatch (F-02). |
 | Unknown | Auth not yet bootstrapped or anonymous | `practice.jsx:73-77` | No assignments; library still works if clinical | Coded |

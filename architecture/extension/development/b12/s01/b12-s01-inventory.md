@@ -1,5 +1,9 @@
 # B12.S01 inventory: current ownership and actual reuse for community.inquiry
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because the personal-memory and "inquiry" absence claims are false at HEAD, and the deletion survey omitted one client delete. Corrected. Status is still **candidate, not accepted**.
+>
+> - Not corrected in this pass: the §10.1 wording on personal memory was not checked, and the checker results depend on scripts outside the repository.
+
 **Status: candidate awaiting independent review.** This is a document-only inventory. It is not an acceptance claim and does not show that any B12 feature exists or works. No participant, device, live-account, community, tradition or practitioner evidence was collected or implied.
 
 | Item | Value |
@@ -40,9 +44,9 @@ Line citations use `path:line` or `path L<n>`. Paths are relative to the worktre
 - The social plan (prepared 2026-10-06) uses the elevation namespace elsewhere. Across B01 to B12 the reuse codes are C01, C02, C03, C04, C08 and C09, which are the elevation slot migrations for auth, storage, scoring, projection, consent and artifacts. Its feature reuse codes E05, E12, E13, E19 and X02 match elevation streams "Useful action under uncertainty", "Beautiful quiet and accessible presentation", "Universal interaction grammar", "Extensions that earn complexity" and "Permissioned shared conversation". [PLAN]
 - The social JSON also records an edge from B12 to ArchetypeAI-v2tj (consent.provenance). [PLAN]
 - Conclusion: the most consistent reading of B12's reuse package is the elevation consent.provenance slot. This is an inference from namespace consistency. The coordinator must confirm it. This inventory covers both readings where they touch.
-- The consent.provenance module path (`src/parts-cartographer/core/personal-memory.ts`) does not exist at this commit, and no `personal-memory`, `personalMemory` or lineage code exists under `src`. [GAP]
+- At the base commit 09194df the consent.provenance module path (`src/parts-cartographer/core/personal-memory.ts`) did not exist. HEAD adds it (commit 3670a3a) with `addMemory`, `contextMemories`, `correctMemory` and `deleteWithDerived`. Its lineage and consent fields are not assessed here. [GAP at base; superseded at HEAD]
 
-**H2. community.inquiry has no implementation.** [GAP] No port, collection, Worker route, screen or test names it. Searches for inquiry, expedition, interest constellation, parallel play, creative jam, mini-game and community.inquiry found no code hit. The only "inquiry" string is a practice stop-rule (`src/shared/i18n/strings.ts` L2172). No published slot output exists to consume. This step therefore reconciles mechanisms that could be reused, not a feature.
+**H2. community.inquiry has no implementation.** [GAP] No port, collection, Worker route, screen or test names it. Searches for the feature concepts (expedition, interest constellation, parallel play, creative jam, mini-game, community.inquiry) found no code hit. The word "inquiry" appears in product copy at HEAD: a route title and purpose (`src/parts-cartographer/i18n/strings.ts:31-35`), a component name (`src/parts-cartographer/screens/check-in.jsx:21`) and a practice stop-rule (`src/shared/i18n/strings.ts` L2172, base path `src/i18n/strings.ts`). None is a community inquiry feature. No published slot output exists to consume. This step therefore reconciles mechanisms that could be reused, not a feature.
 
 **H3. Reusable patterns (not community features).** The bearer share-code lifecycle (CMP-03), the allowlisted projection (CMP-04), the summary fixed at therapist-invite creation (CMP-16), the booking-created grant with a server-side appointment check (CMP-17), the predicted-versus-confirmed check-in record (CMP-08), the noncausal caveat wording (CMP-25) and the offline coach fallback (CMP-20).
 
@@ -135,7 +139,7 @@ Line citations use `path:line` or `path L<n>`. Paths are relative to the worktre
 | ST-20 | `assignments/{id}` | Server | `assignExercise` (`therapist-link.ts` L174) | `myAssignments` (L194); rules L537-546 | Client and therapist can read | Not exported | No update or delete (`firestore.rules` L555) |
 | ST-21 | `users/{uid}/assessment/current` and `users/{uid}/history/*` | Server; owner (`firestore.rules` L162-172; therapist and admin read grants at L165-172) | `saveCloudMap` (`cloud-storage.ts` L90-93) | `loadCloudMapHistory` (L121-140) | Owner; therapist and admin read grants | Not exported by the client | Owner write allows delete, but no client path deletes (F4) |
 
-**Deletion survey.** Every client `deleteDoc` or transaction delete in `src` (excluding specs): `cloud-storage.ts` L286 (`shareCodes`); `push.ts` L65 and L96 (`pushTokens`); `booking.ts` L354 (busy slot); `src/parts-cartographer/core/admin.ts` L76 and L126 (admin collections); `src/services/admin-access.service.ts` L53 (admin allowlist). None targets `synastry`, `connections`, `history`, `assessment` or `therapistLinks` documents. No account-deletion call exists.
+**Deletion survey.** Every client `deleteDoc` or transaction delete in `src` (excluding specs): `cloud-storage.ts` L286 (`shareCodes`); `push.ts` L65 and L96 (`pushTokens`); `booking.ts` L354 (busy slot); `src/parts-cartographer/core/admin.ts` L76 and L126 (admin collections); `src/services/admin-access.service.ts` L53 (admin allowlist); `src/services/specialist-client.service.ts` L160 (`adminClients`). None targets `synastry`, `connections`, `history`, `assessment` or `therapistLinks` documents. No account-deletion call exists.
 
 ## 5. Effect inventory
 
@@ -256,7 +260,7 @@ The tracker export does not contain ArchetypeAI-7sj4, nje6, wq9i, cyqe, 4bs4, v2
 1. **Provenance.** `sha256sum` of every file in section 8. Values are recorded in those tables.
 2. **Planning JSON against the Bead.** The social JSON parses. The B12 platform entry has name "Participant-led inquiries and contextual knowledge", scope `community.inquiry`, reuse `[C08]`, related `[B03, B08]`. For node B12.S01, the acceptance-criteria text is identical to the Bead after whitespace normalization (767 characters each). The read set and write set match the Bead, mutation is M0, risk is R2, reuse is `[C08]`, and base generation and contract versions are null and empty.
 3. **Citation check.** A script asserted that each `path:line` citation in this document contains the cited token at that line. First pass: 256 checked, 11 failed. The draft was then corrected at nine citations (line offsets, one quote line in `docs/80-20-plan.md`, and one emulator line). Two checker entries that the draft does not cite were removed, and three checker tokens were aligned to the exact phrase on the cited line. Final pass: 254 of 254 match.
-4. **Negative searches.** Concept names (inquiry, expedition, interest constellation, parallel play, creative jam, mini-game, community.inquiry, personal-memory, lineage) returned no implementation hits in `src`, `worker*.ts` or `firestore.rules`.
+4. **Negative searches.** Concept names (inquiry, expedition, interest constellation, parallel play, creative jam, mini-game, community.inquiry, lineage) returned no implementation hits in `src`, `worker*.ts` or `firestore.rules`. `personal-memory` is the exception: it matches a module added at HEAD (commit 3670a3a), after the base.
 5. **Runtime call sites.** Outside `state-v2.ts` and its spec, `adjustTriggerWeights`, `attributionWorsening` and `pauseNonRegulation` have zero call sites. `shutdownStreak` is called only by `pauseNonRegulation`. `resistantMetrics` is used only by the Angular therapist panel.
 6. **Deletion survey.** Client delete calls are listed in section 4. None targets synastry, connection, history, assessment or therapist-link documents.
 7. **Whitespace and characters.** `git diff --check` on the new file. The document contains no emoji.

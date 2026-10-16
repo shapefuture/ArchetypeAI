@@ -1,5 +1,9 @@
 # B08.S01 — Inventory: reviewed source and practice catalogue
 
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL (minor)**: "no review workflow" is false for AI suggestions. Corrected. Status is still **candidate, not accepted**.
+>
+> - Not corrected in this pass: the 13 scenario rows use generic expectations with no feature-specific content.
+
 - Bead: `ArchetypeAI-z5qy` (B08.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
 - Disposition: **candidate inventory; awaiting independent review.** No acceptance is claimed. No application code changed.
@@ -27,7 +31,7 @@ No practice catalogue exists. The codebase has a catalogue of archetype and cons
 |---|---|---|---|
 | State | Practice entry (title, steps, evidence label) | No | Evidence label must distinguish research, tradition and practitioner claims. |
 | State | Source reference (citation, licence, review status) | No | Needs licence and attribution recording. |
-| State | Review record (reviewer, decision, date) | No | No review workflow exists. |
+| State | Review record for catalogue practices or contributions (reviewer, decision, date) | No | No catalogue or contribution review workflow exists. AI coach suggestions have a review screen (`src/parts-cartographer/screens/suggestion-review.jsx`). |
 | Effect | Publish a reviewed practice to users | No | Publication is governed; not authorised by this slice. |
 | Component | Catalogue browser, practice card, review queue | No | No screens exist. |
 

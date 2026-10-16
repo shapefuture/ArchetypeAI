@@ -14,9 +14,9 @@ describe('reviewed practice catalog', () => {
   });
 
   it('records the review basis as an educated guess, with no reviewer name or review date', () => {
-    expect(CATALOG_REVIEW).toEqual({ status: 'reviewed', basis: 'educated-guess', reviewer: null, reviewedOn: null });
+    expect(CATALOG_REVIEW).toEqual({ status: 'draft', basis: 'none-recorded', reviewer: null, reviewedOn: null });
     for (const practice of reviewedPractices('en')) {
-      expect(practice.status).toBe('reviewed');
+      expect(practice.status).toBe('draft');
     }
   });
 
@@ -45,9 +45,10 @@ describe('reviewed practice catalog', () => {
     expect(reviewedPractices('de')).toEqual(reviewedPractices('en'));
   });
 
-  it('offers every catalog practice with no prerequisite and no assessment or synastry being completed', () => {
-    const offered = availablePractices(reviewedPractices('en'), []).map((p) => p.id);
-    expect(offered).toEqual([...CATALOG_EXERCISE_IDS]);
+  it('offers no practice while the catalogue is draft, and every practice once it is marked reviewed', () => {
+    expect(availablePractices(reviewedPractices('en'), [])).toEqual([]);
+    const markedReviewed = reviewedPractices('en').map((p) => ({ ...p, status: 'reviewed' as const }));
+    expect(availablePractices(markedReviewed, []).map((p) => p.id)).toEqual([...CATALOG_EXERCISE_IDS]);
   });
 
   it('uses no efficacy, validation or diagnostic wording in English titles and steps', () => {

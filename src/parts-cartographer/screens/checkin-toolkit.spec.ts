@@ -5,6 +5,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const appMock = vi.hoisted(() => ({ current: null as null | Record<string, unknown> }));
 vi.mock('../app.jsx', () => ({ useApp: () => appMock.current }));
 
+// The catalogue is marked draft (no review record). These flow tests mark it reviewed through the mock,
+// so they exercise the check-in itself. The empty-state test switches the mark off.
+const catalogMock = vi.hoisted(() => ({ marked: true }));
+vi.mock('../core/practice-catalog.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../core/practice-catalog.ts')>();
+  return {
+    ...actual,
+    reviewedPractices: (lang?: unknown) =>
+      actual.reviewedPractices(lang).map((practice) => ({ ...practice, status: catalogMock.marked ? 'reviewed' : practice.status })),
+  };
+});
+
 import {
   CHECKIN_FLOW_KEY,
   ContextualCheckIn,
@@ -173,6 +185,17 @@ describe('contextual check-in screen', () => {
     const text = host?.textContent ?? '';
     for (const practice of practices) expect(text).toContain(practice.title);
     expect(/assessment|synastry|147|64-item|profile/i.test(text)).toBe(false);
+  });
+
+  it('says no practice is offered yet when the catalogue has no review record', () => {
+    catalogMock.marked = false;
+    try {
+      render(ContextualCheckIn);
+      expect(host?.textContent).toContain('No reviewed practices are available yet');
+      for (const practice of practices) expect(host?.textContent).not.toContain(practice.title);
+    } finally {
+      catalogMock.marked = true;
+    }
   });
 
   it('starts a practice, pauses, and resumes at the same step after a fresh mount', () => {

@@ -1,10 +1,9 @@
 // Reviewed practice catalog for the contextual check-in (ArchetypeAI-28h.3.1). Pure.
 //
-// REVIEW BASIS: EDUCATED GUESS. The repository holds no record of a review for any exercise: no reviewer,
-// no review date, no sign-off. Every entry below is marked 'reviewed' only as a working assumption, because
-// these exercises ship from the team's own repository (EXERCISE_COPY in src/i18n/strings.ts). CATALOG_REVIEW
-// states the same thing in data, with a null reviewer and a null review date. Replace this with a real review
-// record before presenting any entry as reviewed.
+// REVIEW BASIS: NONE RECORDED. The repository holds no record of a review for any exercise: no reviewer,
+// no review date, no sign-off. Entries are therefore marked 'draft', so the check-in offers none of them as
+// reviewed. Educated guess: the exercises are the team's own copy (EXERCISE_COPY in src/i18n/strings.ts), not a
+// clinically reviewed set. Set CATALOG_REVIEW.status to 'reviewed' only after a real review record exists.
 //
 // Only self-serve (green) exercises are listed. Yellow and red exercises need a profile gate or a therapist
 // assignment. The contextual check-in has no assessment gate by design, so they are left out here.
@@ -16,8 +15,8 @@ import { EXERCISE_COPY } from '../../shared/i18n/strings';
 export type CatalogLang = 'en' | 'ru';
 
 export const CATALOG_REVIEW = {
-  status: 'reviewed',
-  basis: 'educated-guess',
+  status: 'draft',
+  basis: 'none-recorded',
   reviewer: null,
   reviewedOn: null,
 } as const;

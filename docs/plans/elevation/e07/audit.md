@@ -1,7 +1,7 @@
 # E07.01 audit: Validity, context and resurfacing
 
 - Bead: `ArchetypeAI-bqm` (E07.01). Tracker status at audit: open.
-- Checked at: HEAD `5de92d4`, regenerated after an independent review of the first version.
+- Checked at: HEAD `d481c3e`, regenerated after an independent review of the first version.
 - Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 

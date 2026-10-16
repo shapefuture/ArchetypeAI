@@ -6,6 +6,7 @@ import { EXERCISES, EXERCISE_TYPES, chapterUnlocked, ladderRung, redAllowed, sug
 import { selfServeGate, storeEvent } from '../../shared/core/data/state-v2';
 import { STRINGS as SOURCE_STRINGS } from '../../shared/i18n/strings';
 import { PracticeToolkit } from './practice-toolkit.jsx';
+import { GoalPanel } from './elevation/e01-goal.jsx';
 
 const PRACTICE_KEY = 'INNERVERSE_PRACTICE_V1';
 const CHECKIN_KEY = 'INNERVERSE_CHECKINS_V1';
@@ -317,6 +318,7 @@ export function Practice() {
 
         <div className="kicker mt24">{copy.chapters} · {practiceState.completed.length} ✓</div>
         {[1, 2, 3, 4, 5].map(chapterSection)}
+        <GoalPanel />
         <div className="mt24"><PracticeToolkit /></div>
       </div>
     </div>

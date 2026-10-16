@@ -5,6 +5,7 @@ import type { Part } from '../pal/traits';
 import { sceneClockStep, type MotionMode } from '../core/sensory-preferences';
 import { feltGroup } from './felt-engine';
 import { bindReducedMotionDamping } from './reduced-motion';
+import { ambience } from './ambience-gate';
 import {
   archetypeCoordinatePosition,
   dimensionalLensOffset,
@@ -232,11 +233,14 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     });
     renderer.render(scene, camera);
   };
-  renderer.setAnimationLoop(loop);
+  // The render loop runs only while the screen is awake and ambience is not suspended (hidden page, text entry, error).
+  const applyLoop = () => renderer.setAnimationLoop(running && ambience.active ? loop : null);
+  const unsubscribeAmbience = ambience.subscribe(() => applyLoop());
+  applyLoop();
 
   api = {
-    wake() { if (!running) { running = true; renderer.setAnimationLoop(loop); } },
-    sleep() { running = false; renderer.setAnimationLoop(null); },
+    wake() { if (!running) { running = true; applyLoop(); } },
+    sleep() { running = false; applyLoop(); },
     setParts: build,
     setView(options) {
       if (options.axes) axes = normalizeAxes(options.axes);
@@ -272,6 +276,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     setMotionMode(mode) { motionMode = mode; motionDamping.setMode(mode); },
     dispose() {
       running = false;
+      unsubscribeAmbience();
       renderer.setAnimationLoop(null);
       void renderer.xr.getSession()?.end();
       disposed = true;

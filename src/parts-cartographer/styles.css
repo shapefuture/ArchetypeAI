@@ -860,6 +860,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .phone[data-motion='gentle'] .animate-idle { animation-duration: 4s !important; }
 .phone[data-motion='gentle'] .animate-float { animation-duration: 8s !important; }
 .phone[data-motion='gentle'] .animate-drift { animation-duration: 12s !important; }
+/* Ambient character motion rests while hidden, while text is typed, or while an error is shown (services/ambience-gate.ts). */
+[data-ambience='paused'] .animate-idle,
+[data-ambience='paused'] .animate-float,
+[data-ambience='paused'] .animate-drift { animation-play-state: paused; }
 .phone[data-density='compact'] .scroll { padding-left: 16px; padding-right: 16px; }
 .phone[data-density='compact'] .card { padding: 14px; }
 .phone[data-density='compact'] .section-title { margin-top: 16px; margin-bottom: 8px; }

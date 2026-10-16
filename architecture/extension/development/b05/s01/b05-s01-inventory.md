@@ -2,7 +2,7 @@
 
 > **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because the quiet-hours absence is false for the in-app note. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
 >
-> - Not corrected in this pass: the 47-test claim is not reproducible as written.
+> - The 47-test claim was checked against the five most plausible spec files: 37 pass. The claim is wrong as written and is corrected in the Checks line.
 
 **Status: candidate awaiting independent review.** This file records what the code, documents and local unit checks show. It is not an acceptance claim. No participant, device, real-service, live-account, practitioner or independent-review evidence was collected. No `bd` command was run and no Beads status was changed; the coordinator owns the tracker.
 
@@ -32,7 +32,7 @@ Evidence tags used below:
 - Every failure and every refused or dismissed prompt is reported as `denied`, and the React button is disabled for the rest of the session (`src/parts-cartographer/screens/check-in.jsx:329-331`). (N-04)
 - The local nudge fallback exists in both React and Angular code but has no runtime caller. Its unit tests pass, but the product cannot reach it. (N-06)
 - Real background delivery, the sender, and the VAPID key rotation are unverified. A key-exposure incident is recorded in `docs/push-key-rotation.md`. (N-16, N-20)
-- Checks: the candidate reports 47 existing unit tests in five spec files passing. The document does not name the five files, so the independent review could not reproduce this. The push specs mock the Firebase SDK, so they do not establish delivery.
+- Checks: the candidate reports 47 existing unit tests in five spec files passing. The document does not name the five files. Running the five push and reminder spec files it most plausibly refers to (`src/parts-cartographer/core/push.spec.ts`, `src/services/push.service.spec.ts`, `src/parts-cartographer/core/reminder-policy.spec.ts`, `src/parts-cartographer/core/return-loop.spec.ts`, `src/parts-cartographer/screens/reminder-settings.spec.ts`) gives **37 passing tests, not 47** (run 2026-10-16). The push specs mock the Firebase SDK, so they do not establish delivery.
 
 ## 2. Reuse reconciliation: packages C01 and C08
 

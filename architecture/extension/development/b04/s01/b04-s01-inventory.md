@@ -2,7 +2,7 @@
 
 > **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because the "no matches for contribution or reviewed" premise is false at HEAD. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
 >
-> - Not corrected in this pass: the 13 scenario rows in §4 and the six-dimension rows in §5 use generic expectations with no feature-specific content. They need to be rewritten before this matrix can support acceptance.
+> - Scenario rows in §4 and §5 were rewritten with feature-specific planned behaviour in a follow-up pass. They are still planned and not exercised, and need re-review.
 
 - Bead: `ArchetypeAI-3mdv` (B04.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -36,18 +36,19 @@ Peer messaging and shared contributions do not exist. The coach conversation and
 | Effect | Delivery of a message or invitation | No | Depends on the notification policy (B05). |
 | Component | Thread view, invitation card, review queue | No | No screens exist. |
 
-## 4. Scenario matrix (specified, not exercised)
+## 4. Scenario matrix (planned, not exercised)
+
+Each row is a planned behaviour for peer messages and invitations. None exists today. The reference points are the nearest existing mechanisms: the coach conversation (`src/app.component.html:499`) and the therapist invite claim (`src/app/features/therapist-panel/therapist-panel.component.ts:3`).
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
-| Normal grant | The capability is used only after an explicit grant | No |
-| Denied grant | A denied grant leaves the state unchanged and says so | No |
-| Stale contract | An older version is read as legacy, never reinterpreted | No |
-| Account change | State is scoped to the account that owns it | No |
-| Deleted source | Removing the source keeps history and marks dependants | No |
-| Duplicate or cancelled operation | A repeated or cancelled operation has no second effect | No |
-| Offline or quiet alternative | The feature stays optional and can be ignored | No |
-
+| Normal grant | A message or invitation is delivered only when the sender holds an accepted relationship or the recipient has issued an invite code. The thread is visible to the two participants and to no one else. | No |
+| Denied grant | A send without a grant is refused by the server rule, not by the client. The sender sees "not delivered", the recipient's inbox is unchanged, and the reply is identical whether or not the recipient exists, so the refusal does not reveal membership. | No |
+| Stale contract | A client on an older message schema reads a thread as legacy text. It does not reinterpret review-status fields, and it keeps unknown fields when it writes back. | No |
+| Account change | Threads and invitations are readable only by the owning uid. Signing out or switching accounts clears the in-memory thread list. The sign-out gap noted in F-05 (only `ifs.auth` is removed) must not extend to thread caches. | No |
+| Deleted source | When a sender deletes their account or withdraws a contribution, the recipient keeps the message with a "removed by sender" marker. Invitations the sender issued are marked withdrawn, not silently dropped. | No |
+| Duplicate or cancelled operation | A repeated send or accept carries one operation id and creates one message or one acceptance. An invitation cancelled before acceptance cannot be accepted afterwards. | No |
+| Offline or quiet alternative | Composed messages queue locally and send when the connection returns. The thread stays readable offline. Quiet hours (B05) suppress notifications only, never the thread itself. | No |
 
 ## 5. Six compatibility dimensions for `messages, invitations and contributions`
 
@@ -55,12 +56,12 @@ The plan's fixture task names six dimensions: **interface, state, effects, opera
 
 | Dimension | Planned case for `messages, invitations and contributions` | Exercised today |
 |---|---|---|
-| Interface | The surface does not block core navigation | No |
-| State | State is versioned; legacy reads are explicit | No |
-| Effects | Writes are idempotent | No |
-| Operations | Operations are reversible or clearly one-way | No |
-| Performance | Lists stay bounded on large histories | No |
-| Failure | A storage refusal is reported and prior state is kept | No |
+| Interface | Thread and invitation views are reachable from the existing navigation. They do not displace the coach conversation at `src/app.component.html:499`, and an empty inbox does not hide core screens. | No |
+| State | The message record carries a schema version. Coach messages stay in their current store and are not migrated implicitly. | No |
+| Effects | Sending writes one message document keyed by its operation id, so retries are idempotent. Notification is a separate effect routed through the B05 policy. | No |
+| Operations | A sender can retract a message within a fixed window; after that it is one-way. Either party can revoke an accepted invitation. | No |
+| Performance | Thread lists page by cursor in batches of 50. The invitation list is bounded by the owner's open invitations. | No |
+| Failure | A storage refusal marks the message unsent and keeps its text in the composer. A failed acceptance leaves the invitation unclaimed. | No |
 
 ## 6. Source provenance
 

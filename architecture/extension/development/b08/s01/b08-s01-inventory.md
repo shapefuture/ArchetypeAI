@@ -2,7 +2,7 @@
 
 > **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL (minor)**: "no review workflow" is false for AI suggestions. Corrected. Status is still **candidate, not accepted**.
 >
-> - Not corrected in this pass: the 13 scenario rows use generic expectations with no feature-specific content.
+> - Scenario rows in §4 and §5 were rewritten with feature-specific planned behaviour in a follow-up pass. They are still planned and not exercised, and need re-review.
 
 - Bead: `ArchetypeAI-z5qy` (B08.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -12,7 +12,7 @@
 
 ## 1. Finding
 
-No practice catalogue exists. The codebase has a catalogue of archetype and constellation content, and the i18n `STRINGS` catalogue, but neither holds practices or source references, and neither has a review workflow. A practice catalogue would be new.
+No practice catalogue existed at the base 10d9608. The codebase has a catalogue of archetype and constellation content, and the i18n `STRINGS` catalogue, but neither holds practices or source references, and neither has a review workflow. HEAD adds `src/parts-cartographer/core/practice-catalog.ts` (commit 71261d0) with one review gate, set to draft, so no practice is offered until a review record exists.
 
 ## 2. Existing code and reuse
 
@@ -29,24 +29,25 @@ No practice catalogue exists. The codebase has a catalogue of archetype and cons
 
 | Kind | Item | Existing? | Notes |
 |---|---|---|---|
-| State | Practice entry (title, steps, evidence label) | No | Evidence label must distinguish research, tradition and practitioner claims. |
+| State | Practice entry (title, steps, evidence label) | Partly at HEAD (draft entries in `practice-catalog.ts`) | Evidence label must distinguish research, tradition and practitioner claims. |
 | State | Source reference (citation, licence, review status) | No | Needs licence and attribution recording. |
 | State | Review record for catalogue practices or contributions (reviewer, decision, date) | No | No catalogue or contribution review workflow exists. AI coach suggestions have a review screen (`src/parts-cartographer/screens/suggestion-review.jsx`). |
 | Effect | Publish a reviewed practice to users | No | Publication is governed; not authorised by this slice. |
 | Component | Catalogue browser, practice card, review queue | No | No screens exist. |
 
-## 4. Scenario matrix (specified, not exercised)
+## 4. Scenario matrix (planned, not exercised)
+
+Each row is planned behaviour for the reviewed practice catalogue. The only HEAD code is the draft gate in `src/parts-cartographer/core/practice-catalog.ts`, which offers no practice until a review record exists.
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
-| Normal grant | The capability is used only after an explicit grant | No |
-| Denied grant | A denied grant leaves the state unchanged and says so | No |
-| Stale contract | An older version is read as legacy, never reinterpreted | No |
-| Account change | State is scoped to the account that owns it | No |
-| Deleted source | Removing the source keeps history and marks dependants | No |
-| Duplicate or cancelled operation | A repeated or cancelled operation has no second effect | No |
-| Offline or quiet alternative | The feature stays optional and can be ignored | No |
-
+| Normal grant | A practice is offered only when its review status is `reviewed` and the person has opted into practices. Drafts are never offered. | No |
+| Denied grant | A practice without a review record is refused by the catalogue gate. The person sees no practice and no hint that one is pending. | No |
+| Stale contract | A catalogue entry from an older schema that lacks source references is shown as unreviewed, never as reviewed. | No |
+| Account change | A review decision is attributed to the reviewer's account. Changing the reviewer does not alter an earlier decision. | No |
+| Deleted source | When a cited source is withdrawn, dependent practices return to draft and are hidden. | No |
+| Duplicate or cancelled operation | A repeated approval records one decision. A cancelled review leaves the entry at its prior status. | No |
+| Offline or quiet alternative | The catalogue is bundled with the app, so reviewed practices work offline. A missing review never blocks core navigation. | No |
 
 ## 5. Six compatibility dimensions for `reviewed source and practice catalogue`
 
@@ -54,12 +55,12 @@ The plan's fixture task names six dimensions: **interface, state, effects, opera
 
 | Dimension | Planned case for `reviewed source and practice catalogue` | Exercised today |
 |---|---|---|
-| Interface | The surface does not block core navigation | No |
-| State | State is versioned; legacy reads are explicit | No |
-| Effects | Writes are idempotent | No |
-| Operations | Operations are reversible or clearly one-way | No |
-| Performance | Lists stay bounded on large histories | No |
-| Failure | A storage refusal is reported and prior state is kept | No |
+| Interface | The practice list shows only reviewed entries. With none, it shows the honest empty state already used in the check-in toolkit. | No |
+| State | Each entry carries a schema version, its source references and its review record. Unknown fields are kept. | No |
+| Effects | Publishing a reviewed practice is one write keyed by entry id and review version. Republishing the same version is a no-op. | No |
+| Operations | A published practice can be returned to draft in one step, and the change is recorded. | No |
+| Performance | The catalogue loads once per session, and lookups are by id. | No |
+| Failure | A malformed entry is dropped with a logged reason, and the rest of the list still renders. | No |
 
 ## 6. Source provenance
 

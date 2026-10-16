@@ -15,6 +15,7 @@ import { InnerNegotiation } from './negotiation.jsx';
 import { CoordinatesPanel } from './coordinates.jsx';
 import { RestControl } from './rest-control.jsx';
 import { PresentationPanel } from './elevation/e12-presentation.jsx';
+import { ReportReadStatus } from './elevation/e16-report-read.jsx';
 import { GuardedClientData } from './therapist-guard.jsx';
 import { readableClientMaps, visibleAppointments } from '../core/therapist-guard.ts';
 
@@ -626,6 +627,7 @@ export function SpecialistView() {
           </div>
         </GuardedClientData>
       ) : <p className="faint mt8" style={{ fontSize: 12 }}>{t('clientSummaryNotShared')}</p>}
+      <ReportReadStatus client={client} />
       {!archived && (
         <>
           <button className="btn block mt10" onClick={() => setAssignFor(assignFor === client.clientUid ? '' : client.clientUid)}>

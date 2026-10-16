@@ -13,6 +13,7 @@ import { EntryPanel } from './elevation/e02-entry.jsx';
 import { CapacityPanel } from './elevation/e03-capacity.jsx';
 import { CorrectionsPanel } from './elevation/e06-corrections.jsx';
 import { ValidityPanel } from './elevation/e07-validity.jsx';
+import { FeltRolesPanel } from './elevation/e11-felt-roles.jsx';
 import { MemoryPanel } from './memory-panel.jsx';
 import { SharedSupportPanel } from './shared-support.jsx';
 import { ReminderSettings } from './reminder-settings.jsx';
@@ -273,6 +274,7 @@ export function Cabinet() {
         <MemoryPanel />
         <CorrectionsPanel />
         <ValidityPanel />
+        <FeltRolesPanel />
         <SharedSupportPanel />
         <ReminderSettings />
         {adminAccess && (

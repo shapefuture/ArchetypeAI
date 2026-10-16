@@ -59,7 +59,7 @@ test('147-answer assessment resumes, completes locally, exports, and opens the c
   for (let i = 0; i < 7; i++) await page.getByRole('radio').nth(2).click();
   await page.reload();
   await page.getByRole('button', { name: /Start.*147/i }).first().click();
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('INNERVERSE_DESCENT_V1')).answers.filter(Boolean).length)).toBe(7);
+  expect(await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('INNERVERSE_DESCENT_V2')).answers).length)).toBe(7);
   for (let i = 7; i < 147; i++) {
     if (i === 49 || i === 98) await page.locator('.btn.primary').click();
     await page.getByRole('radio').nth(2).click();

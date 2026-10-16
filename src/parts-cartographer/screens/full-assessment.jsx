@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Steps } from '../ui/ui.jsx';
 import { telemetry } from '../core/telemetry.ts';
@@ -8,6 +8,11 @@ import { buildItemSequence, itemText } from '../../i18n/items';
 import { CONSENT_TEXT, DESCENT_UI, FULL_ASSESSMENT_LIKERT_TEXTS } from '../i18n/strings.ts';
 import { adaptClinicalProfile } from '../core/clinical-profile-adapter.ts';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
+import {
+  DESCENT_DRAFT_SCHEMA, DESCENT_ITEM_COUNT, DESCENT_ITEM_IDS, DESCENT_LAST_INDEX,
+  discardLegacyDescentDraft, draftFromLegacy, fromPositional, readDescentDraft,
+  removeDescentDraft, resumePoint, writeDescentDraft,
+} from '../core/assessment-draft.ts';
 
 const DRAFT_KEY = ROUTE_KEYS.battery147.draft;
 const FUTURE_SELF_KEY = ROUTE_KEYS.battery147.futureSelf;
@@ -15,24 +20,17 @@ const LEGACY_64_KEY = ROUTE_KEYS.reflection64.responses;
 const LIKERT_EMOTES = ['🙅', '🤏', '🌗', '👋', '🎯'];
 const SEQUENCE = buildItemSequence();
 
-function readDraft() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? 'null');
-    if (!saved || !Array.isArray(saved.answers) || saved.answers.length !== 147) return null;
-    const answers = saved.answers.map((value) => Number.isInteger(value) && value >= 1 && value <= 5 ? value : 0);
-    if (!answers.some((answer) => answer > 0)) return null;
-    const firstUnanswered = answers.findIndex((answer) => answer === 0);
-    const itemIndex = firstUnanswered >= 0 ? firstUnanswered : 146;
-    const atBreak = (itemIndex === 49 && answers[48] > 0) || (itemIndex === 98 && answers[97] > 0);
-    return {
-      answers,
-      itemIndex: atBreak ? itemIndex - 1 : itemIndex,
-      stage: atBreak ? 'break' : firstUnanswered < 0 ? 'future-self' : 'item',
-      somatic: saved.somatic && typeof saved.somatic === 'object' ? saved.somatic : {},
-    };
-  } catch {
-    return null;
+/** Reads the stored draft once, before the first render, and maps it onto screen state. */
+function loadInitialState() {
+  const read = readDescentDraft();
+  const blank = { stage: 'ethics', answers: Array(DESCENT_ITEM_COUNT).fill(0), itemIndex: 0, legacy: null, notice: null };
+  if (read.status === 'draft') {
+    const point = resumePoint(read.draft);
+    return { ...blank, stage: point.stage, answers: point.positional, itemIndex: point.index };
   }
+  if (read.status === 'legacy') return { ...blank, legacy: read.answers };
+  if (read.status === 'rejected') return { ...blank, notice: read.reason };
+  return blank;
 }
 
 function hasLegacyAssessment() {
@@ -50,13 +48,30 @@ function validFutureSelf(answers) {
   return filled.length >= 2 && sentences.length >= 2;
 }
 
+function SaveStatus({ ui, save, onRetry }) {
+  if (save.status === 'saved') return <p className="faint center mt8" role="status" style={{ fontSize: 12 }}>{ui.saved}</p>;
+  if (save.status !== 'failed') return null;
+  return (
+    <div className="card flat mt12" role="alert" style={{ borderColor: 'var(--accent)' }}>
+      <p className="sub">{ui.saveFailed[save.reason] ?? ui.saveFailed.unavailable}</p>
+      <button className="btn block mt8" onClick={onRetry}>{ui.saveRetry}</button>
+    </div>
+  );
+}
+
 export function FullAssessment() {
   const { t, lang, go, parts: currentParts, setProfile, setParts, toast } = useApp();
   const ui = DESCENT_UI[lang] ?? DESCENT_UI.en;
-  const draft = useMemo(readDraft, []);
-  const [stage, setStage] = useState(draft?.stage ?? 'ethics');
-  const [answers, setAnswers] = useState(draft?.answers ?? Array(147).fill(0));
-  const [itemIndex, setItemIndex] = useState(draft?.itemIndex ?? 0);
+  const initial = useMemo(loadInitialState, []);
+  const [stage, setStage] = useState(initial.stage);
+  const [answers, setAnswers] = useState(initial.answers);
+  const [itemIndex, setItemIndex] = useState(initial.itemIndex);
+  const [legacy, setLegacy] = useState(initial.legacy);
+  const [notice, setNotice] = useState(initial.notice);
+  const [legacyRetained, setLegacyRetained] = useState(false);
+  /** 'idle' until the first write; 'saved' only after the store read back the same draft. */
+  const [save, setSave] = useState({ status: 'idle' });
+  const latestSnapshot = useRef(null);
   const [futureSelf, setFutureSelf] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(FUTURE_SELF_KEY) ?? 'null');
@@ -73,20 +88,67 @@ export function FullAssessment() {
   const sittingAnswers = answers.slice(sittingIndex * 49, sittingIndex * 49 + 49);
   const answeredCount = answers.filter((answer) => answer > 0).length;
 
-  const persist = (nextAnswers = answers, nextIndex = itemIndex, somatic = draft?.somatic ?? {}) => {
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ answers: nextAnswers, itemIndex: nextIndex, somatic }));
-    } catch { /* local-first draft; storage may be unavailable */ }
+  /** Writes the whole draft and reports only a verified result. The snapshot is kept for retry. */
+  const commit = (nextAnswers, nextIndex, nextStage) => {
+    latestSnapshot.current = { answers: nextAnswers, index: nextIndex, stage: nextStage };
+    const draft = {
+      schema: DESCENT_DRAFT_SCHEMA,
+      answers: fromPositional(nextAnswers),
+      cursor: { itemId: DESCENT_ITEM_IDS[nextIndex], stage: nextStage },
+      savedAt: new Date().toISOString(),
+    };
+    const result = writeDescentDraft(draft);
+    setSave(result.ok ? { status: 'saved' } : { status: 'failed', reason: result.reason });
+    return result.ok;
+  };
+
+  const retrySave = () => {
+    if (legacy) {
+      continueLegacy();
+      return;
+    }
+    const snapshot = latestSnapshot.current;
+    if (snapshot) commit(snapshot.answers, snapshot.index, snapshot.stage);
   };
 
   const exit = () => {
-    persist();
+    if (save.status === 'failed' && !window.confirm(ui.leaveUnsaved)) return;
     go('intro');
   };
 
   const start = () => {
+    if (legacy) return;
     setStage('item');
-    persist();
+  };
+
+  /** Explicit migration of the historical positional draft. The old copy is removed only after the new one is verified. */
+  const continueLegacy = () => {
+    if (!legacy || busy) return;
+    const draft = draftFromLegacy(legacy, new Date().toISOString());
+    const point = resumePoint(draft);
+    latestSnapshot.current = { answers: point.positional, index: point.index, stage: point.stage };
+    const result = writeDescentDraft(draft);
+    if (!result.ok) {
+      setSave({ status: 'failed', reason: result.reason });
+      return;
+    }
+    setLegacyRetained(!discardLegacyDescentDraft());
+    setLegacy(null);
+    setNotice(null);
+    setAnswers(point.positional);
+    setItemIndex(point.index);
+    setStage(point.stage);
+    setSave({ status: 'saved' });
+  };
+
+  const discardLegacy = () => {
+    if (!window.confirm(ui.legacyDiscardConfirm)) return;
+    if (!discardLegacyDescentDraft()) {
+      setNotice('discardFailed');
+      return;
+    }
+    setLegacy(null);
+    setNotice(null);
   };
 
   const answer = (rating) => {
@@ -96,42 +158,43 @@ export function FullAssessment() {
     setAnswers(nextAnswers);
 
     if (itemIndex === 48 || itemIndex === 97) {
-      persist(nextAnswers, itemIndex);
+      commit(nextAnswers, itemIndex, 'break');
       setStage('break');
       return;
     }
-    if (itemIndex === 146) {
-      persist(nextAnswers, itemIndex);
+    if (itemIndex === DESCENT_LAST_INDEX) {
+      commit(nextAnswers, itemIndex, 'future-self');
       setStage('future-self');
       return;
     }
     const nextIndex = itemIndex + 1;
     setItemIndex(nextIndex);
-    persist(nextAnswers, nextIndex);
+    commit(nextAnswers, nextIndex, 'item');
   };
 
   const goPrevious = () => {
     if (stage !== 'item' || itemIndex <= 0) return;
     const previousIndex = itemIndex - 1;
     setItemIndex(previousIndex);
-    persist(answers, previousIndex);
+    commit(answers, previousIndex, 'item');
   };
 
   const goNext = () => {
-    if (stage !== 'item' || itemIndex >= 146 || answers[itemIndex] < 1) return;
+    if (stage !== 'item' || itemIndex >= DESCENT_LAST_INDEX || answers[itemIndex] < 1) return;
     const nextIndex = itemIndex + 1;
     setItemIndex(nextIndex);
-    persist(answers, nextIndex);
+    commit(answers, nextIndex, 'item');
   };
 
   const continueFromBreak = () => {
-    const nextIndex = Math.min(146, itemIndex + 1);
+    const nextIndex = Math.min(DESCENT_LAST_INDEX, itemIndex + 1);
     setItemIndex(nextIndex);
     setStage('item');
-    persist(answers, nextIndex);
+    commit(answers, nextIndex, 'item');
   };
 
   const finish = async (saveNorthStar) => {
+    // Scoring has no missing-item semantics: every one of the 147 positions needs a rating.
     if (busy || answers.some((answer) => answer < 1 || answer > 5)) return;
     setBusy(true);
     try {
@@ -151,7 +214,8 @@ export function FullAssessment() {
       setProfile(adapted.profile);
       try {
         localStorage.setItem('INNERVERSE_PROFILE_V1', JSON.stringify(assessmentInput));
-        localStorage.removeItem(DRAFT_KEY);
+        // The draft is removed only after the raw backup is written; otherwise it stays recoverable.
+        removeDescentDraft();
       } catch { /* the scored profile remains available even if raw backup storage fails */ }
       telemetry.record('result', {
         model: 'angular-v2',
@@ -182,6 +246,25 @@ export function FullAssessment() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [stage, itemIndex, answers, busy]);
 
+  useEffect(() => {
+    if (save.status !== 'failed') return undefined;
+    const warnBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warnBeforeUnload);
+    return () => window.removeEventListener('beforeunload', warnBeforeUnload);
+  }, [save.status]);
+
+  const noticeText = {
+    unavailable: ui.saveFailed.unavailable,
+    corrupt: ui.draftUnreadable,
+    unsupported: ui.draftUnreadable,
+    discardFailed: ui.legacyDiscardFailed,
+  }[notice];
+
+  const legacyCount = legacy ? legacy.filter((rating) => rating > 0).length : 0;
+
   if (stage === 'ethics') {
     return (
       <div className="screen">
@@ -202,6 +285,21 @@ export function FullAssessment() {
               <p className="sub">{ui.recalibrated}</p>
             </div>
           )}
+          {legacy && (
+            <div className="card mt12" role="region" aria-label={ui.legacyTitle} style={{ borderColor: 'var(--accent)' }}>
+              <div className="kicker" style={{ color: 'var(--accent-text)' }}>{ui.legacyTitle}</div>
+              <p className="sub mt8">{ui.legacyBody(legacyCount, DESCENT_ITEM_COUNT)}</p>
+              {noticeText && <p className="sub mt8" role="status">{noticeText}</p>}
+              <SaveStatus ui={ui} save={save} onRetry={retrySave} />
+              <button className="btn primary block mt12" disabled={busy} onClick={continueLegacy}>{ui.legacyContinue}</button>
+              <button className="btn ghost block mt8" disabled={busy} onClick={discardLegacy}>{ui.legacyDiscard}</button>
+            </div>
+          )}
+          {!legacy && noticeText && (
+            <div className="card flat mt12" role="status" style={{ borderColor: 'var(--accent)' }}>
+              <p className="sub">{noticeText}</p>
+            </div>
+          )}
           <div className="kicker mt24">{ui.planTitle}</div>
           {ui.plan.map((sitting, index) => (
             <div className="card flat mt8" key={sitting.name}>
@@ -214,7 +312,8 @@ export function FullAssessment() {
           ))}
           <p className="sub mt16">{ui.ethicsWhy}</p>
           <p className="faint mt12" style={{ fontSize: 12 }}>{ui.ethicsSub}</p>
-          <button className="btn primary block mt24" onClick={start}>{ui.ethicsGo}</button>
+          {legacyRetained && <p className="faint mt12" role="status" style={{ fontSize: 12 }}>{ui.legacyRetained}</p>}
+          <button className="btn primary block mt24" disabled={legacy !== null} onClick={start}>{ui.ethicsGo}</button>
           <button className="btn ghost block mt12" onClick={exit}>{t('later')}</button>
         </div>
       </div>
@@ -238,6 +337,7 @@ export function FullAssessment() {
             <div className="bar y mt8"><i style={{ width: `${(sittingAnswers.filter((answer) => answer > 0).length / 49) * 100}%` }} /></div>
             <p className="sub mt8">{ui.retakeNote}</p>
           </div>
+          <SaveStatus ui={ui} save={save} onRetry={retrySave} />
           <button className="btn primary block mt24" onClick={continueFromBreak}>{ui.breakResume(sittingIndex)}</button>
           <button className="btn ghost block mt12" onClick={exit}>{ui.breakLater}</button>
         </div>
@@ -343,6 +443,8 @@ export function FullAssessment() {
           <button className="btn ghost grow" onClick={exit}>{ui.exit}</button>
           <span className="chip">{answeredCount} / 147</span>
         </div>
+        <SaveStatus ui={ui} save={save} onRetry={retrySave} />
+        {legacyRetained && <p className="faint center mt8" role="status" style={{ fontSize: 12 }}>{ui.legacyRetained}</p>}
       </div>
     </div>
   );

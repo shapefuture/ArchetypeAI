@@ -157,7 +157,7 @@ Verdict: **reuse** (use as is), **adapt** (use with declared changes), **avoid**
 | --- | --- | --- | --- | --- |
 | Booking panel | `src/app/features/booking-panel/booking-panel.component.ts` (`shareConsent` `:64`; anonymous gate `:181`; `createBooking` `:185`) | parallel booking UI | adapt | Calls the same core (`booking.ts` re-export, `booking.ts:3`) |
 | Cabinet | `src/app/features/cabinet/cabinet.component.ts` (`myAppointments` `:143`; cancel `:164`) | parallel cancel UI | reuse core | |
-| Therapist panel | `src/app/features/therapist-panel/therapist-panel.component.ts` (`pendingAppts` `:113-116`; `decide` `:132-135`); `.html` (decisions `:52-58`; activation shown `:102-103`) | pending decisions; complex activation display | adapt | Shows constant activation (F19) |
+| Therapist panel | `src/app/features/therapist-panel/therapist-panel.component.ts` (`pendingAppts` `:113-116`; `decide` `:132-135`); `.html` (decisions `therapist-panel.component.html:52-58`; activation shown `therapist-panel.component.html:102-103`) | pending decisions; complex activation display | adapt | Shows constant activation (F19) |
 | Synastry panel and compare | `src/app/features/synastry-panel/*`, `src/app/features/synastry-compare/*` | pair results | adapt | Not traced in depth |
 | Angular user directory | `src/services/user-directory.service.ts` (`class` `:47`; cache `:59`; write `:102`) | duplicate of `core/user-directory.ts` | avoid | Second implementation of the same contract (F13) |
 | Angular therapist link | `src/app/core/data/therapist-link.ts:3` | re-export of the React module | reuse | Single implementation |

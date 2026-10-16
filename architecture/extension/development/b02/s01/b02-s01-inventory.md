@@ -424,5 +424,5 @@ Searches were run in this worktree at commit `09194df`. Word-boundary matches we
 | `deleteDoc`, `deleteUser` (`user-directory.ts`, `src/services/user-directory.service.ts`) | 0 hits | No in-app withdrawal of `publicProfiles` (F-01) |
 | `synastry(`, `synFromProfiles` call sites (React tree) | Definitions only; bridge imports the Angular engine under an alias | `code-seed-v1` has no React call site (F-07) |
 | `quiet` (`src/parts-cartographer`) | Sensory texture attribute (`app.jsx:376`) and copy | No social or discovery quiet mode |
-| `accessGranted` (`src/`, rules) | Rules `firestore.rules:389-405`; `booking.ts:60`, `:265`, `:389` | Stored but no authorization decision reads it (F-17) |
+| `accessGranted` (`src/`, rules) | Rules `firestore.rules:389-405`; `booking.ts:60`, `:265`, `:389` | Read by the appointment create rule (`firestore.rules:405`, which requires `accessGranted == true`). F-17 said no authorization decision reads it, and that was wrong |
 | `premium`, `isPremium` (`src/parts-cartographer`, `worker.ts`) | Client-side cached receipt (`billing.service.ts:12`, `:58`); no entitlement check in the AI handler as read | Entitlement is not server-enforced (F-14) |

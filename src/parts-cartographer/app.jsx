@@ -7,6 +7,7 @@ import { AI, ResilientAiAdapter } from './core/ai.adapter.ts';
 import { billing } from './core/billing.service.ts';
 import { telemetry } from './core/telemetry.ts';
 import { loadSensoryPreferences, saveSensoryPreferences, selectSensoryPreset, updateSensoryPreference } from './core/sensory-preferences.ts';
+import { ambience, bindAmbienceSignals } from './services/ambience-gate.ts';
 import { SEED_PARTS } from './pal/traits.ts';
 import { t as translate, STRINGS } from './i18n/strings.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
@@ -68,6 +69,7 @@ export default function App() {
   const [lang, setLang] = useState(() => store.load('ifs.lang', 'ru'));
   const [theme, setTheme] = useState(() => store.load('ifs.theme', 'light'));
   const [sensory, setSensory] = useState(() => loadSensoryPreferences());
+  const [sensoryStored, setSensoryStored] = useState(true); // false when the browser refused to save the last choice
   const [state, setState] = useState('loading'); // the @switch
   const [dockTab, setDockTab] = useState('base');
   const [user, setUser] = useState(() => auth.currentUser());
@@ -176,20 +178,26 @@ export default function App() {
     if (next) { store.save(KEYS.profile, next); store.archive(KEYS.history, next); }
     else store.remove(KEYS.profile);
   }, []);
-  const applySensoryPreset = useCallback((preset) => {
-    const next = selectSensoryPreset(preset);
+  // Presentation choices only: they never touch parts, profile, scores, or assessment drafts.
+  // A refused save keeps the choice active for this session and is reported by the settings screen.
+  const commitSensory = useCallback((next) => {
     setSensory(next);
-    saveSensoryPreferences(next);
+    setSensoryStored(saveSensoryPreferences(next));
   }, []);
-  const updateSensory = useCallback((key, value) => {
-    setSensory((current) => {
-      const next = updateSensoryPreference(current, key, value);
-      saveSensoryPreferences(next);
-      return next;
-    });
-  }, []);
+  const applySensoryPreset = useCallback((preset) => commitSensory(selectSensoryPreset(preset)), [commitSensory]);
+  const updateSensory = useCallback((key, value) => commitSensory(updateSensoryPreference(sensory, key, value)), [commitSensory, sensory]);
   useEffect(() => { import('./pal/sfx.ts').then((module) => module.setSfxEnabled(sensory.sound)); }, [sensory.sound]);
   useEffect(() => { uniRef.current?.setMotionMode(sensory.motion); }, [sensory.motion]);
+
+  /* ── ambience: rests while hidden, while text is typed, or while an error is shown ── */
+  useEffect(() => bindAmbienceSignals(document), []);
+  useEffect(() => {
+    const root = document.documentElement;
+    const sync = (active) => { root.dataset.ambience = active ? 'on' : 'paused'; };
+    sync(ambience.active);
+    return ambience.subscribe(sync);
+  }, []);
+  useEffect(() => { ambience.set('error', uniError || overlay === 'universe-fail'); }, [uniError, overlay]);
 
   const go = useCallback((next) => {
     setState(next);
@@ -245,7 +253,7 @@ export default function App() {
   const ctx = useMemo(() => ({
     lang, setLang: (l) => { setLang(l); store.save('ifs.lang', l); },
     theme, setTheme: (v) => { setTheme(v); store.save('ifs.theme', v); },
-    sensory, applySensoryPreset, updateSensory,
+    sensory, sensoryStored, applySensoryPreset, updateSensory,
     t, state, go, dockTab, setDockTab,
     user, setUser, premium, setPremiumOn: (v) => { setPremium(v); },
     parts, setParts, profile, setProfile,
@@ -259,7 +267,7 @@ export default function App() {
     openSky,
     universeMode, setUniverseMode,
     retryUniverse: () => { setUniError(false); enterUniverse(); },
-  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode, sensory, applySensoryPreset, updateSensory]);
+  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode, sensory, sensoryStored, applySensoryPreset, updateSensory]);
 
   /* ── universe host: outside the switch; renderer chunk on first entry ── */
   const enterUniverse = useCallback(async (isActive = () => true) => {

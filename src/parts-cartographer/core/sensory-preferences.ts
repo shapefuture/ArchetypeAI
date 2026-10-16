@@ -63,6 +63,11 @@ export function loadSensoryPreferences(storage = localStoragePort()): SensoryPre
   } catch { return { ...DEFAULT_SENSORY_PREFERENCES }; }
 }
 
-export function saveSensoryPreferences(preferences: SensoryPreferences, storage = localStoragePort()): void {
-  try { storage?.setItem(SENSORY_PREFERENCES_KEY, JSON.stringify(normalizeSensoryPreferences(preferences))); } catch { /* unavailable or full storage */ }
+/** Returns false when the choice could not be stored; the caller keeps it for this session only. */
+export function saveSensoryPreferences(preferences: SensoryPreferences, storage = localStoragePort()): boolean {
+  try {
+    if (!storage) return false;
+    storage.setItem(SENSORY_PREFERENCES_KEY, JSON.stringify(normalizeSensoryPreferences(preferences)));
+    return true;
+  } catch { return false; /* denied, unavailable, or full storage */ }
 }

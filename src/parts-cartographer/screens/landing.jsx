@@ -285,7 +285,7 @@ function SkyTab() {
 
 /* ── You ── */
 function YouTab() {
-  const { t, lang, setLang, theme, setTheme, sensory, applySensoryPreset, updateSensory, premium, setOverlay, user, go, toast, telemetry } = useApp();
+  const { t, lang, setLang, theme, setTheme, sensory, sensoryStored, applySensoryPreset, updateSensory, premium, setOverlay, user, go, toast, telemetry } = useApp();
   const [showData, setShowData] = useState(false);
   return (
     <div className="scroll">
@@ -337,6 +337,13 @@ function YouTab() {
 
       <div className="section-title">{t('sensorySettings')}</div>
       <p className="sub sensory-intro">{t('sensoryIntro')}</p>
+      {!sensoryStored && (
+        <p className="sub sensory-intro" role="status">
+          {lang === 'ru'
+            ? 'Этот браузер не может сохранить настройки. Они действуют только в этой сессии.'
+            : 'This browser cannot save these settings. They apply for this session only.'}
+        </p>
+      )}
       <div className="card sensory-card">
         <div className="sensory-label mb8">{t('sensoryPresets')}</div>
         <div role="group" aria-label={t('sensoryPresets')} className="seg sensory-segment">

@@ -9,7 +9,7 @@
  * bilingual UI-object pattern as descent-panel / therapist-panel).
  */
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { UserDirectoryService } from '../../../services/user-directory.service';

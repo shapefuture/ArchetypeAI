@@ -1,8 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { TranslationService } from './translation.service';
-import { IV_PARTS, loadLooks, type EyeKind, type IvPart, type MouthKind } from '../app/features/landing/stickers';
-import { UNIVERSE_PART_COPY, UNIVERSE_FAMILY_META } from '../i18n/strings';
-export type { PartUniverseCopy } from '../i18n/strings';
+import { IV_PARTS, loadLooks, type EyeKind, type IvPart, type MouthKind } from '../shared/features/landing/stickers';
+import { UNIVERSE_PART_COPY, UNIVERSE_FAMILY_META } from '../shared/i18n/strings';
+export type { PartUniverseCopy } from '../shared/i18n/strings';
 
 /**
  * Universe state + part data — the eager, dependency-light half of the old

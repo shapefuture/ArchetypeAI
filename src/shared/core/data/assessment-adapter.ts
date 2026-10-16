@@ -6,7 +6,7 @@
 import type { AssessmentInput } from './scoring-v2';
 import {
   buildItemSequence, VALIDITY_POSITIONS, type ItemRef,
-} from '../../../i18n/items';
+} from '../../i18n/items';
 import { SHADOW_PARTS, RESOURCES, type ShadowPartId, type ResourceId } from './parts';
 
 export const SOMATIC_ZONES = [

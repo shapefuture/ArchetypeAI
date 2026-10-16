@@ -1,9 +1,9 @@
-import { STRINGS } from '../../i18n/strings';
-import { PART_COPY, LAYERS } from '../../app/core/data/part-copy';
-import { RESOURCES, SELF_QUALITIES, SHADOW_PARTS } from '../../app/core/data/parts';
-import { constellationEssay, constellationName, resourceName, subtypeName, polarizationName, COMPLEX_COPY_RU } from '../../app/core/data/constellation-copy';
-import { COMPLEXES } from '../../app/core/data/parts';
-import type { ScoredProfile } from '../../app/core/data/scoring-v2';
+import { STRINGS } from '../../shared/i18n/strings';
+import { PART_COPY, LAYERS } from '../../shared/core/data/part-copy';
+import { RESOURCES, SELF_QUALITIES, SHADOW_PARTS } from '../../shared/core/data/parts';
+import { constellationEssay, constellationName, resourceName, subtypeName, polarizationName, COMPLEX_COPY_RU } from '../../shared/core/data/constellation-copy';
+import { COMPLEXES } from '../../shared/core/data/parts';
+import type { ScoredProfile } from '../../shared/core/data/scoring-v2';
 import type { Lang } from '../i18n/strings';
 
 export function clinicalAttachmentStyle(profile: ScoredProfile) {

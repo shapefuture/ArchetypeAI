@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AI, ResilientAiAdapter } from '../core/ai.adapter';
-import { parseReportMarkdown } from '../../app/features/results-panel/report-parser';
-import { STRINGS as SOURCE_STRINGS, TRANSLATIONS } from '../../i18n/strings';
+import { parseReportMarkdown } from '../../shared/features/results-panel/report-parser';
+import { STRINGS as SOURCE_STRINGS, TRANSLATIONS } from '../../shared/i18n/strings';
 import {
   applyLegacyAiAnalysis,
   buildLegacyAssessmentBackup,
   buildLegacyClinicalMarkdown,
 } from './legacy-report-data';
-import { ASSESSMENT_QUESTIONS } from '../../app/core/data/assessment-questions';
-import { negativePoleStrength, positivePoleStrength } from '../../app/core/data/scoring';
+import { ASSESSMENT_QUESTIONS } from '../../shared/core/data/assessment-questions';
+import { negativePoleStrength, positivePoleStrength } from '../../shared/core/data/scoring';
 
 const SECTION_COPY = {
   en: {

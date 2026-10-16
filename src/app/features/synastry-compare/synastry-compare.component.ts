@@ -5,11 +5,11 @@
  * pastes theirs back. Fully client-side, deterministic.
  */
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
-import { scoreProfile, type AssessmentInput } from '../../core/data/scoring-v2';
-import { synastry, toSynastryProfile, type SynastryProfile, type SynastryResult } from '../../core/data/synastry-v2';
+import { scoreProfile, type AssessmentInput } from '../../../shared/core/data/scoring-v2';
+import { synastry, toSynastryProfile, type SynastryProfile, type SynastryResult } from '../../../shared/core/data/synastry-v2';
 
 const PROFILE_KEY = 'INNERVERSE_PROFILE_V1';
 

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildItemSequence, type ItemRef } from '../../i18n/items';
-import { toAssessmentInput } from '../../app/core/data/assessment-adapter';
+import { buildItemSequence, type ItemRef } from '../../shared/i18n/items';
+import { toAssessmentInput } from '../../shared/core/data/assessment-adapter';
 import {
   DESCENT_DRAFT_KEY, DESCENT_DRAFT_SCHEMA, DESCENT_ITEM_IDS, LEGACY_DESCENT_DRAFT_KEY,
   UNREADABLE_DESCENT_DRAFT_PREFIX, completeRatings, discardLegacyDescentDraft, draftFromLegacy,

@@ -14,7 +14,7 @@ import {
   CONSTELLATION_RESOURCE_NAME_RU,
   COMPLEX_COPY_RU,
   CONSTELLATION_POLARIZATION_NAME_RU,
-} from '../../../i18n/strings';
+} from '../../i18n/strings';
 
 export type Lang = 'en' | 'ru';
 

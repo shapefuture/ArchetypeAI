@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { availablePractices } from './contextual-checkin.ts';
 import { CATALOG_EXERCISE_IDS, CATALOG_REVIEW, catalogLang, reviewedPractices } from './practice-catalog.ts';
-import { EXERCISES, EXERCISE_TYPES } from '../../app/core/data/exercises';
-import { EXERCISE_COPY } from '../../i18n/strings';
+import { EXERCISES, EXERCISE_TYPES } from '../../shared/core/data/exercises';
+import { EXERCISE_COPY } from '../../shared/i18n/strings';
 
 describe('reviewed practice catalog', () => {
   it('lists only self-serve (green) exercises, so no therapist or assessment gate applies', () => {

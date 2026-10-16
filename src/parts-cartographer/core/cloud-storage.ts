@@ -11,7 +11,7 @@ import {
   runTransaction,
 } from 'firebase/firestore';
 import { getFirestoreDb } from '../../environments/firebase-init';
-import { withResilience } from '../../app/core/adapters/resilience';
+import { withResilience } from '../../shared/core/adapters/resilience';
 import { validProfile } from './profile-contract';
 import { validMapParts } from './backup';
 import type { SynastryResult } from './synastry-v2';

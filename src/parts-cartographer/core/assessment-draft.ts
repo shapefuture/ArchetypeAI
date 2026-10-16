@@ -9,7 +9,7 @@
  *   offered for migration by an explicit user action, or discarded by one.
  * - There is no skip value. Every scored item needs a rating from 1 to 5.
  */
-import { buildItemSequence, type ItemRef } from '../../i18n/items';
+import { buildItemSequence, type ItemRef } from '../../shared/i18n/items';
 
 export const DESCENT_DRAFT_KEY = 'INNERVERSE_DESCENT_V2';
 export const LEGACY_DESCENT_DRAFT_KEY = 'INNERVERSE_DESCENT_V1';

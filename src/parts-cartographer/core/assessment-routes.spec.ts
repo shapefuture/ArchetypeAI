@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ASSESSMENT_QUESTIONS } from '../../app/core/data/assessment-questions';
-import { buildItemSequence } from '../../i18n/items';
+import { ASSESSMENT_QUESTIONS } from '../../shared/core/data/assessment-questions';
+import { buildItemSequence } from '../../shared/i18n/items';
 import { SEED_PARTS } from '../pal/traits';
 import { scoreSystem } from './scoring-v2';
 import {

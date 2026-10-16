@@ -4,8 +4,8 @@ import { SEED_PARTS, SHAPES, randomTraits, withCharacterSeed } from './traits';
 import { buildData } from '../../../felt-atelier/src/builder.js';
 import { feltHex } from '../../../felt-atelier/src/dna.js';
 import { adaptClinicalProfile } from '../core/clinical-profile-adapter';
-import { scoreProfile } from '../../app/core/data/scoring-v2';
-import { toAssessmentInput } from '../../app/core/data/assessment-adapter';
+import { scoreProfile } from '../../shared/core/data/scoring-v2';
+import { toAssessmentInput } from '../../shared/core/data/assessment-adapter';
 
 describe('merged Felt Atelier character bridge', () => {
   it('builds every assessment and saved seed character without invalid or missing geometry', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ASSESSMENT_QUESTIONS } from '../../app/core/data/assessment-questions';
+import { ASSESSMENT_QUESTIONS } from '../../shared/core/data/assessment-questions';
 import {
   applyLegacyAiAnalysis,
   buildLegacyAssessmentBackup,

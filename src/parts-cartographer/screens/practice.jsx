@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { store } from '../core/local-store';
 import { myAssignments } from '../core/therapist-link.ts';
-import { EXERCISES, EXERCISE_TYPES, chapterUnlocked, ladderRung, redAllowed, suggestExercise } from '../../app/core/data/exercises';
-import { selfServeGate, storeEvent } from '../../app/core/data/state-v2';
-import { STRINGS as SOURCE_STRINGS } from '../../i18n/strings';
+import { EXERCISES, EXERCISE_TYPES, chapterUnlocked, ladderRung, redAllowed, suggestExercise } from '../../shared/core/data/exercises';
+import { selfServeGate, storeEvent } from '../../shared/core/data/state-v2';
+import { STRINGS as SOURCE_STRINGS } from '../../shared/i18n/strings';
 import { PracticeToolkit } from './practice-toolkit.jsx';
 
 const PRACTICE_KEY = 'INNERVERSE_PRACTICE_V1';

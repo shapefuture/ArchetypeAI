@@ -14,9 +14,9 @@ import {
   unburdeningMoments,
   verdictLockActive,
   weatherLayer,
-} from '../../app/core/data/state-v2';
-import { COMPLEXES, SHADOW_PARTS } from '../../app/core/data/parts';
-import { COMPLEX_COPY_RU, STRINGS as SOURCE_STRINGS } from '../../i18n/strings';
+} from '../../shared/core/data/state-v2';
+import { COMPLEXES, SHADOW_PARTS } from '../../shared/core/data/parts';
+import { COMPLEX_COPY_RU, STRINGS as SOURCE_STRINGS } from '../../shared/i18n/strings';
 import { currentPushState, enablePushReminder, disablePushReminder } from '../core/push';
 import { ContextualCheckIn, SituationInquiry } from './checkin-toolkit.jsx';
 

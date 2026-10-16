@@ -10,9 +10,9 @@
  * synastry.ts, scoring.ts, translations.ts, universe-state.service.ts) are
  * thin shape-preserving adapters that import copy from this file.
  */
-import type { JitaiCardId } from '../app/core/data/state-v2';
-import type { Need, Tier } from '../app/core/data/parts';
-import type { FamKind } from '../app/features/landing/stickers';
+import type { JitaiCardId } from '../core/data/state-v2';
+import type { Need, Tier } from '../core/data/parts';
+import type { FamKind } from '../features/landing/stickers';
 
 // NOTE: deliberately NOT `as const` — components rely on widened `string`
 // property types (some use `typeof UI.ru & typeof UI.en` intersections).

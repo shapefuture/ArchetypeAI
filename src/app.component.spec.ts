@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ChangeDetectorRef, provideZonelessChangeDetection } from '@angular/core';
-import { flushLocal } from './app/core/data/local-store';
+import { flushLocal } from './shared/core/data/local-store';
 import { AppComponent } from './app.component';
 import { VisualizationService } from './services/webxr.service';
 import { GeminiService, ChatMessage } from './services/gemini.service';
@@ -1483,7 +1483,7 @@ describe('AppComponent — login modal i18n (regression guard)', () => {
   // Post-consolidation: the translations dict physically lives in strings.ts
   // (translations.ts is a thin re-export adapter). Scope to the TRANSLATIONS
   // export so the lazy `en:`/`ru:` regexes anchor to the right block.
-  const stringsTs = readFileSync(resolve(__dirname, 'i18n/strings.ts'), 'utf-8');
+  const stringsTs = readFileSync(resolve(__dirname, 'shared/i18n/strings.ts'), 'utf-8');
   const translationsTs = stringsTs.slice(stringsTs.indexOf('export const TRANSLATIONS'));
 
   // Extract the @if (isLoginModalOpen()) { ... } block.

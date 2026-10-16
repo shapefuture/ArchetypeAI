@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Firestore, doc, setDoc, getDoc, collection, addDoc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { StoragePort, AssessmentData, SynastrySavedReportData } from '../ports/storage.port';
-import { SynastryReport } from '../data/synastry';
+import { SynastryReport } from '../../../shared/core/data/synastry';
 import { getFirestoreDb } from '../../../environments/firebase-init';
-import { withResilience } from './resilience';
+import { withResilience } from '../../../shared/core/adapters/resilience';
 
 function generateShareCode(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';

@@ -6,8 +6,8 @@ import {
   type PartId,
   type ResourceId,
   type ShadowPartId,
-} from '../../app/core/data/parts';
-import type { ScoredProfile as ClinicalScore } from '../../app/core/data/scoring-v2';
+} from '../../shared/core/data/parts';
+import type { ScoredProfile as ClinicalScore } from '../../shared/core/data/scoring-v2';
 import {
   constellationEssay,
   constellationName,
@@ -15,12 +15,12 @@ import {
   resourceName,
   subtypeName,
   PART_NAME_RU,
-} from '../../app/core/data/constellation-copy';
-import { PART_COPY as CLINICAL_PART_COPY, COMPLEX_COPY_RU } from '../../i18n/strings';
+} from '../../shared/core/data/constellation-copy';
+import { PART_COPY as CLINICAL_PART_COPY, COMPLEX_COPY_RU } from '../../shared/i18n/strings';
 import { hashStr } from './ports';
 import { FAMILY_LABELS, SEED_PARTS, type Family, type Part } from '../pal/traits';
 import { SCORING_NAME_POOLS, type Lang } from '../i18n/strings';
-import { IV_PARTS } from '../../app/features/landing/stickers';
+import { IV_PARTS } from '../../shared/features/landing/stickers';
 
 const PART_NAME_EN: Record<string, string> = {
   taskmaster: 'Taskmaster',

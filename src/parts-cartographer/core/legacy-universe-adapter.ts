@@ -10,7 +10,7 @@ import {
   type Part,
   type Traits,
 } from '../pal/traits';
-import type { ScoredArchetype } from '../../app/core/data/scoring';
+import type { ScoredArchetype } from '../../shared/core/data/scoring';
 import type { LegacyAssessmentReport } from '../screens/legacy-report-data';
 import type { LegacyAiArchetype } from './legacy-ai-analysis';
 

@@ -10,7 +10,7 @@
  * Resources (6) and Self (8) are positively keyed. Behavioral, present-tense,
  * jargon-free. Same key order in both languages.
  */
-import { SHADOW_PARTS, RESOURCES, type ShadowPartId, type ResourceId } from '../app/core/data/parts';
+import { SHADOW_PARTS, RESOURCES, type ShadowPartId, type ResourceId } from '../core/data/parts';
 import { ITEM_TEXTS, LIKERT_TEXTS } from './strings';
 
 export const LIKERT = LIKERT_TEXTS;

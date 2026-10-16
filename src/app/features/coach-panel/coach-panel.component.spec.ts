@@ -22,7 +22,7 @@ const componentTs = readFileSync(resolve(COACH_DIR, 'coach-panel.component.ts'),
 // (translations.ts is a thin re-export adapter). Scope the read to the
 // TRANSLATIONS export — earlier sections in strings.ts also contain `en:`/
 // `ru:`/`coach:` blocks that would foil the lazy regexes below.
-const stringsTs = readFileSync(resolve(COACH_DIR, '../../../i18n/strings.ts'), 'utf-8');
+const stringsTs = readFileSync(resolve(COACH_DIR, '../../../shared/i18n/strings.ts'), 'utf-8');
 const translationsTs = stringsTs.slice(stringsTs.indexOf('export const TRANSLATIONS'));
 
 describe('CoachPanelComponent — i18n (no hardcoded English in template)', () => {

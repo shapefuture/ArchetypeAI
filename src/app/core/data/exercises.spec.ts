@@ -4,10 +4,10 @@ import {
   hasBehavioralHook, SELECTOR_PRIORITY, depthCap, allowedDepth, containerReady, redAllowed,
   ladderRung, integrated,
   type ChapterState,
-} from './exercises';
-import { SHADOW_PARTS, RESOURCES } from './parts';
-import { scoreProfile, type AssessmentInput } from './scoring-v2';
-import { selfServeGate } from './state-v2';
+} from '../../../shared/core/data/exercises';
+import { SHADOW_PARTS, RESOURCES } from '../../../shared/core/data/parts';
+import { scoreProfile, type AssessmentInput } from '../../../shared/core/data/scoring-v2';
+import { selfServeGate } from '../../../shared/core/data/state-v2';
 
 const all = (fill: number): AssessmentInput => {
   const shadow = {} as AssessmentInput['shadow'];

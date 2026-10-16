@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
 import type { DimensionalExpressions } from '../../../services/universe-state.service';
-import { SynastryReport } from '../data/synastry';
+import { SynastryReport } from '../../../shared/core/data/synastry';
 
 export interface AssessmentData {
   responses: number[];

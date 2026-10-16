@@ -4,8 +4,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { InnerverseReportComponent } from './innerverse-report.component';
 import { TranslationService } from '../../../services/translation.service';
-import { SHADOW_PARTS, RESOURCES } from '../../core/data/parts';
-import { scoreProfile, type AssessmentInput } from '../../core/data/scoring-v2';
+import { SHADOW_PARTS, RESOURCES } from '../../../shared/core/data/parts';
+import { scoreProfile, type AssessmentInput } from '../../../shared/core/data/scoring-v2';
 
 /** templateUrl component → class-level tests via injection context + template-file assertions. */
 const DIR = resolve(__dirname);

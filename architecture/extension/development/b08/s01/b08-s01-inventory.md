@@ -1,6 +1,6 @@
 # B08.S01 — Inventory: reviewed source and practice catalogue
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), "no review workflow" was false for AI suggestions. Round 2 at `b36bde2`: FAIL. The catalogue premise was overstated: the only HEAD gate is a constant, and no code checks a review record. The duplicate row was generic and is rewritten. Base note: `src/parts-cartographer/screens/suggestion-review.jsx` and `src/shared/core/data/constellations.ts` are HEAD paths under a 10d9608 header. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), "no review workflow" was false for AI suggestions. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The §1 finding said no practice library exists, which is wrong: `exercises.ts` and the `EXERCISE_COPY` step copy are practices. The catalogue commit is 4508d49 (71261d0 marked it draft). §§1-5 are corrected. Base note: `src/parts-cartographer/screens/suggestion-review.jsx` and `src/shared/core/data/constellations.ts` are HEAD paths under a 10d9608 header. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-z5qy` (B08.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -10,15 +10,15 @@
 
 ## 1. Finding
 
-No practice catalogue existed at the base 10d9608. The codebase has a catalogue of archetype and constellation content, and the i18n `STRINGS` catalogue, but neither holds practices or source references, and neither has a review workflow. HEAD adds `src/parts-cartographer/core/practice-catalog.ts` (commit 71261d0), whose one status constant `CATALOG_REVIEW.status` is set to `'draft'`. `availablePractices` in `src/parts-cartographer/core/contextual-checkin.ts:12` offers only entries whose status is `reviewed`. No code checks a review record; the gate depends on that constant.
+At base 10d9608 the codebase had a practice library but no practice catalogue with source references or review status. The library is `src/shared/core/data/exercises.ts` (base path `src/app/core/data/exercises.ts`), with step copy in `src/shared/i18n/strings.ts` (`EXERCISE_COPY`, 56 entries). Neither holds source references or a review record. HEAD adds `src/parts-cartographer/core/practice-catalog.ts`, created in commit 4508d49 and marked draft in 71261d0. It has one status constant, `CATALOG_REVIEW.status`, set to `'draft'`, and `availablePractices` in `src/parts-cartographer/core/contextual-checkin.ts:12` offers only entries whose status is `reviewed`. No code checks a review record.
 
 ## 2. Existing code and reuse
 
 | Area | Evidence (file:line) | Status |
 |---|---|---|
 | Archetype and constellation content | `src/shared/core/data/constellations.ts` | Authored archetype content. Not practices. Reusable as the pattern for an authored catalogue. |
-| Localised string catalogue | `src/parts-cartographer/i18n/strings.ts` | Copy catalogue. Not a practice or source catalogue. |
-| Practice catalogue | none | Absent. |
+| Localised string catalogue | `src/parts-cartographer/i18n/strings.ts` | Copy catalogue. Includes exercise step copy (`EXERCISE_COPY`, `src/shared/i18n/strings.ts`), but no source references. |
+| Practice library | `src/shared/core/data/exercises.ts` (base `src/app/core/data/exercises.ts`) | Present at base: exercises with steps. No source references and no review record. |
 | Source references with review status | none | Absent. |
 
 **Reuse packages named by the task.** The planning documents define these codes inconsistently across streams (the B01 inventory recorded the same ambiguity). Each code is an unresolved reuse claim until the coordinator confirms its mapping.
@@ -35,17 +35,17 @@ No practice catalogue existed at the base 10d9608. The codebase has a catalogue 
 
 ## 4. Scenario matrix (planned, not exercised)
 
-Each row is planned behaviour for the reviewed practice catalogue. The only HEAD gate is the draft constant in `src/parts-cartographer/core/practice-catalog.ts`, read by the status filter in `availablePractices` (`src/parts-cartographer/core/contextual-checkin.ts:12`). No code checks a review record.
+Each row is planned behaviour for the reviewed practice catalogue. The HEAD gate is the draft constant in `src/parts-cartographer/core/practice-catalog.ts`, read by the status filter in `availablePractices` (`src/parts-cartographer/core/contextual-checkin.ts:12`).
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
-| Normal grant | A practice is offered only when its review status is `reviewed` and the person has opted into practices. Drafts are never offered. | No |
-| Denied grant | A practice whose status is not `reviewed` is filtered out by `availablePractices`. The person sees no practice and no hint that one is pending. | No |
-| Stale contract | A catalogue entry from an older schema that lacks source references is shown as unreviewed, never as reviewed. | No |
-| Account change | A review decision is attributed to the reviewer's account. Changing the reviewer does not alter an earlier decision. | No |
-| Deleted source | When a cited source is withdrawn, dependent practices return to draft and are hidden. | No |
+| Normal grant | A practice is offered only when `availablePractices` finds its status `reviewed`. Every entry in `practice-catalog.ts` is `draft` today, so none is offered. | No |
+| Denied grant | A draft entry is filtered out by `availablePractices`. The person sees the empty state already in `src/parts-cartographer/screens/checkin-toolkit.jsx` ("No reviewed practices are available yet"), with no hint that one is pending. | No |
+| Stale contract | An entry from an older schema without a `status` field fails the filter and is hidden. It is never treated as reviewed. This follows from the filter's code and has no test. | No |
+| Account change | The status is a constant in source, not per account, so an account change cannot alter it. A planned review decision would store the reviewer's uid. | No |
+| Deleted source | The catalogue has no source-reference field (`practice-catalog.ts`, entries are `{ id, title, status, requires, steps }`), so nothing depends on a source today. A planned source withdrawal would return dependent entries to draft. | No |
 | Duplicate or cancelled operation | Setting the same status twice has no further effect. The planned review record would keep one decision per reviewer and version. A cancelled review leaves `CATALOG_REVIEW.status` unchanged. | No |
-| Offline or quiet alternative | The catalogue is bundled with the app, so reviewed practices work offline. A missing review never blocks core navigation. | No |
+| Offline or quiet alternative | The catalogue is a bundled constant in `practice-catalog.ts`, so it works offline. A missing review never blocks core navigation: the check-in toolkit shows its empty state. | No |
 
 ## 5. Six compatibility dimensions for `reviewed source and practice catalogue`
 
@@ -53,12 +53,13 @@ The plan's fixture task names six dimensions: **interface, state, effects, opera
 
 | Dimension | Planned case for `reviewed source and practice catalogue` | Exercised today |
 |---|---|---|
-| Interface | The practice list shows only reviewed entries. With none, it shows the honest empty state already used in the check-in toolkit. | No |
-| State | Each entry carries a schema version, its source references and its review record. Unknown fields are kept. | No |
-| Effects | Publishing a reviewed practice is one write keyed by entry id and review version. Republishing the same version is a no-op. | No |
-| Operations | A published practice can be returned to draft in one step, and the change is recorded. | No |
-| Performance | The catalogue loads once per session, and lookups are by id. | No |
-| Failure | A malformed entry is dropped with a logged reason, and the rest of the list still renders. | No |
+| Interface | The practice list shows only reviewed entries (`availablePractices`). With none, it shows the empty state in `checkin-toolkit.jsx`. | No |
+| State | Each entry would also carry source references and its review record (planned). Today the entry shape is `{ id, title, status, requires, steps }` (`practice-catalog.ts:49`). | No |
+| Effects | Publishing a reviewed practice would be one write keyed by entry id and review version (planned). None exists. | No |
+| Operations | Returning a practice to draft would be one recorded step (planned). Today the status is one constant, so changing it changes every entry at once. | No |
+| Performance | `practice-catalog.ts` builds its entries in one function and makes no network reads. The list is bounded by the size of the bundled text. | No |
+| Failure | A malformed entry is not validated today. The planned rule is to drop it with a logged reason while the rest of the list renders. | No |
+
 
 ## 6. Source provenance
 

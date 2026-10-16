@@ -10,6 +10,7 @@ import { loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
 import { EntryPanel } from './elevation/e02-entry.jsx';
+import { CapacityPanel } from './elevation/e03-capacity.jsx';
 import { MemoryPanel } from './memory-panel.jsx';
 import { SharedSupportPanel } from './shared-support.jsx';
 import { ReminderSettings } from './reminder-settings.jsx';
@@ -266,6 +267,7 @@ export function Cabinet() {
           ))}
         </div>
         <EntryPanel />
+        <CapacityPanel />
         <MemoryPanel />
         <SharedSupportPanel />
         <ReminderSettings />

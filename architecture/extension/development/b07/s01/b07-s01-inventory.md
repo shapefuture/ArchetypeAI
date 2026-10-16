@@ -1,8 +1,6 @@
 # B07.S01 — Inventory: authored presentation and creative continuity
 
-> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL (minor)**: "only continuity code" omitted the draft-backup resume. Corrected. Status is still **candidate, not accepted**.
->
-> - Scenario rows in §4 and §5 were rewritten with feature-specific planned behaviour in a follow-up pass. They are still planned and not exercised, and need re-review.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the continuity search omitted the draft-backup resume. Round 2 at `b36bde2`: FAIL (minor). The denied, duplicate and offline rows were still generic. They now name the nearest existing mechanism (the assessment draft). Base note: `src/shared/core/data/parts.ts` is a HEAD path; it was `src/app/core/data/parts.ts` at base 10d9608. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-h13n` (B07.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -41,12 +39,12 @@ Each row is planned behaviour for the creative workspace. None exists today. The
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
 | Normal grant | An authored presentation is visible to others only after its owner chooses to share it. Continuity restores the owner's own work on the owner's device. | No |
-| Denied grant | A share to a recipient without a grant is refused. The presentation stays private, and the owner sees the reason. | No |
+| Denied grant | Sharing does not exist yet. The nearest refusal is the assessment draft's copy-aside path (`src/parts-cartographer/core/assessment-draft.ts:156`), which refuses to overwrite an unreadable draft. A planned share would be refused by a rule keyed to the recipient's grant. | No |
 | Stale contract | A presentation saved under an older layout schema opens read-only with its original fields kept. It is not re-laid-out silently. | No |
 | Account change | A continuity record belongs to the uid that created it. Another account on the same device sees no prior work. Device-local sensory settings stay per device. | No |
 | Deleted source | Deleting a presentation removes its shares. A continuity banner for a deleted draft disappears on the next open rather than showing an empty page. | No |
-| Duplicate or cancelled operation | A double save writes one version. Cancelling an edit leaves the last saved version intact. | No |
-| Offline or quiet alternative | Drafts save locally with no network. Continuity works on one device with no share. The feature can be ignored, and the assessment flow is unaffected. | No |
+| Duplicate or cancelled operation | The assessment draft writes one key (`DESCENT_DRAFT_KEY`), so a repeated save overwrites rather than appends. The planned workspace would key versions by revision number, so a repeated save writes one version. A cancelled edit leaves the last saved version intact. | No |
+| Offline or quiet alternative | The assessment draft is device-local under `DESCENT_DRAFT_KEY` and resumes with no network. The planned workspace would do the same and stay optional; the assessment flow is unaffected. | No |
 
 ## 5. Six compatibility dimensions for `authored presentation and creative continuity`
 

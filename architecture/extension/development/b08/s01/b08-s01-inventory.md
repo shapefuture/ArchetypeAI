@@ -1,8 +1,6 @@
 # B08.S01 — Inventory: reviewed source and practice catalogue
 
-> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL (minor)**: "no review workflow" is false for AI suggestions. Corrected. Status is still **candidate, not accepted**.
->
-> - Scenario rows in §4 and §5 were rewritten with feature-specific planned behaviour in a follow-up pass. They are still planned and not exercised, and need re-review.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), "no review workflow" was false for AI suggestions. Round 2 at `b36bde2`: FAIL. The catalogue premise was overstated: the only HEAD gate is a constant, and no code checks a review record. The duplicate row was generic and is rewritten. Base note: `src/parts-cartographer/screens/suggestion-review.jsx` and `src/shared/core/data/constellations.ts` are HEAD paths under a 10d9608 header. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-z5qy` (B08.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -12,7 +10,7 @@
 
 ## 1. Finding
 
-No practice catalogue existed at the base 10d9608. The codebase has a catalogue of archetype and constellation content, and the i18n `STRINGS` catalogue, but neither holds practices or source references, and neither has a review workflow. HEAD adds `src/parts-cartographer/core/practice-catalog.ts` (commit 71261d0) with one review gate, set to draft, so no practice is offered until a review record exists.
+No practice catalogue existed at the base 10d9608. The codebase has a catalogue of archetype and constellation content, and the i18n `STRINGS` catalogue, but neither holds practices or source references, and neither has a review workflow. HEAD adds `src/parts-cartographer/core/practice-catalog.ts` (commit 71261d0), whose one status constant `CATALOG_REVIEW.status` is set to `'draft'`. `availablePractices` in `src/parts-cartographer/core/contextual-checkin.ts:12` offers only entries whose status is `reviewed`. No code checks a review record; the gate depends on that constant.
 
 ## 2. Existing code and reuse
 
@@ -37,16 +35,16 @@ No practice catalogue existed at the base 10d9608. The codebase has a catalogue 
 
 ## 4. Scenario matrix (planned, not exercised)
 
-Each row is planned behaviour for the reviewed practice catalogue. The only HEAD code is the draft gate in `src/parts-cartographer/core/practice-catalog.ts`, which offers no practice until a review record exists.
+Each row is planned behaviour for the reviewed practice catalogue. The only HEAD gate is the draft constant in `src/parts-cartographer/core/practice-catalog.ts`, read by the status filter in `availablePractices` (`src/parts-cartographer/core/contextual-checkin.ts:12`). No code checks a review record.
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
 | Normal grant | A practice is offered only when its review status is `reviewed` and the person has opted into practices. Drafts are never offered. | No |
-| Denied grant | A practice without a review record is refused by the catalogue gate. The person sees no practice and no hint that one is pending. | No |
+| Denied grant | A practice whose status is not `reviewed` is filtered out by `availablePractices`. The person sees no practice and no hint that one is pending. | No |
 | Stale contract | A catalogue entry from an older schema that lacks source references is shown as unreviewed, never as reviewed. | No |
 | Account change | A review decision is attributed to the reviewer's account. Changing the reviewer does not alter an earlier decision. | No |
 | Deleted source | When a cited source is withdrawn, dependent practices return to draft and are hidden. | No |
-| Duplicate or cancelled operation | A repeated approval records one decision. A cancelled review leaves the entry at its prior status. | No |
+| Duplicate or cancelled operation | Setting the same status twice has no further effect. The planned review record would keep one decision per reviewer and version. A cancelled review leaves `CATALOG_REVIEW.status` unchanged. | No |
 | Offline or quiet alternative | The catalogue is bundled with the app, so reviewed practices work offline. A missing review never blocks core navigation. | No |
 
 ## 5. Six compatibility dimensions for `reviewed source and practice catalogue`

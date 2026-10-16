@@ -1,8 +1,6 @@
 # B10.S01 — Inventory: personal meaning, context and accommodations
 
-> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because "no personal meaning notes" is false at HEAD. Corrected. Status is still **candidate, not accepted**.
->
-> - Scenario rows in §4 and §5 were rewritten with feature-specific planned behaviour in a follow-up pass. They are still planned and not exercised, and need re-review.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because "no personal meaning notes" is false at HEAD. Round 2 at `b36bde2`: FAIL. The deletion row said `deleteWithDerived` removes shares, which is false: it removes derived memories, and the module has no share concept. The denied and duplicate rows were generic and are rewritten. Base note: `src/parts-cartographer/core/personal-memory.ts` and `src/parts-cartographer/screens/memory-panel.jsx` are HEAD paths (commit 3670a3a), not present at base 10d9608. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-cpfa` (B10.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -43,11 +41,11 @@ Each row is planned behaviour for personal meaning notes and context. HEAD has a
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
 | Normal grant | A meaning note is visible only to its author. It reaches a therapist or another person only through a per-share grant. | No |
-| Denied grant | A share without the grant is refused. The author sees the refusal, and nothing is sent. | No |
+| Denied grant | No share concept exists in the module or the memory panel, so nothing can be shared today. A planned share would be refused by a server rule unless a per-share grant document exists for that note. | No |
 | Stale contract | A memory record from the HEAD module that lacks a meaning-note type is read as an ordinary memory and is not reinterpreted as a meaning note. | No |
 | Account change | Meaning notes and context records belong to the uid that created them. Sign-out clears in-memory views. | No |
-| Deleted source | Deleting a note uses the existing `deleteWithDerived` path, which removes derived suggestions, and it removes any shares. | No |
-| Duplicate or cancelled operation | A double submit of a note creates one entry. A cancelled edit keeps the prior text. | No |
+| Deleted source | Deleting a note uses the existing `deleteWithDerived` path (`src/parts-cartographer/core/personal-memory.ts:23-36`), which removes the derived memories. The module has no share concept, so nothing else is removed. | No |
+| Duplicate or cancelled operation | `addMemory` returns null when it refuses a memory, so a rejected submit adds nothing. A cancelled edit leaves the stored memory unchanged. | No |
 | Offline or quiet alternative | Notes are stored locally and are optional. Accommodations (sensory and reduced-motion preferences) work with no note. | No |
 
 ## 5. Six compatibility dimensions for `personal meaning, context and accommodations`

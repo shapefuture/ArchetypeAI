@@ -1,6 +1,6 @@
 # B06.S01 — Inventory: optional practical progression and quests
 
-> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL (minor)**: the search list missed UI `badge` hits. Corrected. Status is still **candidate, not accepted**.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), search list missed UI `badge` hits. Round 2 at `b36bde2`: FAIL (material). §1 said no progression exists, which is false: artifact progression with chosen rewards (9df2be4) and transfer guidance progression exist at HEAD. §§1-5 were rewritten from the code. Status is still **candidate, not accepted**; re-review is required.
 >
 > - Base note: `src/shared/features/landing/stickers.ts:223` is a HEAD path; the file was under `src/app/` at base 10d9608.
 
@@ -12,16 +12,22 @@
 
 ## 1. Finding in one paragraph
 
-The codebase contains **no** quest, reward-event, skill-graph, progression-repertoire or practice-progression implementation. A whole-word search of `src/` (non-spec) for `quest`, `quests`, `reward`, `rewards`, `progression`, `repertoire`, `achievement`, `achievements` and `badge` finds only: an event-type label `achievement` in the check-in panel, sticker/character rendering (which is identity, not progression), and a `badge` label in the practice panel UI (`src/app/features/practice-panel/practice-panel.component.html:15`, not progression). Therefore this slice is a **gap statement plus a reuse map**, not a reconciliation of existing behaviour. Nothing here should be read as evidence that progression exists or works.
+At the base commit 10d9608 there was no progression, reward, quest or skill-graph code. Two optional progression mechanisms were added after the base, and both are present at HEAD:
+
+- **Artifact progression with user-chosen rewards** (`src/parts-cartographer/core/artifact-progression.ts`, added in commit 9df2be4). Progress counts the artifacts a person keeps and their revisions. A reward is chosen by the person from their own list and never locks or unlocks anything. The state is stored in the practice toolkit under `INNERVERSE_TOOLKIT_V1` (`src/parts-cartographer/screens/practice-toolkit.jsx:22`, normalised at `:370`), and the toolkit is mounted in the practice screen (`src/parts-cartographer/screens/practice.jsx:330`).
+- **Guidance progression for transfer** (`src/parts-cartographer/elevation/e08-transfer.ts`, `progressAfter`). After an unaided recall, one lighter help step is suggested, and nothing changes until the person chooses. It is mounted in the practice screen (`src/parts-cartographer/screens/practice.jsx:327`).
+
+No quest, skill graph, repertoire or shared quest state exists. Optional rewards that would change formal measurement are absent by design (the 64/147 provenance). This inventory therefore reconciles two existing mechanisms against the B06 scope and records what is still missing. It is not evidence that progression helps anyone.
 
 ## 2. Existing code and what can be reused
 
 | Area | Evidence (file:line) | Status for B06 |
 |---|---|---|
+| Artifact progression model | `src/parts-cartographer/core/artifact-progression.ts` (`progressFor`, `revise`, `chooseReward`, `isEssentialLocked`) | Present at HEAD (9df2be4, after base). Reusable as the progression model. Essentials are never locked (`isEssentialLocked` returns false). |
+| Guidance progression | `src/parts-cartographer/elevation/e08-transfer.ts` (`progressAfter`) | Present at HEAD. One lighter help step after an unaided recall. No points. |
+| Practice toolkit storage | `src/parts-cartographer/screens/practice-toolkit.jsx:22` (`TOOLKIT_KEY`), `:370` (`normalizeToolkit`) | Stores `artifacts`, `rewardOptions` and `rewardChoice` alongside cards, outcomes and reviews. Device-local. |
 | Event-type label `achievement` | `src/app/features/checkin-panel/checkin-panel.component.ts:156` | Label only. Not a reward event; no points, unlocks or state. |
-| Storage port | `src/parts-cartographer/core/ports.ts:15` (`STORAGE_PORT`) and `src/parts-cartographer/core/local-store.ts:15` (`store`) | Reusable for device-local progression state, if B06 chooses device-local storage. |
-| Store keys | `src/parts-cartographer/core/local-store.ts:56` (`KEYS`) | No progression key exists. A new key would be a new contract. |
-| AI and billing ports | `src/parts-cartographer/core/ports.ts:24` (`AI_PORT`), `:35` (`BILLING_PORT`) | Not progression; listed so the coordinator does not treat them as reusable progression surfaces. |
+| Storage port | `src/parts-cartographer/core/ports.ts:15`, `src/parts-cartographer/core/local-store.ts:15` (`store`) | Reusable for device-local state. |
 | Part identity and stickers | `src/shared/features/landing/stickers.ts:223` (`sticker`) | Identity rendering. Not progression. |
 
 **Reuse packages (`C02`, `C08`).** The task metadata names them, but the planning documents do not define them consistently. The B01 inventory recorded the same ambiguity. This inventory does not resolve it. Until the coordinator confirms the mapping, `C02` and `C08` are unmapped reuse claims, not verified reuse.
@@ -30,42 +36,43 @@ The codebase contains **no** quest, reward-event, skill-graph, progression-reper
 
 | Kind | Item | Existing? | Notes |
 |---|---|---|---|
+| State | Artifact count and revisions | Yes at HEAD | `progressFor` and `revise`, stored in the practice toolkit. |
+| State | Optional reward choice | Yes at HEAD | `chooseReward` accepts only an option the person chose. |
+| State | Guidance level for transfer | Yes at HEAD | `progressAfter` suggests one lighter step; the person chooses. |
 | State | Skill DAG and node completion | No | Would need a versioned schema and a migration rule. |
-| State | Evidence label per practice (observed / self-report / model inference) | No | Must keep the user's own evidence distinct from model output. |
-| State | Optional reward events | No | Must never change formal measurement scores (`64/147` provenance). |
 | State | Shared quest state | No | Multi-party state. Needs consent and recipient rules. |
-| State | User-chosen route | No | Route choice must be stored as user intent, not inferred. |
-| Effect | Award on completion | No | Would be a write effect. Needs duplicate-award protection. |
+| State | User-chosen route, separate from the goal | No | The E01 goal is the nearest user-chosen record. A separate route is absent. |
+| Effect | Award on completion | No | Rewards are never awarded automatically. Revisions only add. |
 | Effect | Notify on reward | No | Depends on the notification policy (B05). Not reused here. |
-| Component | Progression panel | No | No screen exists. |
-| Component | Quest chooser | No | No screen exists. |
+| Component | Progression view | Partly | The Artifacts tab of the practice toolkit. No dedicated progression screen. |
 
-## 4. Scenario matrix (specified, not exercised)
+## 4. Scenario matrix (planned, not exercised)
 
-Each scenario is required by the acceptance criteria. Every cell is a planned expectation, not an observed result.
+Each row describes how the existing progression mechanisms behave, or how they must behave for the B06 scope. Rows marked "gap" are not implemented.
 
-| Scenario | Expected behaviour for B06 | Exercised today |
+| Scenario | Expected behaviour (planned or existing) | Exercised today |
 |---|---|---|
-| Normal grant | Choosing a route records intent; progress advances only on verified completion | No |
-| Denied grant | A denied permission leaves progress unchanged and says so | No |
-| Stale contract | An older progression schema is read as legacy, never silently reinterpreted | No |
-| Account change | Progression is scoped to the account that earned it | No |
-| Deleted source | Removing the source practice keeps history and marks the reward as orphaned | No |
-| Duplicate or cancelled operation | A repeated completion awards once; a cancelled quest awards nothing | No |
-| Offline or quiet alternative | Progression stays optional and can be ignored without penalty | No |
+| Normal grant | Progress advances only when the person saves an artifact or revises one they kept. Opening the screen advances nothing. | Module tests only |
+| Denied grant | `chooseReward` refuses an id outside the person's own list, or any option not marked as chosen by the user, and returns null. | Module tests only |
+| Stale contract | A toolkit record without an `artifacts` field normalises to an empty list. It never shows as progress. | No |
+| Account change | Gap: artifacts and rewards live under one device-local key, so a second account on the same device sees the same list. Progression is not account-scoped. | No |
+| Deleted source | Progress is recomputed from the stored list, so removing an artifact lowers the count. The UI delete path was not verified in this pass. | No |
+| Duplicate or cancelled operation | Revising twice adds two revisions (by design). A cancelled save writes nothing. | No |
+| Offline or quiet alternative | Progress is local and works offline. No notification is sent. Progress never blocks an essential. | No |
 
 ## 5. Six compatibility dimensions for `progression.repertoire`
 
-The plan's fixture task (`B01.S04` in the same graph) names the six dimensions: **interface, state, effects, operations, performance and failure**, each with positive and denied cases. B06 must cover the same six. None is implemented.
+The plan's fixture task names six dimensions: **interface, state, effects, operations, performance and failure**, each with positive and denied cases.
 
-| Dimension | Planned case | Exercised today |
+| Dimension | Planned or existing case for `progression.repertoire` | Exercised today |
 |---|---|---|
-| Interface | Optional progression screens do not block core navigation | No |
-| State | Progress schema versioned; legacy reads explicit | No |
-| Effects | Reward writes are idempotent | No |
-| Operations | Route choice and quest start are reversible | No |
-| Performance | Progression lists stay bounded on large histories | No |
-| Failure | Storage refusal reports the failure and keeps prior progress | No |
+| Interface | The Artifacts tab is one of four toolkit tabs. The core practice screen does not depend on it. | No |
+| State | Progress is derived from the stored artifacts rather than stored separately. Revisions only add (`revise` keeps every artifact). | Module tests only |
+| Effects | Reading progress writes nothing. Saving an artifact is one local write. | No |
+| Operations | Revising is additive and cannot remove an artifact. Choosing another reward replaces the earlier choice. | No |
+| Performance | Progress is linear in the number of artifacts. There is no pagination, so long lists are an untested bound. | No |
+| Failure | `normalizeToolkit` falls back to empty fields for malformed input. Whether the corrupt original is copied aside before a save was not verified. | No |
+
 
 ## 6. Source provenance
 

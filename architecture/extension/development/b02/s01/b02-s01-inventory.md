@@ -1,9 +1,8 @@
 # B02.S01 inventory: current ownership and actual reuse for opt-in explainable matching
 
-> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because the consent-seam absence is false at HEAD and the eligibility search overstated. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL. Round 2 at `b36bde2`: FAIL (minor). The consent-seam and eligibility corrections are accurate. The provenance-store sentence was not base-qualified and is now corrected. Status is still **candidate, not accepted**; re-review is required.
 >
-> - Base note: citations to `src/shared/...` or `src/parts-cartographer/...` paths are HEAD paths that did not exist at base 09194df.
-> - Not corrected in this pass: other overbroad "decline" and "block" wording was not rechecked line by line.
+> - Base note: citations to `src/shared/...` or `src/parts-cartographer/...` paths that moved are HEAD paths (rename map `09194df..HEAD`).
 
 **Status: candidate awaiting independent review. This is not an acceptance claim.**
 No participant, device, live-account, community, practitioner or independent-review evidence exists for this artifact. Those items are listed as pending in section 9.
@@ -63,7 +62,7 @@ The coordinator should confirm the intended referent before S02 is dispatched (F
   - therapist consent text (`core/therapist-link.ts:201`);
   - reminder opt-in (`core/push.ts:32-84`).
 
-  No consent record type, version, provenance store, withdrawal log or shared consent check was found. The status is planning-only.
+  At base 09194df no consent record type, version, provenance store, withdrawal log or shared consent check was found. At HEAD `src/parts-cartographer/core/personal-memory.ts` adds memory provenance (`source`, `derivedFrom`) but still no consent record type, withdrawal log or shared consent check. The status is planning-only.
 
 ### 3.3 Creative-commons C01 and C08 are not implemented
 

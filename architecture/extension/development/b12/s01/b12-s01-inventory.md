@@ -1,8 +1,6 @@
 # B12.S01 inventory: current ownership and actual reuse for community.inquiry
 
-> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because the personal-memory and "inquiry" absence claims are false at HEAD, and the deletion survey omitted one client delete. Corrected. Status is still **candidate, not accepted**.
->
-> - Not corrected in this pass: the §10.1 wording on personal memory was not checked, and the checker results depend on scripts outside the repository.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the deletion-survey omission. Round 2 at `b36bde2`: FAIL (minor). R-9 still said the consent.provenance module was absent, which is true only at base. It is now qualified. Base note: several citations, including `src/parts-cartographer/core/personal-memory.ts`, are HEAD paths. Not re-verified: the checker results, which depend on scripts outside the repository. Status is still **candidate, not accepted**; re-review is required.
 
 **Status: candidate awaiting independent review.** This is a document-only inventory. It is not an acceptance claim and does not show that any B12 feature exists or works. No participant, device, live-account, community, tradition or practitioner evidence was collected or implied.
 
@@ -177,7 +175,7 @@ Effect classes follow the AAA V7 source, section 9 (`docs/plans/references/AAA-V
 | R-6 Public discovery by chosen fields | CMP-04 allowlist; CMP-16 summary | Pattern | The public identity directory (CMP-15) must not be used |
 | R-7 Server-side recipient authority | Rules for `shareCodes`, `therapistLinks`, `clientShares` | Pattern | Bearer codes; anonymous principals (H7); no expiry; no revocation cascade |
 | R-8 Quiet and declined paths without social debt | CMP-13 quiet presets; CMP-20 offline fallback; CMP-09 advisory flags | Partial | No social path exists; pause logic is dormant (H10) |
-| R-9 Source and provenance | CMP-03 legacy `source` field (`cloud-storage.ts` L26); CMP-06 `shareCodeUsed`; CMP-16 | Partial | No lineage model for contributions; the consent.provenance module is absent (H1) |
+| R-9 Source and provenance | CMP-03 legacy `source` field (`cloud-storage.ts` L26); CMP-06 `shareCodeUsed`; CMP-16 | Partial | No lineage model for contributions; the consent.provenance module was absent at base 09194df (H1) and is added at HEAD (3670a3a) |
 
 ## 7. Scenario matrix
 

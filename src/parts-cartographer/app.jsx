@@ -22,9 +22,20 @@ const BackupRestore = lazy(() => import('./screens/backup-restore.jsx').then((mo
 import { Innerverse, SpecialistView } from './screens/innerverse.jsx';
 import { Coach, Help, InstallPrompt, SynastryOv, Therapist, Login, MapGate, Paywall, UniverseFail, Journal, Share, Booking } from './overlays.jsx';
 import { PartSheet, PartEditor, Chemistry, CharterSheet } from './screens/cabinet.jsx';
+import { RouteBoundary, RouteFrame } from './ui/route-boundary.jsx';
+import { resolveBootRoute, withoutDeepLink } from './core/boot.ts';
 
 const AppCtx = createContext(null);
 export const useApp = () => useContext(AppCtx);
+
+/* Clears only the deep-link parameter; called once the requested screen has rendered. */
+function settleDeepLink() {
+  try {
+    const current = `${location.pathname}${location.search}${location.hash}`;
+    const next = withoutDeepLink(current);
+    if (next !== current) history.replaceState(history.state, '', next);
+  } catch { /* URL cleanup is best-effort */ }
+}
 
 async function restoreCanonicalProfile(lang) {
   if (store.load(KEYS.profile, null)) return null;
@@ -187,29 +198,19 @@ export default function App() {
     if (next !== 'universe' && uniRef.current) uniRef.current.sleep();
   }, []);
 
-  /* ── boot: loading → onboarding | intro (auto ~4.2s) ── */
+  /* ── boot: local-first. The route comes from the URL and local onboarding state in the
+     same tick the shell mounts; there is no timed wait. Cloud/auth connects in the background
+     and never gates navigation, including offline. The deep link stays in the URL until its
+     screen has rendered, so a failed route chunk can still be retried. ── */
+  const [bootRoute] = useState(() => resolveBootRoute(location.search, Boolean(store.load(KEYS.onboarded, false))));
+  const authStarted = useRef(false);
   useEffect(() => {
-    let active = true;
-    const bootAt = setTimeout(() => {
-      // Local navigation remains available while Firebase connects, including offline.
-      auth.anonymousBootstrap().then((u) => { if (active) setUser(u); });
-      const seen = store.load(KEYS.onboarded, false);
-      setState(seen ? 'intro' : 'onboarding');
-      // PWA shortcut deep-links (?go=assessment | ?go=checkin)
-      try {
-        const q = new URLSearchParams(location.search).get('go');
-        if (q) {
-          if (q === 'assessment') setState('full-assessment');
-          else if (q === 'quick-assessment') setState('assessment');
-          else if (q === 'legacy-assessment') setState('legacy-assessment');
-          else if (q === 'checkin') setOverlay('checkin');
-          else if (q === 'universe') setState('universe');
-          history.replaceState(null, '', location.pathname);
-        }
-      } catch { /* */ }
-    }, 4200);
-    return () => { active = false; clearTimeout(bootAt); };
-  }, []);
+    setState(bootRoute.screen);
+    if (bootRoute.overlay) setOverlay(bootRoute.overlay);
+    if (authStarted.current) return;
+    authStarted.current = true;
+    auth.anonymousBootstrap().then((u) => setUser(u));
+  }, [bootRoute]);
 
   /* ── PWA install prompt (auto-opens once/week after 9s on intro) ── */
   useEffect(() => {
@@ -317,8 +318,8 @@ export default function App() {
       case 'intro': return <Intro />;
       case 'cabinet': return <Cabinet />;
       case 'assessment': return <Assessment />; // retained eight-part quick map
-      case 'full-assessment': return <Suspense fallback={<Loading />}><FullAssessment /></Suspense>;
-      case 'legacy-assessment': return <Suspense fallback={<Loading />}><Legacy64Assessment /></Suspense>;
+      case 'full-assessment': return <FullAssessment />; // lazy: suspended by RouteFrame
+      case 'legacy-assessment': return <Legacy64Assessment />; // lazy: suspended by RouteFrame
       case 'assessment-gate': return <Gate />;
       case 'descent': return <Descent />;
       case 'assessment-results': return <Results />;
@@ -380,14 +381,16 @@ export default function App() {
           <div id="universe-host" className={`universe-host ${state === 'universe' ? 'on' : ''}`} />
 
           <div className="app-content" inert={overlay || sheet ? '' : undefined}>
-            {screen}
+            <RouteFrame resetKey={state} fallback={<Loading />} onCommit={state === 'loading' ? undefined : settleDeepLink}>
+              {screen}
+            </RouteFrame>
             {showDock && <Dock onSkyHover={prefetchUni} />}
           </div>
 
           {toastMsg && <div className="toast" role="status">{toastMsg}</div>}
 
           {sheetEl && <ModalLayer label={t('parts')} onClose={() => setSheet(null)}>{sheetEl}</ModalLayer>}
-          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(typeof overlay === 'string' ? overlay : overlay?.kind)} onClose={() => setOverlay(null)}>{ov}</ModalLayer>}
+          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(typeof overlay === 'string' ? overlay : overlay?.kind)} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}>{ov}</RouteBoundary></ModalLayer>}
         </div>
       </div>
     </AppCtx.Provider>

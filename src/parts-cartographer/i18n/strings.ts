@@ -11,6 +11,10 @@ export const STRINGS = {
   boot1: s('waking the system…', 'пробуждаем систему…'),
   boot2: s('finding your parts…', 'ищем твои части…'),
   boot3: s('setting the table', 'накрываем стол'),
+  bootSlowB: s('Your map stays on this device. Wait a little longer, retry, or continue to your home.', 'Твоя карта хранится на этом устройстве. Подожди немного, повтори или перейди на главную.'),
+  bootHome: s('Continue to your home', 'Перейти на главную'),
+  routeErrT: s('This screen did not open', 'Экран не открылся'),
+  routeErrB: s('Your saved data on this device is unchanged.', 'Сохранённые на этом устройстве данные не изменились.'),
   // onboarding
   ob1t: s('You are not one person', 'Ты — не один человек'),
   ob1b: s('Inside you live parts: the Planner, the Critic, the Little One. Each has a job, a voice, and a good intention.', 'Внутри живут части: Планировщик, Критик, Малыш. У каждой есть работа, голос и благая цель.'),

@@ -5,21 +5,27 @@ import { Character } from '../pal/Character.tsx';
 import { randomTraits, SEED_PARTS, FAMILY_LABELS } from '../pal/traits.ts';
 import { Ico, Crest, familyColor, Steps, Price } from '../ui/ui.jsx';
 import { uid8 } from '../core/ports.ts';
+import { homeScreen, SLOW_BOOT_AFTER_MS } from '../core/boot.ts';
 import { store, KEYS } from '../core/local-store';
 import { exportBackup } from '../core/backup';
 import { downloadText } from '../core/file-download';
 
-/* ═══════════ loading (auto → intro, ~4.2s) ═══════════ */
+/* ═══════════ loading (shown only while local content is not yet ready; no timed wait) ═══════════ */
 export function Loading() {
-  const { t, lang } = useApp();
+  const { t, go, setOverlay } = useApp();
   const [step, setStep] = useState(0);
-  const [p, setP] = useState(4);
+  const [slow, setSlow] = useState(false);
   useEffect(() => {
-    const iv = setInterval(() => setP((x) => Math.min(100, x + 1.4)), 55);
+    // Copy rotates for ambience only. The work has no measured total, so there is no percentage.
     const sv = setInterval(() => setStep((s) => (s + 1) % 3), 1350);
-    return () => { clearInterval(iv); clearInterval(sv); };
+    const slowAt = setTimeout(() => setSlow(true), SLOW_BOOT_AFTER_MS);
+    return () => { clearInterval(sv); clearTimeout(slowAt); };
   }, []);
   const label = ['boot1', 'boot2', 'boot3'][step];
+  const continueLocal = () => {
+    setOverlay(null);
+    go(homeScreen(store.load(KEYS.onboarded, false)));
+  };
   return (
     <div className="screen" style={{ alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
       <div style={{ width: 250, textAlign: 'center' }}>
@@ -30,9 +36,16 @@ export function Loading() {
         <div className="faint" style={{ fontFamily: 'var(--font-round)', fontSize: 12.5, letterSpacing: '.2em', textTransform: 'uppercase', marginTop: 4 }}>
           {t('appName')}
         </div>
-        <div className="bar mt24" style={{ margin: '24px auto 0' }}><i style={{ width: `${p}%` }} /></div>
+        <div className="bar indeterminate mt24" style={{ margin: '24px auto 0' }} role="progressbar" aria-label={t(label)} aria-busy="true"><i /></div>
         <div className="boot-dots mt16"><i /><i /><i /></div>
         <div className="muted" style={{ marginTop: 14, fontWeight: 800, fontSize: 13.5 }}>{t(label)}</div>
+        {slow && (
+          <div role="status" style={{ marginTop: 18 }}>
+            <div className="muted" style={{ fontSize: 14 }}>{t('bootSlowB')}</div>
+            <button className="btn primary block mt12" onClick={() => window.location.reload()}>⟳ {t('tryAgain')}</button>
+            <button className="btn ghost block mt8" onClick={continueLocal}>{t('bootHome')}</button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -15,8 +15,17 @@
  *                                       list picks the client up immediately
  *                                       (existing share mechanism, reused).
  *
- * Pure helpers (parseHM / slotsForDate / freeSlots / bookableDays) are
- * unit-tested in booking.spec.ts without Firestore.
+ * Time zones: availability windows carry the IANA zone their hours were entered
+ * in (`timeZone`). Slots are wall-clock times in that zone; a client sees each
+ * slot in their own zone. `start`/`end` on an appointment stay the wall-clock
+ * echo in the therapist's zone, so the busy-slot lock keeps working. An
+ * optional `time` map (appointment-time.ts, schemaVersion 2) adds the absolute
+ * instant and zone. Writing `time` needs an appointments rule change first; see
+ * ZONE_TIME_WRITES_ENABLED. Records without a zone are classified as legacy and
+ * are never reinterpreted.
+ *
+ * Pure helpers (parseHM / slotsForDate / freeSlots / bookableDays / slotTime and
+ * others) are unit-tested in booking.spec.ts without Firestore.
  */
 import {
   collection,
@@ -30,19 +39,43 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { getFirestoreDb } from '../../environments/firebase-init';
+import {
+  buildAppointmentTime,
+  classifyAppointmentRecord,
+  formatInstantInZone,
+  isValidIanaZone,
+  resolveWallClock,
+  type AppointmentRecordClass,
+  type AppointmentTimeV2,
+  type BuildResult,
+  type FoldChoice,
+} from './appointment-time';
 
-/** One availability window: weekdays (1=Mon … 7=Sun), HH:MM bounds, slot length. */
+/**
+ * One availability window: weekdays (1=Mon … 7=Sun), HH:MM bounds, slot length,
+ * and the IANA zone the hours were entered in. A window with no `timeZone` was
+ * saved before zones existed; its zone is unknown and must not be assumed.
+ */
 export interface AvailabilityWindow {
   days: number[];
   start: string;
   end: string;
   minutes: number;
+  timeZone?: string;
 }
 
 /** Default: weekdays 09:00–17:00, 60-minute slots. */
 export const DEFAULT_AVAILABILITY: AvailabilityWindow[] = [
   { days: [1, 2, 3, 4, 5], start: '09:00', end: '17:00', minutes: 60 },
 ];
+
+/**
+ * Whether new bookings also write the schemaVersion-2 `time` map. Off by default:
+ * firestore.rules (appointments create) accepts only the legacy key set, so
+ * turning this on before the rule change would reject every booking. Enable it
+ * only after the rule accepts an optional `time` map on create.
+ */
+export const ZONE_TIME_WRITES_ENABLED = false;
 
 export type AppointmentStatus = 'pending' | 'approved' | 'declined' | 'cancelled';
 
@@ -52,12 +85,16 @@ export interface Appointment {
   clientEmail: string | null;
   therapistUid: string;
   therapistEmail: string | null;
-  /** naive local ISO: YYYY-MM-DDTHH:mm */
+  /** Wall-clock YYYY-MM-DDTHH:mm in the therapist's zone (see `time.timeZone`). */
   start: string;
   end: string;
   status: AppointmentStatus;
   createdAt: string;
   accessGranted?: boolean;
+  /** Zone-aware time, present only on records that carry a valid schemaVersion-2 `time` map. */
+  time?: AppointmentTimeV2 | null;
+  /** How the stored time was classified. 'legacy-naive' records need explicit confirmation. */
+  timeClass?: AppointmentRecordClass;
 }
 
 /** A booked busy interval — any Appointment-shaped subset works. */
@@ -93,11 +130,15 @@ function localDateISO(d: Date): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
-/** Local weekday (1=Mon … 7=Sun) for a YYYY-MM-DD string. */
+/**
+ * Weekday (1=Mon … 7=Sun) for a YYYY-MM-DD string. A calendar date has one
+ * weekday in every zone, so this uses UTC arithmetic and is independent of the
+ * device zone.
+ */
 export function weekdayOf(dateISO: string): number {
-  const d = new Date(`${dateISO}T00:00:00`);
-  if (isNaN(d.getTime())) return 0;
-  const js = d.getDay(); // 0=Sun … 6=Sat
+  const ms = Date.parse(`${dateISO}T00:00:00Z`);
+  if (isNaN(ms)) return 0;
+  const js = new Date(ms).getUTCDay(); // 0=Sun … 6=Sat
   return js === 0 ? 7 : js;
 }
 
@@ -127,18 +168,134 @@ export function slotsForDate(availability: AvailabilityWindow[], dateISO: string
   return [...new Set(out)].sort();
 }
 
+/** Options for the zone-aware helpers. Omitting `timeZone` keeps the original device-clock behaviour. */
+export interface SlotOptions {
+  /** IANA zone the availability hours are written in. */
+  timeZone?: string;
+}
+
+/** The device's IANA zone, or null when the runtime does not report a valid one. */
+export function deviceTimeZone(): string | null {
+  try {
+    const zone: unknown = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return isValidIanaZone(zone) ? zone : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The one zone every window was entered in. Null when the list is empty, when a
+ * window has no valid zone (legacy), or when the windows disagree.
+ */
+export function therapistTimeZone(availability: AvailabilityWindow[]): string | null {
+  let zone: string | null = null;
+  for (const w of availability) {
+    if (!w || !isValidIanaZone(w.timeZone)) return null;
+    if (zone !== null && zone !== w.timeZone) return null;
+    zone = w.timeZone;
+  }
+  return zone;
+}
+
+/**
+ * Stamp every window with its zone. A valid zone already on a window is kept.
+ * Otherwise the fallback (by default this device's zone at save time) is used.
+ * Throws when no valid zone is available, so nothing is saved without one.
+ */
+export function stampWindowZones(
+  availability: AvailabilityWindow[],
+  fallbackZone: string | null = deviceTimeZone(),
+): AvailabilityWindow[] {
+  return availability.map((w) => {
+    const timeZone = isValidIanaZone(w.timeZone) ? w.timeZone : fallbackZone;
+    if (!isValidIanaZone(timeZone)) throw new Error('A valid IANA time zone is required to save availability');
+    return { days: w.days, start: w.start, end: w.end, minutes: w.minutes, timeZone };
+  });
+}
+
+/** One instant a wall-clock slot can map to. `fold` is set only when the wall time repeats. */
+export interface SlotOccurrence {
+  fold: FoldChoice | null;
+  startMs: number;
+  /** False once this instant has already started. */
+  offered: boolean;
+}
+
+/**
+ * The instants behind a wall-clock slot in a zone. Empty when the wall time does
+ * not exist (spring gap), one when it is unique, and two (earlier, later) when the
+ * clock repeats it (autumn fold).
+ */
+export function slotOccurrences(slot: string, timeZone: string, now: Date = new Date()): SlotOccurrence[] {
+  const resolved = resolveWallClock(slot, timeZone);
+  if (!resolved.ok || resolved.kind === 'nonexistent') return [];
+  const nowMs = now.getTime();
+  if (resolved.kind === 'unique') {
+    return [{ fold: null, startMs: resolved.startMs, offered: resolved.startMs > nowMs }];
+  }
+  return [
+    { fold: 'earlier', startMs: resolved.earlierMs, offered: resolved.earlierMs > nowMs },
+    { fold: 'later', startMs: resolved.laterMs, offered: resolved.laterMs > nowMs },
+  ];
+}
+
+/** Slot length in minutes, from the window whose grid contains the slot start (60 when none does). */
+export function slotMinutesAt(slotISO: string, availability: AvailabilityWindow[]): number {
+  const dateISO = slotISO.slice(0, 10);
+  const day = weekdayOf(dateISO);
+  const startMin = parseHM(slotISO.slice(11));
+  for (const w of availability) {
+    if ((w.days || []).includes(day)) {
+      const wStart = parseHM(w.start);
+      const wMinutes = w.minutes > 0 ? w.minutes : 60;
+      // The slot belongs to the window whose grid contains its start.
+      if (wStart >= 0 && startMin >= wStart && startMin < parseHM(w.end) && (startMin - wStart) % wMinutes === 0) {
+        return wMinutes;
+      }
+    }
+  }
+  return 60;
+}
+
+/**
+ * The schemaVersion-2 time for a generated slot, in the therapist's zone. The
+ * duration comes from the slot's window. `fold` is required only when the wall
+ * time repeats.
+ */
+export function slotTime(input: {
+  slot: string;
+  availability: AvailabilityWindow[];
+  timeZone: string;
+  fold?: FoldChoice;
+}): BuildResult {
+  return buildAppointmentTime({
+    wallStart: input.slot,
+    durationMinutes: slotMinutesAt(input.slot, input.availability),
+    timeZone: input.timeZone,
+    fold: input.fold,
+    source: { kind: 'availability-slot' },
+  });
+}
+
 /**
  * Free slots for a date: generated slots minus
  *   - slots overlapping a pending/approved appointment, and
  *   - slots that already started (relative to `now`).
+ *
+ * With `options.timeZone`, slots are wall-clock times in that zone: nonexistent
+ * times are dropped, and a repeated time is offered while either pass is still
+ * ahead. Without it, the original device-clock behaviour is kept.
  */
 export function freeSlots(
   availability: AvailabilityWindow[],
   booked: BusyInterval[],
   dateISO: string,
   now: Date = new Date(),
+  options: SlotOptions = {},
 ): string[] {
   const busy = (booked || []).filter(b => b && (b.status === 'pending' || b.status === 'approved'));
+  if (options.timeZone !== undefined) return zoneFreeSlots(availability, busy, dateISO, now, options.timeZone);
   return slotsForDate(availability, dateISO).filter(slot => {
     const startAt = new Date(slot);
     // A nonexistent wall time during the DST spring transition must not normalize into another slot.
@@ -149,34 +306,53 @@ export function freeSlots(
   });
 }
 
+function zoneFreeSlots(
+  availability: AvailabilityWindow[],
+  busy: BusyInterval[],
+  dateISO: string,
+  now: Date,
+  timeZone: string,
+): string[] {
+  if (!isValidIanaZone(timeZone)) return [];
+  return slotsForDate(availability, dateISO).filter((slot) => {
+    if (!slotOccurrences(slot, timeZone, now).some((occurrence) => occurrence.offered)) return false;
+    const slotEndISO = endOfSlot(slot, availability);
+    return !busy.some(b => overlaps(slot, slotEndISO, b.start, b.end));
+  });
+}
+
 /** End time of a generated slot, given the availability it came from. */
 export function endOfSlot(slotISO: string, availability: AvailabilityWindow[]): string {
   const dateISO = slotISO.slice(0, 10);
-  const day = weekdayOf(dateISO);
   const startMin = parseHM(slotISO.slice(11));
-  let minutes = 60;
-  for (const w of availability) {
-    if ((w.days || []).includes(day)) {
-      const wStart = parseHM(w.start);
-      const wMinutes = w.minutes > 0 ? w.minutes : 60;
-      // The slot belongs to the window whose grid contains its start.
-      if (wStart >= 0 && startMin >= wStart && startMin < parseHM(w.end) && (startMin - wStart) % wMinutes === 0) {
-        minutes = wMinutes;
-        break;
-      }
-    }
-  }
-  return addSlotMinutes(`${dateISO}T${minutesToHM(startMin)}`, minutes);
+  return addSlotMinutes(`${dateISO}T${minutesToHM(startMin)}`, slotMinutesAt(slotISO, availability));
 }
 
-/** Next `days` dates (starting tomorrow) whose weekday has availability. */
+/**
+ * Next `days` dates (starting tomorrow) whose weekday has availability. With
+ * `options.timeZone`, "today" and the weekdays are taken in that zone; without
+ * it, the device clock is used as before.
+ */
 export function bookableDays(
   availability: AvailabilityWindow[],
   from: Date = new Date(),
   days: number = 14,
+  options: SlotOptions = {},
 ): string[] {
   const enabled = new Set<number>();
   for (const w of availability) for (const d of w.days || []) enabled.add(d);
+  if (options.timeZone !== undefined) {
+    const today = isValidIanaZone(options.timeZone) ? formatInstantInZone(from.getTime(), options.timeZone) : null;
+    if (!today) return [];
+    const zoned: string[] = [];
+    let cursorMs = Date.parse(`${today.slice(0, 10)}T00:00:00Z`);
+    for (let i = 0; i < days + 7 && zoned.length < days; i++) {
+      cursorMs += 86_400_000;
+      const iso = new Date(cursorMs).toISOString().slice(0, 10);
+      if (enabled.has(weekdayOf(iso))) zoned.push(iso);
+    }
+    return zoned;
+  }
   const out: string[] = [];
   const cursor = new Date(from.getFullYear(), from.getMonth(), from.getDate());
   for (let i = 0; i < days + 7 && out.length < days; i++) {
@@ -205,18 +381,49 @@ export function slotEnd(slotISO: string, minutes = 60): string {
 // Firestore operations
 // ---------------------------------------------------------------------------
 
-function normalizeAvailability(raw: unknown): AvailabilityWindow[] {
+export function normalizeAvailability(raw: unknown): AvailabilityWindow[] {
   if (!Array.isArray(raw)) return DEFAULT_AVAILABILITY;
   if (raw.length === 0) return [];
   return raw
     .filter((w): w is AvailabilityWindow => !!w && typeof w === 'object')
-    .map(w => ({
-      days: Array.isArray(w.days) ? w.days : [],
-      start: typeof w.start === 'string' ? w.start : '09:00',
-      end: typeof w.end === 'string' ? w.end : '17:00',
-      minutes: typeof w.minutes === 'number' && w.minutes > 0 ? w.minutes : 60,
-    }))
+    .map(w => {
+      const window: AvailabilityWindow = {
+        days: Array.isArray(w.days) ? w.days : [],
+        start: typeof w.start === 'string' ? w.start : '09:00',
+        end: typeof w.end === 'string' ? w.end : '17:00',
+        minutes: typeof w.minutes === 'number' && w.minutes > 0 ? w.minutes : 60,
+      };
+      // A window without a valid zone stays zone-less. Its zone is never assumed.
+      if (isValidIanaZone(w.timeZone)) window.timeZone = w.timeZone;
+      return window;
+    })
     .filter(w => w.days.length > 0);
+}
+
+/**
+ * Classify the time of a stored appointment. A nested `time` map is classified
+ * strictly, so a malformed v2 record is never read as legacy. A record without
+ * one is classified from its naive start/end, which yields 'legacy-naive'.
+ */
+export function appointmentTimeFromRecord(data: Record<string, unknown>): {
+  time: AppointmentTimeV2 | null;
+  timeClass: AppointmentRecordClass;
+} {
+  const nested = data['time'];
+  const timeClass = nested !== undefined && nested !== null
+    ? classifyAppointmentRecord(nested)
+    : classifyAppointmentRecord(data);
+  return { time: timeClass.kind === 'v2' ? timeClass.time : null, timeClass };
+}
+
+/**
+ * A zone-aware booking time must be a valid v2 time that echoes the slot it
+ * reserves. Returns a reason, or null when the pair is consistent.
+ */
+export function bookingTimeMismatch(time: AppointmentTimeV2, start: string): string | null {
+  if (classifyAppointmentRecord(time).kind !== 'v2') return 'invalid-time';
+  if (time.wallStart !== start) return 'slot-mismatch';
+  return null;
 }
 
 export interface TherapistProfile {
@@ -248,10 +455,13 @@ export async function saveTherapistAvailability(
   email: string | null = null,
 ): Promise<void> {
   const db = getFirestoreDb();
-  await setDoc(doc(db, 'therapists', therapistUid), { email, availability }, { merge: true });
+  // Throws before any write when no valid zone is available.
+  const windows = stampWindowZones(availability);
+  await setDoc(doc(db, 'therapists', therapistUid), { email, availability: windows }, { merge: true });
 }
 
 function toAppointment(id: string, data: Record<string, unknown>): Appointment {
+  const { time, timeClass } = appointmentTimeFromRecord(data);
   return {
     id,
     clientUid: (data['clientUid'] as string) ?? '',
@@ -263,6 +473,8 @@ function toAppointment(id: string, data: Record<string, unknown>): Appointment {
     status: (data['status'] as AppointmentStatus) ?? 'pending',
     createdAt: (data['createdAt'] as string) ?? '',
     accessGranted: (data['accessGranted'] as boolean) ?? false,
+    time,
+    timeClass,
   };
 }
 
@@ -368,9 +580,19 @@ export async function createBooking(input: {
   clientEmail: string | null;
   therapistUid: string;
   therapistEmail: string | null;
+  /** Wall-clock slot in the therapist's zone. */
   start: string;
   end: string;
+  /**
+   * Optional schemaVersion-2 time for the slot. It is written as the `time` map
+   * only when present. Requires the appointments rule to accept `time`.
+   */
+  time?: AppointmentTimeV2;
 }): Promise<string> {
+  if (input.time) {
+    const mismatch = bookingTimeMismatch(input.time, input.start);
+    if (mismatch) throw new Error(`Booking time rejected: ${mismatch}`);
+  }
   const db = getFirestoreDb();
   const appointmentRef = doc(collection(db, 'appointments'));
   const id = appointmentRef.id;
@@ -387,6 +609,7 @@ export async function createBooking(input: {
     status: 'pending' as AppointmentStatus,
     createdAt: now,
     accessGranted: true,
+    ...(input.time ? { time: input.time } : {}),
   });
   // The deterministic slot document is the concurrency guard: only one
   // booking batch can reserve a therapist/start-time pair. Its public shape

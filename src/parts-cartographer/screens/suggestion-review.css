@@ -1,0 +1,75 @@
+/* Suggestion review queue (Coach overlay). Colours come from the theme tokens in styles.css. */
+.sugg-review {
+  margin: 12px 20px 0;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: var(--surface);
+}
+.sugg-summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+.sugg-notice,
+.sugg-empty {
+  margin: 8px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.sugg-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sugg-item {
+  display: grid;
+  gap: 6px;
+  padding: 9px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface2);
+}
+.sugg-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-dim);
+}
+.sugg-needs-review .sugg-badge {
+  color: var(--accent-text);
+}
+.sugg-refused .sugg-badge {
+  color: var(--danger, #b54a4a);
+}
+.sugg-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--text);
+}
+.sugg-remove,
+.sugg-clear {
+  justify-self: start;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+  cursor: pointer;
+}
+.sugg-clear {
+  margin-top: 8px;
+}
+@media (max-width: 480px) {
+  .sugg-review {
+    margin: 12px 16px 0;
+  }
+}

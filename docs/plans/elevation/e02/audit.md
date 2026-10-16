@@ -1,8 +1,8 @@
 # E02.01 audit: Need-based entry and first useful result
 
 - Bead: `ArchetypeAI-r7r` (E02.01). Tracker status at audit: open.
-- Checked at: HEAD `d481c3e`, regenerated after an independent review of the first version.
-- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Checked at: HEAD `56088ca`, corrected after the second and third independent reviews.
+- Disposition: **candidate audit, awaiting a final independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
@@ -46,9 +46,9 @@
 
 ## 6. Smallest useful slice (educated guess)
 
-Confirm that first-run already offers the three routes on Base (`src/parts-cartographer/screens/landing.jsx:64`). If it does, keep the entry in the cabinet and close this slice as covered.
+Confirm that first-run already offers the three routes on Base (`src/parts-cartographer/screens/landing.jsx:65-68`). If it does, keep the entry in the cabinet and close this slice as covered.
 
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).
+- Independent review of this audit: **pending** (reviews one to three found errors, now corrected; a final review is needed).

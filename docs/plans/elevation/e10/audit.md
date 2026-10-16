@@ -1,8 +1,8 @@
 # E10.01 audit: Rehearsal branches
 
 - Bead: `ArchetypeAI-aft` (E10.01). Tracker status at audit: open.
-- Checked at: HEAD `d481c3e`, regenerated after an independent review of the first version.
-- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Checked at: HEAD `56088ca`, corrected after the second and third independent reviews.
+- Disposition: **candidate audit, awaiting a final independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
@@ -44,14 +44,14 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- Each step is written to the rehearsal key (`src/parts-cartographer/screens/elevation/e10-rehearsal.jsx:57`) and removed only by Reset (`:115`). Leaving the screen does not clear unsaved text, and no test covers leaving.
+- Each step is written to the rehearsal key (`src/parts-cartographer/screens/elevation/e10-rehearsal.jsx:57`) and removed only by Reset (`:115`). The module clears unsaved steps on leave (`src/parts-cartographer/elevation/e10-scene-response.ts:158`), but the panel never dispatches leave, so leaving keeps unsaved text. No panel test covers leaving; the module spec does (`src/parts-cartographer/elevation/e10-scene-response.spec.ts:139-146`).
 - Guided text quality is not reviewed by a native speaker.
 
 ## 6. Smallest useful slice (educated guess)
 
-Decide whether leaving the screen should clear unsaved text. If yes, implement it and test leaving; if no, record the decision.
+Dispatch the module's leave action when the screen is left, then test in the panel that leaving clears unsaved steps. The module already defines this rule (`src/parts-cartographer/elevation/e10-scene-response.ts:152`), so the default is set by the module, not an open decision.
 
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).
+- Independent review of this audit: **pending** (reviews one to three found errors, now corrected; a final review is needed).

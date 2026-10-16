@@ -1,8 +1,8 @@
 # E06.01 audit: Corrections that propagate
 
 - Bead: `ArchetypeAI-wbc` (E06.01). Tracker status at audit: open.
-- Checked at: HEAD `d481c3e`, regenerated after an independent review of the first version.
-- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Checked at: HEAD `56088ca`, corrected after the second and third independent reviews.
+- Disposition: **candidate audit, awaiting a final independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
@@ -44,7 +44,7 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- The panel lists each node with its status and Reject, Undo and Remove actions (`src/parts-cartographer/screens/elevation/e06-corrections.jsx:100-121`). Whether it also lists the summaries each node affects was not verified.
+- The panel lists each node with its status and Reject, Undo and Remove actions (`src/parts-cartographer/screens/elevation/e06-corrections.jsx:100-121`). It does not list the summaries each node affects; none is listed in `e06-corrections.jsx`.
 - Source deletion has one UI test (`e06-corrections.spec.ts:62-69`). Undo is covered by module tests only.
 
 ## 6. Smallest useful slice (educated guess)
@@ -54,4 +54,4 @@ If the step needs it, show the summaries each node affects, and test that list a
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).
+- Independent review of this audit: **pending** (reviews one to three found errors, now corrected; a final review is needed).

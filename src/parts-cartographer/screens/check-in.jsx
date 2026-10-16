@@ -19,6 +19,7 @@ import { COMPLEXES, SHADOW_PARTS } from '../../shared/core/data/parts';
 import { COMPLEX_COPY_RU, STRINGS as SOURCE_STRINGS } from '../../shared/i18n/strings';
 import { currentPushState, enablePushReminder, disablePushReminder } from '../core/push';
 import { ContextualCheckIn, SituationInquiry } from './checkin-toolkit.jsx';
+import { DiscriminatorPanel } from './elevation/e04-discriminator.jsx';
 
 const CHECKIN_KEY = 'INNERVERSE_CHECKINS_V1';
 const VERDICT_KEY = 'INNERVERSE_SEALED_VERDICTS_V1';
@@ -343,7 +344,7 @@ export function CheckIn() {
           </div>
         )}
         {!dueVerdict && stage === 'arousal' && (
-          <div className="mt24"><ContextualCheckIn /><SituationInquiry /></div>
+          <div className="mt24"><ContextualCheckIn /><SituationInquiry /><DiscriminatorPanel /></div>
         )}
       </div>
     </div>

@@ -14,6 +14,7 @@ import { ReplayStudio } from './replay.jsx';
 import { InnerNegotiation } from './negotiation.jsx';
 import { CoordinatesPanel } from './coordinates.jsx';
 import { RestControl } from './rest-control.jsx';
+import { PresentationPanel } from './elevation/e12-presentation.jsx';
 import { GuardedClientData } from './therapist-guard.jsx';
 import { readableClientMaps, visibleAppointments } from '../core/therapist-guard.ts';
 
@@ -23,6 +24,7 @@ const PANEL_NAMES = {
   negotiation: ['Negotiate', 'Переговоры'],
   coordinates: ['Coordinates', 'Координаты'],
   rest: ['Rest', 'Отдых'],
+  list: ['Parts as a list', 'Части списком'],
 };
 
 const CLUSTER_LABELS = {
@@ -232,6 +234,7 @@ export function Innerverse() {
           {panel === 'negotiation' && <InnerNegotiation />}
           {panel === 'coordinates' && <CoordinatesPanel />}
           {panel === 'rest' && <RestControl />}
+          {panel === 'list' && <PresentationPanel />}
         </div>
       )}
 
@@ -247,6 +250,7 @@ export function Innerverse() {
         <button className="tray-btn" onClick={() => setPanel(panel === 'negotiation' ? null : 'negotiation')}>🤝 {lang === 'ru' ? 'Переговоры' : 'Negotiate'}</button>
         <button className="tray-btn" onClick={() => setPanel(panel === 'coordinates' ? null : 'coordinates')}>🧭 {lang === 'ru' ? 'Координаты' : 'Coordinates'}</button>
         <button className="tray-btn" onClick={() => setPanel(panel === 'rest' ? null : 'rest')}>🌙 {lang === 'ru' ? 'Отдых' : 'Rest'}</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'list' ? null : 'list')}>📋 {lang === 'ru' ? 'Списком' : 'List'}</button>
       </div>
 
       {/* compare tray */}

@@ -9,6 +9,8 @@ import { PracticeToolkit } from './practice-toolkit.jsx';
 import { GoalPanel } from './elevation/e01-goal.jsx';
 import { UncertaintyPanel } from './elevation/e05-uncertainty-action.jsx';
 import { TransferPanel } from './elevation/e08-transfer.jsx';
+import { FeedbackPanel } from './elevation/e09-feedback.jsx';
+import { RehearsalPanel } from './elevation/e10-rehearsal.jsx';
 
 const PRACTICE_KEY = 'INNERVERSE_PRACTICE_V1';
 const CHECKIN_KEY = 'INNERVERSE_CHECKINS_V1';
@@ -323,6 +325,8 @@ export function Practice() {
         <GoalPanel />
         <UncertaintyPanel />
         <TransferPanel />
+        <FeedbackPanel />
+        <RehearsalPanel />
         <div className="mt24"><PracticeToolkit /></div>
       </div>
     </div>

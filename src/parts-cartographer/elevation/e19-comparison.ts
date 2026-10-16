@@ -1,10 +1,9 @@
-// E19 extension comparison: scene/text output equivalence and experiment workcell briefs (ArchetypeAI-umo5).
-// Recovery cases for ArchetypeAI-uebc (no advantage, discomfort, denied participation, unavailable prerequisites,
-// interruption, unreadable storage, concurrent writes, authority) are handled here and covered by tests. Pure: no
-// storage, no clock, no network, no React. Each signature or experimental extension is compared with a simpler
-// complete path that must give the same outputs. A brief keeps the hypothesis, the person's observations, the
-// person's authorship and the canonical boundary as separate labelled claims. Stop decisions count only
-// person-authored records. An extension is never required for ordinary use, and canonical 64/147 data is never read.
+// E19 extension comparison: scene/text output equivalence and experiment workcell briefs (ArchetypeAI-umo5), with the
+// recovery cases of ArchetypeAI-uebc (no advantage, discomfort, denied participation, unavailable prerequisites,
+// interruption, unreadable storage, concurrent writes, authority). Pure: no storage, no clock, no network, no React.
+// Each extension is compared with a simpler complete path that must give the same outputs. A brief keeps the
+// hypothesis, person observations, person authorship and the canonical boundary as separate labelled claims. Stop
+// decisions count only person-authored records. Extensions are never required for ordinary use; canonical 64/147 data is untouched.
 // NOT done here: UI (step 05), wiring into screens or Beads (step 06), evidence collection and acceptance (steps 10-12).
 // The X01-X07 labels are provisional: the inventory could not verify that plan sections 15.1-15.7 are those identifiers.
 
@@ -27,7 +26,7 @@ export interface ExtensionSpec {
   planSection: string;
   provisionalId: string;
   purpose: string;
-  /** A guess to test. It is never a finding. */
+  /** A guess to test, never a finding. */
   hypothesis: string;
   requiredOutputs: ReadonlyArray<string>;
   comparator: SimplerPath;
@@ -38,20 +37,18 @@ export interface ExtensionSpec {
 /** The seven plan entries (docs/80-20-plan.md 15.1-15.7) as comparison fixtures. */
 export const EXTENSIONS: ReadonlyArray<ExtensionSpec> = [
   {
-    key: 'rehearse-tomorrow', planSection: '15.1', provisionalId: 'X01',
+    key: 'rehearse-tomorrow', planSection: '15.1', provisionalId: 'X01', comparator: { path: 'Preparation checklist', source: 'plan' },
     purpose: 'Prepare for an ordinary upcoming situation and export the chosen response as an experiment card',
     hypothesis: 'Interactive branches help a person choose and practice a response beyond a checklist.',
     requiredOutputs: ['chosen-response', 'experiment-card'],
-    comparator: { path: 'Preparation checklist', source: 'plan' },
     prerequisites: [{ id: 'scene-review', kind: 'review', need: 'Reviewed scene grammar and a practical constraint' }],
     stopRule: 'Keep the checklist if branches add no benefit or add overload.',
   },
   {
-    key: 'shared-room', planSection: '15.2', provisionalId: 'X02',
+    key: 'shared-room', planSection: '15.2', provisionalId: 'X02', comparator: { path: 'Asynchronous artifact exchange', source: 'proposed' },
     purpose: 'Support one collaboration mode that yields a jointly accepted draft with contribution history',
     hypothesis: 'A shared room gives value that an asynchronous exchange cannot.',
     requiredOutputs: ['joint-draft', 'contribution-history'],
-    comparator: { path: 'Asynchronous artifact exchange', source: 'proposed' },
     prerequisites: [
       { id: 'recipient-accounts', kind: 'account', need: 'Each person holds an account with recipient permissions checked' },
       { id: 'sharing-consent', kind: 'consent', need: 'Each person consents to context previews before sharing' },
@@ -59,20 +56,18 @@ export const EXTENSIONS: ReadonlyArray<ExtensionSpec> = [
     stopRule: 'Pause distribution while disagreement safety, power imbalance, stale permissions or accidental sharing are unresolved.',
   },
   {
-    key: 'contextual-cues', planSection: '15.3', provisionalId: 'X03',
+    key: 'contextual-cues', planSection: '15.3', provisionalId: 'X03', comparator: { path: 'Physical or exported cue', source: 'plan' },
     purpose: 'Let the person author a reminder cue and control when it appears',
     hypothesis: 'An in-app cue helps outside the app more than a physical or exported cue.',
     requiredOutputs: ['reminder-phrase', 'cue-timing'],
-    comparator: { path: 'Physical or exported cue', source: 'plan' },
     prerequisites: [{ id: 'device-channel', kind: 'hardware', need: 'Confirmed device channel, never an assumed one' }],
     stopRule: 'Stop app delivery if it adds nothing over the physical cue or weakens privacy or discretion.',
   },
   {
-    key: 'facilitated-lab', planSection: '15.4', provisionalId: 'X04',
+    key: 'facilitated-lab', planSection: '15.4', provisionalId: 'X04', comparator: { path: 'Reviewed self-guided practice with an exit route', source: 'proposed' },
     purpose: 'Deliver a specific sensitive facilitated protocol with stop, return and support routes',
     hypothesis: 'Qualified facilitation gives support that self-guided practice cannot.',
     requiredOutputs: ['protocol-session', 'support-route'],
-    comparator: { path: 'Reviewed self-guided practice with an exit route', source: 'proposed' },
     prerequisites: [
       { id: 'qualified-facilitator', kind: 'qualified', need: 'Qualified facilitator staffing' },
       { id: 'research-consent', kind: 'consent', need: 'Research consent kept separate from app consent and paid-service terms' },
@@ -81,29 +76,26 @@ export const EXTENSIONS: ReadonlyArray<ExtensionSpec> = [
     stopRule: 'Do not proceed without staffing, consent, reviewed boundaries and a support route.',
   },
   {
-    key: 'lenses', planSection: '15.5', provisionalId: 'X05',
+    key: 'lenses', planSection: '15.5', provisionalId: 'X05', comparator: { path: 'Ordinary-language reflection without the lens', source: 'plan' },
     purpose: 'Offer a user-selected interpretive lens with transparent provenance and an ordinary-language alternative',
     hypothesis: 'A labelled lens supports meaning-making beyond ordinary-language reflection.',
     requiredOutputs: ['interpretive-lens', 'plain-alternative', 'provenance'],
-    comparator: { path: 'Ordinary-language reflection without the lens', source: 'plan' },
     prerequisites: [{ id: 'community-review', kind: 'community', need: 'Appropriate sources and community reviewers' }],
     stopRule: 'Stop if provenance or review is unavailable, or the lens imposes a worldview.',
   },
   {
-    key: 'xr-arrangement', planSection: '15.6', provisionalId: 'X06',
+    key: 'xr-arrangement', planSection: '15.6', provisionalId: 'X06', comparator: { path: 'Ordinary map or scene with a complete non-XR path', source: 'plan' },
     purpose: 'Spatial inspection of an authored rehearsal arrangement',
     hypothesis: 'Spatial presence improves inspection enough to justify its comfort and effort costs.',
     requiredOutputs: ['arrangement-inspection'],
-    comparator: { path: 'Ordinary map or scene with a complete non-XR path', source: 'plan' },
     prerequisites: [{ id: 'xr-hardware', kind: 'hardware', need: 'Supported real XR hardware with input, pause and exit' }],
     stopRule: 'Iterate or stop when the non-XR path already gives the same useful output.',
   },
   {
-    key: 'shared-artifact', planSection: '15.7', provisionalId: 'X07',
+    key: 'shared-artifact', planSection: '15.7', provisionalId: 'X07', comparator: { path: 'Private export of the chosen artifact', source: 'proposed' },
     purpose: 'Share a user-chosen useful artifact',
     hypothesis: 'Inviting others adds useful value beyond a private export.',
     requiredOutputs: ['shared-artifact', 'sharing-scope'],
-    comparator: { path: 'Private export of the chosen artifact', source: 'proposed' },
     prerequisites: [{ id: 'share-consent', kind: 'consent', need: 'Consent understanding shown before sharing' }],
     stopRule: 'Stop if consent is not understood, sharing scope is unclear, or activation is not demonstrated.',
   },
@@ -171,25 +163,14 @@ export function buildBrief(spec: ExtensionSpec, input: BriefInput): WorkcellBrie
 
 export type RecordKind = 'compared' | 'interrupted' | 'discomfort' | 'declined';
 export interface ComparisonRecord {
-  id: string;
-  source: 'person' | 'facilitator' | 'model';
-  kind: RecordKind;
+  id: string; source: 'person' | 'facilitator' | 'model'; kind: RecordKind;
   preferred: 'extension' | 'comparator' | 'no-difference' | null;
-  repeatChoice: boolean;
-  minutesUsed: number;
-  tradeoffNote: string | null;
+  repeatChoice: boolean; minutesUsed: number; tradeoffNote: string | null;
 }
 export interface ExtensionEvidence {
-  comparedSessions: number;
-  extensionPreferred: number;
-  comparatorPreferred: number;
-  repeatChoices: number;
-  minutesUsed: number;
-  tradeoffNotes: string[];
-  discomfortReports: number;
-  participationDeclined: boolean;
-  interruptedRuns: number;
-  excludedRecords: number;
+  comparedSessions: number; extensionPreferred: number; comparatorPreferred: number; repeatChoices: number;
+  minutesUsed: number; tradeoffNotes: string[];
+  discomfortReports: number; participationDeclined: boolean; interruptedRuns: number; excludedRecords: number;
 }
 
 const byText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
@@ -217,9 +198,8 @@ export function tallyComparisons(records: ReadonlyArray<ComparisonRecord> | null
   if (records === null) return null;
   const merged = mergeRecords([records]);
   const ev: ExtensionEvidence = {
-    comparedSessions: 0, extensionPreferred: 0, comparatorPreferred: 0, repeatChoices: 0, minutesUsed: 0,
-    tradeoffNotes: [], discomfortReports: 0, participationDeclined: false, interruptedRuns: 0,
-    excludedRecords: merged.conflictingIds.length,
+    comparedSessions: 0, extensionPreferred: 0, comparatorPreferred: 0, repeatChoices: 0, minutesUsed: 0, tradeoffNotes: [],
+    discomfortReports: 0, participationDeclined: false, interruptedRuns: 0, excludedRecords: merged.conflictingIds.length,
   };
   for (const r of merged.records) {
     if (r.source !== 'person') { ev.excludedRecords += 1; continue; }
@@ -243,7 +223,7 @@ export type StopDecision =
   | 'blocked-equivalence' | 'defer-prerequisite' | 'pending-evidence' | 'no-participation'
   | 'pause-discomfort' | 'stop-no-advantage' | 'keep-simpler-path' | 'continue-prototype';
 
-/** Order matters: equivalence, then prerequisites, then declines and discomfort, then the minimum sample, then the gate. */
+/** Order matters: equivalence, prerequisites, declines and discomfort, the minimum sample, then the expansion gate. */
 export function decideStop(brief: WorkcellBrief, evidence: ExtensionEvidence | null): StopDecision {
   if (brief.equivalence.status !== 'matched') return 'blocked-equivalence';
   if (!brief.prerequisites.met) return 'defer-prerequisite';
@@ -252,12 +232,7 @@ export function decideStop(brief: WorkcellBrief, evidence: ExtensionEvidence | n
   if (evidence.discomfortReports > 0) return 'pause-discomfort';
   if (evidence.comparedSessions < MIN_COMPARED_SESSIONS) return 'pending-evidence';
   if (evidence.extensionPreferred === 0) return 'stop-no-advantage';
-  const gate = decideExpansion({
-    playtimeMinutes: evidence.minutesUsed,
-    userBenefitReports: evidence.extensionPreferred,
-    demandRecords: evidence.repeatChoices,
-    complexityNotes: evidence.tradeoffNotes,
-  });
+  const gate = decideExpansion({ playtimeMinutes: evidence.minutesUsed, userBenefitReports: evidence.extensionPreferred, demandRecords: evidence.repeatChoices, complexityNotes: evidence.tradeoffNotes });
   if (gate === 'expand') return 'continue-prototype';
   return gate === 'no-expansion' ? 'keep-simpler-path' : 'pending-evidence';
 }

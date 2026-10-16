@@ -20,6 +20,7 @@ import {
 import { confirmLegacyNaiveRecord, formatInstantInZone, resolveWallClock } from './core/appointment-time.ts';
 import { SuggestionReview, queueCoachReply } from './screens/suggestion-review.jsx';
 import { lookupByEmail, syncPublicProfile } from './core/user-directory.ts';
+import { checkFacilitatorStatement, STATEMENT_MAX_CHARS } from './core/facilitator-profile.ts';
 import { createTherapistLink } from './core/therapist-link.ts';
 import { LegacySynastryDetails } from './screens/legacy-synastry-report.jsx';
 import { ScoredProfileSynastryDetails } from './screens/scored-profile-synastry-report.jsx';
@@ -689,6 +690,7 @@ export function Booking() {
   const [availability, setAvailability] = useState([]);
   // The zone the therapist entered their hours in. Null means the hours have no zone yet.
   const [therapistZone, setTherapistZone] = useState(null);
+  const [therapistStatement, setTherapistStatement] = useState('');
   const [appointments, setAppointments] = useState([]);
   const [days, setDays] = useState([]);
   const [day, setDay] = useState(null);
@@ -759,6 +761,7 @@ export function Booking() {
       setTherapist({ uid: match.uid, email: therapistProfile.email || match.email || email, displayName: match.displayName });
       setAvailability(therapistProfile.availability);
       setTherapistZone(zone);
+      setTherapistStatement(therapistProfile.statement ?? '');
       setAppointments(booked);
       setDays(bookDays);
       setDay(null);
@@ -861,6 +864,7 @@ export function Booking() {
               <div className="kicker">{t('pickDate')}</div>
               <span className="faint" style={{ fontSize: 12 }}>{displayName}</span>
             </div>
+            {therapistStatement && <p className="sub mt8" style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{therapistStatement}</p>}
             <p className="faint mt8" style={{ fontSize: 12 }}>
               {lang === 'ru' ? 'Время терапевта' : 'Therapist time'}: {therapistZone ?? '—'}
               {!sameZone && ` · ${lang === 'ru' ? 'ваше время' : 'your time'}: ${clientZone}`}
@@ -1066,6 +1070,14 @@ function LegacyZoneConfirm({ record, lang, onClose }) {
   );
 }
 
+/** Plain-language copy for a refused statement (core/facilitator-profile.ts reasons). */
+function statementRefusalText(reason, lang) {
+  const ru = lang === 'ru';
+  if (reason === 'statement-too-long') return ru ? 'Сделайте текст короче 600 знаков.' : 'Keep the statement under 600 characters.';
+  if (reason === 'efficacy-claim') return ru ? 'Уберите заявления о клинической доказанности или гарантированных результатах.' : 'Remove claims of clinical proof or guaranteed results.';
+  return ru ? 'Этот текст нельзя сохранить.' : 'This statement cannot be saved.';
+}
+
 export function Therapist() {
   const { t, lang, setOverlay, go, toast, user } = useApp();
   const [attested, setAttested] = useState(() => { try { return localStorage.getItem('ifs.attested') === '1'; } catch { return false; } });
@@ -1076,6 +1088,8 @@ export function Therapist() {
   // The zone the hours are kept in. A save writes this zone explicitly. Nothing is silently defaulted.
   const [zone, setZone] = useState(() => deviceTimeZone());
   const [zoneNeedsConfirm, setZoneNeedsConfirm] = useState(false);
+  const [statement, setStatement] = useState('');
+  const [statementError, setStatementError] = useState('');
   const deviceZone = useMemo(() => deviceTimeZone(), []);
   const [appointments, setAppointments] = useState([]);
   const [appointmentBusy, setAppointmentBusy] = useState('');
@@ -1105,6 +1119,7 @@ export function Therapist() {
         setZone(remoteZone ?? deviceTimeZone());
         // Hours saved before zones existed took this device's zone on load. The therapist confirms it by saving.
         setZoneNeedsConfirm(remote.availability.some((window) => window.zoneFallback));
+        setStatement(remote.statement ?? '');
       })
       .catch((err) => {
         console.error('Therapist availability load failed', err);
@@ -1171,6 +1186,15 @@ export function Therapist() {
       setAvailabilityError(lang === 'ru' ? 'Выберите часовой пояс.' : 'Choose a time zone.');
       return;
     }
+    const trimmedStatement = statement.trim();
+    if (trimmedStatement) {
+      const check = checkFacilitatorStatement({ name: user.displayName || user.email, statement: trimmedStatement, qualificationProvidedBy: 'facilitator' });
+      if (check.ok === false) {
+        setStatementError(statementRefusalText(check.reason, lang));
+        return;
+      }
+    }
+    setStatementError('');
     setAvailabilitySaving(true);
     setAvailabilityError('');
     try {
@@ -1178,7 +1202,7 @@ export function Therapist() {
       const windows = enabled.map(([index, value]) => ({
         days: [Number(index) + 1], start: value.from, end: value.to, minutes: 60, timeZone: zone,
       }));
-      await saveTherapistAvailability(user.uid, windows, user.email);
+      await saveTherapistAvailability(user.uid, windows, user.email, trimmedStatement);
       setZoneNeedsConfirm(false);
       try { localStorage.setItem('ifs.avail', JSON.stringify(avail)); } catch { /* */ }
       toast('✓ ' + t('save'));
@@ -1268,6 +1292,12 @@ export function Therapist() {
                   </div>
                 );
               })}
+              <label className="field mt14">
+                <span>{lang === 'ru' ? 'Короткое описание для клиентов (необязательно)' : 'Short statement for clients (optional)'}</span>
+                <textarea className="drop mt6" rows={3} maxLength={STATEMENT_MAX_CHARS} value={statement}
+                  onChange={(e) => { setStatement(e.target.value); setStatementError(''); }} />
+              </label>
+              {statementError && <p className="faint mt6" role="alert" style={{ fontSize: 12 }}>{statementError}</p>}
               <button className="btn primary block mt14" disabled={availabilitySaving || availabilityLoading || !user?.linked} onClick={saveAvail}>
                 {availabilitySaving ? '⏳ …' : t('save')}
               </button>

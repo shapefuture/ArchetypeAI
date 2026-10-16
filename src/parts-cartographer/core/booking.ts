@@ -442,6 +442,8 @@ export interface TherapistProfile {
   uid: string;
   email: string | null;
   availability: AvailabilityWindow[];
+  /** Public statement shown to clients. Empty when none. Checked by core/facilitator-profile before save. */
+  statement: string;
 }
 
 /** A therapist is bookable only after their profile/availability is saved. */
@@ -453,6 +455,7 @@ export async function getTherapistProfile(therapistUid: string): Promise<Therapi
     uid: snap.id,
     email: typeof data.email === 'string' ? data.email : null,
     availability: normalizeAvailability(data.availability),
+    statement: typeof data.statement === 'string' ? data.statement : '',
   };
 }
 
@@ -465,11 +468,14 @@ export async function saveTherapistAvailability(
   therapistUid: string,
   availability: AvailabilityWindow[],
   email: string | null = null,
+  statement?: string,
 ): Promise<void> {
   const db = getFirestoreDb();
   // Throws before any write when no valid zone is available.
   const windows = stampWindowZones(availability);
-  await setDoc(doc(db, 'therapists', therapistUid), { email, availability: windows }, { merge: true });
+  // The statement is written with the schedule in one write, so a first save always has both keys the rules require.
+  const payload = statement === undefined ? { email, availability: windows } : { email, availability: windows, statement };
+  await setDoc(doc(db, 'therapists', therapistUid), payload, { merge: true });
 }
 
 function toAppointment(id: string, data: Record<string, unknown>): Appointment {

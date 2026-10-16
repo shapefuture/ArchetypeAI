@@ -9,10 +9,11 @@ import { analyzeLegacyRelationalAssessment } from '../core/ai.adapter.ts';
 import { buildLegacyReportData } from './legacy-report-data';
 import { buildLegacyUniverseParts } from '../core/legacy-universe-adapter';
 import { LegacyClinicalReport } from './legacy-report.jsx';
+import { ROUTE_KEYS } from '../core/assessment-routes.ts';
 
-const RESPONSE_KEY = 'ARCHETYPE_ASSESSMENT_RESPONSES';
-const INDEX_KEY = 'ARCHETYPE_ASSESSMENT_INDEX';
-const RESULT_KEY = 'ifs.legacy64.result';
+const RESPONSE_KEY = ROUTE_KEYS.reflection64.responses;
+const INDEX_KEY = ROUTE_KEYS.reflection64.index;
+const RESULT_KEY = ROUTE_KEYS.reflection64.result;
 const TOTAL = ASSESSMENT_QUESTIONS.length;
 
 function readResponses() {

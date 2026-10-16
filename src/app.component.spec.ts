@@ -19,6 +19,8 @@ describe('AppComponent', () => {
 
   afterEach(() => {
     localStorage.clear();
+    // Restore spies so one test's alert/service calls never leak into the next (vitest 4 keeps spy history).
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 

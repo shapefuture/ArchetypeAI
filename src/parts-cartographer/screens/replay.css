@@ -1,0 +1,74 @@
+/* Shared panel styles for the Innerverse panels: Replay, inner negotiation, analytic coordinates and quiet mode.
+   Components reuse styles.css classes (card, field, seg, chip, btn, sub, kicker) and add only what they need here. */
+
+.iv-panel-host {
+  position: absolute; left: 12px; right: 12px; top: 150px; bottom: 96px; z-index: 50;
+  pointer-events: auto; overflow-y: auto; scrollbar-width: none;
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card); padding: 12px 16px 18px;
+}
+.iv-panel-host::-webkit-scrollbar { display: none; }
+.iv-panel-close { float: right; }
+
+.iv-panel { display: flex; flex-direction: column; gap: 10px; }
+.iv-panel + .iv-panel { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.iv-panel h2 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: .01em; color: var(--text); }
+.iv-panel h3 { margin: 4px 0 0; font-size: 13px; font-weight: 900; color: var(--text-dim); }
+.iv-panel-note { margin: 0; color: var(--text-dim); font-size: 13px; line-height: 1.5; font-weight: 600; }
+.iv-status { margin: 0; color: var(--text); font-size: 13px; font-weight: 800; line-height: 1.45; }
+.iv-warn { margin: 0; color: var(--text); font-size: 13px; font-weight: 800; line-height: 1.45; border-left: 3px solid var(--accent); padding-left: 10px; }
+.iv-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.iv-row > .grow { min-width: 120px; }
+.iv-card-tight { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.iv-label-badge {
+  align-self: flex-start; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 900;
+  border: 1.5px solid var(--line-strong); color: var(--text-dim);
+}
+.iv-field-inline { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 800; color: var(--text); }
+.iv-field-inline input[type='checkbox'] { flex: 0 0 22px; width: 22px; height: 22px; accent-color: var(--accent); }
+.iv-field input[type='number'] { width: 100%; }
+.iv-field-group { display: flex; flex-direction: column; gap: 6px; }
+.iv-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.iv-list li { font-size: 14px; line-height: 1.5; font-weight: 600; color: var(--text); }
+
+/* Replay: presentation (Watch and Director) */
+.replay-stage { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--r-lg); border: 1.5px solid var(--line); background: var(--surface2); }
+.replay-stage h3 { color: var(--text); font-size: 15px; font-weight: 900; margin: 0; }
+.replay-cast { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.replay-name { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 850; border: 1.5px solid var(--line); color: var(--text-dim); }
+.replay-name.on { background: var(--accent); color: var(--accent-ink); border-color: #e6bc00; }
+.replay-beats { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+.replay-beat { color: var(--text); font-weight: 650; line-height: 1.5; font-size: 14px; }
+.replay-stage.camera-close .replay-beat { font-size: 17px; line-height: 1.55; }
+.replay-stage.camera-close { padding: 18px; }
+.replay-stage.pace-slow .replay-beats { gap: 16px; }
+.replay-stage.pace-slow .replay-beat { line-height: 1.8; }
+
+/* Replay: everyday scene walk */
+.replay-frame { display: flex; flex-direction: column; gap: 8px; }
+.replay-frame-text { margin: 0; font-size: 15px; line-height: 1.55; font-weight: 650; color: var(--text); }
+.replay-frame-alt { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-dim); font-weight: 600; }
+.replay-details summary { cursor: pointer; font-size: 13px; font-weight: 850; color: var(--text-dim); }
+.replay-details ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+/* Negotiation and coordinates */
+.iv-part { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface2); }
+.iv-part-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 850; color: var(--text); }
+.iv-choice { display: flex; flex-wrap: wrap; gap: 6px; }
+.iv-choice .chip { min-height: 34px; }
+.iv-hypo { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 14px; border: 1.5px dashed var(--line-strong); }
+.iv-hypo p { margin: 0; font-size: 14px; font-style: italic; color: var(--text); line-height: 1.5; }
+.iv-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.iv-table th, .iv-table td { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; vertical-align: top; }
+.iv-table th { font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); }
+.iv-table td.iv-unknown { color: var(--text-dim); font-style: italic; }
+.iv-pre { margin: 8px 0 0; white-space: pre-wrap; font-size: 12px; line-height: 1.6; color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.iv-legend { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--text-dim); line-height: 1.45; }
+.iv-legend strong { color: var(--text); font-weight: 900; }
+
+/* Quiet mode */
+.iv-confirm { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 14px; border: 1.5px solid var(--line-strong); background: var(--surface2); }
+
+@media (max-width: 520px) {
+  .iv-panel-host { left: 8px; right: 8px; padding: 10px 12px 16px; }
+}

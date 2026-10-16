@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character.tsx';
 import { CustomizerLike } from './editor-kit.jsx';
-import { SEED_PARTS, FAMILY_LABELS, randomTraits, pid, SHAPES } from '../pal/traits.ts';
+import { SEED_PARTS, FAMILY_LABELS, randomTraits, pid, SHAPES, withCharacterSeed } from '../pal/traits.ts';
 import { Crest, familyColor, Sheet, Confetti } from '../ui/ui.jsx';
 import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus } from '../core/booking.ts';
@@ -344,7 +344,8 @@ export function PartSheet({ id }) {
 /* ═══════════ Part editor (shape/eyes/mouth/color/family) ═══════════ */
 export function PartEditor({ part }) {
   const { t, lang, parts, setParts, setSheet, toast } = useApp();
-  const [draft, setDraft] = useState({ ...part });
+  // Freeze a legacy record's current seed on open, so editing one trait keeps the same sewn character.
+  const [draft, setDraft] = useState(() => ({ ...part, traits: withCharacterSeed(part.traits) }));
   const patch = (p) => setDraft((d) => ({ ...d, ...p }));
   const commit = () => {
     setParts(parts.map((x) => (x.id === draft.id ? draft : x)));

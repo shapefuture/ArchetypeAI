@@ -13,6 +13,22 @@ export const DIMENSION_KEYS: DimensionKey[] = ['AGENCY', 'TEMPERATURE', 'FOCUS',
 export type UniverseAxes = [DimensionKey, DimensionKey, DimensionKey];
 export const DEFAULT_AXES: UniverseAxes = ['AGENCY', 'TEMPERATURE', 'FOCUS'];
 
+/** Three distinct known dimensions, or the default projection. Repeated axes would collapse the 3D view. */
+export function normalizeAxes(value: unknown): UniverseAxes {
+  if (!Array.isArray(value) || value.length !== 3) return [...DEFAULT_AXES] as UniverseAxes;
+  const valid = value.every((key) => DIMENSION_KEYS.includes(key as DimensionKey));
+  return valid && new Set(value).size === 3 ? [...value] as UniverseAxes : [...DEFAULT_AXES] as UniverseAxes;
+}
+
+/** Choose an axis for one slot. If the axis is already used elsewhere, the two slots trade places. */
+export function setAxisChoice(axes: UniverseAxes, index: number, key: DimensionKey): UniverseAxes {
+  const next = [...axes] as UniverseAxes;
+  const other = next.indexOf(key);
+  if (other >= 0 && other !== index) next[other] = next[index];
+  next[index] = key;
+  return next;
+}
+
 export const ZERO_DIMENSIONS: UniverseDimensions = {
   AGENCY: 0,
   TEMPERATURE: 0,

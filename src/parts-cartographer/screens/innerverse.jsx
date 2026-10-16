@@ -8,7 +8,7 @@ import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapte
 import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus } from '../core/booking.ts';
-import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates } from '../services/universe-lens';
+import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates, setAxisChoice } from '../services/universe-lens';
 import { ModalLayer } from '../ui/modal-layer.jsx';
 
 const CLUSTER_LABELS = {
@@ -291,7 +291,7 @@ export function Innerverse() {
                   </div>
                 </div>
               ))}
-              {axes.map((key, index) => <label className="field mt12" key={index}>{['X', 'Y', 'Z'][index]}<select value={key} onChange={(event) => setAxes((current) => current.map((axis, i) => i === index ? event.target.value : axis))}>{DIMENSION_KEYS.map((axis) => <option key={axis} value={axis}>{dimensionCopy[axis.toLowerCase()]}</option>)}</select></label>)}
+              {axes.map((key, index) => <label className="field mt12" key={index}>{['X', 'Y', 'Z'][index]}<select value={key} onChange={(event) => setAxes((current) => setAxisChoice(current, index, event.target.value))}>{DIMENSION_KEYS.map((axis) => <option key={axis} value={axis}>{dimensionCopy[axis.toLowerCase()]}</option>)}</select></label>)}
               <p className="sub mt12">{xrSupported ? 'WebXR' : lang === 'ru' ? 'WebXR недоступен в этом браузере. Карта работает в обычном режиме.' : 'WebXR is unavailable in this browser. Explore the map here.'}</p>
               {xrSupported && <button className="btn block mt8" onClick={async () => { try { await uniRef.current.enterXR(); } catch { toast(lang === 'ru' ? 'Не удалось открыть WebXR' : 'Could not start WebXR'); } }}>WebXR</button>}
             </div>

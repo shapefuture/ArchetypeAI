@@ -158,6 +158,7 @@ function projectedPart(
     archetype: {
       schema: 'archetype-map.v1',
       sourceAssessment: 'descent147',
+      coordinateBasis: 'fixed-reference-147',
       coordinates: [reference.ax.ag, reference.ax.te, reference.ax.fo, reference.ax.at]
         .map((value) => (value - 50) / 50) as [number, number, number, number],
       cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[family],

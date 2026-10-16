@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { feltDna } from './felt-dna';
-import { SEED_PARTS, SHAPES } from './traits';
+import { SEED_PARTS, SHAPES, randomTraits, withCharacterSeed } from './traits';
 import { buildData } from '../../../felt-atelier/src/builder.js';
 import { feltHex } from '../../../felt-atelier/src/dna.js';
 import { adaptClinicalProfile } from '../core/clinical-profile-adapter';
@@ -18,7 +18,7 @@ describe('merged Felt Atelier character bridge', () => {
         mesh.geo.dispose();
       }
     }
-  });
+  }, 30_000); // Sews ~150 characters; the default 5s budget is exceeded when suites run in parallel.
   it('uses stable sewn DNA for cards and universe without changing existing trait records', () => {
     const part = SEED_PARTS[0];
     const before = JSON.stringify(part);
@@ -61,5 +61,43 @@ describe('merged Felt Atelier character bridge', () => {
     const plain = buildData({ ...dna, facewear: 'none', bow: false, cheeks: false }, { lod: 'map' });
     expect(detailed.flat.length).toBeGreaterThan(plain.flat.length);
     [...detailed.parts, ...plain.parts].forEach((part) => part.geo.dispose());
+  });
+});
+
+describe('character identity across customization and saved history', () => {
+  // Seeds that the saved characters sew from today. A change here re-sews existing cards and universe nodes.
+  const PINNED_SEEDS: Record<string, number> = {
+    'seed-planner': 1434430917, 'seed-critic': 1303029907, 'seed-pleaser': 2401590885,
+    'seed-guardian': 4193065465, 'seed-scroller': 1495723507, 'seed-sweet': 2707496615,
+    'seed-rage': 3419979155, 'seed-binge': 1475428253, 'seed-little': 2675925653,
+    'seed-hidden': 3370784235, 'seed-grief': 3334528908, 'seed-first': 3732843369,
+    'seed-self': 3730753846, 'seed-witness': 756758835, 'seed-coach': 21530028,
+  };
+
+  it('keeps every saved seed character sewing from the seed it already renders with', () => {
+    for (const part of SEED_PARTS) {
+      expect(feltDna(part.traits).seed, part.id).toBe(PINNED_SEEDS[part.id]);
+    }
+  });
+
+  it('freezes a legacy implicit seed without changing the sewn character', () => {
+    for (const part of SEED_PARTS) {
+      expect(feltDna(withCharacterSeed(part.traits)), part.id).toEqual(feltDna(part.traits));
+    }
+  });
+
+  it('keeps the same seed and body when a frozen character is recolored or re-eyed', () => {
+    const frozen = withCharacterSeed(SEED_PARTS[0].traits);
+    const edited = { ...frozen, color: '#FF2D8A', eyes: 'closed' as const, face: 'glasses' as const };
+    expect(feltDna(edited).seed).toBe(feltDna(frozen).seed);
+    expect(feltDna(edited).body).toEqual(feltDna(frozen).body);
+  });
+
+  it('gives every new character a stable integer seed that later edits keep', () => {
+    const traits = randomTraits('exile');
+    expect(Number.isInteger(traits.characterSeed)).toBe(true);
+    expect(traits.characterSeed).toBeGreaterThanOrEqual(0);
+    expect(traits.characterSeed).toBeLessThanOrEqual(0xffffffff);
+    expect(feltDna({ ...traits, color: '#3B9BFF' }).seed).toBe(feltDna(traits).seed);
   });
 });

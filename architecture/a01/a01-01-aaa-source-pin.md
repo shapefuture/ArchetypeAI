@@ -41,7 +41,7 @@ Source text: "A system conforming to AAA v7.1 SHALL be able to answer, mechanica
 | 8 | Autonomous versus approved adaptation | The runtime autonomy level is not declared; the AAA plan (line 44) rejects calling the model-enabled product AG0. Dev changes are governed by Beads and review. Live model calls exist (section 4, O-1). | Partial |
 | 9 | Return to legitimate state | This candidate: `git revert`. No app runtime recovery is declared. | Partial |
 | 10 | Which optional mechanisms are enabled | Runtime-agentic flag not declared. Live model calls exist. | Open conflict, O-1 |
-| 11 | Workcells, write sets, parallel safety | Write set declared; the diff was checked against it. Shared-checkout reservations only (C-M7). | Partial |
+| 11 | Workcells, write sets, parallel safety | Write set declared; the diff was checked against it, except the CI step in `52002da`, which is outside the write set and is recorded as an exception in §7. Shared-checkout reservations only (C-M7). | Partial |
 | 12 | Swappable components | React and Angular AI ports differ. `AiPortV1` is frozen with additive versioning. | Partial, G-8 |
 
 The candidate adds two files and no runtime mechanism or service, so it applies the "least powerful mechanism" rule to itself.
@@ -52,7 +52,7 @@ The candidate adds two files and no runtime mechanism or service, so it applies 
 | --- | --- | --- | --- |
 | P1 Minimal privileged kernel | "Everything else SHOULD be replaceable." (L39) | SHOULD | No kernel defined. Pending A01.02. |
 | P2 Separation of authority | "Execution authority, evaluation authority, deployment authority, and evidence authority MUST be separable." (L43) | MUST | Not met. No separate evaluator or deployer. G-6, G-11. |
-| P3 Immutable generations | "A running generation MUST NOT silently rewrite its own identity." (L47) | MUST | Partial: applied to the pin (C-M3), where T1 detects a byte change; app generations not met, G-6. |
+| P3 Immutable generations | "A running generation MUST NOT silently rewrite its own identity." (L47) | MUST | Partial: applied to the pin (C-M3), where T1 fails if the snapshot's bytes change; this was not exercised by modifying the file; app generations not met, G-6. |
 | P4 Minimal disturbance | "...SHOULD invalidate only the smallest causally dependent subgraph..." (L51) | SHOULD | Not evidenced. Pending A01.05. |
 | P5 Reconstructibility | High-consequence adaptive decisions "MUST be attributable" (L55) | MUST, when such decisions exist | None declared at runtime. Not applicable to the pin. |
 | P6 Typed effects | "The architecture SHALL distinguish..." six effect classes (L59) | MUST | Applied to this candidate (section 7). Repo-wide inventory pending, G-9. |
@@ -76,7 +76,7 @@ The candidate adds two files and no runtime mechanism or service, so it applies 
 | --- | --- | --- |
 | "Every meaningful deployable state SHALL have a `GenerationManifest`." (L256) | SHALL | Not met, G-6. Deployables at base: `wrangler.toml` (worker `archetypeai-worker`, main `worker.ts`), the React/Vite build, the retained Angular build, and `firestore.rules`. This candidate is not a deployable state. |
 | Manifest fields (L259-273): `source_hash`, `build_hash`, `dependency_lock_hash`, `configuration_hash`, `schema_hashes`, `policy_hash`, `component_graph_hash`, `feature_configuration_hash`, `evidence_root`, `parent_ids`, `signer` and others | SHALL, via the manifest clause | The pin supplies `source_hash` for the specification input only. Build identity is partly content-addressed: `scripts/stamp-sw.mjs` uses the short git HEAD plus a content hash, with `Date.now()` only as a fallback; `scripts/stamp-parts-cartographer-sw.mjs` embeds a wall-clock value (`Date.now()`, line 23). Neither is a GenerationManifest (per the AAA plan). Not met, G-6. |
-| "`generation_id` SHOULD be content-addressed." (L276) | SHOULD | Partial. The pin is a SHA-256 content address. No app generation IDs exist. |
+| "`generation_id` SHOULD be content-addressed." (L276) | SHOULD | Not met for the application. The pin is a SHA-256 content address for the specification input only. No app generation IDs exist. |
 | "Activation MUST be atomic from the control plane perspective" (L278) | MUST | Not met. No activation mechanism exists, G-6. |
 | "The previous generation SHALL remain addressable for rollback..." (L284) | SHALL | Partial. Git retains the pinned blob (case F7). No app rollback target is declared, G-6. |
 
@@ -90,7 +90,7 @@ L1357 says "A small ordinary application can conform without becoming infrastruc
 | 2 | Mandatory Agentic Development Fabric, isolated workcells, no shared mutable workspace | MUST | `.agents/skills/full-plan-delivery` (reservations, `templates/workcell.json`) and the roadmap continuity guard in CI. The skill's README says reservations "coordinate cooperating agents in one checkout." | Partial, G-7 |
 | 3 | Component slots plus versioned contracts | MUST | `src/app/core/ports/ai.port.ts` (`AiPortV1` frozen, additive versioning, AAA-05); `src/parts-cartographer/core/ports.ts` ("frozen V1"). React and Angular ports diverge (AAA plan). No slot registry. | Partial, G-8 |
 | 4 | Domain/adapter boundary | MUST | Adapters at `src/app/core/adapters/*` and `src/parts-cartographer/core/*adapter*.ts`. React wiring imports concrete adapters (AAA plan). | Partial, G-8 |
-| 5 | Typed effects for external and state mutations | MUST | No effect registry found. `src/parts-cartographer/elevation/e17-operation-status.ts:17` defines a three-class `EffectClass` (`read`, `idempotent-write`, `non-idempotent-write`) for retry only, not the six classes of §9. | Partial, G-9 |
+| 5 | Typed effects for external and state mutations | MUST | No effect registry found. `src/parts-cartographer/elevation/e17-operation-status.ts:17` defines a three-class `EffectClass` (`read`, `idempotent-write`, `non-idempotent-write`) for retry only, not the six classes of §9. | Not met, G-9 |
 | 6 | Immutable build and version identity | MUST | Build identity is partly wall-clock: see 2.4 for the two stamp scripts. | Not met, G-6 |
 | 7 | Rollback path | MUST | No app rollback procedure found. `src/parts-cartographer/core/backup.ts:134` rolls back partial local writes on quota or storage failure; that is not a release rollback. | Not met, G-6 |
 | 8 | Architecture, contract and swap-compatibility tests | MUST | This candidate adds the first architecture test (T1 to T3). `src/app/core/adapters/ai-port.contract.spec.ts` exists. CI runs `tests/architecture/a01` in the verify job (`.github/workflows/ci.yml`, step added in `52002da`). | Partial, G-2 |
@@ -130,7 +130,7 @@ Referenced by §44 item 2 and by L125. Not traced beyond these clauses in this c
 
 - **C-S1** Everything else replaceable (P1, L39).
 - **C-S2** Minimal disturbance (P4, L51).
-- **C-S3** Complexity pays rent (P11, L79). Applied: this candidate is removable with one revert.
+- **C-S3** Complexity pays rent (P11, L79). Applied: this candidate is removable with two reverts: the artifact and test in `1384694`, and the CI step in `52002da`.
 - **C-S4** Content-addressed `generation_id` (§7, L276). The pin is a content address for the specification input, not a generation id. C-S4 is not met for the application.
 - **C-S5** "Everything else is activated by need" (L1372). Applied in section 4.
 
@@ -146,7 +146,7 @@ Referenced by §44 item 2 and by L125. Not traced beyond these clauses in this c
 ### 3.4 Interpretations for independent review
 
 - **I-1** Section 44 uses no normative keyword. It is read as the floor for the minimal profile because it says a small application "can conform" with it. Lowering any item would weaken the adopted requirement.
-- **I-2** Keyword-less statements (P5, P7, P9 and similar) are adopted at MUST strength so that no requirement is silently weakened.
+- **I-2** Keyword-less statements (P7 only: P5 and P9 contain MUST in the snapshot at L55 and L71) are adopted at MUST strength so that no requirement is silently weakened.
 
 ## 4. Optional-profile exclusions and conditions
 
@@ -154,12 +154,12 @@ Referenced by §44 item 2 and by L125. Not traced beyond these clauses in this c
 | --- | --- | --- | --- | --- |
 | Cellular/distributed (§27, L959) | Excluded | No cell membership. No blast-radius requirement declared. | A measured failure-domain requirement | Control-plane cell membership and failure drills |
 | Plugin-runtime (§28, L967) | Excluded | No plugin host: a search of `src/` and `worker*.ts` for "plugin" finds nothing. | Third-party or user-installed extensions | Typed services, capabilities, compatibility checks (§28) |
-| Runtime-agentic (§29, L982) | **Default-off; open conflict O-1** | `profiles.agentic.enabled: false` (L987-989). But live model calls exist: `src/services/gemini.service.ts`, imported by the synastry panel, universe controls, results panel and `app.component.ts`; the coach panel does not import it. Live calls also run through `worker.ts:388-389` (Ollama, OpenRouter). The AAA plan requires a narrowly declared AG1 scope for these calls when enabled. | A01.02 decides whether the shipped model calls count as enabled. This candidate does not change the flag. | AG1 additions: tool capability broker, model/tool execution journal, context provenance, effect-appropriate sandbox (L1004-1009) |
-| AG2 persistent learning (L1011) | Excluded | Model output enters personal memory as `source: 'model-inference'` with `saved` defaulting to false (`src/parts-cartographer/core/personal-memory.ts:5`; `src/parts-cartographer/elevation/e06-corrections.ts:45`; `src/parts-cartographer/screens/memory-panel.jsx:16`, `:77-79`, `:157`). Saving needs the user's choice. No skill promotion found. | Any feature that stores model-derived experience as trusted memory or skills | Evidence-promotion firewall, quarantine, poisoning checks, rollbackable versions (L1015-1021) |
+| Runtime-agentic (§29, L982) | **Not declared; open conflict O-1** | No runtime-agentic flag is declared in the repo. The spec's example at L987-989 is not repo state. But live model calls exist: `src/services/gemini.service.ts`, imported by the synastry panel, universe controls, results panel and `app.component.ts`; the coach panel does not import it. Live calls also run through `worker.ts:388-389` (Ollama, OpenRouter). The AAA plan requires a narrowly declared AG1 scope for these calls when enabled. | A01.02 decides whether the shipped model calls count as enabled. This candidate does not change the flag. | AG1 additions: tool capability broker, model/tool execution journal, context provenance, effect-appropriate sandbox (L1004-1009) |
+| AG2 persistent learning (L1011) | Excluded | No model-to-memory write path was found. The personal-memory module defines a `model-inference` source (`src/parts-cartographer/core/personal-memory.ts:5`), but the memory panel writes only user entries (`src/parts-cartographer/screens/memory-panel.jsx:116`, `:152`, `:156`). Model-creatable correction nodes are set `saved` in `src/parts-cartographer/elevation/e06-corrections.ts:138`, persist under `INNERVERSE_CORRECTIONS_V1` (`src/parts-cartographer/screens/elevation/e06-corrections.jsx:8`), and are added only with `actor: 'user'` (`e06-corrections.jsx:69`). No skill promotion found. | Any feature that stores model-derived experience as trusted memory or skills | Evidence-promotion firewall, quarantine, poisoning checks, rollbackable versions (L1015-1021) |
 | AG3 harness self-improvement (L1023) | Excluded | The AAA plan keeps AG3 and AG4 disabled under this adoption. | A separate governed adoption decision | L1027-1035 |
 | AG4 bounded recursive self-improvement (L1037) | Excluded; at least R4 (L1052) | As for AG3. | As for AG3, under R4 governance | L1041-1050 |
 | Resilience, distributed, incremental, adaptive (L118-122; §§12-18; §27 is in the row above) | Not adopted; activated by need (L1372) | Not in the §44 floor. No demonstrated need in this candidate. | Demonstrated failure or performance need | Profile-specific evidence |
-| Microservices, Kubernetes, event sourcing, CRDTs, cloud dependency | Excluded | Firebase is a runtime dependency of the shipped app (`package.json`; `src/app/core/adapters/firebase-auth.adapter.ts`). The core modules this artifact traces do not import it. The exclusion is this candidate's scope choice, not a plan-level fact. | Demonstrated need | Profile adoption review |
+| Microservices, Kubernetes, event sourcing, CRDTs, cloud dependency | Excluded | Firebase is a runtime dependency of the shipped app (`package.json`). Traced modules import it: `src/parts-cartographer/core/auth.service.ts:11` loads `firebase/auth`, and `ai.adapter.ts:6` imports that service. The Angular adapter `src/app/core/adapters/firebase-auth.adapter.ts` also imports Firebase. The exclusion is this candidate's scope choice, not a plan-level fact. | Demonstrated need | Profile adoption review |
 
 Section 11A (development fabric) is mandatory and is not excluded.
 
@@ -170,7 +170,7 @@ Gate status for this candidate is PENDING unless marked otherwise. Planned step 
 | Gate | Requirement | Status | Owner or planned step |
 | --- | --- | --- | --- |
 | G-1 | Independent review of the pin, traceability, classes, I-1 and I-2 | PENDING | Independent reviewer, not the producing workcell |
-| G-2 | Run `python3 -I -m unittest discover -s tests/architecture/a01 -p 'test_*.py'` in CI | DONE in `52002da`, pending broker review | One step added to the verify job of `.github/workflows/ci.yml`, outside this candidate's write set; the broker must accept it before acceptance |
+| G-2 | Run `python3 -I -m unittest discover -s tests/architecture/a01 -p 'test_*.py'` in CI | PENDING (step present in `52002da`; broker review needed) | One step added to the verify job of `.github/workflows/ci.yml`, outside this candidate's write set; the broker must accept it before acceptance |
 | G-3 | Re-run T1 to T3 in a fresh clone | PENDING | Independent verifier |
 | G-4 | Drift check of the snapshot against the upstream URL | PENDING (no network used) | Verifier with network access |
 | G-5 | Constitution and invariant registry (§5, §44.1) | NOT MET | Planned `a09p` (`ArchetypeAI-znk3` to `ArchetypeAI-ayt6`) |
@@ -203,7 +203,7 @@ T1, T2 and T3 name the three test methods in `tests/architecture/a01/test_source
 ## 7. Record: contracts, state, effects, risk, evidence
 
 - **Read set:** `docs/plans/references/AAA-V7-SPEC.source.md`; `docs/80-20-plan.md` (scanned: no AAA or A01 references); `.github/workflows/ci.yml`; `src/**` (paths checked for the surfaces named above, not read in full); `docs/plans/aaa-v7-architecture-and-agent-sweeps.md` and `docs/plans/elevation-aaa-v7-beads-plan.json` (plan snapshots, not authority); `docs/eleven-out-of-ten-plan.md` (points to the AAA plan).
-- **Write set:** `architecture/a01/**`, `tests/architecture/a01/**`. Nothing else is written.
+- **Write set:** `architecture/a01/**`, `tests/architecture/a01/**`. One change sits outside it: the CI step in `.github/workflows/ci.yml`, added in `52002da`. It is broker-owned, so it is recorded here as an exception that the broker must accept before this candidate is accepted.
 - **Changed contracts:** none existing. New: `aaa-source-pin` v1, consisting of the section 1 values and the constants in the test. Consumer: A01.02, read-only.
 - **State ownership:** no runtime state. Git holds the artifacts; Beads holds task status.
 - **Effect class:** reads of the source file, pure hash computation, reversible file creation inside the write set. No network, service, or migration.

@@ -753,7 +753,7 @@ export function Booking() {
       // Read a privacy-safe schedule projection; do not silently fall back to
       // an empty schedule if the occupied-slot lookup is denied or unavailable.
       const booked = await therapistBusyIntervals(match.uid);
-      // Hours without a zone are never assumed to be in the client's zone. They stay unbookable until the therapist saves them with a zone.
+      // Hours saved before zones existed take the device zone of the device that reads them (see normalizeAvailability).
       const zone = therapistTimeZone(therapistProfile.availability);
       const bookDays = zone ? bookableDays(therapistProfile.availability, new Date(), 14, { timeZone: zone }) : [];
       setTherapist({ uid: match.uid, email: therapistProfile.email || match.email || email, displayName: match.displayName });
@@ -1103,8 +1103,8 @@ export function Therapist() {
         setAvail({ days });
         const remoteZone = therapistTimeZone(remote.availability);
         setZone(remoteZone ?? deviceTimeZone());
-        // Hours saved with no zone predate zones. Their zone is unknown, so the therapist confirms it.
-        setZoneNeedsConfirm(!remoteZone && remote.availability.length > 0);
+        // Hours saved before zones existed took this device's zone on load. The therapist confirms it by saving.
+        setZoneNeedsConfirm(remote.availability.some((window) => window.zoneFallback));
       })
       .catch((err) => {
         console.error('Therapist availability load failed', err);

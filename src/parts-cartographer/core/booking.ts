@@ -62,6 +62,8 @@ export interface AvailabilityWindow {
   end: string;
   minutes: number;
   timeZone?: string;
+  /** True when the zone came from the reading device, because the window was saved before zones existed. Never saved. */
+  zoneFallback?: boolean;
 }
 
 /** Default: weekdays 09:00–17:00, 60-minute slots. */
@@ -381,10 +383,16 @@ export function slotEnd(slotISO: string, minutes = 60): string {
 // Firestore operations
 // ---------------------------------------------------------------------------
 
-export function normalizeAvailability(raw: unknown): AvailabilityWindow[] {
-  if (!Array.isArray(raw)) return DEFAULT_AVAILABILITY;
-  if (raw.length === 0) return [];
-  return raw
+/**
+ * A window saved before zones existed has no `timeZone`. It takes `fallbackZone`
+ * (by default the device's zone, as the owner chose). Pass null to keep such
+ * windows zone-less. Note that a legacy window follows whichever device reads it,
+ * so it is only stable for the device that saved it, until the owner re-saves.
+ */
+export function normalizeAvailability(raw: unknown, fallbackZone: string | null = deviceTimeZone()): AvailabilityWindow[] {
+  const windows: unknown[] = Array.isArray(raw) ? raw : DEFAULT_AVAILABILITY;
+  if (windows.length === 0) return [];
+  return windows
     .filter((w): w is AvailabilityWindow => !!w && typeof w === 'object')
     .map(w => {
       const window: AvailabilityWindow = {
@@ -393,8 +401,12 @@ export function normalizeAvailability(raw: unknown): AvailabilityWindow[] {
         end: typeof w.end === 'string' ? w.end : '17:00',
         minutes: typeof w.minutes === 'number' && w.minutes > 0 ? w.minutes : 60,
       };
-      // A window without a valid zone stays zone-less. Its zone is never assumed.
-      if (isValidIanaZone(w.timeZone)) window.timeZone = w.timeZone;
+      if (isValidIanaZone(w.timeZone)) {
+        window.timeZone = w.timeZone;
+      } else if (isValidIanaZone(fallbackZone)) {
+        window.timeZone = fallbackZone;
+        window.zoneFallback = true;
+      }
       return window;
     })
     .filter(w => w.days.length > 0);

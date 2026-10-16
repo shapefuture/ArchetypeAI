@@ -1,9 +1,9 @@
 # E14.01 audit: Export and portability
 
 - Bead: `ArchetypeAI-1kgk` (E14.01). Tracker status at audit: open.
-- Checked at: HEAD `52002da`, generated 2026-10-16.
-- Disposition: **candidate audit, awaiting independent review.** Read-only. No implementation changed. No acceptance is claimed.
-- Method: file inventory, test-name listing, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
+- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
 
@@ -12,7 +12,7 @@
 | Pure step module | `src/parts-cartographer/elevation/e14-export.ts` | 14 in 1 spec file(s) |
 | Panel | `src/parts-cartographer/screens/elevation/e14-export.jsx` | 2 (spec files: e14-export.spec.ts) |
 | Mounted in | `src/parts-cartographer/screens/cabinet.jsx` | - |
-| Storage key | none | - |
+| Storage key | none Also reads `MEMORY_KEY` (`src/parts-cartographer/screens/elevation/e14-export.jsx:8, 40`) and exports saved memories only. | - |
 
 ## 2. Observable scenarios from the bead
 
@@ -53,4 +53,4 @@ Keep. Add a browser check that the preview lists exactly the fields in the expor
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending**.
+- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).

@@ -1,16 +1,16 @@
 # E20.01 audit: Independent evaluation rubric
 
 - Bead: `ArchetypeAI-wvtm` (E20.01). Tracker status at audit: open.
-- Checked at: HEAD `52002da`, generated 2026-10-16.
-- Disposition: **candidate audit, awaiting independent review.** Read-only. No implementation changed. No acceptance is claimed.
-- Method: file inventory, test-name listing, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
+- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
 
 | Item | Path | Tests |
 | --- | --- | --- |
 | Pure step module | `src/parts-cartographer/elevation/e20-evaluation.ts` | 15 in 1 spec file(s) |
-| Panel | `src/parts-cartographer/screens/elevation/e20-evaluation.jsx` | 0 (spec files: none (combined spec `e19-e20.spec.ts`, counted under E19 only)) |
+| Panel | `src/parts-cartographer/screens/elevation/e20-evaluation.jsx` | 1 (spec files: combined spec `e19-e20.spec.ts`: one block for E20) |
 | Mounted in | `src/parts-cartographer/screens/cabinet.jsx` | - |
 | Storage key | none | - |
 
@@ -58,4 +58,4 @@ None. The rubric display is the intended end state for this step.
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending**.
+- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).

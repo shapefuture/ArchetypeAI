@@ -1,9 +1,9 @@
 # E09.01 audit: Feedback without recording pressure
 
 - Bead: `ArchetypeAI-lgo` (E09.01). Tracker status at audit: open.
-- Checked at: HEAD `52002da`, generated 2026-10-16.
-- Disposition: **candidate audit, awaiting independent review.** Read-only. No implementation changed. No acceptance is claimed.
-- Method: file inventory, test-name listing, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
+- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
 
@@ -43,14 +43,15 @@
 
 ## 5. Gaps (judgement, not measurement)
 
+- Declining recording writes to the feedback key from the panel (`src/parts-cartographer/screens/elevation/e09-feedback.jsx:74-76`), while the module copy says Nothing was saved (`src/parts-cartographer/elevation/e09-feedback.ts:59`). This is a defect to resolve.
 - Feedback and its preference are stored locally. There is no remote feedback sink.
 - Deduplication is covered by module tests only.
 
 ## 6. Smallest useful slice (educated guess)
 
-Keep. Add one test that declining recording leaves no stored feedback.
+Resolve the mismatch: either stop saving on decline or correct the copy. Then add a test that declining leaves no stored feedback.
 
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending**.
+- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).

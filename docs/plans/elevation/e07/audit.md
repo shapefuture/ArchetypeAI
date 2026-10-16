@@ -1,9 +1,9 @@
 # E07.01 audit: Validity, context and resurfacing
 
 - Bead: `ArchetypeAI-bqm` (E07.01). Tracker status at audit: open.
-- Checked at: HEAD `52002da`, generated 2026-10-16.
-- Disposition: **candidate audit, awaiting independent review.** Read-only. No implementation changed. No acceptance is claimed.
-- Method: file inventory, test-name listing, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
+- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
 
@@ -12,7 +12,7 @@
 | Pure step module | `src/parts-cartographer/elevation/e07-validity.ts` | 15 in 1 spec file(s) |
 | Panel | `src/parts-cartographer/screens/elevation/e07-validity.jsx` | 2 (spec files: e07-validity.spec.ts) |
 | Mounted in | `src/parts-cartographer/screens/cabinet.jsx` | - |
-| Storage key | `INNERVERSE_VALIDITY_V1` | - |
+| Storage key | `INNERVERSE_VALIDITY_V1` Also reads `MEMORY_KEY` (`src/parts-cartographer/screens/elevation/e07-validity.jsx:40`). | - |
 
 ## 2. Observable scenarios from the bead
 
@@ -44,14 +44,14 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- The memory key (`INNERVERSE_MEMORY_V1`) is shared with the memory panel, so a change here affects that panel.
-- Declined resurfacing is stored locally only.
+- The panel reads the memory key (`INNERVERSE_MEMORY_V1`) and writes its own validity key. A change to the memory shape affects this panel's reads.
+- Declined resurfacing is stored locally only. The panel has no resurfacing control (`e07-validity.jsx:45-47, 74-75`), so the decline cannot be exercised from the UI.
 
 ## 6. Smallest useful slice (educated guess)
 
-Keep. Add one test that a declined resurfacing does not return after reload.
+Add a resurfacing control with one test that a declined resurfacing does not return after reload, or record that the scenario is outside this panel.
 
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending**.
+- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).

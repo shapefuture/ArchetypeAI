@@ -1,9 +1,9 @@
 # E17.01 audit: Save status and operations
 
 - Bead: `ArchetypeAI-ugua` (E17.01). Tracker status at audit: open.
-- Checked at: HEAD `52002da`, generated 2026-10-16.
-- Disposition: **candidate audit, awaiting independent review.** Read-only. No implementation changed. No acceptance is claimed.
-- Method: file inventory, test-name listing, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
+- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
 
@@ -45,14 +45,15 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- The panel shows local save state and the note draft. Remote save failure, quota and offline read are not wired.
-- Late coach replies and duplicate booking are not connected to this panel.
+- The panel shows local save state and the note draft. A read-back mismatch shows a failed state and is tested (`e17-save-status.spec.ts:54`).
+- The store swallows quota errors (`src/parts-cartographer/core/local-store.ts:23`), so the panel cannot show them.
+- Remote save failure and offline read are not wired.
 
 ## 6. Smallest useful slice (educated guess)
 
-Surface the local save failure path already present in the store as an explicit status.
+Surface quota failures: pass them up from `local-store.ts:23` to the panel status, with a test.
 
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending**.
+- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).

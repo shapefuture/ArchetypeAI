@@ -1,9 +1,9 @@
 # E04.01 audit: Discriminating insight questions
 
 - Bead: `ArchetypeAI-1hj` (E04.01). Tracker status at audit: open.
-- Checked at: HEAD `52002da`, generated 2026-10-16.
-- Disposition: **candidate audit, awaiting independent review.** Read-only. No implementation changed. No acceptance is claimed.
-- Method: file inventory, test-name listing, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
+- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
 
@@ -42,14 +42,15 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- The panel is mounted in the check-in screen. Its five response types are covered by module tests and two UI tests.
+- The panel is mounted in the check-in screen. Its five response types are covered by module tests. Two UI tests check the five labels and one click.
+- The panel has no correction control and does not import a correction function, so the correction behaviour is not reachable from the UI.
 - Whether the questions discriminate usefully is not measured with participants.
 
 ## 6. Smallest useful slice (educated guess)
 
-Add a UI test that a correction changes wording without writing score or history (currently asserted in the module only).
+Add a correction control to the panel with a test that wording changes and no score or history is written, or remove the correction scenario from this step.
 
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending**.
+- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).

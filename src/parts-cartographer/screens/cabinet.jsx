@@ -17,6 +17,10 @@ import { FeltRolesPanel } from './elevation/e11-felt-roles.jsx';
 import { PocketCardPanel } from './elevation/e14-export.jsx';
 import { GrammarPanel } from './elevation/e13-grammar.jsx';
 import { SessionPrepPanel } from './elevation/e15-session-prep.jsx';
+import { SaveStatusPanel } from './elevation/e17-save-status.jsx';
+import { DeviceEnvelopePanel } from './elevation/e18-device.jsx';
+import { ExtensionsPanel } from './elevation/e19-extensions.jsx';
+import { EvaluationRubricPanel } from './elevation/e20-evaluation.jsx';
 import { MemoryPanel } from './memory-panel.jsx';
 import { SharedSupportPanel } from './shared-support.jsx';
 import { ReminderSettings } from './reminder-settings.jsx';
@@ -281,8 +285,12 @@ export function Cabinet() {
         <PocketCardPanel />
         <GrammarPanel />
         <SessionPrepPanel />
+        <SaveStatusPanel />
+        <DeviceEnvelopePanel />
+        <ExtensionsPanel />
         <SharedSupportPanel />
         <ReminderSettings />
+        {adminAccess && <EvaluationRubricPanel />}
         {adminAccess && (
           <button className="card mt16 row" style={{ width: '100%', textAlign: 'left', borderColor: 'var(--accent)' }} onClick={() => setOverlay('admin')}>
             <span className="opt-k" style={{ background: 'var(--surface2)', fontSize: 18 }}>🛡️</span>

@@ -22,10 +22,10 @@ No quest, skill graph, repertoire or shared quest state exists. Optional rewards
 | Area | Evidence (file:line) | Status for B06 |
 |---|---|---|
 | Artifact progression model | `src/parts-cartographer/core/artifact-progression.ts` (`progressFor`, `revise`, `chooseReward`, `isEssentialLocked`) | Present at HEAD (9df2be4, after base). Reusable as the progression model. Essentials are never locked (`isEssentialLocked` returns false). |
-| Guidance progression | `src/parts-cartographer/elevation/e08-transfer.ts` (`progressAfter`) | Present as a pure function with unit tests. Not called by the mounted transfer panel. One lighter help step after an unaided recall, if called. No points. |
+| Guidance progression | `src/parts-cartographer/elevation/e08-transfer.ts` (`progressAfter`; HEAD only) | Present as a pure function with unit tests. Not called by the mounted transfer panel. One lighter help step after an unaided recall, if called. No points. |
 | Practice toolkit storage | `src/parts-cartographer/screens/practice-toolkit.jsx:22` (HEAD) (`TOOLKIT_KEY`), `:370` (`normalizeToolkit`) | Stores `artifacts`, `rewardOptions` and `rewardChoice` alongside cards, outcomes and reviews. Device-local. |
 | Event-type label `achievement` | `src/app/features/checkin-panel/checkin-panel.component.ts:156` | Label only. Not a reward event; no points, unlocks or state. |
-| Storage port | `src/parts-cartographer/core/ports.ts:39`, `src/parts-cartographer/core/local-store.ts:15` (`store`) | Reusable for device-local state. |
+| Storage port | `src/parts-cartographer/core/ports.ts:15-21`, `src/parts-cartographer/core/local-store.ts:15` (`store`) | Reusable for device-local state. |
 | Part identity and stickers | `src/shared/features/landing/stickers.ts:223` (HEAD) (`sticker`) | Identity rendering. Not progression. |
 
 **Reuse packages (`C02`, `C08`).** The task metadata names them, but the planning documents do not define them consistently. The B01 inventory recorded the same ambiguity. This inventory does not resolve it. Until the coordinator confirms the mapping, `C02` and `C08` are unmapped reuse claims, not verified reuse.
@@ -64,12 +64,12 @@ The plan's fixture task names six dimensions: **interface, state, effects, opera
 
 | Dimension | Planned or existing case for `progression.repertoire` | Exercised today |
 |---|---|---|
-| Interface | The Artifacts tab is one of four toolkit tabs (`src/parts-cartographer/screens/practice-toolkit.jsx`). The core practice screen does not depend on it. | No |
-| State | Progress is derived from the stored artifacts (`progressFor`, `src/parts-cartographer/core/artifact-progression.ts`) rather than stored separately. `revise` keeps every artifact. | Module tests only |
+| Interface | The Artifacts tab is one of four toolkit tabs (`src/parts-cartographer/screens/practice-toolkit.jsx`; HEAD 675118c, absent at 10d9608). The core practice screen does not depend on it. | No |
+| State | Progress is derived from the stored artifacts (`progressFor`, `src/parts-cartographer/core/artifact-progression.ts`; HEAD 675118c, absent at 10d9608) rather than stored separately. `revise` keeps every artifact. | Module tests only |
 | Effects | Reading progress writes nothing. Saving an artifact is one device-local write through `store` (`src/parts-cartographer/core/local-store.ts`). | No |
 | Operations | `revise` only adds a revision. `chooseReward` replaces an earlier choice only with another option the person picked. | Module tests only |
 | Performance | Progress is linear in the number of artifacts (`progressFor`). There is no pagination, so long lists are an untested bound. | No |
-| Failure | `normalizeToolkit` falls back to empty fields for malformed input (`practice-toolkit.jsx:370`). Whether a corrupt original is copied aside before a save was not verified. | No |
+| Failure | `normalizeToolkit` falls back to empty fields for malformed input (`practice-toolkit.jsx:370`; HEAD only). Whether a corrupt original is copied aside before a save was not verified. | No |
 
 
 ## 6. Source provenance

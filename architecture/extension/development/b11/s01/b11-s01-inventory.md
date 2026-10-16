@@ -11,7 +11,7 @@
 | Next consumer | ArchetypeAI-ludh, `[B11.S02] Specify authoritative state, grants and effects` (BLOCKS edge from 92wk) |
 | Slot named by the epic | `social.presence` (`owned_slots` is empty for this step) |
 | Mutation / risk (task metadata) | M0 / R2 |
-| Base | Branch `worktree-agent-a6ca915b6bc11030d`; HEAD `09194df5f48326bff14e42a1e4eb8d66c457186d`; worktree clean when inspection started |
+| Base | Branch `worktree-agent-a6ca915b6bc11030d`; base `09194df5f48326bff14e42a1e4eb8d66c457186d`; worktree clean when inspection started |
 | `base_generation` | `null`. No immutable generation exists for this base. |
 | Published contract versions | None for `social.presence` |
 | Write set | `architecture/extension/development/b11/s01/**`. This file is the only artifact. No app source, package, lockfile, CI, rules, or locale file was changed. |
@@ -32,7 +32,7 @@ Labels used below:
 2. **Existing grants are per party and checked by Firestore rules.** These are booking grants (`clientShares`), invite summaries (`therapistLinks` and `therapistClients`), share codes (`shareCodes`), and exercise assignments. **At base 09194df none has an expiry field.** At HEAD the E16 report grant type has an expiry field that the app does not set (see item 1). Revocation happens by appointment status, by deleting a document, or not at all (invite summary copies).
 3. **A booked therapist can read the client's saved assessment and history from the moment the request is created**, while the appointment is still pending. The read is not limited to the items the client selects (section 8.1, F4).
 4. **Host control is incomplete.** The client can cancel a pending or approved session. The therapist can only approve or decline a pending one. Neither rules nor either UI lets a therapist cancel an approved session (F5).
-5. **Role authority is client-asserted.** Therapist attestation is a `localStorage` flag. Any signed-in user can write `therapists/{uid}`. The UI copy says a license is verified at first claim, and no code does that (F9).
+5. **Role authority is client-asserted.** Therapist attestation is a `localStorage` flag. Only the owner can write their own `therapists/{uid}` (`firestore.rules:328`). The UI copy says a license is verified at first claim, and no code does that (F9).
 6. **The consent text promises an unlink.** `CONSENT_TEXT` says "You can unlink at any moment" (`therapist-link.ts:202`). No client path deletes an invite link or a therapist roster copy (F2).
 7. **Reusable pieces exist.** These are the appointment-plus-busy-slot batch, the transactional status release, the emulator rule-test harness, the bearer-code pattern, the allowlisted snapshot projection (`cloud-storage.ts:40`), the account-bound billing receipt with a version fence (`billing.service.ts`), and the `withResilience` wrapper. Booking does not use the wrapper.
 8. **C01 and C08 are design-stage creative-commons workstreams.** Their declared reuse targets (F/B packages) are largely unimplemented here. No membership, messaging, thread, invitation, presence, or expedition collection exists in the rules (section 3).
@@ -46,7 +46,7 @@ Labels used below:
 - **Also traced:** `firestore.rules` (all match blocks), `firestore.rules.emulator.spec.ts`, `firestore.rules.spec.ts`, `worker.ts`, `worker-security.ts`, the React retained surface (`src/parts-cartographer/**`), and the Angular retained surface (`src/app/**`, `src/services/**`) at the booking, cabinet, therapist, and synastry call sites.
 - **Keyword search (src, worker files, rules, scripts):** presence, participant, invite, guest, expir, cancel, quiet, group, session, host, room, social, friend, member, block, report, consent, grant, therapist, synastry, community, thread, expedition, match.
   - *Presence:* only hits are prose ("presence") in i18n strings and a code comment. No presence model exists.
-  - *Expiry:* at base 09194df, hits are only the in-memory directory cache TTL (`user-directory.ts:12`) and billing receipt freshness (`billing.service.ts`). At HEAD the E16 report grant type (`src/parts-cartographer/elevation/e16-disagreement.ts:150-158`) has an expiry field, which the app does not set.
+  - *Expiry:* at base 09194df, the expiry hits are the in-memory directory cache TTL (`user-directory.ts:12`), billing receipt freshness (`billing.service.ts`), the Angular directory cache (`src/services/user-directory.service.ts:59,182,190`) and an install dismissal (`src/services/install.service.ts:8`). At HEAD the E16 report grant type (`src/parts-cartographer/elevation/e16-disagreement.ts:150-158`) has an expiry field, which the app does not set.
   - *Group, participant, room, expedition, community, thread:* no group or multi-party session model. The only multi-party objects are two-party: the appointment, and the synastry pair.
 - **Firestore TTL:** `firebase.json`, `firestore.indexes.json`, and the source contain no TTL policy.
 - **Server routes:** `worker.ts:172-180` serves `/api/ai`, `/api/stripe-checkout`, `/api/stripe-verify`, and returns 410 for `/api/gemini`. No session, presence, or sharing route exists.
@@ -65,7 +65,7 @@ Labels used below:
 | B03 (B11 dependency) | Membership, moderation, recipient authority (`community.membership`) | planning / domain | Not in this export | C01, C08 reuse it | No membership or moderator model. The nearest objects are the therapist roster `therapistClients` (rules 472-533, therapist-scoped) and grants `clientShares` (rules 441-467, booking-scoped). Neither is group membership. | Absent as a group model. Partial grant patterns only. |
 | B04 (B11 dependency) | Messages, invitations, reviewed contributions (`social.messaging`) | planning / domain | Not in this export | C01, C08 reuse it | No messages or invitations collection. `therapistLinks` is a bearer code that carries a summary, not a message. | Absent. |
 
-**Live status check.** `bd` was not invoked (task rule). The passive export `.beads/issues.jsonl` (blob `1d9720ac266c`, 128 rows) contains none of the 16 IDs above (the 12 reuse IDs, `ArchetypeAI-lub7`, `ArchetypeAI-cyqe`, `ArchetypeAI-92wk`, `ArchetypeAI-we2s`, `ArchetypeAI-we2s.1`). The export is not the status authority in any case. Live status is **not verified** and is a prerequisite for B11.S02 (section 14).
+**Live status check.** `bd` was not invoked (task rule). The passive export `.beads/issues.jsonl` (blob `1d9720ac266c`, 128 rows) contains none of the 17 IDs above (the 12 reuse IDs, `ArchetypeAI-lub7`, `ArchetypeAI-cyqe`, `ArchetypeAI-92wk`, `ArchetypeAI-we2s`, `ArchetypeAI-we2s.1`). The export is not the status authority in any case. Live status is **not verified** and is a prerequisite for B11.S02 (section 14).
 
 ---
 
@@ -175,7 +175,7 @@ Verdict: **reuse** (use as is), **adapt** (use with declared changes), **avoid**
 | `local-store.ts` | 1-72 | local key-value store, bounded history | adapt | Keys are not uid-scoped (`:56-72`) |
 | `backup.ts` | 1-156 | export and import of portable local keys | avoid as an account boundary | No owner. Version gate exists (`:77` rejects unknown backup versions) |
 | `billing.service.ts` | receipt binding (`:12`, `:58`, `:76`); spec `billing.service.spec.ts:18-60` | account-bound receipt and version fence | reuse pattern | Tested for account switch ("ignores a verification that finishes after account switching") |
-| `push.ts` | 1-115 | FCM for check-in reminder only (`:102-109`) | absent for session notifications | |
+| `push.ts` | 1-115 | FCM for check-in reminder only (`:31-57`); the local `new Notification` fallback is at `:102-109` | absent for session notifications | |
 | `sensory-preferences.ts` | 1-61 | motion, texture, density presets | reuse for presentation only | "still" affects motion and texture, not participation |
 | `profile-contract.ts` | 1-33 | profile shape validation | reuse | |
 | `clinical-profile-adapter.ts:149` | energy scaling 0..1 | scoring-to-part mapping | reuse with care | Mixed scales are documented in `universe-controls.ts:8` (F20) |
@@ -189,15 +189,15 @@ Verdict: **reuse** (use as is), **adapt** (use with declared changes), **avoid**
 | Worker routes | `worker.ts:172-180` | AI, Stripe, 410 for old Gemini proxy | absent for social | No route for sessions or presence |
 | Worker security | `worker-security.ts:65` (`authenticateFirebaseRequest`), `:162` (`checkRateLimit`) | Firebase ID-token verification and rate limit | reuse if a server route is needed | |
 | Firestore init | `src/environments/firebase-init.ts:29-35` | `initializeFirestore` with long-polling detection | adapt | No persistence configured (F14) |
-| Resilience wrapper | `src/shared/core/adapters/resilience.ts:17-23` (HEAD) | 10-second timeout, 3 retries with jitter | reuse | Used by `cloud-storage.ts`; not by `booking.ts` or `therapist-link.ts` (F14) |
+| Resilience wrapper | `src/shared/core/adapters/resilience.ts:8-9, 31-32` (HEAD) | 10-second timeout, 3 retries with jitter | reuse | Used by `cloud-storage.ts`; not by `booking.ts` or `therapist-link.ts` (F14) |
 
 ### 6.5 Tests that exist
 
 | Test | Coverage |
 | --- | --- |
-| `booking.spec.ts` (3 tests) | DST, midnight, window deduplication (pure) |
-| `cloud-storage.spec.ts` (2 tests) | share-code collision retry; legacy payload validation |
-| `src/app/core/data/therapist-link.spec.ts` (4 tests) | code alphabet; summary projection; consent text in both languages; RED gate |
+| `booking.spec.ts` (3 tests, counted by grep, not run) | DST, midnight, window deduplication (pure) |
+| `cloud-storage.spec.ts` (2 tests, counted by grep, not run) | share-code collision retry; legacy payload validation |
+| `src/app/core/data/therapist-link.spec.ts` (4 tests, counted by grep, not run) | code alphabet; summary projection; consent text in both languages; RED gate |
 | `billing.service.spec.ts:18-60` | account-scoped verification; ignores results after account switch |
 | `firestore.rules.spec.ts` | static text assertions of rule blocks (for example, `shareCodes` get and list) |
 | `firestore.rules.emulator.spec.ts` | rule behavior with the emulator. Skipped unless `FIRESTORE_EMULATOR_HOST` is set (lines 24, 44). Covers: share codes (260-293), public profile get (309-322), fake booking grants (325-352), busy-slot privacy and duplicate reservation (353-387), exactly one concurrent reservation (389-412), grant read while pending and revocation on decline (414-425), field injection and transitions (427-452), invite claim, positive case only (454-474), assignment gate (475-) |
@@ -260,7 +260,7 @@ The acceptance criteria require these scenarios: normal and denied grant; stale 
 
 | ID | Scenario | Existing behavior (source) | Evidence | Gap for B11 |
 | --- | --- | --- | --- | --- |
-| G1 | Normal booking grant | `createBooking` writes appointment `pending`, busy slot, `clientShares` (booking), `therapistClients` (booking) (`booking.ts:375-424`). Therapist reads `users/{client}/assessment` and `history` while pending (rules 166, 171, 43-46, 62-69) | Test-covered: emulator 414-419 (therapist reads pending client's records) | Access starts at request, not confirmation (F4). Whole-history read, not selected items. The 80-20 plan requires exact disclosure and separate consent (`docs/80-20-plan.md:355`, `:434`). Consent copy: `strings.ts:351` |
+| G1 | Normal booking grant | `createBooking` writes appointment `pending`, busy slot, `clientShares` (booking), `therapistClients` (booking) (`booking.ts:375-424`). Therapist reads `users/{client}/assessment` and `history` while pending (rules 166, 171, 43-46, 62-69) | Test-covered: emulator 414-419 (therapist reads pending client's records) | Access starts at request, not confirmation (F4). Whole-history read, not selected items. The 80-20 plan requires exact disclosure and separate consent (`docs/80-20-plan.md:375`, `:434`). Consent copy: `strings.ts:351` |
 | G2 | Normal invite grant | Client creates `therapistLinks/{code}` with summary (`therapist-link.ts:86-102`). Therapist claims (`:105-126`) and gets a roster row with summary copy | Test-covered: emulator 454-474 (positive path only) | No expiry (F2). No unlink (F2). Summary copy persists (F3) |
 | G3 | Normal share-code grant (peer) | Owner confirms (checkbox), creates code (`overlays.jsx:323-345`). Redeemer resolves code (`cloud-storage.ts:249-279`), computes synastry, saves copy (`overlays.jsx:364-412`) | Test-covered: emulator 260-293 (create, get, list denied, revoke) | No expiry. Registry cap (F6). Copies not recalled (F12) |
 | G4 | Denied booking grant | Without an active appointment, grant create and roster create are denied (rules 444-453, 475-486) | Test-covered: emulator 325-352 (fake share and roster rows denied) | Read after cancel is denied by rule (43-46) but **not asserted** by any test. Read after decline is asserted (414-425) |
@@ -397,7 +397,7 @@ These are candidate defects or gaps from static reading. None is fixed here. Eac
 
 ## 11. Source and data provenance
 
-### 11.1 Sources (blob IDs at HEAD `09194df5f483`)
+### 11.1 Sources (blob IDs at base `09194df5f483`)
 
 | Source | Path | Blob (12 chars) | Used for |
 | --- | --- | --- | --- |
@@ -414,7 +414,7 @@ These are candidate defects or gaps from static reading. None is fixed here. Eac
 | Rules tests | `firestore.rules.emulator.spec.ts`, `firestore.rules.spec.ts` | `7f597a15b4f0`, `62fac0d9a079` | Test coverage |
 | Server | `worker.ts`, `worker-security.ts` | `fec6be8dc79d`, `86e0cd1bff29` | Routes and token check |
 | Core | `booking.ts`, `therapist-link.ts`, `cloud-storage.ts`, `user-directory.ts`, `auth.service.ts`, `local-store.ts`, `backup.ts`, `billing.service.ts`, `push.ts`, `sensory-preferences.ts` | `0e2a99f09ed4` (booking), `dd67642b240f` (therapist-link), `4d9bfe11f004` (cloud-storage), `6748f62c927b` (user-directory), `5591b67cc092` (auth.service), `e28e50d5ddd4` (local-store), `7917f0a360c6` (backup), `9144863698b0` (billing.service), `2a812b523553` (push), `0d56aef36bc1` (sensory-preferences) | Core modules |
-| UI | `overlays.jsx`, `cabinet.jsx`, `innerverse.jsx`, `app.jsx` | `19a5784c393d`, `c7c91dbdc57e`, `3a7e8bcc746e`, `71c3c77a778c` | React surface |
+| UI | `overlays.jsx`, `cabinet.jsx`, `innerverse.jsx`, `app.jsx` | `19a5784c393d`, `c7c91dbdc574`, `3a7e8bcc746e`, `71c3c77a778c` | React surface |
 | UI (Angular) | `booking-panel.component.ts`, `therapist-panel.component.ts`, `.html`, `user-directory.service.ts` | `fb9ddb7714c1`, `80ba8e12134d`, `b0ef4080a0da`, `3bdd1116a764` | Angular surface |
 | Infrastructure | `firebase-init.ts`, `resilience.ts` | `3b397f3fe063`, `bb7f4b4e5ffb` | Persistence and retry |
 
@@ -437,7 +437,7 @@ These are candidate defects or gaps from static reading. None is fixed here. Eac
 | --- | --- | --- |
 | Read-set files exist (5 of 5) | `test -e` on each path | Pass |
 | Pinned AAA snapshot hash | `sha256sum` against the pinned value | Pass (section 11.2) |
-| Citation anchors | Script in the scratchpad (outside the write set) checks 237 `path:line` anchors with the expected token against the worktree at HEAD. Range citations (for example `overlays.jsx:665-752`) are not individually checked | Pass: 237 of 237 |
+| Citation anchors | Script in the scratchpad (outside the write set) checks 237 `path:line` anchors with the expected token against the worktree at HEAD. Range citations (for example `overlays.jsx:665-752`) are not individually checked | Stale: 237 of 237 at the time of the check, not re-run after the review |
 | Write set | `git status` shows only this new file under `architecture/extension/development/b11/s01/`; no app source, package, lockfile, CI, rules, or locale file changed | Pass |
 | Whitespace | `git diff --check --cached` on the new file | Pass |
 | Not run: `npm test` | No `node_modules` in the worktree | Not run |
@@ -449,7 +449,7 @@ These are candidate defects or gaps from static reading. None is fixed here. Eac
 
 ## 13. Limitations
 
-- Static trace at HEAD `09194df5f483`. Nothing was executed.
+- Static trace at base `09194df5f483`. Nothing was executed.
 - Rules-derived findings (F1, F3, F17, F18, and the "Not tested" rows) are inferences from rule text until an emulator run confirms them.
 - Live Bead status for the 12 reuse IDs under C01 and C08, for B03, B04, `ArchetypeAI-lub7`, `ArchetypeAI-92wk`, and `ArchetypeAI-ludh` is unknown. `bd` was not run and the passive export lacks them.
 - `base_generation` is `null`. No contract version, immutable base, workcell, or lease exists.

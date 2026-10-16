@@ -70,6 +70,20 @@ export function decideClientMap(input: {
   return decideAccess(clientMapRequest(input));
 }
 
+/**
+ * Keep only the appointments whose client is a linked, non-archived roster entry. Educated
+ * guess: a booking needs the link, not a shared report, so a booking-only client still shows,
+ * while archived and unknown clients are hidden. Order is preserved. UI gate only; the rules
+ * remain the boundary.
+ */
+export function visibleAppointments<T extends { clientUid: string }>(
+  appointments: readonly T[],
+  clients: readonly RosterClientLike[],
+): T[] {
+  const linked = new Set(clients.filter((client) => !client.archived).map((client) => client.clientUid));
+  return appointments.filter((appointment) => linked.has(appointment.clientUid));
+}
+
 /** Keep only the roster entries whose map this therapist may read. Order is preserved. */
 export function readableClientMaps<T extends RosterClientLike>(
   therapistUid: string,

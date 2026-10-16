@@ -9,6 +9,10 @@ import { myAppointments, setAppointmentStatus } from '../core/booking.ts';
 import { loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
+import { MemoryPanel } from './memory-panel.jsx';
+import { SharedSupportPanel } from './shared-support.jsx';
+import { ReminderSettings } from './reminder-settings.jsx';
+import { PartVersionHistory } from './part-history.jsx';
 
 /* ═══════════ Cabinet ═══════════ */
 export function Cabinet() {
@@ -260,6 +264,9 @@ export function Cabinet() {
             </div>
           ))}
         </div>
+        <MemoryPanel />
+        <SharedSupportPanel />
+        <ReminderSettings />
         {adminAccess && (
           <button className="card mt16 row" style={{ width: '100%', textAlign: 'left', borderColor: 'var(--accent)' }} onClick={() => setOverlay('admin')}>
             <span className="opt-k" style={{ background: 'var(--surface2)', fontSize: 18 }}>🛡️</span>
@@ -376,6 +383,8 @@ export function PartEditor({ part }) {
       <div className="mt16">
         <CustomizerLike traits={draft.traits} onChange={(tr2) => patch({ traits: { ...draft.traits, ...tr2 } })} />
       </div>
+
+      <PartVersionHistory partId={draft.id} text={draft.name} lang={lang} onRestore={(text) => patch({ name: text })} />
 
       <div className="row mt16" style={{ gap: 10 }}>
         <button className="btn ghost grow" onClick={() => setSheet(null)}>{t('cancel')}</button>

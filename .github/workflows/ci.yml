@@ -20,6 +20,9 @@ jobs:
           python3 -m unittest discover -s scripts/roadmap -p 'test_*.py'
           python3 -m unittest discover -s .agents/skills/full-plan-delivery/tests -p 'test_*.py'
 
+      - name: AAA v7.1 source pin (A01.01)
+        run: python3 -I -m unittest discover -s tests/architecture/a01 -p 'test_*.py'
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

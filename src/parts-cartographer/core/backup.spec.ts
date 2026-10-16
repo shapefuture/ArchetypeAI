@@ -52,6 +52,19 @@ describe('cross-version local backup and cloud boundaries', () => {
     expect((imported.entries[KEYS.profile] as any).clinical).toEqual((prepared.entries[KEYS.profile] as any).clinical);
   });
 
+  it('round-trips the goal record and rejects a corrupt goal before any write', async () => {
+    const goal = { schema: 'goal.v1', id: 'goal-1', status: 'active', updatedAt: '2026-10-01T00:00:00.000Z', revision: 1,
+      season: { goals: ['Speak up in meetings'], endpoints: [] }, statementHistory: ['Speak up in meetings'], hypotheses: [], rejected: [], tools: [], outcomes: [] };
+    store.save('INNERVERSE_GOAL_V1', goal);
+    const exported = exportBackup();
+    localStorage.clear();
+    applyBackup(await prepareBackup(JSON.stringify(exported), 'en'));
+    expect(JSON.parse(localStorage.getItem('INNERVERSE_GOAL_V1')!)).toEqual(goal);
+    localStorage.clear();
+    await expect(prepareBackup(JSON.stringify({ ...exported, data: { ...exported.data, INNERVERSE_GOAL_V1: { schema: 'goal.v1' } } }), 'en')).rejects.toThrow();
+    expect(localStorage.length).toBe(0);
+  });
+
   it('rejects malformed answers, incomplete report contracts, pollution and unknown versions before writes', async () => {
     const malformed = input(); malformed.shadow[SHADOW_PARTS[0]][0] = 8;
     for (const text of [JSON.stringify(malformed), '{"__proto__":{}}', '{"schema":"parts-cartographer.backup.v9","data":{}}', JSON.stringify({ [KEYS.profile]: { testModel: 'angular-v2', clinical: {} } })]) {

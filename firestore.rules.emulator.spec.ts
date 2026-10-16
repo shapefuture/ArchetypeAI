@@ -424,6 +424,20 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(getDoc(doc(therapist, 'users', UIDS.client, 'assessment', 'current')));
     });
 
+    it('accepts an optional therapist statement up to 600 characters and refuses longer, non-string or extra fields', async () => {
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      const profile = (extra: Record<string, unknown>) => ({
+        email: 'therapist@example.com',
+        availability: [{ days: [1], start: '09:00', end: '17:00', minutes: 60, timeZone: 'UTC' }],
+        ...extra,
+      });
+      await assertSucceeds(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: 'A calm, plain-language introduction.' })));
+      await assertSucceeds(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: '' })));
+      await assertFails(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: 'x'.repeat(601) })));
+      await assertFails(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: 42 })));
+      await assertFails(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: 'ok', rank: 1 })));
+    });
+
     it('accepts a schemaVersion-2 zone time with its slot reservation and refuses malformed time fields', async () => {
       await seedTherapistProfile();
       const client = asUser(UIDS.client, 'client@example.com');

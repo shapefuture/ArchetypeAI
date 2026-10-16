@@ -1,9 +1,10 @@
 // Checked save for a facilitator or therapist profile statement. Pure: the caller supplies the
 // save function, so nothing here writes to storage or the network.
 //
-// No profile-statement save exists in the app yet. The therapists document accepts only
-// `email` and `availability` (firestore.rules), so a statement needs a data-model decision
-// before any call site exists. Call saveCheckedFacilitatorStatement at that site.
+// The therapist overlay checks the statement with checkFacilitatorStatement before it saves the
+// schedule and statement in one write (overlays.jsx, booking.ts saveTherapistAvailability). The
+// therapists document accepts an optional `statement` of at most 600 characters (firestore.rules).
+// Educated guess: the statement is public to signed-in users, as the availability already is.
 import { validateFacilitatorProfile, type FacilitatorProfile } from './facilitated-boundaries';
 
 export const STATEMENT_MAX_CHARS = 600;

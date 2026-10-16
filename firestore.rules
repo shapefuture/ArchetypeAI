@@ -341,10 +341,12 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create, update: if isOwner(uid)
         && request.resource.data.keys().hasAll(['email', 'availability'])
-        && request.resource.data.keys().hasOnly(['email', 'availability'])
+        && request.resource.data.keys().hasOnly(['email', 'availability', 'statement'])
         && (request.resource.data.email == null || request.resource.data.email is string)
         && request.resource.data.availability is list
-        && request.resource.data.availability.size() <= 14;
+        && request.resource.data.availability.size() <= 14
+        // Optional public statement. Empty string means none; the client checks the content first.
+        && (!('statement' in request.resource.data) || (request.resource.data.statement is string && request.resource.data.statement.size() <= 600));
       allow delete: if false;
     }
 

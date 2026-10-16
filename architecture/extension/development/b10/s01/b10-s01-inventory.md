@@ -2,7 +2,7 @@
 
 > **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because "no personal meaning notes" is false at HEAD. Corrected. Status is still **candidate, not accepted**.
 >
-> - Not corrected in this pass: the 13 scenario rows use generic expectations with no feature-specific content.
+> - Scenario rows in §4 and §5 were rewritten with feature-specific planned behaviour in a follow-up pass. They are still planned and not exercised, and need re-review.
 
 - Bead: `ArchetypeAI-cpfa` (B10.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -36,18 +36,19 @@ Accommodations partly exist: sensory and reduced-motion preferences are implemen
 | Effect | Use of context to shape suggestions | No | Model inference must be labelled as such. |
 | Component | Meaning note editor, context panel | No | No screens exist. |
 
-## 4. Scenario matrix (specified, not exercised)
+## 4. Scenario matrix (planned, not exercised)
+
+Each row is planned behaviour for personal meaning notes and context. HEAD has a personal memory module (`src/parts-cartographer/core/personal-memory.ts`, commit 3670a3a) that the planned design builds on, but it has no meaning-note type yet.
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
-| Normal grant | The capability is used only after an explicit grant | No |
-| Denied grant | A denied grant leaves the state unchanged and says so | No |
-| Stale contract | An older version is read as legacy, never reinterpreted | No |
-| Account change | State is scoped to the account that owns it | No |
-| Deleted source | Removing the source keeps history and marks dependants | No |
-| Duplicate or cancelled operation | A repeated or cancelled operation has no second effect | No |
-| Offline or quiet alternative | The feature stays optional and can be ignored | No |
-
+| Normal grant | A meaning note is visible only to its author. It reaches a therapist or another person only through a per-share grant. | No |
+| Denied grant | A share without the grant is refused. The author sees the refusal, and nothing is sent. | No |
+| Stale contract | A memory record from the HEAD module that lacks a meaning-note type is read as an ordinary memory and is not reinterpreted as a meaning note. | No |
+| Account change | Meaning notes and context records belong to the uid that created them. Sign-out clears in-memory views. | No |
+| Deleted source | Deleting a note uses the existing `deleteWithDerived` path, which removes derived suggestions, and it removes any shares. | No |
+| Duplicate or cancelled operation | A double submit of a note creates one entry. A cancelled edit keeps the prior text. | No |
+| Offline or quiet alternative | Notes are stored locally and are optional. Accommodations (sensory and reduced-motion preferences) work with no note. | No |
 
 ## 5. Six compatibility dimensions for `personal meaning, context and accommodations`
 
@@ -55,12 +56,12 @@ The plan's fixture task names six dimensions: **interface, state, effects, opera
 
 | Dimension | Planned case for `personal meaning, context and accommodations` | Exercised today |
 |---|---|---|
-| Interface | The surface does not block core navigation | No |
-| State | State is versioned; legacy reads are explicit | No |
-| Effects | Writes are idempotent | No |
-| Operations | Operations are reversible or clearly one-way | No |
-| Performance | Lists stay bounded on large histories | No |
-| Failure | A storage refusal is reported and prior state is kept | No |
+| Interface | The meaning-note editor is an optional panel. Accommodation controls stay on the first screen. | No |
+| State | Notes have their own type, separate from the measured `meaning` need category (`src/shared/core/data/parts.ts:25`, `src/shared/core/data/scoring-v2.ts:208`). A measured need is never stored as a note. | No |
+| Effects | A note change that alters a suggestion writes a labelled inference record, never a silent edit. | No |
+| Operations | A correction supersedes the earlier version (the HEAD `correctMemory` path), and the author can still see the history. | No |
+| Performance | Memory lists page by 50 items. Derived lookups are per memory. | No |
+| Failure | A corrupt memory record is copied aside, never overwritten, and the panel says so. | No |
 
 ## 6. Source provenance
 

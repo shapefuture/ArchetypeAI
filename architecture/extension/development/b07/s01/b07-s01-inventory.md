@@ -2,7 +2,7 @@
 
 > **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL (minor)**: "only continuity code" omitted the draft-backup resume. Corrected. Status is still **candidate, not accepted**.
 >
-> - Not corrected in this pass: the 13 scenario rows use generic expectations with no feature-specific content.
+> - Scenario rows in §4 and §5 were rewritten with feature-specific planned behaviour in a follow-up pass. They are still planned and not exercised, and need re-review.
 
 - Bead: `ArchetypeAI-h13n` (B07.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -34,18 +34,19 @@ Authored presentation exists in one narrow form: AI-authored text may replace ma
 | Effect | Publish or share an authored presentation | No | Needs consent and recipient rules (B07 scope). |
 | Component | Presentation editor, continuity banner | No | No screens exist. |
 
-## 4. Scenario matrix (specified, not exercised)
+## 4. Scenario matrix (planned, not exercised)
+
+Each row is planned behaviour for the creative workspace. None exists today. The nearest existing mechanisms are the legacy universe overlay (`src/parts-cartographer/core/legacy-universe-adapter.ts:60`) and the assessment draft backup (`src/parts-cartographer/core/assessment-draft.ts`).
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
-| Normal grant | The capability is used only after an explicit grant | No |
-| Denied grant | A denied grant leaves the state unchanged and says so | No |
-| Stale contract | An older version is read as legacy, never reinterpreted | No |
-| Account change | State is scoped to the account that owns it | No |
-| Deleted source | Removing the source keeps history and marks dependants | No |
-| Duplicate or cancelled operation | A repeated or cancelled operation has no second effect | No |
-| Offline or quiet alternative | The feature stays optional and can be ignored | No |
-
+| Normal grant | An authored presentation is visible to others only after its owner chooses to share it. Continuity restores the owner's own work on the owner's device. | No |
+| Denied grant | A share to a recipient without a grant is refused. The presentation stays private, and the owner sees the reason. | No |
+| Stale contract | A presentation saved under an older layout schema opens read-only with its original fields kept. It is not re-laid-out silently. | No |
+| Account change | A continuity record belongs to the uid that created it. Another account on the same device sees no prior work. Device-local sensory settings stay per device. | No |
+| Deleted source | Deleting a presentation removes its shares. A continuity banner for a deleted draft disappears on the next open rather than showing an empty page. | No |
+| Duplicate or cancelled operation | A double save writes one version. Cancelling an edit leaves the last saved version intact. | No |
+| Offline or quiet alternative | Drafts save locally with no network. Continuity works on one device with no share. The feature can be ignored, and the assessment flow is unaffected. | No |
 
 ## 5. Six compatibility dimensions for `authored presentation and creative continuity`
 
@@ -53,12 +54,12 @@ The plan's fixture task names six dimensions: **interface, state, effects, opera
 
 | Dimension | Planned case for `authored presentation and creative continuity` | Exercised today |
 |---|---|---|
-| Interface | The surface does not block core navigation | No |
-| State | State is versioned; legacy reads are explicit | No |
-| Effects | Writes are idempotent | No |
-| Operations | Operations are reversible or clearly one-way | No |
-| Performance | Lists stay bounded on large histories | No |
-| Failure | A storage refusal is reported and prior state is kept | No |
+| Interface | The presentation editor is reached from an optional entry point. It never blocks the assessment or the map. | No |
+| State | Presentations carry a schema version. The legacy universe text overlay stays a separate layer. | No |
+| Effects | Autosave writes at most one version per change burst, keyed by revision number, so retries are idempotent. | No |
+| Operations | Any earlier saved version can be restored. Restoring creates a new version rather than rewriting history. | No |
+| Performance | A workspace opens its latest version only. Version history pages in batches of 20. | No |
+| Failure | A failed autosave keeps the draft in memory and shows "not saved" until it succeeds. A corrupt local record is copied aside and never overwritten, as the draft backup does. | No |
 
 ## 6. Source provenance
 

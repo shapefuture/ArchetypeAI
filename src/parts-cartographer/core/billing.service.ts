@@ -17,7 +17,8 @@ function clearStripeQuery() {
   if (!url.searchParams.has('stripe') && !url.searchParams.has('session_id')) return;
   url.searchParams.delete('stripe');
   url.searchParams.delete('session_id');
-  window.history.replaceState(null, '', url.pathname + (url.search || '') + url.hash);
+  // Keep the current history state: it marks the Back/Forward entry the person is on (see navigation-history.ts).
+  window.history.replaceState(window.history.state, '', url.pathname + (url.search || '') + url.hash);
 }
 
 function setPremium(on: boolean) {

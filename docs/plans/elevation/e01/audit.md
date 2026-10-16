@@ -1,9 +1,9 @@
 # E01.01 audit: Goal and graduation
 
 - Bead: `ArchetypeAI-epv` (E01.01). Tracker status at audit: open.
-- Checked at: HEAD `52002da`, generated 2026-10-16.
-- Disposition: **candidate audit, awaiting independent review.** Read-only. No implementation changed. No acceptance is claimed.
-- Method: file inventory, test-name listing, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
+- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
 
@@ -43,13 +43,14 @@
 ## 5. Gaps (judgement, not measurement)
 
 - The chosen goal is stored on this device only (`INNERVERSE_GOAL_V1`). Nothing reads it from a remote store.
-- A real-world outcome is recorded as unknown. No measurement of whether the goal helped has been taken.
+- The goal key is not in the backup allowlist (`src/parts-cartographer/core/backup.ts:11-19`), so a backup does not carry it.
+- A real-world outcome is recorded as unknown. Nothing measures whether the goal helped.
 
 ## 6. Smallest useful slice (educated guess)
 
-Confirm, with one test, that the goal survives the existing export and restore path (E14).
+Decide whether the goal belongs in the backup allowlist (`backup.ts:11-19`). If yes, add it with one round-trip test; if no, record that the goal is device-only.
 
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending**.
+- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).

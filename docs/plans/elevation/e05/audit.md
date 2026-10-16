@@ -1,9 +1,9 @@
 # E05.01 audit: Uncertainty and action
 
 - Bead: `ArchetypeAI-3rd` (E05.01). Tracker status at audit: open.
-- Checked at: HEAD `52002da`, generated 2026-10-16.
-- Disposition: **candidate audit, awaiting independent review.** Read-only. No implementation changed. No acceptance is claimed.
-- Method: file inventory, test-name listing, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
+- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
 
@@ -54,4 +54,4 @@ Keep as is. Add a browser check that the offer is absent when there are no readi
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending**.
+- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).

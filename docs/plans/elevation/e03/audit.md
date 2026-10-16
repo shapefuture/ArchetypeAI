@@ -1,9 +1,9 @@
 # E03.01 audit: Capacity modes and sensory independence
 
 - Bead: `ArchetypeAI-4ct` (E03.01). Tracker status at audit: open.
-- Checked at: HEAD `52002da`, generated 2026-10-16.
-- Disposition: **candidate audit, awaiting independent review.** Read-only. No implementation changed. No acceptance is claimed.
-- Method: file inventory, test-name listing, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
+- Checked at: HEAD `b60e65d`, regenerated after an independent review of the first version.
+- Disposition: **candidate audit, awaiting a second independent review.** Read-only. No implementation changed. No acceptance is claimed.
+- Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 
 ## 1. Existing code
 
@@ -45,14 +45,14 @@
 
 ## 5. Gaps (judgement, not measurement)
 
-- The capacity preference is written by the cabinet panel. This audit did not verify whether other screens read the key.
+- No other screen reads the capacity key. `CAPACITY_KEY` appears only in the panel and its spec, so the chosen mode affects only the cabinet.
 - Independent sound, motion and density controls are covered by module tests only. No device check has been made.
 
 ## 6. Smallest useful slice (educated guess)
 
-Verify with a grep of readers of the capacity key, then add one reader test for the most-used screen.
+Decide whether capacity modes should reach other screens. If yes, add a reader and test it. Until then the setting has no effect outside the cabinet.
 
 ## 7. Pending evidence (not claimed)
 
 - Participant, device, assistive-technology and native-language evidence: **pending**.
-- Independent review of this audit: **pending**.
+- Independent review of this audit: **pending** (the first review found errors, now corrected; a second review is needed).

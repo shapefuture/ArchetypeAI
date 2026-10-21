@@ -73,6 +73,19 @@ class CheckCitesTest(unittest.TestCase):
         doc = self.doc('| `beta` | `src/a.ts:2@' + first + '` (`beta`) |\n', ref='0000000')
         self.assertEqual(check_file(doc, self.root), [])
 
+    def test_bare_file_name_resolves_when_unique(self):
+        doc = self.doc('| `beta` | `a.ts:2` (`beta`) |\n')
+        self.assertEqual(check_file(doc, self.root), [])
+
+    def test_ambiguous_bare_file_name_fails(self):
+        pathlib.Path(self.root, 'lib').mkdir()
+        pathlib.Path(self.root, 'lib', 'a.ts').write_text(SOURCE, encoding='utf-8')
+        subprocess.run(GIT + ['add', '.'], cwd=self.root, check=True)
+        subprocess.run(GIT + ['commit', '-q', '-m', 'second file with the same name'], cwd=self.root, check=True)
+        head = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=self.root, check=True, capture_output=True, text=True).stdout.strip()
+        doc = self.doc('| `beta` | `a.ts:2` (`beta`) |\n', ref=head)
+        self.assertIn('matches 2 files', check_file(doc, self.root)[0][1])
+
     def test_missing_header_fails(self):
         doc = self.doc('| `beta` | `src/a.ts:2` |\n', ref='none')
         self.assertEqual(check_file(doc, self.root), [(0, 'missing <!-- cite-ref: <sha> --> header')])

@@ -7,15 +7,15 @@ A document declares its default commit with a header line:
 
 A citation is an inline code span such as `src/a.ts:12` or `src/a.ts:12-18`.
 It may name its own commit with `@<sha>`, which overrides the header.
-A bare file name such as `booking.ts:251` is resolved inside the commit; it must
-match exactly one file there. Inside a table row, a bare `:NN` cite refers to the
-last file cited in that row.
+A file name may be bare (`booking.ts:251`) or partial (`core/booking.ts:251`);
+it must match exactly one file in the commit. Inside a table row, a bare `:NN`
+cite refers to the last file cited in that row.
 
 Checks, per citation:
-- the file exists at the commit (a bare name must match exactly one file);
-- the cited line range is inside the file;
-- in a table row that names identifiers (backticked words), at least one of
-  them appears as a whole word on the cited lines.
+- the file resolves at the commit, and the cited line range is inside it.
+
+Checks, per table row that names identifiers (backticked words):
+- at least one of the cited lines contains one of the identifiers as a whole word.
 
 Usage: check_cites.py [--strict] [--cwd REPO] FILE...
 Without --strict the script reports and exits 0, so it can run as an advisory step.
@@ -78,37 +78,46 @@ def check_file(doc_path, cwd=None):
     for number, line in enumerate(lines, 1):
         is_row = line.startswith('|')
         identifiers = {m.group(1) for m in IDENTIFIER.finditer(line)} if is_row else set()
+        cites = []
         last_name = None
         for match in PATH_CITE.finditer(line):
             last_name = match.group('path')
-            problems += _check_cite(number, match, last_name, header, identifiers, cwd)
+            cites.append((match, last_name))
         if is_row:
             for match in REL_CITE.finditer(line):
                 if last_name is None:
                     problems.append((number, f'relative cite {match.group(0)} has no earlier file in this row'))
                     continue
-                problems += _check_cite(number, match, last_name, header, identifiers, cwd)
+                cites.append((match, last_name))
+        results = [_check_cite(number, match, name, header, cwd) for match, name in cites]
+        for result_problems, _ in results:
+            problems += result_problems
+        windows = [window for _, window in results if window is not None]
+        if identifiers and windows and not any(_mentions(window[3], identifiers) for window in windows):
+            spans = ', '.join(f'{path}:{low}-{high}' for path, low, high, _ in windows)
+            names = ', '.join(sorted(identifiers))
+            problems.append((number, f'none of {names} appears on {spans}'))
     return problems
 
 
-def _check_cite(number, match, name, header, identifiers, cwd):
+def _mentions(text, identifiers):
+    return any(re.search(rf'(?<![A-Za-z0-9_]){re.escape(word)}(?![A-Za-z0-9_])', text) for word in identifiers)
+
+
+def _check_cite(number, match, name, header, cwd):
+    """Return (problems, window) for one citation; window is (path, low, high, text) or None."""
     ref = match.group('ref') or header
     path, reason = resolve(ref, name, cwd)
     if path is None:
-        return [(number, reason)]
+        return [(number, reason)], None
     lines = git_lines(ref, path, cwd)
     if match.group('a') is None:
-        return []
+        return [], None
     low = int(match.group('a'))
     high = int(match.group('b') or match.group('a'))
     if low < 1 or high < low or high > len(lines):
-        return [(number, f'{path}:{low}-{high} is outside the file at {ref} ({len(lines)} lines)')]
-    if identifiers:
-        window = '\n'.join(lines[low - 1:high])
-        if not any(re.search(rf'(?<![A-Za-z0-9_]){re.escape(word)}(?![A-Za-z0-9_])', window) for word in identifiers):
-            words = ', '.join(sorted(identifiers))
-            return [(number, f'none of {words} appears on {path}:{low}-{high} at {ref}')]
-    return []
+        return [(number, f'{path}:{low}-{high} is outside the file at {ref} ({len(lines)} lines)')], None
+    return [], (path, low, high, '\n'.join(lines[low - 1:high]))
 
 
 def main(argv):

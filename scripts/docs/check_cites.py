@@ -54,15 +54,16 @@ def tree_files(ref, cwd):
 
 def resolve(ref, name, cwd):
     """Return (path, None) for a file that resolves uniquely, else (None, reason)."""
-    if '/' in name:
-        if git_lines(ref, name, cwd) is None:
-            return None, f'{name} does not exist at {ref}'
+    if '/' in name and git_lines(ref, name, cwd) is not None:
         return name, None
-    matches = [path for path in tree_files(ref, cwd) if path.rsplit('/', 1)[-1] == name]
+    if '/' in name:
+        matches = [path for path in tree_files(ref, cwd) if path.endswith('/' + name)]
+    else:
+        matches = [path for path in tree_files(ref, cwd) if path.rsplit('/', 1)[-1] == name]
     if not matches:
         return None, f'{name} is not in the tree at {ref}'
     if len(matches) > 1:
-        return None, f'bare name {name} matches {len(matches)} files at {ref}: {", ".join(matches[:3])}'
+        return None, f'{name} matches {len(matches)} files at {ref}: {", ".join(matches[:3])}'
     return matches[0], None
 
 

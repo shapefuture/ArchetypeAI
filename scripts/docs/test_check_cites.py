@@ -47,7 +47,7 @@ class CheckCitesTest(unittest.TestCase):
         doc = self.doc('| `beta` | `src/missing.ts:2` (`beta`) |\n')
         problems = check_file(doc, self.root)
         self.assertEqual(len(problems), 1)
-        self.assertIn('does not exist', problems[0][1])
+        self.assertIn('not in the tree', problems[0][1])
 
     def test_range_outside_the_file_fails(self):
         doc = self.doc('| `beta` | `src/a.ts:40-44` |\n')

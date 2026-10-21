@@ -65,7 +65,7 @@ class CheckCitesTest(unittest.TestCase):
 
     def test_relative_cite_without_an_earlier_path_fails(self):
         doc = self.doc('| `beta` | `:3` |\n')
-        self.assertIn('no earlier path', check_file(doc, self.root)[0][1])
+        self.assertIn('no earlier file', check_file(doc, self.root)[0][1])
 
     def test_explicit_commit_overrides_the_header(self):
         first = self.sha

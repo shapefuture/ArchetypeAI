@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import { doc, getDoc, writeBatch } from 'firebase/firestore';
 import { getFirestoreDb } from '../../environments/firebase-init';
 import type { AuthUser } from './ports';
 
@@ -35,12 +35,19 @@ export async function syncPublicProfile(user: AuthUser): Promise<void> {
   if (!user.linked || !user.email) return;
   const email = user.email.trim();
   if (!email) return;
-  await setDoc(doc(getFirestoreDb(), 'publicProfiles', user.uid), {
+  const db = getFirestoreDb();
+  const updatedAt = new Date().toISOString();
+  // The profile and its email-index entry are written together. The index lets
+  // others resolve this address without being able to list the directory.
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'publicProfiles', user.uid), {
     emailLower: email.toLowerCase(),
     email,
     displayName: user.displayName?.trim() || null,
-    updatedAt: new Date().toISOString(),
+    updatedAt,
   }, { merge: true });
+  batch.set(doc(db, 'directoryEmails', email.toLowerCase()), { uid: user.uid, updatedAt });
+  await batch.commit();
   cache.delete(`uid:${user.uid}`);
   cache.delete(`email:${email.toLowerCase()}`);
 }
@@ -75,23 +82,13 @@ export async function lookupByEmail(email: string): Promise<PublicUserProfile | 
   const cached = readCache(key);
   if (cached !== undefined) return cached;
 
-  const snap = await getDocs(query(
-    collection(getFirestoreDb(), 'publicProfiles'),
-    where('emailLower', '==', normalized),
-  ));
-  if (snap.empty) {
-    writeCache(key, null);
-    return null;
-  }
-  const first = snap.docs[0];
-  const data = first.data();
-  const profile: PublicUserProfile = {
-    uid: first.id,
-    email: typeof data.email === 'string' ? data.email : null,
-    displayName: typeof data.displayName === 'string' ? data.displayName : null,
-  };
+  // The directory cannot be listed, so an address resolves through its index entry.
+  const entry = await getDoc(doc(getFirestoreDb(), 'directoryEmails', normalized));
+  const uid = entry.exists() ? entry.data().uid : null;
+  const found = typeof uid === 'string' && uid ? await lookupByUid(uid) : null;
+  // A stale entry (the profile's address has since changed) resolves to nobody.
+  const profile = found?.email?.toLowerCase() === normalized ? found : null;
   writeCache(key, profile);
-  writeCache(`uid:${profile.uid}`, profile);
   return profile;
 }
 

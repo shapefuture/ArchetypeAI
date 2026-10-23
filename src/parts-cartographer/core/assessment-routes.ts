@@ -26,7 +26,8 @@ export const ROUTE_KEYS = {
 
 export type RouteId = 'situation-inquiry' | 'reflection-64' | 'battery-147' | 'quick-map-sample' | 'quick-scan-teaser';
 
-export type RouteDestination = { kind: 'state'; state: string } | { kind: 'overlay'; overlay: string };
+/** `focus` names an element the destination moves focus to on arrival. */
+export type RouteDestination = { kind: 'state'; state: string; focus?: string } | { kind: 'overlay'; overlay: string; focus?: string };
 
 export interface AssessmentRoute {
   id: RouteId;
@@ -49,9 +50,11 @@ export interface AssessmentRoute {
 
 export const ASSESSMENT_ROUTES: readonly AssessmentRoute[] = [
   {
-    id: 'situation-inquiry', tier: 'primary', canonical: false, available: false, itemCount: null, produces: 'none', destination: null,
+    // A complete route of its own (docs/80-20-plan.md §9.2, bounded situation inquiry): it opens the
+    // inquiry in the check-in layer, writes no score and never funnels into the 64 or 147 items.
+    id: 'situation-inquiry', tier: 'primary', canonical: false, available: true, itemCount: null, produces: 'none',
+    destination: { kind: 'overlay', overlay: 'checkin', focus: 'situation-inquiry' },
     copy: { title: 'routeInquiryTitle', tag: 'routeInquiryTag', purpose: 'routeInquiryPurpose', effort: 'routeInquiryEffort' },
-    unavailableNote: 'routeInquiryUnavailable',
   },
   {
     id: 'reflection-64', tier: 'primary', canonical: true, available: true, itemCount: 64, produces: 'canonical-64',

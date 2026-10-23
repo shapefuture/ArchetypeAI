@@ -10,6 +10,7 @@ import { store, KEYS } from '../core/local-store';
 import { exportBackup } from '../core/backup';
 import { downloadText } from '../core/file-download';
 import { isExamplePart, isSampleProfile, primaryRoutes, secondaryRoutes } from '../core/assessment-routes.ts';
+import { requestFocus } from '../core/focus-request.ts';
 
 /* ═══════════ loading (shown only while local content is not yet ready; no timed wait) ═══════════ */
 export function Loading() {
@@ -244,6 +245,7 @@ const ROUTE_ICON = { 'situation-inquiry': '✎', 'reflection-64': '🧭', 'batte
 
 function openRoute(route, { go, setOverlay }) {
   if (!route.available || !route.destination) return;
+  if (route.destination.focus) requestFocus(route.destination.focus);
   if (route.destination.kind === 'state') go(route.destination.state);
   else setOverlay(route.destination.overlay);
 }

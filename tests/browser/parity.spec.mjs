@@ -169,3 +169,15 @@ test('browser Back and Forward restore an open layer and a route, with focus on 
   await expect(page.locator('.app-main')).toBeFocused();
   expect(page.url()).toBe(start);
 });
+
+test('the situation inquiry entry opens the inquiry itself, focused and in view', async ({ page }) => {
+  await page.goto('/');
+  const errors = []; page.on('pageerror', (e) => errors.push(e.message));
+  await page.getByRole('button', { name: /Think through one situation/ }).first().click();
+  const inquiry = page.locator('#situation-inquiry');
+  await expect(inquiry).toBeVisible({ timeout: 30_000 });
+  await expect(inquiry).toBeFocused();
+  await expect(inquiry).toBeInViewport();
+  expect(await page.evaluate(() => localStorage.getItem('ARCHETYPE_ASSESSMENT_RESPONSES'))).toBeNull();
+  expect(errors).toEqual([]);
+});

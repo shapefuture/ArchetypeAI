@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../app.jsx';
 import { ASSESSMENT_ROUTES } from '../../core/assessment-routes';
+import { requestFocus } from '../../core/focus-request.ts';
 import { reviewedPractices } from '../../core/practice-catalog.ts';
 import { store, KEYS } from '../../core/local-store';
 import { NEEDS, routeForNeed } from '../../elevation/e02-entry.ts';
@@ -27,7 +28,7 @@ const COPY = {
     kicker: 'Начать здесь',
     ask: 'Что вам нужно прямо сейчас?',
     calm: 'Мне нужно сейчас успокоиться',
-    situation: 'Я оказался в ситуации',
+    situation: 'Мне нужно разобраться в ситуации',
     pattern: 'Я замечаю повторяющийся паттерн',
     open: 'Открыть',
     stop: 'На сегодня достаточно',
@@ -42,8 +43,14 @@ const COPY = {
 
 const NEED_LABEL = { 'calm-now': 'calm', situation: 'situation', pattern: 'pattern' };
 
+/** The route's own translated title; the internal ID is never shown as a label. */
+function routeTitle(routeId, t) {
+  const route = ASSESSMENT_ROUTES.find((item) => item.id === routeId);
+  return route && t ? t(route.copy.title) : '';
+}
+
 export function EntryPanel() {
-  const { lang, go, setOverlay } = useApp() ?? {};
+  const { lang, go, setOverlay, t } = useApp() ?? {};
   const copy = COPY[lang === 'ru' ? 'ru' : 'en'];
   const [outcome, setOutcome] = useState(null);
   const [stopped, setStopped] = useState(false);
@@ -66,6 +73,7 @@ export function EntryPanel() {
     if (destination.kind === 'assessment') {
       const route = ASSESSMENT_ROUTES.find((item) => item.id === destination.routeId);
       if (!route) return;
+      if (route.destination.focus) requestFocus(route.destination.focus);
       if (route.destination.kind === 'state') go?.(route.destination.state);
       else setOverlay?.(route.destination.overlay);
       return;
@@ -88,7 +96,7 @@ export function EntryPanel() {
       {outcome?.ok && !stopped && (
         <div className="mt8">
           <p className="sub" style={{ fontSize: 13 }}>
-            {outcome.choice.destination.kind === 'practice' ? outcome.choice.destination.title : outcome.choice.destination.routeId}
+            {outcome.choice.destination.kind === 'practice' ? outcome.choice.destination.title : routeTitle(outcome.choice.destination.routeId, t)}
           </p>
           {outcome.choice.destination.kind === 'assessment' && <p className="faint" style={{ fontSize: 12 }}>{copy.optional}</p>}
           <div className="row mt8" style={{ gap: 8 }}>

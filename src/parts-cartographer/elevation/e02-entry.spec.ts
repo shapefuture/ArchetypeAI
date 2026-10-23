@@ -38,12 +38,17 @@ describe('E02 need-based entry and first useful result', () => {
     expect(choiceOf('calm-now').labels).toEqual({ need: 'user-authored', route: 'hypothesis', result: 'observation' });
   });
 
+  it('routes the situation need to the situation inquiry while that route is available', () => {
+    expect(choiceOf('situation').destination).toMatchObject({ kind: 'assessment', routeId: 'situation-inquiry', canonical: false, produces: 'none' });
+  });
+
   it('recovers an unavailable view: the situation need falls back to a labelled calm start, or to the chooser with a notice', () => {
-    const fallback = choiceOf('situation');
+    const noInquiry = without('situation-inquiry');
+    const fallback = choiceOf('situation', base({ routes: noInquiry }));
     expect(fallback.destination).toMatchObject({ kind: 'practice', practiceId: 'paced-breath' });
     expect(fallback.fallback).toBe('route-unavailable');
     expect(fallback.labels.route).toBe('hypothesis');
-    const noRoute = reduceEntry(startEntry(null), { type: 'choose-need', need: 'situation' }, base({ practices: [] }));
+    const noRoute = reduceEntry(startEntry(null), { type: 'choose-need', need: 'situation' }, base({ practices: [], routes: noInquiry }));
     expect(noRoute.ok).toBe(true);
     expect(noRoute.state.step.kind).toBe('needs');
     expect(noRoute.state.notice).toBe('route-unavailable');
@@ -139,7 +144,9 @@ describe('E02 need-based entry and first useful result', () => {
     expect(broken.ok).toBe(true);
     expect(broken.state.step.kind).toBe('needs');
     expect(broken.state.notice).toBe('deep-link-unknown');
-    expect(reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'route=situation-inquiry' }, base()).state.notice).toBe('deep-link-unavailable');
+    expect(reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'route=situation-inquiry' }, base({ routes: without('situation-inquiry') })).state.notice).toBe('deep-link-unavailable');
+    expect(reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'route=situation-inquiry' }, base()).state.step)
+      .toMatchObject({ kind: 'route', choice: { destination: { routeId: 'situation-inquiry' } } });
     expect(reduceEntry(startEntry(null), { type: 'open-deep-link', query: '' }, base()).state.notice).toBe('deep-link-missing');
     const back = reduceEntry(broken.state, { type: 'back' }, base());
     expect(back.state.step.kind).toBe('route');

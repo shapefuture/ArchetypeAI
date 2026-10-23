@@ -2,6 +2,8 @@
 // Pure data and predicates: no storage, no UI. Screens read these keys and labels
 // instead of redefining them, so the 64 and 147 instruments cannot drift together.
 
+import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY } from './assessment-draft';
+
 /** Storage keys per route. The 64-item and 147-item routes never share a key. */
 export const ROUTE_KEYS = {
   reflection64: {
@@ -10,7 +12,10 @@ export const ROUTE_KEYS = {
     result: 'ifs.legacy64.result',
   },
   battery147: {
-    draft: 'INNERVERSE_DESCENT_V1',
+    /** The current ID-keyed draft. */
+    draft: DESCENT_DRAFT_KEY,
+    /** The historical positional draft, read only for explicit migration. */
+    legacyDraft: LEGACY_DESCENT_DRAFT_KEY,
     futureSelf: 'INNERVERSE_FUTURE_SELF_V1',
     rawInput: 'INNERVERSE_PROFILE_V1',
   },

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useApp } from './app.jsx';
 import { Character } from './pal/Character.tsx';
 import { Seg, Confetti, Bars, familyColor, Crest } from './ui/ui.jsx';
@@ -1520,6 +1520,8 @@ export function UniverseFail() {
 /* ═══════════ Journal — trailheads (item 2) ═══════════ */
 export function Journal() {
   const { t, lang, setOverlay, toast } = useApp();
+  // Each label names its field, so screen readers announce what to write.
+  const fieldId = useId();
   const [entries, setEntries] = useState(() => {
     try { return JSON.parse(localStorage.getItem('ifs.journal') ?? '[]'); } catch { return []; }
   });
@@ -1573,20 +1575,20 @@ export function Journal() {
           ))}
         </div>
 
-        <div className="field mt12"><label>{t('jWhat')}</label>
-          <textarea rows={2} value={what} onChange={(e) => setWhat(e.target.value)}
+        <div className="field mt12"><label htmlFor={`${fieldId}-jWhat`}>{t('jWhat')}</label>
+          <textarea id={`${fieldId}-jWhat`} rows={2} value={what} onChange={(e) => setWhat(e.target.value)}
             placeholder={tr('sw14', lang)} />
         </div>
-        <div className="field mt8"><label>{t('jWhere')}</label>
-          <input value={where} onChange={(e) => setWhere(e.target.value)}
+        <div className="field mt8"><label htmlFor={`${fieldId}-jWhere`}>{t('jWhere')}</label>
+          <input id={`${fieldId}-jWhere`} value={where} onChange={(e) => setWhere(e.target.value)}
             placeholder={tr('sw15', lang)} />
         </div>
-        <div className="field mt8"><label>{t('jPart')}</label>
-          <input value={part} onChange={(e) => setPart(e.target.value)}
+        <div className="field mt8"><label htmlFor={`${fieldId}-jPart`}>{t('jPart')}</label>
+          <input id={`${fieldId}-jPart`} value={part} onChange={(e) => setPart(e.target.value)}
             placeholder={tr('sw16', lang)} />
         </div>
-        <div className="field mt8"><label>{t('jNote')}</label>
-          <input value={note} onChange={(e) => setNote(e.target.value)} />
+        <div className="field mt8"><label htmlFor={`${fieldId}-jNote`}>{t('jNote')}</label>
+          <input id={`${fieldId}-jNote`} value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
         <button className="btn primary block mt12" onClick={save}>✎ {t('jSave')}</button>
 

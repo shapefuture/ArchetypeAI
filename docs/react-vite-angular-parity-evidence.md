@@ -1,5 +1,7 @@
 # React/Vite parity verification evidence
 
+> **Status, 2026-10-23:** the Angular app was retired (`ArchetypeAI-hi8.6`). React is the only client. This document is kept as the historical parity record; paths under `src/app/` refer to git history. Live release sign-off for the React app remains tracked by **ArchetypeAI-hi8.5**.
+
 2026-10-03, branch `arena/01a1012a-archetypeai`, PR [#2](https://github.com/shapefuture/ArchetypeAI/pull/2).
 
 ## Executed gates

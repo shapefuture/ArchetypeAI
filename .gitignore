@@ -28,7 +28,6 @@ dist-ssr
 *.db
 .beads-credential-key
 
-.angular/
 
 # Scratch artifacts from agent sessions (not project source)
 /beginning.txt

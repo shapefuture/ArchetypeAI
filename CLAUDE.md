@@ -51,21 +51,22 @@ bd close <id>         # Complete work
 <!-- END BEADS INTEGRATION -->
 
 
-## Build & Test
-
-_Add your build and test commands here_
-
-```bash
-# Example:
-# npm install
-# npm test
-```
-
 ## Architecture Overview
 
-React is the only maintained client (owner decision, 2026-10-23). Product code lives in `src/parts-cartographer/` (React/Vite) and the framework-free `src/shared/` and `src/environments/` it imports. The Angular app (`src/app/`, `src/main.ts`, `angular.json`) is frozen and will be removed after PR #7 merges (`ArchetypeAI-hi8.6`). See "Client app: React only" in AGENTS.md.
+React is the only maintained client (owner decision, 2026-10-23). Product code lives in `src/parts-cartographer/` (React/Vite) and the framework-free `src/shared/` and `src/environments/` it imports. The earlier Angular app was retired (`ArchetypeAI-hi8.6`) and remains only in git history. See "Client app: React only" in AGENTS.md.
+
+## Build & Test commands
+
+```bash
+npm ci
+npm run lint          # tsc --noEmit
+npm test              # vitest (React and src/shared)
+npm run test:rules    # Firestore rules emulator; needs Java
+npm run build         # React PWA into dist/
+npm run test:browser  # Playwright, after npm run build
+```
 
 ## Conventions & Patterns
 
-- Do not change the frozen Angular app or port React changes to it.
+- Do not reintroduce Angular code, packages or build targets.
 - Russian copy follows `src/shared/i18n/strings.ts`: address the user as «вы», never «ты», and use its terminology («Self-энергия», «сравнение», «ИИ-коуч», «потребность», «нагрузка», «копия», «практика»).

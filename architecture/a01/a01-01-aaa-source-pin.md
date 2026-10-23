@@ -1,5 +1,6 @@
 # A01.01 AAA v7.1 source pin, adoption claims and optional-profile exclusions
 <!-- cite-ref: 09194df -->
+<!-- cite-external: AAA-V7-SPEC.md .source.md -->
 
 **Bead:** ArchetypeAI-9ulr (A01.S01, planning key of the A01.01 step)
 **Status:** CANDIDATE, awaiting independent review. Not accepted. No AAA conformance is claimed.

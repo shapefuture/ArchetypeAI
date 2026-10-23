@@ -109,6 +109,7 @@ test('historical local restore previews before applying and refreshes mounted st
   await page.locator('input[type=file]').setInputFiles({ name: 'angular-backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ assessmentResponses: Array(64).fill(3) })) });
   await expect(page.getByText('Review local restore')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('ARCHETYPE_ASSESSMENT_RESPONSES'))).toBeNull();
+  expect(errors).toEqual([]);
   await page.getByRole('button', { name: 'Restore this backup' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ARCHETYPE_ASSESSMENT_RESPONSES')).length)).toBe(64);
@@ -168,4 +169,16 @@ test('browser Back and Forward restore an open layer and a route, with focus on 
   await expect(page.getByRole('button', { name: /Start.*147/i }).first()).toBeVisible();
   await expect(page.locator('.app-main')).toBeFocused();
   expect(page.url()).toBe(start);
+});
+
+test('the situation inquiry entry opens the inquiry itself, focused and in view', async ({ page }) => {
+  await page.goto('/');
+  const errors = []; page.on('pageerror', (e) => errors.push(e.message));
+  await page.getByRole('button', { name: /Think through one situation/ }).first().click();
+  const inquiry = page.locator('#situation-inquiry');
+  await expect(inquiry).toBeVisible({ timeout: 30_000 });
+  await expect(inquiry).toBeFocused();
+  await expect(inquiry).toBeInViewport();
+  expect(await page.evaluate(() => localStorage.getItem('ARCHETYPE_ASSESSMENT_RESPONSES'))).toBeNull();
+  expect(errors).toEqual([]);
 });

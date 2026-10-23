@@ -58,8 +58,8 @@ The coordinator should confirm the intended referent before S02 is dispatched (F
 
 - **C01 (auth.identity).** The seam exists at `src/parts-cartographer/core/auth.service.ts` (148 lines). It covers anonymous bootstrap, Google and email sign-in, linking an anonymous account while keeping its UID, and sign-out (`src/parts-cartographer/core/auth.service.ts:81-147`). The only contract is `AUTH_PORT` (`src/parts-cartographer/core/ports.ts:6-13`). No versioned contract, compatibility suite or registry entry was found. Server-side identity is Firebase ID-token verification (`worker-security.ts:30-79`), which yields `uid`, `email` and `email_verified`.
 - **C08 (consent.provenance).** The seam path `src/parts-cartographer/core/personal-memory.ts@675118c` was absent at the base 09194df (added at HEAD in 3670a3a). Consent exists only as UI controls and copy:
-  - share-code checkbox (`src/parts-cartographer/overlays.jsx:503`; copy `i18n/strings.ts:193`);
-  - booking checkbox that gates the confirm button (`src/parts-cartographer/overlays.jsx:842-852`; copy `i18n/strings.ts:351`);
+  - share-code checkbox (`src/parts-cartographer/overlays.jsx:503`; copy `src/parts-cartographer/i18n/strings.ts:193`);
+  - booking checkbox that gates the confirm button (`src/parts-cartographer/overlays.jsx:842-852`; copy `src/parts-cartographer/i18n/strings.ts:351`);
   - therapist consent text (`src/parts-cartographer/core/therapist-link.ts:201`);
   - reminder opt-in (`src/parts-cartographer/core/push.ts:32-84`).
 
@@ -186,7 +186,7 @@ Columns: existing evidence; status (*implemented*, *partial*, *absent*, or *conf
 | Normal grant, booking | Consent checkbox gates confirm (`src/parts-cartographer/overlays.jsx:842-852`); `createBooking` writes `clientShares` (`src/parts-cartographer/core/booking.ts:401-412`); rules allow therapist read while appointment is pending or approved (`firestore.rules:62-71`, `:133-138`); test definition at `firestore.rules.emulator.spec.ts:414-425` | implemented (booking only) | Purpose-specific to one appointment; not a matching grant | Pattern | Emulator run; two-account run |
 | Normal grant, share code | Consent checkbox (`src/parts-cartographer/overlays.jsx:503`) gates generation (`:326`) | implemented (one-off) | Bearer; no recipient scope; no expiry | Pattern for consent UI | Recipient-scope test |
 | Implicit grant, public identity | `publicProfiles` written on linked sign-in (`src/parts-cartographer/core/user-directory.ts:34-46`); no consent step | **conflicts** | No consent, no field choice, no opt-out path in code | None | Consent review (B01, B02.S02) |
-| Denied grant, booking | Non-appointment read denied (`firestore.rules:62-71`, `:441-465`); test definition `emulator.spec.ts:325-352` (fake shares denied) | implemented | None for booking | Pattern | Emulator run |
+| Denied grant, booking | Non-appointment read denied (`firestore.rules:62-71`, `:441-465`); test definition `firestore.rules.emulator.spec.ts:325-352` (fake shares denied) | implemented | None for booking | Pattern | Emulator run |
 | Denied grant, share code | Revoked or unknown code returns null; UI shows "unavailable or revoked" (`src/parts-cartographer/core/cloud-storage.ts:249-277`; `src/parts-cartographer/overlays.jsx:373`) | partial | Conflates unknown schema with revoked (F-06); no recipient-visible denial reason | Pattern | Denial-copy review |
 | Denied, matching | none | absent | No denial state; a non-consenting user remains listed | None | — |
 
@@ -228,7 +228,7 @@ Columns: existing evidence; status (*implemented*, *partial*, *absent*, or *conf
 
 | Aspect | Existing evidence | Status | Gap | Pending |
 |---|---|---|---|---|
-| Concurrent booking, same slot | Deterministic busy-slot id plus rules (`src/parts-cartographer/core/booking.ts:378-386`; `firestore.rules:340-364`); test definition `emulator.spec.ts:353-413`, including "exactly one concurrent reservation" at `:389` | implemented | None | Emulator run |
+| Concurrent booking, same slot | Deterministic busy-slot id plus rules (`src/parts-cartographer/core/booking.ts:378-386`; `firestore.rules:340-364`); test definition `firestore.rules.emulator.spec.ts:353-413`, including "exactly one concurrent reservation" at `:389` | implemented | None | Emulator run |
 | Cancel releases slot only for its own appointment | `src/parts-cartographer/core/booking.ts:349-354` | implemented | None | — |
 | Retried cancel after success | Client update allowed only from pending or approved (`firestore.rules:426-432`), so a second cancel is refused by rules (*static trace*) | partial | Error after success (F-19) | Retry test |
 | Booking partial failure | Appointment and busy slot commit atomically (`src/parts-cartographer/core/booking.ts:400`), then grant writes separately (`:401-420`); UI shows failure (`src/parts-cartographer/overlays.jsx:749-752`) | **conflicts** | Appointment exists without its grant; a retry is refused because the busy slot exists and rules deny its update (`firestore.rules:365`) (F-03) | Fault-injection test |
@@ -406,7 +406,7 @@ Each cell gives the existing behavior and its source, or "none" when no code exi
 | Synastry redeem and save | Redeem, compute, save (`src/parts-cartographer/overlays.jsx:364-420`) | Older result without `engineVersion`: unknown-version copy (`src/parts-cartographer/overlays.jsx:586-591`; `src/parts-cartographer/core/synastry-v2.ts:12-13`) | None | Not linked: error (`src/parts-cartographer/overlays.jsx:371`) | Save failure shows `synLoadFailed`; result stays on screen (`src/parts-cartographer/overlays.jsx:409`, `:414`) | None |
 | AI synastry narrative | Generate and save reflections (`src/parts-cartographer/overlays.jsx:290-321`) | Degradation descriptor (`src/parts-cartographer/core/ai.adapter.ts:130-145`) | None | Unauthenticated Worker call is refused (`worker-security.ts:65-79`) | Late reply ignored after abort (`src/parts-cartographer/overlays.jsx:302`) | Heuristic fallback (`src/parts-cartographer/core/ai.adapter.ts:147`, `:207`, `:228`) |
 | Booking request | Consent checkbox, then confirm (`src/parts-cartographer/overlays.jsx:842-852`, `:735-756`) | No availability message (`src/parts-cartographer/overlays.jsx:726`) | Therapist declines through `setAppointmentStatus` (`src/parts-cartographer/core/booking.ts:339-357`; `src/parts-cartographer/overlays.jsx:955`) | Busy slot refused by rules (`firestore.rules:340-364`; `emulator.spec.ts:389`) | Partial failure: appointment kept, grant missing (`src/parts-cartographer/core/booking.ts:400-420`; F-03) | None |
-| Therapist invite and roster | Create and claim (`src/parts-cartographer/core/therapist-link.ts:86-126`) | Summary shape validated by rules (`firestore.rules:146-160`) | None; claim is therapist-initiated | Assignment needs a trusted roster (`firestore.rules:540-555`; `emulator.spec.ts:475`) | None specific | None |
+| Therapist invite and roster | Create and claim (`src/parts-cartographer/core/therapist-link.ts:86-126`) | Summary shape validated by rules (`firestore.rules:146-160`) | None; claim is therapist-initiated | Assignment needs a trusted roster (`firestore.rules:540-555`; `firestore.rules.emulator.spec.ts:475`) | None specific | None |
 | Reminder opt-in | Enable after permission (`src/parts-cartographer/core/push.ts:32-84`) | Ready state before consent (`src/parts-cartographer/core/push.ts:24-29`; `src/parts-cartographer/core/push.spec.ts:96`) | Permission denied is not asked again (`src/parts-cartographer/core/push.ts:34-40`; `src/parts-cartographer/core/push.spec.ts:110`) | Denied state (`src/parts-cartographer/core/push.ts:26`, `:34`) | Token rotation deletes old token before writing new (`src/parts-cartographer/core/push.ts:64-70`) | Nudge at most once per 20 hours (`src/parts-cartographer/core/push.ts:101-115`) |
 | Sensory controls | Independent presets and overrides (`src/parts-cartographer/core/sensory-preferences.ts:1-12`) | Malformed values fall back (`src/parts-cartographer/core/sensory-preferences.spec.ts`, persistence test) | None | None | None | Not a discovery quiet mode |
 
@@ -416,7 +416,7 @@ Searches were run in this worktree at commit `09194df`. Word-boundary matches we
 
 | Pattern (scope) | Result | Conclusion |
 |---|---|---|
-| `matching`, `matchmaking`, `discovery`, `discoverable`, `blocked`, `block list`, `decline` (`src/`, non-spec) | Only appointment decline in therapist UI and copy (`strings.ts:418`) | No opt-in matching or discovery feature |
+| `matching`, `matchmaking`, `discovery`, `discoverable`, `blocked`, `block list`, `decline` (`src/`, non-spec) | Only appointment decline in therapist UI and copy (`src/parts-cartographer/i18n/strings.ts:418`) | No opt-in matching or discovery feature |
 | `block`, `report`, `mute`, `unfollow`, `purpose` (`firestore.rules`) | 0 hits | No block, report or purpose concept in rules |
 | `expedition`, `shared experience`, `theme space` (`src/`, `firestore.rules`) | 0 hits | Creative-commons feature families not implemented |
 | `personal-memory`, `personalMemory`; filenames matching `personal`, `consent`, `provenance` (`src/`) | 0 source hits at base 09194df; at HEAD `src/parts-cartographer/core/personal-memory.ts@675118c` matches (3670a3a) | Consent and provenance seam absent at base (F-11, superseded) |

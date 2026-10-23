@@ -197,7 +197,7 @@ Each finding ID (N-xx) is defined in section 10. Status values: **specified** (s
 | Rotation with failure | previous document deleted before the new write (`src/parts-cartographer/core/push.ts:64-66`). A failed write can leave neither document. | none | gap (N-05) |
 | Repeated disable | returns early when S-3 is absent (`src/parts-cartographer/core/push.ts:91`). If S-3 survives a failed `deleteToken` (`src/parts-cartographer/core/push.ts:97-98`), a retry calls `deleteDoc` on a missing document, which rules deny because `resource` is null [S, to verify]. | none | gap (N-05) |
 | Cancel an in-flight enable | no `AbortSignal`. A late completion can write the document and the marker after the user has withdrawn (`src/parts-cartographer/core/push.ts:66-71`). | none | gap |
-| Duplicate display | constant tag `innerverse-daily` (`firebase-messaging-sw.js:18, 25`; `src/parts-cartographer/core/push.ts:109`). Same-tag notifications replace one another, so two different reminders also collapse. | none | gap (N-07) |
+| Duplicate display | constant tag `innerverse-daily` (`public/firebase-messaging-sw.js:18, 25`; `src/parts-cartographer/core/push.ts:109`). Same-tag notifications replace one another, so two different reminders also collapse. | none | gap (N-07) |
 | Two `push` handlers in the FCM worker | `onBackgroundMessage` (L14-20) and a raw `push` listener (L21-26) both call `showNotification`. Duplicate handling is possible. | none | pending [P] (N-18) |
 | Cancelled send | none (no scheduler, no sender in repo) | none | gap (N-01) |
 
@@ -251,7 +251,7 @@ Dimensions are those of AAA v7.1 section 11C.2: interface, state, effects, opera
 - The unwired local nudge functions (`src/parts-cartographer/core/push.ts:101-115`; `src/services/push.service.ts:65-74`).
 - The constant display tag `innerverse-daily`.
 - Two app-shell worker sources that write the same `dist/sw.js`.
-- English-only worker defaults (`firebase-messaging-sw.js:16, 25`). The worker cannot read the app's language preference, so Russian users see English unless the sender supplies text.
+- English-only worker defaults (`public/firebase-messaging-sw.js:16, 25`). The worker cannot read the app's language preference, so Russian users see English unless the sender supplies text.
 
 ## 10. Findings
 
@@ -265,10 +265,10 @@ Severity is a planning judgement for B05.S02 prioritisation, not a release gate.
 | N-04 | All errors and all refused or dismissed prompts become `denied`, and the React button is disabled for the session. The dismissal path is untested because the mock always grants. | `push.ts:40, 54, 61, 80-83`; `push.service.ts:39, 43, 54, 60-61`; `src/parts-cartographer/screens/check-in.jsx:330`; `src/parts-cartographer/core/push.spec.ts:52` | Medium-High |
 | N-05 | Writes are not atomic. Rotation deletes before writing. Angular stores the marker before the registry write. Withdrawal removes the registry document before `deleteToken` and before the marker. | `push.ts:64-66, 96-98`; `src/services/push.service.ts:55-56` | Medium |
 | N-06 | The local nudge fallback has no runtime caller. Its tests pass, and the parity evidence describes the "local cap" as covered, but the product cannot reach it. | `src/parts-cartographer/core/push.ts:101-115`; `src/services/push.service.ts:65-74`; `docs/react-vite-angular-parity-evidence.md:36` | Medium |
-| N-07 | One constant display tag is used for every notification, so there is no occurrence identity. Different reminders replace one another. | `firebase-messaging-sw.js:18, 25`; `src/parts-cartographer/core/push.ts:109` | Medium |
+| N-07 | One constant display tag is used for every notification, so there is no occurrence identity. Different reminders replace one another. | `public/firebase-messaging-sw.js:18, 25`; `src/parts-cartographer/core/push.ts:109` | Medium |
 | N-08 | No `notificationclick` handler exists in any worker, so tapping a reminder has no app-defined destination or action. | grep over `src/sw.js`, `public/sw.js`, `src/firebase-messaging-sw.js` | Medium |
 | N-09 | Two app-shell workers share the URL `/sw.js` and the output path `dist/sw.js`. The Firebase config is copied into the FCM worker by hand. Two hosting targets serve `dist`. | `public/sw.js:2-5`; `src/sw.js:16-18` (build stamp and cache names, not the output path); `angular.json` assets; `firebase.json`; `src/firebase-messaging-sw.js:5-12` | Medium |
-| N-10 | Worker defaults are English-only; the worker has no language signal. | `firebase-messaging-sw.js:16, 25` | Low-Medium |
+| N-10 | Worker defaults are English-only; the worker has no language signal. | `public/firebase-messaging-sw.js:16, 25` | Low-Medium |
 | N-11 | No delivery quiet hours, digest, budget, pause, per-stream control or delivery timezone exists. An in-app quiet check exists for the due-task note (`src/parts-cartographer/core/reminder-policy.ts:74@675118c`, HEAD 675118c only). Quiet mode and quiet hours are required by the plans for delivery. | section 6; `docs/80-20-plan.md:484, 530`; `docs/oldplan.md:279-295@675118c` | High for B05 scope (new work) |
 | N-12 | In-app timing is correct on its own terms (absolute 48-hour and 24-hour intervals, local-day helpers). It has no DST-boundary or timezone-change tests. | `state-v2.ts:86-91, 158, 162-171, 239-241`; `src/app/core/data/state-v2.spec.ts` | Low |
 | N-13 | The registry schema is fixed in rules with `hasOnly`, and has no version field. Any schema change needs coordinated rules, clients and sender changes. | `firestore.rules:200-214` | Medium |

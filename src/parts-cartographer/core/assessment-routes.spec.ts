@@ -26,11 +26,11 @@ describe('assessment route contract', () => {
     expect(route('battery-147').itemCount).toBe(buildItemSequence().length);
   });
 
-  it('does not present the situation inquiry as a scored or available instrument', () => {
+  it('offers the situation inquiry as its own route, never as a scored instrument', () => {
     expect(route('situation-inquiry')).toMatchObject({
-      tier: 'primary', canonical: false, available: false, itemCount: null, produces: 'none', destination: null,
+      tier: 'primary', canonical: false, available: true, itemCount: null, produces: 'none',
+      destination: { kind: 'overlay', overlay: 'checkin', focus: 'situation-inquiry' },
     });
-    expect(route('situation-inquiry').unavailableNote).toBeTruthy();
   });
 
   it('only gives destinations to available routes and never marks a secondary tool canonical', () => {

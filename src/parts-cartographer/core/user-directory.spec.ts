@@ -22,7 +22,7 @@ vi.mock('firebase/firestore', () => ({
 
 import { clearUserDirectoryCache, lookupByEmail, syncPublicProfile } from './user-directory';
 
-const user = (uid: string, email: string) => ({ uid, email, displayName: 'Dr Vale', linked: true }) as any;
+const user = (uid: string, email: string, emailVerified = true) => ({ uid, email, displayName: 'Dr Vale', linked: true, emailVerified }) as any;
 
 beforeEach(() => {
   store.clear();
@@ -50,6 +50,13 @@ describe('user directory without a listable collection', () => {
     store.set('directoryEmails/old@example.com', { uid: 'uid_t', updatedAt: 'x' });
     store.set('publicProfiles/uid_t', { email: 'new@example.com', emailLower: 'new@example.com', displayName: null });
     expect(await lookupByEmail('old@example.com')).toBeNull();
+  });
+
+  it('indexes only a verified address, so an unverified account cannot be found by email', async () => {
+    await syncPublicProfile(user('uid_u', 'unverified@example.com', false));
+    expect(commits[0].map((w) => w.path)).toEqual(['publicProfiles/uid_u']);
+    clearUserDirectoryCache();
+    expect(await lookupByEmail('unverified@example.com')).toBeNull();
   });
 
   it('writes nothing for an anonymous session', async () => {

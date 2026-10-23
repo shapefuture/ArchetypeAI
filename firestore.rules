@@ -340,13 +340,16 @@ service cloud.firestore {
 
     // Email index for "find a therapist by email": one document per lowercased
     // address, holding only its owner's UID. A known address resolves with a get;
-    // the collection cannot be listed. Only the holder of the address in their
-    // sign-in token can write its entry, and only to point at themselves.
+    // the collection cannot be listed. Only the holder of a verified address in
+    // their sign-in token can write its entry, and only to point at themselves:
+    // an unverified account could otherwise claim a therapist's address before
+    // the real owner and receive bookings or shared maps meant for them.
     match /directoryEmails/{emailLower} {
       allow get: if isSignedIn();
       allow list: if false;
       allow create, update: if isSignedIn()
         && request.auth.token.email is string
+        && request.auth.token.email_verified == true
         && emailLower == request.auth.token.email.lower()
         && request.resource.data.keys().hasAll(['uid', 'updatedAt'])
         && request.resource.data.keys().hasOnly(['uid', 'updatedAt'])

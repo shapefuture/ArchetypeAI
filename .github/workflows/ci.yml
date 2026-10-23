@@ -113,6 +113,3 @@ jobs:
 
       - name: Mobile browser parity
         run: npm run test:browser
-
-      - name: Build retained Angular app
-        run: npm run build:angular

@@ -116,6 +116,19 @@ class CheckCitesTest(unittest.TestCase):
         doc = self.doc('| `beta` | `a.ts:2` (`beta`) |\n', ref=head)
         self.assertIn('matches 2 files', check_file(doc, self.root)[0][1])
 
+    def test_relative_cite_inherits_the_commit_of_its_file(self):
+        first = self.sha
+        subprocess.run(['git', 'rm', '-q', 'src/a.ts'], cwd=self.root, check=True)
+        subprocess.run(GIT + ['commit', '-q', '-m', 'remove a.ts'], cwd=self.root, check=True)
+        head = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=self.root, check=True, capture_output=True, text=True).stdout.strip()
+        doc = self.doc(f'| `beta` | `src/a.ts:2@{first}` and `:3` |\n', ref=head)
+        self.assertEqual(check_file(doc, self.root), [])
+
+    def test_bare_name_at_the_root_means_the_root_file(self):
+        sha = make_repo(self.root, {'package.json': '{\n  "name": "x"\n}\n', 'tools/package.json': '{}\n'})
+        doc = self.doc('| `name` | `package.json:2` |\n', ref=sha)
+        self.assertEqual(check_file(doc, self.root), [])
+
     def test_external_names_are_not_resolved(self):
         doc = self.doc('<!-- cite-external: dist/sw.js -->\n| `beta` | `dist/sw.js:4`, `src/a.ts:2` |\n')
         self.assertEqual(check_file(doc, self.root), [])

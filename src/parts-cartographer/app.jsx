@@ -13,18 +13,53 @@ import { navEntry, navOverlay, navSheet, planNavigation, readNavEntry, sameSheet
 import { SEED_PARTS } from './pal/traits.ts';
 import { t as translate, STRINGS } from './i18n/strings.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
-import { Cabinet } from './screens/cabinet.jsx';
 const AdminDashboard = lazy(() => import('./screens/admin.jsx').then((module) => ({ default: module.AdminDashboard })));
-import { Assessment, Gate, Descent, Results } from './screens/assessment.jsx';
 const FullAssessment = lazy(() => import('./screens/full-assessment.jsx').then((module) => ({ default: module.FullAssessment })));
 const Legacy64Assessment = lazy(() => import('./screens/legacy-assessment.jsx').then((module) => ({ default: module.Legacy64Assessment })));
 const Practice = lazy(() => import('./screens/practice.jsx').then((module) => ({ default: module.Practice })));
 const CheckIn = lazy(() => import('./screens/check-in.jsx').then((module) => ({ default: module.CheckIn })));
 const QuickScan = lazy(() => import('./screens/quick-scan.jsx').then((module) => ({ default: module.QuickScan })));
 const BackupRestore = lazy(() => import('./screens/backup-restore.jsx').then((module) => ({ default: module.BackupRestore })));
-import { Innerverse, SpecialistView } from './screens/innerverse.jsx';
-import { Coach, Help, InstallPrompt, SynastryOv, Therapist, Login, MapGate, Paywall, UniverseFail, Journal, Share, Booking } from './overlays.jsx';
-import { PartSheet, PartEditor, Chemistry, CharterSheet } from './screens/cabinet.jsx';
+
+/* Everything past the landing screens loads on demand, so the first visit
+   downloads only what onboarding and the intro need (h0y0g). The same loaders
+   are warmed once the browser is idle, so later navigation stays instant. */
+const loadCabinet = () => import('./screens/cabinet.jsx');
+const loadAssessment = () => import('./screens/assessment.jsx');
+const loadInnerverse = () => import('./screens/innerverse.jsx');
+const loadOverlays = () => import('./overlays.jsx');
+const named = (load, name) => lazy(() => load().then((module) => ({ default: module[name] })));
+const Cabinet = named(loadCabinet, 'Cabinet');
+const PartSheet = named(loadCabinet, 'PartSheet');
+const PartEditor = named(loadCabinet, 'PartEditor');
+const Chemistry = named(loadCabinet, 'Chemistry');
+const CharterSheet = named(loadCabinet, 'CharterSheet');
+const Assessment = named(loadAssessment, 'Assessment');
+const Gate = named(loadAssessment, 'Gate');
+const Descent = named(loadAssessment, 'Descent');
+const Results = named(loadAssessment, 'Results');
+const Innerverse = named(loadInnerverse, 'Innerverse');
+const SpecialistView = named(loadInnerverse, 'SpecialistView');
+const Coach = named(loadOverlays, 'Coach');
+const Help = named(loadOverlays, 'Help');
+const InstallPrompt = named(loadOverlays, 'InstallPrompt');
+const SynastryOv = named(loadOverlays, 'SynastryOv');
+const Therapist = named(loadOverlays, 'Therapist');
+const Login = named(loadOverlays, 'Login');
+const MapGate = named(loadOverlays, 'MapGate');
+const Paywall = named(loadOverlays, 'Paywall');
+const UniverseFail = named(loadOverlays, 'UniverseFail');
+const Journal = named(loadOverlays, 'Journal');
+const Share = named(loadOverlays, 'Share');
+const Booking = named(loadOverlays, 'Booking');
+
+/** Fetches the deferred screens in the background after the first render. */
+function warmDeferredScreens() {
+  const warm = () => { for (const load of [loadCabinet, loadAssessment, loadOverlays, loadInnerverse]) load().catch(() => {}); };
+  if (typeof window === 'undefined') return;
+  if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 4000 });
+  else setTimeout(warm, 2000);
+}
 import { RouteBoundary, RouteFrame } from './ui/route-boundary.jsx';
 import { homeScreen, resolveBootRoute, withoutDeepLink } from './core/boot.ts';
 
@@ -100,6 +135,7 @@ export default function App() {
     return () => window.removeEventListener('ifs:push-message', message);
   }, []);
   /* keep <html lang> + theme in sync (RU font fallback, no theme flash) */
+  useEffect(() => { warmDeferredScreens(); }, []);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
   // Restore is an explicit local action. Refresh mounted state immediately;
@@ -442,8 +478,8 @@ export default function App() {
 
           {toastMsg && <div className="toast" role="status">{toastMsg}</div>}
 
-          {sheetEl && <ModalLayer label={t('parts')} onClose={() => setSheet(null)}>{sheetEl}</ModalLayer>}
-          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(typeof overlay === 'string' ? overlay : overlay?.kind)} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}>{ov}</RouteBoundary></ModalLayer>}
+          {sheetEl && <ModalLayer label={t('parts')} onClose={() => setSheet(null)}><RouteBoundary resetKey={sheet?.type}><Suspense fallback={<Loading />}>{sheetEl}</Suspense></RouteBoundary></ModalLayer>}
+          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(typeof overlay === 'string' ? overlay : overlay?.kind)} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}><Suspense fallback={<Loading />}>{ov}</Suspense></RouteBoundary></ModalLayer>}
         </div>
       </div>
     </AppCtx.Provider>

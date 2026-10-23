@@ -16,7 +16,9 @@ Checks, per citation:
 - the file resolves at the commit, and the cited line range is inside it.
 
 Checks, per table row that names identifiers (backticked words):
-- at least one of the cited lines contains one of the identifiers as a whole word.
+- one of the identifiers appears as a whole word on the cited lines, or in the
+  CONTEXT lines just before them. A cite often points at one statement inside
+  a block or function whose name the row gives, so the name sits above it.
 
 Usage: check_cites.py [--strict] [--cwd REPO] FILE...
 Without --strict the script reports and exits 0, so it can run as an advisory step.
@@ -33,6 +35,7 @@ PATH_CITE = re.compile(
     r'(?::' + RANGES + r')?(?:@(?P<ref>[0-9a-fA-F]{7,40}))?`')
 REL_CITE = re.compile(r'`:' + RANGES + r'(?:@(?P<ref>[0-9a-fA-F]{7,40}))?`')
 IDENTIFIER = re.compile(r'`([A-Za-z_][A-Za-z0-9_]{3,})`')
+CONTEXT = 40
 
 _TREES = {}
 
@@ -124,7 +127,7 @@ def _check_cite(number, match, name, header, cwd):
         if low < 1 or high < low or high > len(lines):
             problems.append((number, f'{path}:{low}-{high} is outside the file at {ref} ({len(lines)} lines)'))
         else:
-            windows.append((path, low, high, '\n'.join(lines[low - 1:high])))
+            windows.append((path, low, high, '\n'.join(lines[max(0, low - 1 - CONTEXT):high])))
     return problems, windows
 
 

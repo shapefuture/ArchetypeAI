@@ -1,7 +1,7 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { computeSynastry } from '../../app/core/data/synastry';
+import { computeSynastry } from '../../shared/core/data/synastry';
 import { LegacySynastryDetails } from './legacy-synastry-report.jsx';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;

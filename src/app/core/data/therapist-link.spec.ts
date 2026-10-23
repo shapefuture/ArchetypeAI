@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { generateLinkCode, toTherapistSummary, CONSENT_TEXT } from './therapist-link';
-import { scoreProfile, type AssessmentInput } from './scoring-v2';
-import { SHADOW_PARTS, RESOURCES } from './parts';
-import { redAllowed } from './exercises';
+import { scoreProfile, type AssessmentInput } from '../../../shared/core/data/scoring-v2';
+import { SHADOW_PARTS, RESOURCES } from '../../../shared/core/data/parts';
+import { redAllowed } from '../../../shared/core/data/exercises';
 
 const all = (fill: number): AssessmentInput => {
   const shadow = {} as AssessmentInput['shadow'];

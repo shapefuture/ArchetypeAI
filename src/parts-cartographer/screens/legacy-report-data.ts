@@ -13,8 +13,8 @@ import {
   positivePoleStrength,
   type PoleScores,
   type ScoredArchetype,
-} from '../../app/core/data/scoring';
-import { STRINGS, TRANSLATIONS } from '../../i18n/strings';
+} from '../../shared/core/data/scoring';
+import { STRINGS, TRANSLATIONS } from '../../shared/i18n/strings';
 import type { LegacyAiAnalysis } from '../core/legacy-ai-analysis';
 
 export type LegacyAssessmentLanguage = 'en' | 'ru';
@@ -25,6 +25,8 @@ export interface LegacyAssessmentReport {
   createdAt: string;
   poleScores: PoleScores;
   archetypes: ScoredArchetype[];
+  /** Response-derived placement list, kept when an AI pantheon replaces `archetypes` for narrative display. */
+  deterministicArchetypes?: ScoredArchetype[];
   dynamics: ReturnType<typeof generateArchetypes>['dynamics'];
   complexes: ReturnType<typeof detectComplexes>;
   defenseHierarchy: ReturnType<typeof computeDefenseHierarchy>;
@@ -165,6 +167,7 @@ export function applyLegacyAiAnalysis(report: LegacyAssessmentReport, analysis: 
   const partial = {
     ...report,
     archetypes,
+    deterministicArchetypes: report.deterministicArchetypes ?? report.archetypes,
     complexes: detectComplexes(archetypes, report.poleScores, report.language),
     defenseHierarchy: computeDefenseHierarchy(archetypes, report.poleScores, report.language),
     triggerMap: computeTriggerMap(archetypes, report.poleScores, report.language),

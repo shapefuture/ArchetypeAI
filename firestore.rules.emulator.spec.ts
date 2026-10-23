@@ -424,6 +424,65 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(getDoc(doc(therapist, 'users', UIDS.client, 'assessment', 'current')));
     });
 
+    it('accepts an optional therapist statement up to 600 characters and refuses longer, non-string or extra fields', async () => {
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      const profile = (extra: Record<string, unknown>) => ({
+        email: 'therapist@example.com',
+        availability: [{ days: [1], start: '09:00', end: '17:00', minutes: 60, timeZone: 'UTC' }],
+        ...extra,
+      });
+      await assertSucceeds(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: 'A calm, plain-language introduction.' })));
+      await assertSucceeds(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: '' })));
+      await assertFails(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: 'x'.repeat(601) })));
+      await assertFails(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: 42 })));
+      await assertFails(setDoc(doc(therapist, 'therapists', UIDS.therapist), profile({ statement: 'ok', rank: 1 })));
+    });
+
+    it('accepts a schemaVersion-2 zone time with its slot reservation and refuses malformed time fields', async () => {
+      await seedTherapistProfile();
+      const client = asUser(UIDS.client, 'client@example.com');
+      const valid = {
+        schemaVersion: 2,
+        startUtc: '2026-10-06T14:00:00.000Z',
+        endUtc: '2026-10-06T15:00:00.000Z',
+        durationMinutes: 60,
+        timeZone: 'America/New_York',
+        wallStart: '2026-10-06T10:00',
+        repeatedWallTime: null,
+        source: { kind: 'availability-slot' },
+      };
+      // The same batch shape the client uses: the appointment and its slot reservation commit together.
+      const bookWithTime = (appointmentId: string, time: unknown, start: string, end: string) => {
+        const batch = writeBatch(client);
+        batch.set(doc(client, 'appointments', appointmentId), {
+          clientUid: UIDS.client,
+          clientEmail: 'client@example.com',
+          therapistUid: UIDS.therapist,
+          therapistEmail: 'therapist@example.com',
+          start,
+          end,
+          status: 'pending',
+          createdAt: '2026-10-01T00:00:00.000Z',
+          accessGranted: true,
+          time,
+        });
+        batch.set(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${start}`), {
+          therapistUid: UIDS.therapist,
+          appointmentId,
+          start,
+          end,
+        });
+        return batch.commit();
+      };
+
+      await assertSucceeds(bookWithTime(`${UIDS.client}_3100`, valid, '2026-10-06T10:00', '2026-10-06T11:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3101`, 'nope', '2026-10-06T11:00', '2026-10-06T12:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3102`, { ...valid, schemaVersion: 1 }, '2026-10-06T12:00', '2026-10-06T13:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3103`, { ...valid, approvedBy: UIDS.client }, '2026-10-06T13:00', '2026-10-06T14:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3104`, { ...valid, timeZone: 'x'.repeat(65) }, '2026-10-06T14:00', '2026-10-06T15:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3105`, { ...valid, durationMinutes: 'sixty' }, '2026-10-06T15:00', '2026-10-06T16:00'));
+    });
+
     it('rejects appointment field injection and invalid status transitions', async () => {
       await seedTherapistProfile();
       const client = asUser(UIDS.client, 'client@example.com');

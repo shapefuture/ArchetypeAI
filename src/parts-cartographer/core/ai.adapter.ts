@@ -55,7 +55,7 @@ export const LocalHeuristicAiAdapter: AI_PORT = {
       `. Dominant bond: ${pickFrom(['mirror', 'anchor', 'catalyst', 'sanctuary', 'challenger', 'echo'], seed)}.`;
   },
   async suggestExercise(profile) {
-    const { EXERCISES, suggestExercise } = await import('../../app/core/data/exercises');
+    const { EXERCISES, suggestExercise } = await import('../../shared/core/data/exercises');
     const clinical = (profile as any)?.clinical;
     if (clinical) {
       const suggestion = suggestExercise({ profile: clinical, checkIns: [], now: new Date() });

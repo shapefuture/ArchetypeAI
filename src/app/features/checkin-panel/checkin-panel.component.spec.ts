@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { flushLocal, resetLocalQueueForTests } from '../../core/data/local-store';
+import { flushLocal, resetLocalQueueForTests } from '../../../shared/core/data/local-store';
 import { CheckInPanelComponent } from './checkin-panel.component';
-import { SHADOW_PARTS, RESOURCES } from '../../core/data/parts';
-import { scoreProfile, type AssessmentInput } from '../../core/data/scoring-v2';
+import { SHADOW_PARTS, RESOURCES } from '../../../shared/core/data/parts';
+import { scoreProfile, type AssessmentInput } from '../../../shared/core/data/scoring-v2';
 
 const DIR = resolve(__dirname);
 const templateHtml = readFileSync(resolve(DIR, 'checkin-panel.component.html'), 'utf-8');

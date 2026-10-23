@@ -14,12 +14,12 @@ import {
   computed, inject, model, viewChild,
 } from '@angular/core';
 
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 const safeR = (v: number) => Math.max(0.1, v);
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
-import { buildLayout, starAt, type Star } from '../../core/data/constellation-layout';
-import type { ScoredProfile } from '../../core/data/scoring-v2';
+import { buildLayout, starAt, type Star } from '../../../shared/core/data/constellation-layout';
+import type { ScoredProfile } from '../../../shared/core/data/scoring-v2';
 
 const RING_RADIUS = { resource: 0.44, manager: 0.36, firefighter: 0.26, exile: 0.155 } as const;
 const RING_DRIFT = { resource: 0.004, manager: -0.006, firefighter: 0.009, exile: -0.012 } as const; // rad/s

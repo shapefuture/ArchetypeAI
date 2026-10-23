@@ -1,6 +1,6 @@
 import { StoragePort, AssessmentData, SynastryConnectionData, SynastrySavedReportData } from '../ports/storage.port';
 import { Injectable } from '@angular/core';
-import { SynastryReport } from '../data/synastry';
+import { SynastryReport } from '../../../shared/core/data/synastry';
 
 const RESPONSES_KEY = 'ARCHETYPE_ASSESSMENT_RESPONSES';
 const BACKUP_KEY = 'ARCHETYPE_COMPLETED_BACKUP';

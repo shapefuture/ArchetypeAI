@@ -119,3 +119,20 @@ The core implementation specification is [docs/80-20-plan.md](docs/80-20-plan.md
 - **The Angular app is frozen.** Do not add features, fixes or refactors to `src/app/`, `src/main.ts` or `angular.json`, and do not port React changes back to Angular. Keep it building only until it is removed. Removal is tracked as `ArchetypeAI-hi8.6` and happens after PR #7 merges.
 - **Tasks that name Angular** (for example "Bridge React, Angular and worker consumers") are scoped to React and the worker. Each such Bead carries a dated comment recording this; their acceptance criteria text is unchanged.
 - **Russian copy** follows the consolidated `src/shared/i18n/strings.ts`. Address the user as «вы», never «ты», and use its terms: «Self-энергия», «сравнение» (synastry), «ИИ-коуч», «потребность», «нагрузка», «копия» (backup), «практика». Reuse an existing string before writing a new one.
+
+<!-- full-plan-delivery:begin -->
+## Full-plan delivery continuity
+
+Use `.agents/skills/full-plan-delivery/SKILL.md` for the approved planning/execution process. The entire mission, scope and carried-forward decisions are in `.delivery/mission.json`; the configured live tracker is the only task-status authority.
+
+- At entry, resumption/compaction and task transitions, run `python3 .agents/skills/full-plan-delivery/scripts/delivery.py session --project .` and inspect the actual selected task, dependencies and acceptance criteria.
+- Recover every approved roadmap root and criterion. Planning is not implementation; closed status alone is not acceptance evidence. Never substitute an export for the live tracker.
+- Continue within existing authorization. Informational questions do not silently cancel the mission; explicit pauses/cancellations do. Setup authorization alone does not authorize implementation or production changes.
+- Attribute missing human/service/hardware evidence to its exact criterion. Prepare enabling work and continue independent eligible slices. Never fabricate observations or silently bypass dependencies.
+- Use bounded sweeps, declared source/write/contract scopes and coordinator reservations before parallel writes. A scheduling proposal is not a lock or sandbox. Serialize shared wiring and integration.
+- After a coherent slice, record criterion progress, candidate identity, checks and limitations in the tracker. After two review/polish passes without material progress, reassess the entire frontier.
+- Before handing off, persist evidence and an actual eligible next task with the skill's `handoff` command. If no eligible work remains, record the exact blockers, owners and unblock actions instead of inventing a next task.
+- Before a full-program completion claim, run the skill's `complete` command and obtain the required independent acceptance review. Publish only through already-authorized transports; report actual failures truthfully.
+
+These controls preserve scope and detect drift. They do not provide an always-running agent.
+<!-- full-plan-delivery:end -->

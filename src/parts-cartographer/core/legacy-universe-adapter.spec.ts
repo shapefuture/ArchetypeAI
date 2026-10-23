@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { sanitizeLegacyAiAnalysis } from './legacy-ai-analysis';
 import { buildLegacyUniverseParts } from './legacy-universe-adapter';
-import { buildLegacyReportData } from '../screens/legacy-report-data';
+import { applyLegacyAiAnalysis, buildLegacyReportData } from '../screens/legacy-report-data';
 
 const answers = Array.from({ length: 64 }, (_, index) => (index % 5) + 1);
+
+/** These answers yield one deterministic archetype; repeat it so placement covers several nodes. */
+function withSixArchetypes(report: ReturnType<typeof buildLegacyReportData>) {
+  return { ...report, archetypes: Array.from({ length: 6 }, (_, index) => report.archetypes[index % report.archetypes.length]) };
+}
 
 function aiPantheon() {
   return sanitizeLegacyAiAnalysis({
@@ -49,5 +54,25 @@ describe('legacy assessment → coordinate-aware universe adapter', () => {
     expect(mapped[4].name).toBe(base.archetypes[4 % base.archetypes.length].name);
     expect(mapped[5].name).toBe(base.archetypes[5 % base.archetypes.length].name);
     expect(mapped.every((part) => Number.isFinite(part.archetype?.coordinates[3]))).toBe(true);
+  });
+
+  it('keeps 64-item placement after an AI pantheon is applied, stored and restored', () => {
+    const base = withSixArchetypes(buildLegacyReportData(answers, 'en', '2026-10-03T08:30:00.000Z'));
+    const applied = applyLegacyAiAnalysis(base, aiPantheon());
+    const canonical = buildLegacyUniverseParts(base, true);
+    const restored = buildLegacyUniverseParts(applied, true);
+
+    expect(applied.archetypes[0].name).toBe('AI pattern 1');
+    expect(restored.map(({ id }) => id)).toEqual(canonical.map(({ id }) => id));
+    expect(restored.map((part) => part.archetype?.coordinates)).toEqual(canonical.map((part) => part.archetype?.coordinates));
+    expect(restored.map((part) => part.archetype?.prominence)).toEqual(canonical.map((part) => part.archetype?.prominence));
+    expect(restored[0].name).toBe('AI pattern 1');
+    expect(restored.every((part) => part.archetype?.coordinateBasis === 'response-derived-64')).toBe(true);
+  });
+
+  it('builds the same universe from an applied AI report when AI narrative is switched off', () => {
+    const base = withSixArchetypes(buildLegacyReportData(answers, 'en', '2026-10-03T08:30:00.000Z'));
+    const applied = applyLegacyAiAnalysis(base, aiPantheon());
+    expect(buildLegacyUniverseParts(applied)).toEqual(buildLegacyUniverseParts(base));
   });
 });

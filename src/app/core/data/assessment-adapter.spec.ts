@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { toAssessmentInput, somaticFollowUpFires, validityAnswerIndexes, SOMATIC_ZONES } from './assessment-adapter';
-import { buildItemSequence } from '../../../i18n/items';
-import { scoreProfile } from './scoring-v2';
-import { SHADOW_PARTS, RESOURCES } from './parts';
+import { toAssessmentInput, somaticFollowUpFires, validityAnswerIndexes, SOMATIC_ZONES } from '../../../shared/core/data/assessment-adapter';
+import { buildItemSequence } from '../../../shared/i18n/items';
+import { scoreProfile } from '../../../shared/core/data/scoring-v2';
+import { SHADOW_PARTS, RESOURCES } from '../../../shared/core/data/parts';
 
 describe('assessment adapter', () => {
   const seq = buildItemSequence();

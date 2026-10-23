@@ -2,8 +2,8 @@
 import { BOND_TYPES, SYNASTRY_DIM_LABELS } from '../i18n/strings';
 import { hashStr, rngFrom, clamp01 } from './ports';
 import type { ScoredProfile } from './scoring-v2';
-import type { SynastryReport } from '../../app/core/data/synastry';
-import type { SynastryResult as ScoredProfileSynastryResult } from '../../app/core/data/synastry-v2';
+import type { SynastryReport } from '../../shared/core/data/synastry';
+import type { SynastryResult as ScoredProfileSynastryResult } from '../../shared/core/data/synastry-v2';
 
 export interface SynastryResult {
   aiReflections?: Partial<Record<'en' | 'ru', string>>;
@@ -40,7 +40,7 @@ export function synastry(codeA: string, codeB: string): SynastryResult {
     } ${dims[2].value > 65 ? 'Watch polarization: your parts may tag-team.' : 'Polarization risk is low this cycle.'}`,
     narrativeRu: `Связь «${bond.ru}» — ${avg}%. ${
       dims[1].value > 60 ? 'Бремена пересекаются — сильный резонанс и риск эха.' : 'Бремена разные — можно занимать чужой покой.'
-    } ${dims[2].value > 65 ? 'Следи за поляризацией: твои части могут работать в паре.' : 'Риск поляризации в этом цикле низкий.'}`,
+    } ${dims[2].value > 65 ? 'Следите за поляризацией: ваши части могут работать в паре.' : 'Риск поляризации в этом цикле низкий.'}`,
   };
 }
 

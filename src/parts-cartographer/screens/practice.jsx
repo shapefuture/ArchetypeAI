@@ -2,9 +2,15 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { store } from '../core/local-store';
 import { myAssignments } from '../core/therapist-link.ts';
-import { EXERCISES, EXERCISE_TYPES, chapterUnlocked, ladderRung, redAllowed, suggestExercise } from '../../app/core/data/exercises';
-import { selfServeGate, storeEvent } from '../../app/core/data/state-v2';
-import { STRINGS as SOURCE_STRINGS } from '../../i18n/strings';
+import { EXERCISES, EXERCISE_TYPES, chapterUnlocked, ladderRung, redAllowed, suggestExercise } from '../../shared/core/data/exercises';
+import { selfServeGate, storeEvent } from '../../shared/core/data/state-v2';
+import { STRINGS as SOURCE_STRINGS } from '../../shared/i18n/strings';
+import { PracticeToolkit } from './practice-toolkit.jsx';
+import { GoalPanel } from './elevation/e01-goal.jsx';
+import { UncertaintyPanel } from './elevation/e05-uncertainty-action.jsx';
+import { TransferPanel } from './elevation/e08-transfer.jsx';
+import { FeedbackPanel } from './elevation/e09-feedback.jsx';
+import { RehearsalPanel } from './elevation/e10-rehearsal.jsx';
 
 const PRACTICE_KEY = 'INNERVERSE_PRACTICE_V1';
 const CHECKIN_KEY = 'INNERVERSE_CHECKINS_V1';
@@ -316,6 +322,12 @@ export function Practice() {
 
         <div className="kicker mt24">{copy.chapters} · {practiceState.completed.length} ✓</div>
         {[1, 2, 3, 4, 5].map(chapterSection)}
+        <GoalPanel />
+        <UncertaintyPanel />
+        <TransferPanel />
+        <FeedbackPanel />
+        <RehearsalPanel />
+        <div className="mt24"><PracticeToolkit /></div>
       </div>
     </div>
   );

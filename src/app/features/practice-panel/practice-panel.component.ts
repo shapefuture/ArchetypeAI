@@ -4,16 +4,16 @@
  * library. Completions are logged locally and feed chapter unlocks.
  */
 import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, model, output, signal } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
-import type { ScoredProfile } from '../../core/data/scoring-v2';
+import type { ScoredProfile } from '../../../shared/core/data/scoring-v2';
 import {
   EXERCISES, EXERCISE_TYPES, suggestExercise, chapterUnlocked,
   ladderRung, type LadderState,
   type Exercise, type ExerciseTypeId, type Gate,
-} from '../../core/data/exercises';
-import { storeEvent } from '../../core/data/state-v2';
+} from '../../../shared/core/data/exercises';
+import { storeEvent } from '../../../shared/core/data/state-v2';
 
 const STORE_KEY = 'INNERVERSE_PRACTICE_V1';
 

@@ -4,7 +4,7 @@
  * client summaries → exercise assignments (incl. RED, container-gated).
  */
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { take } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
@@ -13,10 +13,10 @@ import {
   claimTherapistLink, linkedClients, assignExercise, setClientArchived, CONSENT_TEXT,
   type TherapistClientSummary, type AssignmentFrequency, type LinkedClient,
 } from '../../core/data/therapist-link';
-import { EXERCISES, EXERCISE_TYPES } from '../../core/data/exercises';
-import { PART_NAME_RU, COMPLEX_COPY_RU } from '../../core/data/constellation-copy';
-import { COMPLEXES } from '../../core/data/parts';
-import { resistantMetrics, loadEvents } from '../../core/data/state-v2';
+import { EXERCISES, EXERCISE_TYPES } from '../../../shared/core/data/exercises';
+import { PART_NAME_RU, COMPLEX_COPY_RU } from '../../../shared/core/data/constellation-copy';
+import { COMPLEXES } from '../../../shared/core/data/parts';
+import { resistantMetrics, loadEvents } from '../../../shared/core/data/state-v2';
 import {
   ensureTherapistBusySlots, getTherapistAvailability, saveTherapistAvailability, therapistAppointments,
   setAppointmentStatus, DEFAULT_AVAILABILITY,

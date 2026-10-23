@@ -1,9 +1,9 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { toAssessmentInput } from '../../app/core/data/assessment-adapter';
-import { synastry, toSynastryProfile } from '../../app/core/data/synastry-v2';
-import { scoreProfile } from '../../app/core/data/scoring-v2';
+import { toAssessmentInput } from '../../shared/core/data/assessment-adapter';
+import { synastry, toSynastryProfile } from '../../shared/core/data/synastry-v2';
+import { scoreProfile } from '../../shared/core/data/scoring-v2';
 import { adaptClinicalProfile } from '../core/clinical-profile-adapter';
 import { ScoredProfileSynastryDetails } from './scored-profile-synastry-report.jsx';
 

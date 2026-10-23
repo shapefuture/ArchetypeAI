@@ -9,10 +9,10 @@
  * Attunement is the master axis: the relationship that lets the other four
  * heal (IPF key insight).
  */
-import { SOMATIC_ZONES, type SomaticZone } from './assessment-adapter';
-import type { CheckIn } from './state-v2';
-import type { AssessmentInput } from './scoring-v2';
-import { SHADOW_PARTS, RESOURCES, type ShadowPartId, type EventType } from './parts';
+import { SOMATIC_ZONES, type SomaticZone } from '../../../shared/core/data/assessment-adapter';
+import type { CheckIn } from '../../../shared/core/data/state-v2';
+import type { AssessmentInput } from '../../../shared/core/data/scoring-v2';
+import { SHADOW_PARTS, RESOURCES, type ShadowPartId, type EventType } from '../../../shared/core/data/parts';
 
 export interface DimensionTelemetry {
   /** Confirmed check-ins (the per-part flare log). */

@@ -2,11 +2,14 @@ import React, { createContext, lazy, Suspense, useCallback, useContext, useEffec
 import { StatusBar } from './ui/ui.jsx';
 import { ModalLayer } from './ui/modal-layer.jsx';
 import { store, KEYS } from './core/local-store';
+import { REMINDERS_KEY, readReminderSettings, reminderDecision } from './core/reminder-policy.ts';
 import { auth } from './core/auth.service.ts';
 import { AI, ResilientAiAdapter } from './core/ai.adapter.ts';
 import { billing } from './core/billing.service.ts';
 import { telemetry } from './core/telemetry.ts';
 import { loadSensoryPreferences, saveSensoryPreferences, selectSensoryPreset, updateSensoryPreference } from './core/sensory-preferences.ts';
+import { ambience, bindAmbienceSignals } from './services/ambience-gate.ts';
+import { navEntry, navOverlay, navSheet, planNavigation, readNavEntry, sameSheet } from './core/navigation-history.ts';
 import { SEED_PARTS } from './pal/traits.ts';
 import { t as translate, STRINGS } from './i18n/strings.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
@@ -22,9 +25,20 @@ const BackupRestore = lazy(() => import('./screens/backup-restore.jsx').then((mo
 import { Innerverse, SpecialistView } from './screens/innerverse.jsx';
 import { Coach, Help, InstallPrompt, SynastryOv, Therapist, Login, MapGate, Paywall, UniverseFail, Journal, Share, Booking } from './overlays.jsx';
 import { PartSheet, PartEditor, Chemistry, CharterSheet } from './screens/cabinet.jsx';
+import { RouteBoundary, RouteFrame } from './ui/route-boundary.jsx';
+import { homeScreen, resolveBootRoute, withoutDeepLink } from './core/boot.ts';
 
 const AppCtx = createContext(null);
 export const useApp = () => useContext(AppCtx);
+
+/* Clears only the deep-link parameter; called once the requested screen has rendered. */
+function settleDeepLink() {
+  try {
+    const current = `${location.pathname}${location.search}${location.hash}`;
+    const next = withoutDeepLink(current);
+    if (next !== current) history.replaceState(history.state, '', next);
+  } catch { /* URL cleanup is best-effort */ }
+}
 
 async function restoreCanonicalProfile(lang) {
   if (store.load(KEYS.profile, null)) return null;
@@ -32,8 +46,8 @@ async function restoreCanonicalProfile(lang) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
   try {
     const [scoring, taxonomy, adapter] = await Promise.all([
-      import('../app/core/data/scoring-v2'),
-      import('../app/core/data/parts'),
+      import('../shared/core/data/scoring-v2'),
+      import('../shared/core/data/parts'),
       import('./core/clinical-profile-adapter.ts'),
     ]);
     const { RESOURCES, SHADOW_PARTS } = taxonomy;
@@ -57,6 +71,7 @@ export default function App() {
   const [lang, setLang] = useState(() => store.load('ifs.lang', 'ru'));
   const [theme, setTheme] = useState(() => store.load('ifs.theme', 'light'));
   const [sensory, setSensory] = useState(() => loadSensoryPreferences());
+  const [sensoryStored, setSensoryStored] = useState(true); // false when the browser refused to save the last choice
   const [state, setState] = useState('loading'); // the @switch
   const [dockTab, setDockTab] = useState('base');
   const [user, setUser] = useState(() => auth.currentUser());
@@ -165,20 +180,26 @@ export default function App() {
     if (next) { store.save(KEYS.profile, next); store.archive(KEYS.history, next); }
     else store.remove(KEYS.profile);
   }, []);
-  const applySensoryPreset = useCallback((preset) => {
-    const next = selectSensoryPreset(preset);
+  // Presentation choices only: they never touch parts, profile, scores, or assessment drafts.
+  // A refused save keeps the choice active for this session and is reported by the settings screen.
+  const commitSensory = useCallback((next) => {
     setSensory(next);
-    saveSensoryPreferences(next);
+    setSensoryStored(saveSensoryPreferences(next));
   }, []);
-  const updateSensory = useCallback((key, value) => {
-    setSensory((current) => {
-      const next = updateSensoryPreference(current, key, value);
-      saveSensoryPreferences(next);
-      return next;
-    });
-  }, []);
+  const applySensoryPreset = useCallback((preset) => commitSensory(selectSensoryPreset(preset)), [commitSensory]);
+  const updateSensory = useCallback((key, value) => commitSensory(updateSensoryPreference(sensory, key, value)), [commitSensory, sensory]);
   useEffect(() => { import('./pal/sfx.ts').then((module) => module.setSfxEnabled(sensory.sound)); }, [sensory.sound]);
   useEffect(() => { uniRef.current?.setMotionMode(sensory.motion); }, [sensory.motion]);
+
+  /* ── ambience: rests while hidden, while text is typed, or while an error is shown ── */
+  useEffect(() => bindAmbienceSignals(document), []);
+  useEffect(() => {
+    const root = document.documentElement;
+    const sync = (active) => { root.dataset.ambience = active ? 'on' : 'paused'; };
+    sync(ambience.active);
+    return ambience.subscribe(sync);
+  }, []);
+  useEffect(() => { ambience.set('error', uniError || overlay === 'universe-fail'); }, [uniError, overlay]);
 
   const go = useCallback((next) => {
     setState(next);
@@ -187,29 +208,57 @@ export default function App() {
     if (next !== 'universe' && uniRef.current) uniRef.current.sleep();
   }, []);
 
-  /* ── boot: loading → onboarding | intro (auto ~4.2s) ── */
+  /* ── boot: local-first. The route comes from the URL and local onboarding state in the
+     same tick the shell mounts; there is no timed wait. Cloud/auth connects in the background
+     and never gates navigation, including offline. The deep link stays in the URL until its
+     screen has rendered, so a failed route chunk can still be retried. ── */
+  const [bootRoute] = useState(() => resolveBootRoute(location.search, Boolean(store.load(KEYS.onboarded, false))));
+  const authStarted = useRef(false);
   useEffect(() => {
-    let active = true;
-    const bootAt = setTimeout(() => {
-      // Local navigation remains available while Firebase connects, including offline.
-      auth.anonymousBootstrap().then((u) => { if (active) setUser(u); });
-      const seen = store.load(KEYS.onboarded, false);
-      setState(seen ? 'intro' : 'onboarding');
-      // PWA shortcut deep-links (?go=assessment | ?go=checkin)
-      try {
-        const q = new URLSearchParams(location.search).get('go');
-        if (q) {
-          if (q === 'assessment') setState('full-assessment');
-          else if (q === 'quick-assessment') setState('assessment');
-          else if (q === 'legacy-assessment') setState('legacy-assessment');
-          else if (q === 'checkin') setOverlay('checkin');
-          else if (q === 'universe') setState('universe');
-          history.replaceState(null, '', location.pathname);
-        }
-      } catch { /* */ }
-    }, 4200);
-    return () => { active = false; clearTimeout(bootAt); };
-  }, []);
+    setState(bootRoute.screen);
+    if (bootRoute.overlay) setOverlay(bootRoute.overlay);
+    if (authStarted.current) return;
+    authStarted.current = true;
+    auth.anonymousBootstrap().then((u) => setUser(u));
+  }, [bootRoute]);
+  /* ── browser history: Back/Forward restore the route and open layers; URLs never change ── */
+  const overlayKind = navOverlay(overlay);
+  const sheetPart = navSheet(sheet);
+  const sheetId = sheetPart?.id ?? null;
+  const routeRef = useRef(state);
+  const mainRef = useRef(null);
+  // A deep link to a screen opens above the home entry, so Back from it returns home instead of leaving the app.
+  const homeSeeded = useRef(false);
+  useEffect(() => {
+    routeRef.current = state;
+    let steps = planNavigation(readNavEntry(window.history.state), { route: state, overlay: overlayKind, sheet: sheetPart });
+    const home = { route: homeScreen(Boolean(store.load(KEYS.onboarded, false))), overlay: null, sheet: null };
+    if (!homeSeeded.current && state === bootRoute.screen && home.route !== bootRoute.screen && steps.length === 1 && steps[0].op === 'replace') {
+      homeSeeded.current = true;
+      steps = [{ op: 'replace', view: home, from: null }, { op: 'push', view: steps[0].view, from: home }];
+    }
+    for (const step of steps) {
+      if (step.op === 'back') window.history.back();
+      else window.history[step.op === 'push' ? 'pushState' : 'replaceState'](navEntry(step.view, step.from), '');
+    }
+  }, [state, overlayKind, sheetId]);
+  useEffect(() => {
+    const onPop = (event) => {
+      const target = readNavEntry(event.state);
+      if (!target) return;
+      if (target.route !== routeRef.current) go(target.route);
+      setOverlay((current) => (navOverlay(current) === target.overlay ? current : target.overlay));
+      setSheet((current) => (sameSheet(navSheet(current), target.sheet) ? current : target.sheet));
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [go]);
+  // A route transition moves focus to the main landmark unless a layer owns focus.
+  useEffect(() => {
+    if (state === 'loading' || overlay || sheet) return;
+    mainRef.current?.focus({ preventScroll: true });
+  }, [state]);
+
 
   /* ── PWA install prompt (auto-opens once/week after 9s on intro) ── */
   useEffect(() => {
@@ -244,7 +293,7 @@ export default function App() {
   const ctx = useMemo(() => ({
     lang, setLang: (l) => { setLang(l); store.save('ifs.lang', l); },
     theme, setTheme: (v) => { setTheme(v); store.save('ifs.theme', v); },
-    sensory, applySensoryPreset, updateSensory,
+    sensory, sensoryStored, applySensoryPreset, updateSensory,
     t, state, go, dockTab, setDockTab,
     user, setUser, premium, setPremiumOn: (v) => { setPremium(v); },
     parts, setParts, profile, setProfile,
@@ -258,7 +307,7 @@ export default function App() {
     openSky,
     universeMode, setUniverseMode,
     retryUniverse: () => { setUniError(false); enterUniverse(); },
-  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode, sensory, applySensoryPreset, updateSensory]);
+  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode, sensory, sensoryStored, applySensoryPreset, updateSensory]);
 
   /* ── universe host: outside the switch; renderer chunk on first entry ── */
   const enterUniverse = useCallback(async (isActive = () => true) => {
@@ -302,6 +351,9 @@ export default function App() {
   useEffect(() => {
     const sealed = store.load('ifs.sealed', []);
     const due = sealed.filter((s) => s.until <= Date.now());
+    // Quiet hours and a skip for today hold the resurfacing. It is an in-app note shown on open, so it needs no opt-in.
+    const held = reminderDecision(readReminderSettings(store.load(REMINDERS_KEY, null)), new Date());
+    if (held.reason === 'quiet-hours' || held.reason === 'skipped-today') return;
     if (due.length) {
       const next = sealed.filter((s) => s.until > Date.now());
       store.save('ifs.sealed', next);
@@ -317,8 +369,8 @@ export default function App() {
       case 'intro': return <Intro />;
       case 'cabinet': return <Cabinet />;
       case 'assessment': return <Assessment />; // retained eight-part quick map
-      case 'full-assessment': return <Suspense fallback={<Loading />}><FullAssessment /></Suspense>;
-      case 'legacy-assessment': return <Suspense fallback={<Loading />}><Legacy64Assessment /></Suspense>;
+      case 'full-assessment': return <FullAssessment />; // lazy: suspended by RouteFrame
+      case 'legacy-assessment': return <Legacy64Assessment />; // lazy: suspended by RouteFrame
       case 'assessment-gate': return <Gate />;
       case 'descent': return <Descent />;
       case 'assessment-results': return <Results />;
@@ -380,14 +432,18 @@ export default function App() {
           <div id="universe-host" className={`universe-host ${state === 'universe' ? 'on' : ''}`} />
 
           <div className="app-content" inert={overlay || sheet ? '' : undefined}>
-            {screen}
+            <main ref={mainRef} className="app-main" tabIndex={-1}>
+              <RouteFrame resetKey={state} fallback={<Loading />} onCommit={state === 'loading' ? undefined : settleDeepLink}>
+                {screen}
+              </RouteFrame>
+            </main>
             {showDock && <Dock onSkyHover={prefetchUni} />}
           </div>
 
           {toastMsg && <div className="toast" role="status">{toastMsg}</div>}
 
           {sheetEl && <ModalLayer label={t('parts')} onClose={() => setSheet(null)}>{sheetEl}</ModalLayer>}
-          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(typeof overlay === 'string' ? overlay : overlay?.kind)} onClose={() => setOverlay(null)}>{ov}</ModalLayer>}
+          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(typeof overlay === 'string' ? overlay : overlay?.kind)} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}>{ov}</RouteBoundary></ModalLayer>}
         </div>
       </div>
     </AppCtx.Provider>

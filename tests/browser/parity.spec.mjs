@@ -59,7 +59,7 @@ test('147-answer assessment resumes, completes locally, exports, and opens the c
   for (let i = 0; i < 7; i++) await page.getByRole('radio').nth(2).click();
   await page.reload();
   await page.getByRole('button', { name: /Start.*147/i }).first().click();
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('INNERVERSE_DESCENT_V1')).answers.filter(Boolean).length)).toBe(7);
+  expect(await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('INNERVERSE_DESCENT_V2')).answers).length)).toBe(7);
   for (let i = 7; i < 147; i++) {
     if (i === 49 || i === 98) await page.locator('.btn.primary').click();
     await page.getByRole('radio').nth(2).click();
@@ -103,6 +103,8 @@ test('147-answer assessment resumes, completes locally, exports, and opens the c
 
 test('historical local restore previews before applying and refreshes mounted state', async ({ page }) => {
   await page.goto('/');
+  // Wait for the app to finish loading, so the Restore control is the mounted one and not a pre-hydration node.
+  await page.waitForLoadState('networkidle');
   await page.getByRole('button', { name: /Restore.*JSON|Restore/i }).first().click();
   await page.locator('input[type=file]').setInputFiles({ name: 'angular-backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ assessmentResponses: Array(64).fill(3) })) });
   await expect(page.getByText('Review local restore')).toBeVisible();
@@ -146,4 +148,24 @@ test('sensory style presets and individual controls stay independent and persist
   await expect(page.locator('.phone')).toHaveAttribute('data-density', 'compact');
   await page.getByRole('button', { name: 'You', exact: true }).click();
   await expect(page.getByRole('checkbox', { name: 'Soft interface sounds' })).toBeChecked();
+});
+
+test('browser Back and Forward restore an open layer and a route, with focus on the main landmark and the URL unchanged', async ({ page }) => {
+  await page.goto('/');
+  const start = page.url();
+  await page.getByRole('button', { name: /Quick scan/ }).click();
+  await expect(page.getByRole('dialog').first()).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.goForward();
+  await expect(page.getByRole('dialog').first()).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await page.getByRole('button', { name: /Start.*147/i }).first().click();
+  await expect(page.locator('.app-main')).toBeFocused();
+  await page.goBack();
+  await expect(page.getByRole('button', { name: /Start.*147/i }).first()).toBeVisible();
+  await expect(page.locator('.app-main')).toBeFocused();
+  expect(page.url()).toBe(start);
 });

@@ -8,8 +8,25 @@ import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapte
 import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus } from '../core/booking.ts';
-import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates } from '../services/universe-lens';
+import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates, setAxisChoice } from '../services/universe-lens';
 import { ModalLayer } from '../ui/modal-layer.jsx';
+import { ReplayStudio } from './replay.jsx';
+import { InnerNegotiation } from './negotiation.jsx';
+import { CoordinatesPanel } from './coordinates.jsx';
+import { RestControl } from './rest-control.jsx';
+import { PresentationPanel } from './elevation/e12-presentation.jsx';
+import { ReportReadStatus } from './elevation/e16-report-read.jsx';
+import { GuardedClientData } from './therapist-guard.jsx';
+import { readableClientMaps, visibleAppointments } from '../core/therapist-guard.ts';
+
+// Accessible names for the panel host: [en, ru].
+const PANEL_NAMES = {
+  replay: ['Replay', 'Повтор'],
+  negotiation: ['Negotiate', 'Переговоры'],
+  coordinates: ['Coordinates', 'Координаты'],
+  rest: ['Rest', 'Отдых'],
+  list: ['Parts as a list', 'Части списком'],
+};
 
 const CLUSTER_LABELS = {
   managers: ['Managers', 'Менеджеры'], firefighters: ['Firefighters', 'Пожарные'], exiles: ['Exiles', 'Изгнанники'], resources: ['Resources', 'Ресурсы'],
@@ -53,6 +70,7 @@ export function Innerverse() {
   const [compare, setCompare] = useState([]);
   const [dims, setDims] = useState({ energy: 100 });
   const [dimensions, setDimensions] = useState(readUniverseDimensions);
+  const [panel, setPanel] = useState(null);
   const [famOn, setFamOn] = useState({ manager: true, firefighter: true, exile: true, resource: true });
   const [axes, setAxes] = useState(DEFAULT_AXES);
   const [isolation, setIsolation] = useState(null);
@@ -210,6 +228,17 @@ export function Innerverse() {
         </div>
       )}
 
+      {panel && (
+        <div className="card iv-panel-host" role="dialog" aria-label={PANEL_NAMES[panel]?.[lang === 'ru' ? 1 : 0]} style={{ position: 'absolute', left: 16, right: 16, top: 112, bottom: 96, zIndex: 44, pointerEvents: 'auto', overflowY: 'auto', background: 'var(--surface)' }}>
+          <button className="ibtn iv-panel-close" aria-label={t('close')} onClick={() => setPanel(null)}>✕</button>
+          {panel === 'replay' && <ReplayStudio />}
+          {panel === 'negotiation' && <InnerNegotiation />}
+          {panel === 'coordinates' && <CoordinatesPanel />}
+          {panel === 'rest' && <RestControl />}
+          {panel === 'list' && <PresentationPanel />}
+        </div>
+      )}
+
       {/* bottom action tray */}
       <div className="row universe-actions" style={{ position: 'absolute', left: 16, right: 16, bottom: 22, gap: 9, pointerEvents: 'auto', zIndex: 40, overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: 7 }}>
         <button className="tray-btn" onClick={() => openStudio()}>🎨 {t('archetype')}</button>
@@ -218,6 +247,11 @@ export function Innerverse() {
         <button className="tray-btn" onClick={() => setOverlay('practice')}>🏋️ {t('practice')}</button>
         <button className="tray-btn" onClick={() => premium ? setDrawer(true) : openPaywall()}>📊 {t('compare')}</button>
         <button className="tray-btn" aria-label={lang === 'ru' ? 'Химия частей' : 'Part chemistry'} onClick={() => setSheet({ type: 'chemistry' })}>⚗️</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'replay' ? null : 'replay')}>🎬 {lang === 'ru' ? 'Повтор' : 'Replay'}</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'negotiation' ? null : 'negotiation')}>🤝 {lang === 'ru' ? 'Переговоры' : 'Negotiate'}</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'coordinates' ? null : 'coordinates')}>🧭 {lang === 'ru' ? 'Координаты' : 'Coordinates'}</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'rest' ? null : 'rest')}>🌙 {lang === 'ru' ? 'Отдых' : 'Rest'}</button>
+        <button className="tray-btn" onClick={() => setPanel(panel === 'list' ? null : 'list')}>📋 {lang === 'ru' ? 'Списком' : 'List'}</button>
       </div>
 
       {/* compare tray */}
@@ -291,7 +325,7 @@ export function Innerverse() {
                   </div>
                 </div>
               ))}
-              {axes.map((key, index) => <label className="field mt12" key={index}>{['X', 'Y', 'Z'][index]}<select value={key} onChange={(event) => setAxes((current) => current.map((axis, i) => i === index ? event.target.value : axis))}>{DIMENSION_KEYS.map((axis) => <option key={axis} value={axis}>{dimensionCopy[axis.toLowerCase()]}</option>)}</select></label>)}
+              {axes.map((key, index) => <label className="field mt12" key={index}>{['X', 'Y', 'Z'][index]}<select value={key} onChange={(event) => setAxes((current) => setAxisChoice(current, index, event.target.value))}>{DIMENSION_KEYS.map((axis) => <option key={axis} value={axis}>{dimensionCopy[axis.toLowerCase()]}</option>)}</select></label>)}
               <p className="sub mt12">{xrSupported ? 'WebXR' : lang === 'ru' ? 'WebXR недоступен в этом браузере. Карта работает в обычном режиме.' : 'WebXR is unavailable in this browser. Explore the map here.'}</p>
               {xrSupported && <button className="btn block mt8" onClick={async () => { try { await uniRef.current.enterXR(); } catch { toast(lang === 'ru' ? 'Не удалось открыть WebXR' : 'Could not start WebXR'); } }}>WebXR</button>}
             </div>
@@ -437,8 +471,10 @@ export function SpecialistView() {
   const exerciseIds = useMemo(() => Object.keys(EXERCISE_COPY), []);
   const activeClients = clients.filter((client) => !client.archived);
   const archivedClients = clients.filter((client) => client.archived);
-  const pendingAppointments = appointments.filter((appointment) => appointment.status === 'pending');
-  const summaryClients = activeClients.filter((client) => client.summary);
+  // Only appointments of linked, non-archived clients are shown (see visibleAppointments).
+  const shownAppointments = visibleAppointments(appointments, clients);
+  const pendingAppointments = shownAppointments.filter((appointment) => appointment.status === 'pending');
+  const summaryClients = readableClientMaps(user?.uid ?? '', user?.uid ?? '', activeClients).filter((client) => client.summary);
   const checkInsDone = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.done) || 0), 0);
   const checkInsSkipped = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.skipped) || 0), 0);
   const selfEnergyValues = summaryClients.map((client) => Number(client.summary?.selfEnergy)).filter(Number.isFinite);
@@ -577,18 +613,21 @@ export function SpecialistView() {
         </button>
       </div>
       {client.summary ? (
-        <div className="card flat mt10" style={{ padding: 11 }}>
-          <div className="kicker" style={{ color: 'var(--accent-text)' }}>{client.summary.headline}</div>
-          <div className="row wrap mt8" style={{ gap: 6 }}>
-            <span className="chip">{t('burden')}: {Math.round(Number(client.summary.burden) || 0)}</span>
-            <span className="chip">{t('energy')}: {Math.round(Number(client.summary.selfEnergy) || 0)}</span>
-            <span className="chip">{t('activeComplexes')}: {client.summary.activeComplexes?.length ?? 0}</span>
+        <GuardedClientData therapistUid={user?.uid ?? ''} client={client}>
+          <div className="card flat mt10" style={{ padding: 11 }}>
+            <div className="kicker" style={{ color: 'var(--accent-text)' }}>{client.summary.headline}</div>
+            <div className="row wrap mt8" style={{ gap: 6 }}>
+              <span className="chip">{t('burden')}: {Math.round(Number(client.summary.burden) || 0)}</span>
+              <span className="chip">{t('energy')}: {Math.round(Number(client.summary.selfEnergy) || 0)}</span>
+              <span className="chip">{t('activeComplexes')}: {client.summary.activeComplexes?.length ?? 0}</span>
+            </div>
+            <div className="faint mt8" style={{ fontSize: 11.5 }}>
+              {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {Number(client.summary.adherence?.done) || 0} {t('checkinsDone')}
+            </div>
           </div>
-          <div className="faint mt8" style={{ fontSize: 11.5 }}>
-            {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {Number(client.summary.adherence?.done) || 0} {t('checkinsDone')}
-          </div>
-        </div>
+        </GuardedClientData>
       ) : <p className="faint mt8" style={{ fontSize: 12 }}>{t('clientSummaryNotShared')}</p>}
+      <ReportReadStatus client={client} />
       {!archived && (
         <>
           <button className="btn block mt10" onClick={() => setAssignFor(assignFor === client.clientUid ? '' : client.clientUid)}>
@@ -757,7 +796,7 @@ export function SpecialistView() {
 
         {tab === 'appts' && (
           <div className="mt16">
-            {appointments.length === 0 ? <p className="sub">{t('therapistNoAppointments')}</p> : appointments.map((appointment) => (
+            {shownAppointments.length === 0 ? <p className="sub">{t('therapistNoAppointments')}</p> : shownAppointments.map((appointment) => (
               <div key={appointment.id} className="card flat mt10">
                 <div className="row">
                   <b className="grow">{appointment.clientEmail || appointment.clientUid.slice(0, 12)}</b>

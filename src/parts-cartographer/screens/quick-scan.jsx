@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useApp } from '../app.jsx';
-import { ITEM_BANK, LIKERT } from '../../i18n/items';
-import { STRINGS } from '../../i18n/strings';
-import { SHADOW_PARTS, SUBTYPES } from '../../app/core/data/parts';
-import { PART_COPY } from '../../app/core/data/part-copy';
-import { subtypeName } from '../../app/core/data/constellation-copy';
-import { quickScan } from '../../app/core/data/scoring-v2';
+import { ITEM_BANK, LIKERT } from '../../shared/i18n/items';
+import { STRINGS } from '../../shared/i18n/strings';
+import { SHADOW_PARTS, SUBTYPES } from '../../shared/core/data/parts';
+import { PART_COPY } from '../../shared/core/data/part-copy';
+import { subtypeName } from '../../shared/core/data/constellation-copy';
+import { quickScan } from '../../shared/core/data/scoring-v2';
 
 /** Public, local-only teaser. It never replaces or persists an assessment. */
 export function QuickScan() {

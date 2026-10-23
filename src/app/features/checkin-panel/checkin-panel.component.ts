@@ -4,19 +4,19 @@
  * History is local-only; the weather layer and unburdening moments accrue here.
  */
 import { ChangeDetectionStrategy, Component, computed, inject, model, output, signal } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
-import { localSet, localGet } from '../../core/data/local-store';
+import { STRINGS } from '../../../shared/i18n/strings';
+import { localSet, localGet } from '../../../shared/core/data/local-store';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
-import { SHADOW_PARTS, SUBTYPES, type EventType, type PartId } from '../../core/data/parts';
-import type { ScoredProfile } from '../../core/data/scoring-v2';
+import { SHADOW_PARTS, SUBTYPES, type EventType, type PartId } from '../../../shared/core/data/parts';
+import type { ScoredProfile } from '../../../shared/core/data/scoring-v2';
 import {
   predictFlare, weatherLayer, unburdeningMoments, verdictLockActive,
   sealVerdict, readyToResurface, selectJitaiCard, storeEvent, loadEvents,
   charterTrend, stricterCharter, type CheckIn, type Arousal,
   type SealedVerdict, type JitaiCardId, type CharterDelivery,
-} from '../../core/data/state-v2';
-import { COMPLEXES } from '../../core/data/parts';
+} from '../../../shared/core/data/state-v2';
+import { COMPLEXES } from '../../../shared/core/data/parts';
 import { PushService } from '../../../services/push.service';
 
 const STORE_KEY = 'INNERVERSE_CHECKINS_V1';

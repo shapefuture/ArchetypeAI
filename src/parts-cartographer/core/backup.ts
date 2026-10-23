@@ -1,18 +1,20 @@
-import { RESOURCES, SHADOW_PARTS } from '../../app/core/data/parts';
-import type { AssessmentInput } from '../../app/core/data/scoring-v2';
+import { RESOURCES, SHADOW_PARTS } from '../../shared/core/data/parts';
+import type { AssessmentInput } from '../../shared/core/data/scoring-v2';
 import type { Lang } from '../i18n/strings';
 import { KEYS } from './local-store';
 import { validProfile } from './profile-contract';
+import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, isDescentDraft } from './assessment-draft';
 import { sanitizeLegacyAiAnalysis } from './legacy-ai-analysis';
 import { SHAPES, EYES, MOUTHS, HEADS, FACES, type Part } from '../pal/traits';
+import { readGoalRecord } from '../elevation/e01-goal';
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.syn,
   'ifs.lang', 'ifs.theme', 'ifs.onboarded', 'ifs.assessment.draft', 'ifs.legacy64.result',
   'ifs.journal', 'ifs.sealed', 'ifs.sealed.verdict', 'ifs.universe.dimensions.v1',
-  'INNERVERSE_DESCENT_V1', 'INNERVERSE_FUTURE_SELF_V1', 'INNERVERSE_PROFILE_V1',
+  DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, 'INNERVERSE_FUTURE_SELF_V1', 'INNERVERSE_PROFILE_V1',
   'INNERVERSE_CHECKINS_V1', 'INNERVERSE_SEALED_VERDICTS_V1', 'INNERVERSE_JITAI_V1',
-  'INNERVERSE_CHARTER_V1', 'INNERVERSE_EVENTS_V1', 'INNERVERSE_PRACTICE_V1', 'INNERVERSE_SYNASTRY_RUNS_V1',
+  'INNERVERSE_CHARTER_V1', 'INNERVERSE_EVENTS_V1', 'INNERVERSE_GOAL_V1', 'INNERVERSE_PRACTICE_V1', 'INNERVERSE_SYNASTRY_RUNS_V1',
   'ARCHETYPE_ASSESSMENT_RESPONSES', 'ARCHETYPE_ASSESSMENT_INDEX', 'ARCHETYPE_COMPLETED_BACKUP',
   'archetype_scoring_method', 'ARCHETYPE_SYNASTRY_CONNECTIONS', 'ARCHETYPE_SYNASTRY_REPORTS', 'ARCHETYPE_SYNASTRY_PARTNER'];
 export const PORTABLE_KEYS = new Set([...BASE_KEYS, ...BASE_KEYS.map((key) => `${key}.hist`)]);
@@ -52,7 +54,9 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === KEYS.profile || key === KEYS.history) return value === null || validProfile(value);
   if (key === 'ifs.legacy64.result') return value === null || object(value);
   if (key === 'INNERVERSE_PROFILE_V1') return isCanonicalAssessmentInput(value);
-  if (key === 'INNERVERSE_DESCENT_V1') return object(value) && ratings(value.answers, 147, true);
+  if (key === 'INNERVERSE_GOAL_V1') return readGoalRecord(value).status !== 'rejected';
+  if (key === DESCENT_DRAFT_KEY) return isDescentDraft(value);
+  if (key === LEGACY_DESCENT_DRAFT_KEY) return object(value) && ratings(value.answers, 147, true);
   if (key === 'INNERVERSE_FUTURE_SELF_V1') return Array.isArray(value) && value.length === 3 && value.every((item) => typeof item === 'string' && item.length <= 20_000);
   if (key === 'ARCHETYPE_ASSESSMENT_RESPONSES') return ratings(value, 64, true);
   if (key === 'ARCHETYPE_ASSESSMENT_INDEX') return Number.isInteger(value) && Number(value) >= 0 && Number(value) < 64;
@@ -104,11 +108,12 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
   if (!Object.keys(entries).length) throw new Error('No supported data in backup');
   const savedLang = entries['ifs.lang'] === 'ru' || entries['ifs.lang'] === 'en' ? entries['ifs.lang'] as Lang : lang;
   if (isCanonicalAssessmentInput(entries.INNERVERSE_PROFILE_V1)) {
-    const [{ scoreProfile }, { adaptClinicalProfile }] = await Promise.all([import('../../app/core/data/scoring-v2'), import('./clinical-profile-adapter')]);
+    const [{ scoreProfile }, { adaptClinicalProfile }] = await Promise.all([import('../../shared/core/data/scoring-v2'), import('./clinical-profile-adapter')]);
     const rebuilt = adaptClinicalProfile(scoreProfile(entries.INNERVERSE_PROFILE_V1), savedLang);
     const map = validMapParts(entries[KEYS.parts]) ? entries[KEYS.parts] as Part[] : existingParts;
     const ids = new Set(rebuilt.parts.map((part) => part.id));
-    entries[KEYS.parts] = [...rebuilt.parts.map((part) => ({ ...part, ...map.find((old) => old.id === part.id), name: part.name })),
+    // Saved edits (traits, need, star, ...) win; canonical placement and provenance are rebuilt from the assessment.
+    entries[KEYS.parts] = [...rebuilt.parts.map((part) => ({ ...part, ...map.find((old) => old.id === part.id), archetype: part.archetype, name: part.name })),
       ...map.filter((part) => !ids.has(part.id) && !part.id.startsWith('seed-'))];
     entries[KEYS.profile] = { ...rebuilt.profile, createdAt: (entries[KEYS.profile] as any)?.createdAt ?? rebuilt.profile.createdAt };
   }

@@ -9,8 +9,10 @@ A citation is an inline code span such as `src/a.ts:12` or `src/a.ts:12-18`.
 It may name its own commit with `@<sha>`, which overrides the header.
 A span may list several ranges (`src/a.ts:12-18, 40, 64-70`). A file name may
 be bare (`booking.ts:251`) or partial (`core/booking.ts:251`); it must match
-exactly one file in the commit. Inside a table row, a bare `:NN` cite refers to
-the nearest file cited before it in that row.
+exactly one file in the commit; a bare name that exists at the repository
+root (`package.json`) means that root file. Inside a table row, a bare `:NN`
+cite refers to the nearest file cited before it in that row, at that cite's
+commit unless it names its own.
 
 Checks, per citation:
 - the file resolves at the commit, and the cited line range is inside it.
@@ -74,7 +76,7 @@ def tree_files(ref, cwd):
 
 def resolve(ref, name, cwd):
     """Return (path, None) for a file that resolves uniquely, else (None, reason)."""
-    if '/' in name and git_lines(ref, name, cwd) is not None:
+    if git_lines(ref, name, cwd) is not None:
         return name, None
     if '/' in name:
         matches = [path for path in tree_files(ref, cwd) if path.endswith('/' + name)]
@@ -103,19 +105,19 @@ def check_file(doc_path, cwd=None):
         if is_row:
             found += [(m.start(), m, None) for m in REL_CITE.finditer(line)]
         cites = []
-        last_name = None
+        last_name, last_ref = None, None
         for _, match, name in sorted(found, key=lambda item: item[0]):
             if name is not None:
-                last_name = name
+                last_name, last_ref = name, match.group('ref')
             elif last_name is None:
                 problems.append((number, f'relative cite {match.group(0)} has no earlier file in this row'))
                 continue
-            cites.append((match, last_name))
+            cites.append((match, last_name, match.group('ref') or last_ref or header))
         windows = []
-        for match, name in cites:
+        for match, name, ref in cites:
             if name in external:
                 continue
-            cite_problems, cite_windows = _check_cite(number, match, name, header, cwd)
+            cite_problems, cite_windows = _check_cite(number, match, name, ref, cwd)
             problems += cite_problems
             windows += cite_windows
         if identifiers and windows and not any(_mentions(window[3], identifiers) for window in windows):
@@ -129,9 +131,8 @@ def _mentions(text, identifiers):
     return any(re.search(rf'(?<![A-Za-z0-9_]){re.escape(word)}(?![A-Za-z0-9_])', text) for word in identifiers)
 
 
-def _check_cite(number, match, name, header, cwd):
-    """Return (problems, windows) for one citation; each window is (path, low, high, text)."""
-    ref = match.group('ref') or header
+def _check_cite(number, match, name, ref, cwd):
+    """Return (problems, windows) for one citation at ref; each window is (path, low, high, text)."""
     path, reason = resolve(ref, name, cwd)
     if path is None:
         return [(number, reason)], []

@@ -51,6 +51,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check full-plan continuity guard
         run: |
@@ -63,6 +65,10 @@ jobs:
 
       - name: Citation checker tests
         run: python3 -m unittest discover -s scripts/docs -p 'test_*.py'
+
+      # Reads the commits that documents cite, so the checkout needs history.
+      - name: Check document citations
+        run: python3 scripts/docs/check_cites.py --strict $(git grep -l 'cite-ref:' -- '*.md')
 
   verify:
     needs: [changes]

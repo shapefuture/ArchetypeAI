@@ -31,7 +31,7 @@ const COPY = {
     previewTitle: 'Что было бы передано',
     none: 'Пока ничего не было бы передано.',
     notIncluded: 'Никогда не включается',
-    labels: { 'canonical-measurement': 'Результаты стандартных инструментов', 'coach-context': 'Разговоры с наставником', 'general-journal': 'Ваш общий дневник' },
+    labels: { 'canonical-measurement': 'Результаты стандартных инструментов', 'coach-context': 'Разговоры с ИИ-коучем', 'general-journal': 'Ваш общий дневник' },
     stored: 'Сохранено только на этом устройстве.',
   },
 };

@@ -35,3 +35,21 @@ test('each Innerverse panel fits a phone width and has no axe violations', async
     await expect(host).toHaveCount(0);
   }
 });
+
+test('the Cabinet screen opened from home has no axe violations', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Cabinet/ }).first().click();
+  await expect(page.locator('section[aria-labelledby="e17-title"]')).toBeVisible();
+  await noHorizontalScroll(page);
+  const accessibility = await new AxeBuilder({ page }).include('.phone').disableRules(['color-contrast']).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
+test('the Practice layer has no axe violations', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Practice/ }).first().click();
+  await expect(page.locator('section[aria-labelledby="e05-title"]')).toBeVisible();
+  await noHorizontalScroll(page);
+  const accessibility = await new AxeBuilder({ page }).include('.phone').disableRules(['color-contrast']).analyze();
+  expect(accessibility.violations).toEqual([]);
+});

@@ -7,9 +7,10 @@ A document declares its default commit with a header line:
 
 A citation is an inline code span such as `src/a.ts:12` or `src/a.ts:12-18`.
 It may name its own commit with `@<sha>`, which overrides the header.
-A file name may be bare (`booking.ts:251`) or partial (`core/booking.ts:251`);
-it must match exactly one file in the commit. Inside a table row, a bare `:NN`
-cite refers to the last file cited in that row.
+A span may list several ranges (`src/a.ts:12-18, 40, 64-70`). A file name may
+be bare (`booking.ts:251`) or partial (`core/booking.ts:251`); it must match
+exactly one file in the commit. Inside a table row, a bare `:NN` cite refers to
+the nearest file cited before it in that row.
 
 Checks, per citation:
 - the file resolves at the commit, and the cited line range is inside it.
@@ -26,10 +27,11 @@ import subprocess
 import sys
 
 HEADER = re.compile(r'<!--\s*cite-ref:\s*([0-9a-fA-F]{7,40})\s*-->')
+RANGES = r'(?P<ranges>\d+(?:-\d+)?(?:,\s*\d+(?:-\d+)?)*)'
 PATH_CITE = re.compile(
     r'`(?P<path>\.?[A-Za-z0-9_][A-Za-z0-9_./-]*\.(?:ts|tsx|js|jsx|mjs|cjs|json|rules|md|py|html|css|yml|yaml|sh))'
-    r'(?::(?P<a>\d+)(?:-(?P<b>\d+))?)?(?:@(?P<ref>[0-9a-fA-F]{7,40}))?`')
-REL_CITE = re.compile(r'`:(?P<a>\d+)(?:-(?P<b>\d+))?(?:@(?P<ref>[0-9a-fA-F]{7,40}))?`')
+    r'(?::' + RANGES + r')?(?:@(?P<ref>[0-9a-fA-F]{7,40}))?`')
+REL_CITE = re.compile(r'`:' + RANGES + r'(?:@(?P<ref>[0-9a-fA-F]{7,40}))?`')
 IDENTIFIER = re.compile(r'`([A-Za-z_][A-Za-z0-9_]{3,})`')
 
 _TREES = {}
@@ -78,21 +80,23 @@ def check_file(doc_path, cwd=None):
     for number, line in enumerate(lines, 1):
         is_row = line.startswith('|')
         identifiers = {m.group(1) for m in IDENTIFIER.finditer(line)} if is_row else set()
+        found = [(m.start(), m, m.group('path')) for m in PATH_CITE.finditer(line)]
+        if is_row:
+            found += [(m.start(), m, None) for m in REL_CITE.finditer(line)]
         cites = []
         last_name = None
-        for match in PATH_CITE.finditer(line):
-            last_name = match.group('path')
+        for _, match, name in sorted(found, key=lambda item: item[0]):
+            if name is not None:
+                last_name = name
+            elif last_name is None:
+                problems.append((number, f'relative cite {match.group(0)} has no earlier file in this row'))
+                continue
             cites.append((match, last_name))
-        if is_row:
-            for match in REL_CITE.finditer(line):
-                if last_name is None:
-                    problems.append((number, f'relative cite {match.group(0)} has no earlier file in this row'))
-                    continue
-                cites.append((match, last_name))
-        results = [_check_cite(number, match, name, header, cwd) for match, name in cites]
-        for result_problems, _ in results:
-            problems += result_problems
-        windows = [window for _, window in results if window is not None]
+        windows = []
+        for match, name in cites:
+            cite_problems, cite_windows = _check_cite(number, match, name, header, cwd)
+            problems += cite_problems
+            windows += cite_windows
         if identifiers and windows and not any(_mentions(window[3], identifiers) for window in windows):
             spans = ', '.join(f'{path}:{low}-{high}' for path, low, high, _ in windows)
             names = ', '.join(sorted(identifiers))
@@ -105,19 +109,23 @@ def _mentions(text, identifiers):
 
 
 def _check_cite(number, match, name, header, cwd):
-    """Return (problems, window) for one citation; window is (path, low, high, text) or None."""
+    """Return (problems, windows) for one citation; each window is (path, low, high, text)."""
     ref = match.group('ref') or header
     path, reason = resolve(ref, name, cwd)
     if path is None:
-        return [(number, reason)], None
+        return [(number, reason)], []
+    if match.group('ranges') is None:
+        return [], []
     lines = git_lines(ref, path, cwd)
-    if match.group('a') is None:
-        return [], None
-    low = int(match.group('a'))
-    high = int(match.group('b') or match.group('a'))
-    if low < 1 or high < low or high > len(lines):
-        return [(number, f'{path}:{low}-{high} is outside the file at {ref} ({len(lines)} lines)')], None
-    return [], (path, low, high, '\n'.join(lines[low - 1:high]))
+    problems, windows = [], []
+    for part in match.group('ranges').split(','):
+        low, _, high = part.strip().partition('-')
+        low, high = int(low), int(high or low)
+        if low < 1 or high < low or high > len(lines):
+            problems.append((number, f'{path}:{low}-{high} is outside the file at {ref} ({len(lines)} lines)'))
+        else:
+            windows.append((path, low, high, '\n'.join(lines[low - 1:high])))
+    return problems, windows
 
 
 def main(argv):

@@ -44,3 +44,35 @@ describe('deploy security headers', () => {
     expect(REQUIRED['Permissions-Policy']).toContain('xr-spatial-tracking=(self)');
   });
 });
+
+describe('deploy worker origins', () => {
+  // Owner decision (2026-10-23): production workers allow only the production
+  // app origins. Local development keeps localhost via the code default in
+  // worker-security.ts and the same-origin vite proxy, never via production vars.
+  const PROD_ORIGINS = [
+    'https://archetype-ai-3e43b.web.app',
+    'https://archetype-ai-3e43b.firebaseapp.com',
+    'https://innerverseai.web.app',
+    'https://innerverseai.firebaseapp.com',
+  ];
+
+  function tomlVar(text: string, name: string): string[] | null {
+    const match = text.match(new RegExp(`^${name}\\s*=\\s*"([^"]*)"`, 'm'));
+    return match ? match[1].split(',').map((v) => v.trim()).filter(Boolean) : null;
+  }
+
+  it('every deployable worker config pins ALLOWED_APP_ORIGINS to the production origins only', () => {
+    for (const file of ['wrangler.toml', 'wrangler.api.toml']) {
+      const origins = tomlVar(readFileSync(file, 'utf8'), 'ALLOWED_APP_ORIGINS');
+      expect(origins, `${file} must define ALLOWED_APP_ORIGINS`).not.toBeNull();
+      expect(origins, file).toEqual(PROD_ORIGINS);
+      expect(origins?.some((origin) => /localhost|127\.0\.0\.1/.test(origin)), file).toBe(false);
+    }
+  });
+
+  it('the code default still lets a local wrangler dev accept localhost origins', () => {
+    const defaults = readFileSync('worker-security.ts', 'utf8').match(/DEFAULT_ALLOWED_APP_ORIGINS = \[([\s\S]*?)\] as const/)?.[1] ?? '';
+    expect(defaults).toContain('http://localhost:5174');
+    for (const origin of PROD_ORIGINS) expect(defaults).toContain(origin);
+  });
+});

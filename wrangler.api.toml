@@ -11,5 +11,7 @@ compatibility_flags = ["nodejs_compat"]
 # Do NOT commit real API keys. API keys (GOOGLE_API_KEY, OPENROUTER_API_KEY,
 # NVIDIA_API_KEY, OLLAMA_API_KEY) live in Cloudflare's encrypted secret store
 # and are set via `wrangler secret put <KEY_NAME>`.
+FIREBASE_PROJECT_ID = "archetype-ai-3e43b"  # required: without it the worker 503s instead of authenticating requests
+ALLOWED_APP_ORIGINS = "https://archetype-ai-3e43b.web.app,https://archetype-ai-3e43b.firebaseapp.com,https://innerverseai.web.app,https://innerverseai.firebaseapp.com"  # production origins only; local dev keeps localhost via the worker-security.ts default
 OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free"
 AI_PROVIDER_DEFAULT = "ollama"

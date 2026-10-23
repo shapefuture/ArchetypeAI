@@ -13,7 +13,7 @@ not_found_handling = "single-page-application"
 # NVIDIA_API_KEY, OLLAMA_API_KEY) live in Cloudflare's encrypted secret store
 # and are set via `wrangler secret put <KEY_NAME>`.
 FIREBASE_PROJECT_ID = "archetype-ai-3e43b"
-ALLOWED_APP_ORIGINS = "https://archetype-ai-3e43b.web.app,https://archetype-ai-3e43b.firebaseapp.com,https://innerverseai.web.app,https://innerverseai.firebaseapp.com,http://localhost:3000,http://127.0.0.1:3000,http://localhost:4200,http://127.0.0.1:4200,http://localhost:4174,http://127.0.0.1:4174,http://localhost:5174,http://127.0.0.1:5174"
+ALLOWED_APP_ORIGINS = "https://archetype-ai-3e43b.web.app,https://archetype-ai-3e43b.firebaseapp.com,https://innerverseai.web.app,https://innerverseai.firebaseapp.com"  # production origins only; local dev keeps localhost via the worker-security.ts default
 OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free"
 AI_PROVIDER_DEFAULT = "ollama"
 

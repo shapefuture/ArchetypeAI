@@ -73,6 +73,24 @@ export async function getFirebaseIdentity(): Promise<{ uid: string; token: strin
   return { uid: user.uid, token: await user.getIdToken() };
 }
 
+/** Sends Firebase's verification email to the signed-in address. */
+export async function sendVerificationEmail(): Promise<void> {
+  const { sdk, auth } = await client();
+  await sdk.sendEmailVerification(requireFirebaseUser(auth.currentUser));
+}
+
+/**
+ * Reloads the signed-in user and refreshes the ID token, so a just-verified
+ * address reaches the security rules, then re-runs the directory sync.
+ */
+export async function refreshEmailVerification(): Promise<AuthUser> {
+  const { auth } = await client();
+  const user = requireFirebaseUser(auth.currentUser);
+  await user.reload();
+  await user.getIdToken(true);
+  return persistUser(mapUser(requireFirebaseUser(auth.currentUser)));
+}
+
 export const auth: AUTH_PORT = {
   currentUser() {
     return store.load<AuthUser | null>(KEYS.auth, null);

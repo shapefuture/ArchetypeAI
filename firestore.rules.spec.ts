@@ -52,9 +52,15 @@ describe('firestore.rules — security boundaries', () => {
     expect(push).toMatch(/allow\s+read:\s*if\s+false/);
   });
 
-  it('allows signed-in directory reads but limits public-profile changes to the owner', () => {
+  it('allows single signed-in directory reads, never a listing, and limits public-profile changes to the owner', () => {
     const profile = matchBlock(/match\s+\/publicProfiles\/\{userId\}\s*\{([\s\S]*?)\n\s*\}/);
-    expect(profile).toMatch(/allow\s+read:\s*if\s+isSignedIn\(\)/);
+    expect(profile).toMatch(/allow\s+get:\s*if\s+isSignedIn\(\)/);
+    expect(profile).toMatch(/allow\s+list:\s*if\s+false/);
+    expect(profile).not.toMatch(/allow\s+read/);
+    const emails = matchBlock(/match\s+\/directoryEmails\/\{emailLower\}\s*\{([\s\S]*?)\n\s*\}/);
+    expect(emails).toMatch(/allow\s+get:\s*if\s+isSignedIn\(\)/);
+    expect(emails).toMatch(/allow\s+list:\s*if\s+false/);
+    expect(emails).toMatch(/emailLower\s*==\s*request\.auth\.token\.email\.lower\(\)/);
     expect(profile).toMatch(/allow\s+create,\s*update:\s*if\s+isOwner\(userId\)/);
     expect(profile).toMatch(/allow\s+delete:\s*if\s+isOwner\(userId\)/);
   });

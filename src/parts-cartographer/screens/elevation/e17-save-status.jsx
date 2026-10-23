@@ -1,7 +1,7 @@
 // E17 understandable reliability (ArchetypeAI-xdlo, step 05 UI). A note is saved on this device and read back to confirm
 // it. The status line comes from the pure E17 persistence machine, so "saved" means the value came back, not that a write
 // was attempted. Nothing is sent to a server from here.
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { useApp } from '../../app.jsx';
 import { store } from '../../core/local-store';
 import { reducePersist, verifyWrite } from '../../elevation/e17-operation-status.ts';
@@ -46,6 +46,8 @@ function initial() {
 export function SaveStatusPanel() {
   const { lang } = useApp() ?? {};
   const copy = COPY[lang === 'ru' ? 'ru' : 'en'];
+  // The question above the field is its label, so screen readers announce what to write.
+  const askId = useId();
   const [start] = useState(initial);
   const [persist, setPersist] = useState(start.state);
   const [text, setText] = useState(start.text);
@@ -67,9 +69,9 @@ export function SaveStatusPanel() {
   return (
     <section className="card flat mt16" aria-labelledby="e17-title">
       <div className="kicker" id="e17-title">{copy.kicker}</div>
-      <p className="sub mt8" style={{ fontSize: 13 }}>{copy.ask}</p>
+      <p className="sub mt8" id={askId} style={{ fontSize: 13 }}>{copy.ask}</p>
       <label className="field mt8">
-        <textarea className="drop" rows={2} value={text} onChange={(e) => edit(e.target.value)} />
+        <textarea className="drop" rows={2} aria-labelledby={askId} value={text} onChange={(e) => edit(e.target.value)} />
       </label>
       <button className="btn small primary block mt8" disabled={!text.trim() || persist.status === 'saving'} onClick={save}>{copy.save}</button>
       <p className="faint mt6" role="status" style={{ fontSize: 12 }}>{copy.labels[persist.status]}</p>

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal, output, H
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 
-import { ASSESSMENT_QUESTIONS } from '../../core/data/assessment-questions';
+import { ASSESSMENT_QUESTIONS } from '../../../shared/core/data/assessment-questions';
 
 const LOCAL_STORAGE_KEY = 'ARCHETYPE_ASSESSMENT_RESPONSES';
 // Persist the current question index separately so reload-during-test

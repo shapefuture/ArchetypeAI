@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, NgZone, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { loadLooks, sticker } from '../../../features/landing/stickers';
+import { loadLooks, sticker } from '../../../../shared/features/landing/stickers';
 import { type Archetype, effectiveLook } from '../../../../services/universe-state.service';
 import { FeltCharacterService } from '../../../../services/felt-character.service';
 

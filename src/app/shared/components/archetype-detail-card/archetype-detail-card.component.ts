@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { CardStackComponent } from '../card-stack/card-stack.component';
 import { PartStickerComponent } from '../part-sticker/part-sticker.component';
 import type { Archetype } from '../../../../services/universe-state.service';
-import { STRINGS } from '../../../../i18n/strings';
+import { STRINGS } from '../../../../shared/i18n/strings';
 import { TranslationService } from '../../../../services/translation.service';
 
 @Component({

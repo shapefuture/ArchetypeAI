@@ -6,9 +6,10 @@ import { FAMILY_LABELS, SEED_PARTS, pid, randomTraits } from '../pal/traits.ts';
 import { t as tr, CONSENT_TEXT, LIKERT_TEXTS, PART_COPY, ITEM_TEXTS, SCORING_NAME_POOLS, PART_NAMES } from '../i18n/strings.ts';
 import { scoreSystem, profileToCode } from '../core/scoring-v2.ts';
 import { clinicalNeedName, clinicalPartName, clinicalPolarizationName } from '../core/clinical-display.ts';
-import { COMPLEXES } from '../../app/core/data/parts';
+import { COMPLEXES } from '../../shared/core/data/parts';
 import { store, KEYS } from '../core/local-store';
 import { telemetry } from '../core/telemetry.ts';
+import { ROUTE_KEYS, isSampleProfile, markSample, sampleSavePlan } from '../core/assessment-routes.ts';
 
 const FELT = ['low', 'mid', 'high'];
 const ClinicalReport = lazy(() => import('./clinical-report.jsx').then((m) => ({ default: m.ClinicalReport })));
@@ -70,9 +71,9 @@ function makeRandomPart(lang, name) {
 
 /* ═══════════ Assessment (step machine inside overlay screen) ═══════════ */
 export function Assessment() {
-  const { t, lang, parts, setParts, setProfile, setOverlay, go, toast, profile } = useApp();
+  const { t, lang, parts, setProfile, setOverlay, go, toast, profile } = useApp();
   const draft = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem('ifs.assessment.draft') ?? 'null'); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem(ROUTE_KEYS.quickMap.draft) ?? 'null'); } catch { return null; }
   }, []);
   const [step, setStep] = useState(draft?.step ?? 0); // 0 ethics · 1 somatic · 2 statements · 3 scoring
   const [agree, setAgree] = useState(!!draft);
@@ -98,7 +99,7 @@ export function Assessment() {
 
   const saveDraft = () => {
     try {
-      localStorage.setItem('ifs.assessment.draft', JSON.stringify({
+      localStorage.setItem(ROUTE_KEYS.quickMap.draft, JSON.stringify({
         step, idx, answers, stmts, pool, at: Date.now(),
       }));
     } catch { /* */ }
@@ -114,16 +115,23 @@ export function Assessment() {
   };
 
   const finish = () => {
-    try { localStorage.removeItem('ifs.assessment.draft'); } catch { /* */ }
+    try { localStorage.removeItem(ROUTE_KEYS.quickMap.draft); } catch { /* */ }
     const somatic = {};
     pool.forEach((p) => {
       const a = answers[p.id] ?? { intensity: 3, felt: 'mid' };
       somatic[p.id] = { intensity: a.intensity, felt: a.felt };
     });
-    const result = scoreSystem({ somatic, statements: stmts, parts: pool });
+    // The eight generated parts are an illustration. They are labelled as a sample and are not
+    // written into the cabinet, so they cannot pass for the user's own parts.
+    const result = markSample(scoreSystem({ somatic, statements: stmts, parts: pool }));
+    try { telemetry.record('result', { c: result.headlineConstellation, v: result.validity, sample: true }); } catch { /* */ }
+    if (sampleSavePlan(profile) === 'archive-only') {
+      store.archive(KEYS.history, result);
+      toast(t('sampleKeptInHistory'));
+      go('intro');
+      return;
+    }
     setProfile(result);            // app persists latest + archives history
-    setParts(pool);
-    try { telemetry.record('result', { c: result.headlineConstellation, v: result.validity }); } catch { /* */ }
     go('assessment-results');
   };
 
@@ -167,6 +175,7 @@ export function Assessment() {
               {CONSENT_TEXT[lang]}
             </p>
             <p className="sub mt12">{t('ethicsBody')}</p>
+            <p className="sub mt12" role="note">{t('sampleEthicsNote')}</p>
           </div>
           <button className="toggle mt16" onClick={() => setAgree((a) => !a)}>
             <span style={{ flex: 1, fontWeight: 900, fontSize: 14 }}>{t('consentAck')}</span>
@@ -296,7 +305,8 @@ export function Gate() {
   const hist = useMemo(() => {
     try { return store.history(KEYS.history) ?? []; } catch { return []; }
   }, []);
-  const week = hist.filter((p) => Date.now() - (p?.createdAt ?? 0) < 7 * 864e5);
+  // Samples are not canonical assessments, so they do not use up the weekly canonical allowance.
+  const week = hist.filter((p) => !isSampleProfile(p) && Date.now() - (p?.createdAt ?? 0) < 7 * 864e5);
   const left = Math.max(0, 5 - week.length);
   return (
     <div className="screen">
@@ -465,6 +475,7 @@ export function QuickResults() {
     );
   }
 
+  const isSample = isSampleProfile(prof);
   let hist = [];
   try { hist = (store.history(KEYS.history) ?? []).filter(Boolean); } catch { hist = []; }
   const traitsOf = (id) => parts.find((p) => p.id === id)?.traits;
@@ -505,9 +516,18 @@ export function QuickResults() {
         <div className="row" style={{ paddingTop: 4 }}>
           <button className="ibtn" onClick={() => go('intro')}>‹</button>
           <div className="grow kicker">{t('resultsTitle')}</div>
-          <button className="btn small" style={{ minHeight: 34, padding: '0 14px', fontSize: 13 }}
-            onClick={() => setOverlay('share')}>↗ {t('shareBtn')}</button>
+          {!isSample && (
+            <button className="btn small" style={{ minHeight: 34, padding: '0 14px', fontSize: 13 }}
+              onClick={() => setOverlay('share')}>↗ {t('shareBtn')}</button>
+          )}
         </div>
+
+        {isSample && (
+          <div className="card flat mt16" role="status" style={{ borderColor: 'var(--accent)' }}>
+            <div className="kicker" style={{ color: 'var(--accent-text)' }}>{t('sampleBadge')}</div>
+            <p className="sub mt6">{t('sampleNote')}</p>
+          </div>
+        )}
 
         {prof.strongestResource && (
           <div className="card flat mt16" style={{ borderColor: 'var(--grass, #3EE0B0)' }}>
@@ -519,9 +539,9 @@ export function QuickResults() {
           </div>
         )}
         <div className="card mt16" style={{ borderColor: 'var(--yolk)' }}>
-          <div className="kicker" style={{ color: 'var(--accent-text)' }}>{t('constellation')}</div>
+          <div className="kicker" style={{ color: 'var(--accent-text)' }}>{isSample ? t('sampleIllustrativeLabel') : t('constellation')}</div>
           <div className="h2" style={{ fontSize: 22, marginTop: 6 }}>{lang === 'ru' && prof.headlineRu ? prof.headlineRu : prof.headlineConstellation}</div>
-          <p className="sub mt8" style={{ color: 'var(--text)' }}>{essay}</p>
+          {!isSample && <p className="sub mt8" style={{ color: 'var(--text)' }}>{essay}</p>}
           <div className="row mt12" style={{ gap: 8, flexWrap: 'wrap' }}>
             <span className="chip" style={{ fontSize: 11.5 }}>{t('validity')} · {Math.round(prof.validity * 100)}%</span>
             <span className="chip" style={{ fontSize: 11.5 }}>{prof.parts.length} {partsWord(prof.parts.length, lang)}</span>

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { buildDynamicRelationalIds, VisualizationService, Archetype } from './webxr.service';
 import { TranslationService } from './translation.service';
-import { IV_PARTS } from '../app/features/landing/stickers';
+import { IV_PARTS } from '../shared/features/landing/stickers';
 
 const CLUSTER_BY_FAM: Record<string, string> = {
   manager: 'managers',

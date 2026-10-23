@@ -6,9 +6,9 @@ import {
   computeTriggerMap,
   computeIntegrationPathway,
   generateArchetypes,
-} from './scoring';
-import type { ScoredArchetype } from './scoring';
-import { computeSynastry } from './synastry';
+} from '../../../shared/core/data/scoring';
+import type { ScoredArchetype } from '../../../shared/core/data/scoring';
+import { computeSynastry } from '../../../shared/core/data/synastry';
 
 type SectionName =
   | 'agencyActive'

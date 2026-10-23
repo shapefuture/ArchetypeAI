@@ -12,7 +12,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { getFirestoreDb } from '../../environments/firebase-init';
-import { withResilience } from '../../app/core/adapters/resilience';
+import { withResilience } from '../../shared/core/adapters/resilience';
 import type { AuthUser } from './ports';
 
 const BOOTSTRAP_ADMIN_EMAIL = 'admin@example.com';

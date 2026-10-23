@@ -8,17 +8,75 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  changes:
+    # Decides whether the heavy verify job is needed. Documentation-only changes skip it; the guard job always runs.
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.detect.outputs.code }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect code changes
+        id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          # With no usable base (new branch, unknown commit) the change cannot be classified, so run everything.
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] \
+            || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "No usable base commit; running verify."
+            exit 0
+          fi
+          changed=$(git diff --name-only "$BASE_SHA" "$GITHUB_SHA") || {
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "git diff failed; running verify."
+            exit 0
+          }
+          # Documentation, architecture records and tracker exports cannot change the build or the tests.
+          # Root-level Markdown is documentation; Markdown under src/ is not, because it can be bundled.
+          code_files=$(printf '%s\n' "$changed" | grep -v -E '^(docs/|architecture/|\.beads/)|^[^/]+\.md$' | grep -c . || true)
+          echo "Changed files outside documentation: $code_files"
+          if [ "$code_files" -gt 0 ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  guard:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check full-plan continuity guard
         run: |
           python3 scripts/roadmap/continuity.py schema
           python3 -m unittest discover -s scripts/roadmap -p 'test_*.py'
           python3 -m unittest discover -s .agents/skills/full-plan-delivery/tests -p 'test_*.py'
+
+      - name: AAA v7.1 source pin (A01.01)
+        run: python3 -I -m unittest discover -s tests/architecture/a01 -p 'test_*.py'
+
+      - name: Citation checker tests
+        run: python3 -m unittest discover -s scripts/docs -p 'test_*.py'
+
+      # Reads the commits that documents cite, so the checkout needs history.
+      - name: Check document citations
+        run: python3 scripts/docs/check_cites.py --strict $(git grep -l 'cite-ref:' -- '*.md')
+
+  verify:
+    needs: [changes]
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

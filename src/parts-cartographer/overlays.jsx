@@ -12,8 +12,15 @@ import { readLocalLegacy64Responses } from './core/legacy64-responses';
 import { createCloudLegacy64ShareCode, createCloudMapShareCode, loadCloudSynastry, redeemCloudMapShareCode, revokeCloudMapShareCode, saveCloudSynastry } from './core/cloud-storage.ts';
 import { ResilientAiAdapter, AI, chatWithContext, generateSynastryNarrative } from './core/ai.adapter.ts';
 import { store, KEYS } from './core/local-store';
-import { bookableDays, createBooking, endOfSlot, ensureTherapistBusySlots, freeSlots, getTherapistProfile, saveTherapistAvailability, setAppointmentStatus, therapistAppointments, therapistBusyIntervals } from './core/booking.ts';
+import {
+  bookableDays, createBooking, deviceTimeZone, endOfSlot, ensureTherapistBusySlots, freeSlots,
+  getTherapistProfile, saveTherapistAvailability, setAppointmentStatus, slotOccurrences, slotTime, therapistAppointments,
+  therapistBusyIntervals, therapistTimeZone, ZONE_TIME_WRITES_ENABLED,
+} from './core/booking.ts';
+import { confirmLegacyNaiveRecord, formatInstantInZone, resolveWallClock } from './core/appointment-time.ts';
+import { SuggestionReview, queueCoachReply } from './screens/suggestion-review.jsx';
 import { lookupByEmail, syncPublicProfile } from './core/user-directory.ts';
+import { checkFacilitatorStatement, STATEMENT_MAX_CHARS } from './core/facilitator-profile.ts';
 import { createTherapistLink } from './core/therapist-link.ts';
 import { LegacySynastryDetails } from './screens/legacy-synastry-report.jsx';
 import { ScoredProfileSynastryDetails } from './screens/scored-profile-synastry-report.jsx';
@@ -38,6 +45,7 @@ export function Coach() {
   const timer = useRef(null);
   const request = useRef(null);
   const [selectedPart, setSelectedPart] = useState(sheet?.type === 'part' ? sheet.id : '');
+  const [queueVersion, setQueueVersion] = useState(0);
   useEffect(() => () => { clearInterval(timer.current); request.current?.abort(); }, []);
   useEffect(() => {
     request.current?.abort(); request.current = null;
@@ -67,7 +75,12 @@ export function Coach() {
     try {
       const part = parts.find((item) => item.id === selectedPart);
       const full = await chatWithContext(hist, mode, { language: lang, part: part ? { name: part.name, family: part.family, role: part.role, need: part.need, voice: part.voice } : undefined }, { signal: controller.signal });
-      if (!controller.signal.aborted && request.current === controller) stream(full);
+      if (!controller.signal.aborted && request.current === controller) {
+        // Every real reply is queued for review with its decision. Nothing is applied.
+        queueCoachReply({ text: full, mode, lang });
+        setQueueVersion((version) => version + 1);
+        stream(full);
+      }
     } catch {
       if (!controller.signal.aborted && request.current === controller) stream(tr('sw2', lang));
     }
@@ -98,6 +111,7 @@ export function Coach() {
             <button key={k} className="chip" onClick={() => send(t(k))}>{t(k)}</button>
           ))}
         </div>
+        <SuggestionReview refreshKey={queueVersion} />
         <div className="chat-dock-space" />
       </div>
       <div className="ov-foot row" style={{ gap: 10 }}>
@@ -662,30 +676,56 @@ export function SynastryOv() {
 }
 
 /* ═══════════ Booking wizard (moved to Base page — item 16) ═══════════ */
+/** Which pass of a repeated hour: the earlier or the later instant. */
+function passLabel(fold, lang) {
+  if (fold === 'earlier') return lang === 'ru' ? 'Первый проход' : 'First pass';
+  return lang === 'ru' ? 'Второй проход' : 'Second pass';
+}
+
 export function Booking() {
   const { t, lang, setOverlay, toast, profile, user } = useApp();
   const [step, setStep] = useState(0);
   const [therapistEmail, setTherapistEmail] = useState('');
   const [therapist, setTherapist] = useState(null);
   const [availability, setAvailability] = useState([]);
+  // The zone the therapist entered their hours in. Null means the hours have no zone yet.
+  const [therapistZone, setTherapistZone] = useState(null);
+  const [therapistStatement, setTherapistStatement] = useState('');
   const [appointments, setAppointments] = useState([]);
   const [days, setDays] = useState([]);
   const [day, setDay] = useState(null);
   const [slot, setSlot] = useState(null);
+  const [fold, setFold] = useState('earlier');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [shareConsent, setShareConsent] = useState(false);
+  // Every slot is also shown in this client's own zone.
+  const clientZone = useMemo(() => deviceTimeZone() ?? 'UTC', []);
+  const sameZone = !therapistZone || clientZone === therapistZone;
 
   const slots = useMemo(
-    () => day ? freeSlots(availability, appointments, day) : [],
-    [availability, appointments, day],
+    () => (day && therapistZone ? freeSlots(availability, appointments, day, new Date(), { timeZone: therapistZone }) : []),
+    [availability, appointments, day, therapistZone],
   );
+  const occurrencesOf = (value) => (therapistZone && value ? slotOccurrences(value, therapistZone) : []);
+  // The instant behind a slot: the only one, or the pass the client picked when the hour repeats.
+  const chosenOccurrence = (value, chosenFold) => {
+    const list = occurrencesOf(value);
+    if (list.length <= 1) return list[0] ?? null;
+    return list.find((item) => item.fold === chosenFold) ?? null;
+  };
+  const clientWallOf = (occurrence) => (occurrence ? formatInstantInZone(occurrence.startMs, clientZone) : null);
+  const clockOf = (wall) => (wall ? wall.slice(11, 16) : '');
   const dateLabel = (iso) => {
     if (!iso) return '';
     const date = new Date(`${iso}T00:00:00`);
     return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', { weekday: 'short', day: '2-digit', month: 'short' });
   };
   const displayName = therapist?.displayName || therapist?.email || t('therapist');
+  // Client-zone time, with the date added when it falls on another day than the slot.
+  const withClientDay = (wall, value) => (
+    wall && value && wall.slice(0, 10) !== value.slice(0, 10) ? `${clockOf(wall)} · ${dateLabel(wall.slice(0, 10))}` : clockOf(wall)
+  );
 
   const findTherapist = async () => {
     const email = therapistEmail.trim();
@@ -715,15 +755,24 @@ export function Booking() {
       // Read a privacy-safe schedule projection; do not silently fall back to
       // an empty schedule if the occupied-slot lookup is denied or unavailable.
       const booked = await therapistBusyIntervals(match.uid);
-      const bookDays = bookableDays(therapistProfile.availability, new Date(), 14);
+      // Hours saved before zones existed take the device zone of the device that reads them (see normalizeAvailability).
+      const zone = therapistTimeZone(therapistProfile.availability);
+      const bookDays = zone ? bookableDays(therapistProfile.availability, new Date(), 14, { timeZone: zone }) : [];
       setTherapist({ uid: match.uid, email: therapistProfile.email || match.email || email, displayName: match.displayName });
       setAvailability(therapistProfile.availability);
+      setTherapistZone(zone);
+      setTherapistStatement(therapistProfile.statement ?? '');
       setAppointments(booked);
       setDays(bookDays);
       setDay(null);
       setSlot(null);
+      setFold('earlier');
       setStep(1);
-      if (!bookDays.length) setError(t('bookingNoAvailability'));
+      if (!zone && therapistProfile.availability.length) {
+        setError(lang === 'ru'
+          ? 'Терапевт ещё не подтвердил часовой пояс своего расписания. Попросите его открыть «Терапевт» и сохранить расписание.'
+          : 'This therapist has not confirmed the time zone of their hours yet. Ask them to open Therapist, check the zone, and save.');
+      } else if (!bookDays.length) setError(t('bookingNoAvailability'));
     } catch (err) {
       console.error('Therapist lookup failed', err);
       setError(t('bookingLookupFailed'));
@@ -733,10 +782,17 @@ export function Booking() {
   };
 
   const confirmBooking = async () => {
-    if (!user?.linked || !user.email || !therapist || !slot || busy) return;
+    if (!user?.linked || !user.email || !therapist || !slot || !therapistZone || busy) return;
+    const picked = chosenOccurrence(slot, fold);
+    if (!picked || !picked.offered) {
+      setError(t('bookingFailed'));
+      return;
+    }
     setBusy(true);
     setError('');
     try {
+      const built = slotTime({ slot, availability, timeZone: therapistZone, fold: picked.fold ?? undefined });
+      if (!built.ok) throw new Error(`Slot time rejected: ${built.reason}`);
       await createBooking({
         clientUid: user.uid,
         clientEmail: user.email,
@@ -744,6 +800,8 @@ export function Booking() {
         therapistEmail: therapist.email,
         start: slot,
         end: endOfSlot(slot, availability),
+        // Written only when the appointments rule accepts `time` (see ZONE_TIME_WRITES_ENABLED).
+        time: ZONE_TIME_WRITES_ENABLED ? built.time : undefined,
       });
       setStep(3);
       toast('✓ ' + t('bookingRequestSent'));
@@ -806,7 +864,11 @@ export function Booking() {
               <div className="kicker">{t('pickDate')}</div>
               <span className="faint" style={{ fontSize: 12 }}>{displayName}</span>
             </div>
-            <p className="faint mt8">{lang === 'ru' ? 'Время по часам этого устройства' : 'Times use this device’s clock'} · {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
+            {therapistStatement && <p className="sub mt8" style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{therapistStatement}</p>}
+            <p className="faint mt8" style={{ fontSize: 12 }}>
+              {lang === 'ru' ? 'Время терапевта' : 'Therapist time'}: {therapistZone ?? '—'}
+              {!sameZone && ` · ${lang === 'ru' ? 'ваше время' : 'your time'}: ${clientZone}`}
+            </p>
             {days.length ? (
               <div className="row wrap mt8" style={{ gap: 8 }}>
                 {days.map((iso) => (
@@ -828,16 +890,47 @@ export function Booking() {
             </div>
             {slots.length ? (
               <div className="row wrap mt8" style={{ gap: 8 }}>
-                {slots.map((value) => (
-                  <button key={value} className={`chip ${slot === value ? 'on' : ''}`} onClick={() => setSlot(value)} style={{ fontSize: 14 }}>
-                    {value.slice(11, 16)}
-                  </button>
-                ))}
+                {slots.map((value) => {
+                  const list = occurrencesOf(value);
+                  const first = list.find((item) => item.offered) ?? list[0];
+                  const clientWall = clientWallOf(first);
+                  return (
+                    <button key={value} className={`chip ${slot === value ? 'on' : ''}`}
+                      onClick={() => { setSlot(value); setFold(first?.fold ?? 'earlier'); }} style={{ fontSize: 14 }}>
+                      {value.slice(11, 16)}
+                      {!sameZone && clientWall && (
+                        <span style={{ display: 'block', fontSize: 11, fontWeight: 600, opacity: 0.75 }}>
+                          {withClientDay(clientWall, value)} {lang === 'ru' ? 'у вас' : 'your time'}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             ) : <p className="sub mt12">{t('bookingNoSlots')}</p>}
+            {slot && occurrencesOf(slot).length > 1 && (
+              <div className="mt12">
+                <p className="faint" style={{ fontSize: 12 }}>
+                  {lang === 'ru' ? 'Этот час повторяется, когда часы переводят назад. Выберите проход.' : 'This hour repeats when clocks go back. Pick which pass.'}
+                </p>
+                <div className="row wrap mt8" style={{ gap: 8 }}>
+                  {occurrencesOf(slot).map((item) => (
+                    <button key={item.fold} className={`chip ${fold === item.fold ? 'on' : ''}`} disabled={!item.offered} onClick={() => setFold(item.fold)}>
+                      {passLabel(item.fold, lang)} · {slot.slice(11, 16)}
+                      {!sameZone && clientWallOf(item) ? ` (${clockOf(clientWallOf(item))} ${lang === 'ru' ? 'у вас' : 'your time'})` : ''}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="card flat mt16">
               <b>{displayName}</b>
-              <div className="faint" style={{ fontWeight: 800, fontSize: 13 }}>{dateLabel(day)}{slot ? ` · ${slot.slice(11, 16)}` : ''}</div>
+              <div className="faint" style={{ fontWeight: 800, fontSize: 13 }}>
+                {dateLabel(day)}{slot ? ` · ${slot.slice(11, 16)} ${therapistZone ?? ''}` : ''}
+                {slot && !sameZone && clientWallOf(chosenOccurrence(slot, fold))
+                  ? ` = ${withClientDay(clientWallOf(chosenOccurrence(slot, fold)), slot)} ${lang === 'ru' ? 'у вас' : 'your time'}`
+                  : ''}
+              </div>
             </div>
             <label className="row card flat mt12" style={{ alignItems: 'flex-start', gap: 9, fontSize: 12, fontWeight: 800 }}>
               <input type="checkbox" checked={shareConsent} onChange={(event) => setShareConsent(event.target.checked)} style={{ width: 18, height: 18, marginTop: 1, flex: '0 0 18px' }} />
@@ -856,7 +949,12 @@ export function Booking() {
           <div className="center" style={{ paddingTop: 30 }}>
             <div className="animate-pop" style={{ fontSize: 50 }}>📅</div>
             <div className="h2 mt12">{t('bookingRequestSent')}</div>
-            <p className="sub">{displayName} · {dateLabel(day)} · {slot?.slice(11, 16)}</p>
+            <p className="sub">
+              {displayName} · {dateLabel(day)} · {slot?.slice(11, 16)} {therapistZone ?? ''}
+              {slot && !sameZone && clientWallOf(chosenOccurrence(slot, fold))
+                ? ` (${withClientDay(clientWallOf(chosenOccurrence(slot, fold)), slot)} ${lang === 'ru' ? 'у вас' : 'your time'})`
+                : ''}
+            </p>
             <button className="btn primary block mt16" onClick={() => setOverlay(null)}>{t('done')}</button>
           </div>
         )}
@@ -881,6 +979,105 @@ function loadAvail() {
     return AVAIL_DEFAULT;
   } catch { return AVAIL_DEFAULT; }
 }
+/** Wall-clock label for a stored YYYY-MM-DDTHH:mm, shown as written (no shift to the device zone). */
+function wallLabel(wall, lang) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(wall ?? ''));
+  if (!match) return String(wall ?? '');
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5])));
+  return date.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', {
+    weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
+  });
+}
+
+/** Zones offered when confirming a legacy time. There is no default: the person picks one. */
+function zoneChoices() {
+  try {
+    if (typeof Intl.supportedValuesOf === 'function') return Intl.supportedValuesOf('timeZone');
+  } catch { /* fall through to the short list */ }
+  return [deviceTimeZone() ?? 'UTC', 'UTC'];
+}
+
+const LEGACY_REASON_COPY = {
+  en: {
+    'nonexistent-local-time': 'This wall time does not exist in that zone (clocks skip it). Check the zone with the client.',
+    'repeated-local-time-needs-choice': 'This hour repeats in that zone. Pick which pass.',
+    'invalid-zone': 'Pick a zone first.',
+  },
+  ru: {
+    'nonexistent-local-time': 'В этом часовом поясе такого времени нет (часы его пропускают). Уточните пояс у клиента.',
+    'repeated-local-time-needs-choice': 'В этом поясе этот час повторяется. Выберите проход.',
+    'invalid-zone': 'Сначала выберите пояс.',
+  },
+};
+
+/**
+ * A legacy record has no zone, so it is never reinterpreted on its own. The therapist picks a
+ * zone with an explicit click, and the preview shows what that reading implies. The preview is
+ * not saved. Saving a confirmed time needs a data-rules change first.
+ */
+function LegacyZoneConfirm({ record, lang, onClose }) {
+  const ru = lang === 'ru';
+  const [zone, setZone] = useState('');
+  const [pick, setPick] = useState('earlier');
+  const [result, setResult] = useState(null);
+  const deviceZone = useMemo(() => deviceTimeZone() ?? 'UTC', []);
+  const zones = useMemo(() => zoneChoices(), []);
+  const resolved = zone ? resolveWallClock(record.start, zone) : null;
+  const repeated = !!resolved && resolved.ok && resolved.kind === 'repeated';
+  const preview = () => {
+    setResult(confirmLegacyNaiveRecord(
+      { start: record.start, end: record.end },
+      { timeZone: zone, fold: repeated ? pick : undefined, confirmedBy: 'therapist', confirmedAt: new Date().toISOString() },
+    ));
+  };
+  return (
+    <div className="card flat mt10" style={{ display: 'grid', gap: 8 }}>
+      <label className="field">
+        <span>{ru ? 'Пояс, в котором были записаны часы' : 'Zone the hours were entered in'}</span>
+        <select className="drop mt6" value={zone} onChange={(event) => { setZone(event.target.value); setResult(null); }}>
+          <option value="">{ru ? '— выберите —' : '— choose —'}</option>
+          {zones.map((item) => <option key={item} value={item}>{item}</option>)}
+        </select>
+      </label>
+      {repeated && (
+        <label className="field">
+          <span>{ru ? 'Какой проход' : 'Which pass'}</span>
+          <select className="drop mt6" value={pick} onChange={(event) => { setPick(event.target.value); setResult(null); }}>
+            <option value="earlier">{passLabel('earlier', lang)}</option>
+            <option value="later">{passLabel('later', lang)}</option>
+          </select>
+        </label>
+      )}
+      <button type="button" className="btn small" disabled={!zone} onClick={preview}>
+        {ru ? 'Показать, как это будет' : 'Preview this reading'}
+      </button>
+      {result?.ok && (
+        <p className="faint" style={{ fontSize: 12 }}>
+          {ru ? 'Начало' : 'Starts'}: {formatInstantInZone(result.time.startUtc, zone)} ({zone}) = {formatInstantInZone(result.time.startUtc, deviceZone)} ({deviceZone})
+          <br />
+          {ru
+            ? 'Только предпросмотр. Подтверждение пока нигде не сохраняется: для этого нужно изменить правила данных.'
+            : 'Preview only. The confirmation is not saved yet: saving it needs a data-rules update.'}
+        </p>
+      )}
+      {result && !result.ok && (
+        <p role="alert" style={{ color: 'var(--danger, #b54a4a)', fontSize: 12 }}>
+          {LEGACY_REASON_COPY[ru ? 'ru' : 'en'][result.reason] ?? (ru ? 'Время не удалось подтвердить.' : 'This time could not be confirmed.')}
+        </p>
+      )}
+      <button type="button" className="btn ghost small" onClick={onClose}>{ru ? 'Закрыть' : 'Close'}</button>
+    </div>
+  );
+}
+
+/** Plain-language copy for a refused statement (core/facilitator-profile.ts reasons). */
+function statementRefusalText(reason, lang) {
+  const ru = lang === 'ru';
+  if (reason === 'statement-too-long') return ru ? 'Сделайте текст короче 600 знаков.' : 'Keep the statement under 600 characters.';
+  if (reason === 'efficacy-claim') return ru ? 'Уберите заявления о клинической доказанности или гарантированных результатах.' : 'Remove claims of clinical proof or guaranteed results.';
+  return ru ? 'Этот текст нельзя сохранить.' : 'This statement cannot be saved.';
+}
+
 export function Therapist() {
   const { t, lang, setOverlay, go, toast, user } = useApp();
   const [attested, setAttested] = useState(() => { try { return localStorage.getItem('ifs.attested') === '1'; } catch { return false; } });
@@ -888,9 +1085,16 @@ export function Therapist() {
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilitySaving, setAvailabilitySaving] = useState(false);
   const [availabilityError, setAvailabilityError] = useState('');
+  // The zone the hours are kept in. A save writes this zone explicitly. Nothing is silently defaulted.
+  const [zone, setZone] = useState(() => deviceTimeZone());
+  const [zoneNeedsConfirm, setZoneNeedsConfirm] = useState(false);
+  const [statement, setStatement] = useState('');
+  const [statementError, setStatementError] = useState('');
+  const deviceZone = useMemo(() => deviceTimeZone(), []);
   const [appointments, setAppointments] = useState([]);
   const [appointmentBusy, setAppointmentBusy] = useState('');
   const [appointmentError, setAppointmentError] = useState('');
+  const [legacyPick, setLegacyPick] = useState(null);
   const dayL = t('availDays').split(',');
   const dayOf = (a, i) => a.days[i] ?? { on: false, from: '09:00', to: '18:00' };
   const toggleDay = (i) => setAvail((a) => ({ days: { ...a.days, [i]: { ...dayOf(a, i), on: !dayOf(a, i).on } } }));
@@ -911,6 +1115,11 @@ export function Therapist() {
             : { on: false, from: '09:00', to: '18:00' };
         }
         setAvail({ days });
+        const remoteZone = therapistTimeZone(remote.availability);
+        setZone(remoteZone ?? deviceTimeZone());
+        // Hours saved before zones existed took this device's zone on load. The therapist confirms it by saving.
+        setZoneNeedsConfirm(remote.availability.some((window) => window.zoneFallback));
+        setStatement(remote.statement ?? '');
       })
       .catch((err) => {
         console.error('Therapist availability load failed', err);
@@ -973,14 +1182,28 @@ export function Therapist() {
       setAvailabilityError(t('therapistInvalidHours'));
       return;
     }
+    if (!zone) {
+      setAvailabilityError(lang === 'ru' ? 'Выберите часовой пояс.' : 'Choose a time zone.');
+      return;
+    }
+    const trimmedStatement = statement.trim();
+    if (trimmedStatement) {
+      const check = checkFacilitatorStatement({ name: user.displayName || user.email, statement: trimmedStatement, qualificationProvidedBy: 'facilitator' });
+      if (check.ok === false) {
+        setStatementError(statementRefusalText(check.reason, lang));
+        return;
+      }
+    }
+    setStatementError('');
     setAvailabilitySaving(true);
     setAvailabilityError('');
     try {
       await syncPublicProfile(user);
       const windows = enabled.map(([index, value]) => ({
-        days: [Number(index) + 1], start: value.from, end: value.to, minutes: 60,
+        days: [Number(index) + 1], start: value.from, end: value.to, minutes: 60, timeZone: zone,
       }));
-      await saveTherapistAvailability(user.uid, windows, user.email);
+      await saveTherapistAvailability(user.uid, windows, user.email, trimmedStatement);
+      setZoneNeedsConfirm(false);
       try { localStorage.setItem('ifs.avail', JSON.stringify(avail)); } catch { /* */ }
       toast('✓ ' + t('save'));
     } catch (err) {
@@ -1026,6 +1249,21 @@ export function Therapist() {
             <div className="card mt16">
               <div className="kicker" style={{ color: 'var(--accent-text)' }}>🗓 {t('availT')}</div>
               <p className="sub mt6" style={{ fontSize: 13 }}>{t('availSub')}</p>
+              <p className="faint mt8" style={{ fontSize: 12 }}>
+                {lang === 'ru' ? 'Часы указаны в поясе' : 'Hours are kept in'}: <b>{zone ?? '—'}</b>
+                {zone && deviceZone && zone !== deviceZone && (
+                  <button type="button" className="chip" style={{ marginLeft: 8, fontSize: 11 }} onClick={() => setZone(deviceZone)}>
+                    {lang === 'ru' ? `Пояс этого устройства: ${deviceZone}` : `Use this device's zone: ${deviceZone}`}
+                  </button>
+                )}
+              </p>
+              {zoneNeedsConfirm && (
+                <p className="faint mt6" role="status" style={{ fontSize: 12 }}>
+                  {lang === 'ru'
+                    ? 'Эти часы сохранены до появления поясов. Проверьте пояс и сохраните.'
+                    : 'These hours were saved before time zones existed. Check the zone, then save.'}
+                </p>
+              )}
               {availabilityLoading && <p className="faint mt8" role="status">{t('loading')}</p>}
               {availabilityError && <p className="faint mt8" role="alert" style={{ color: 'var(--danger, #b54a4a)', fontSize: 12 }}>{availabilityError}</p>}
               {/* column headers */}
@@ -1054,6 +1292,12 @@ export function Therapist() {
                   </div>
                 );
               })}
+              <label className="field mt14">
+                <span>{lang === 'ru' ? 'Короткое описание для клиентов (необязательно)' : 'Short statement for clients (optional)'}</span>
+                <textarea className="drop mt6" rows={3} maxLength={STATEMENT_MAX_CHARS} value={statement}
+                  onChange={(e) => { setStatement(e.target.value); setStatementError(''); }} />
+              </label>
+              {statementError && <p className="faint mt6" role="alert" style={{ fontSize: 12 }}>{statementError}</p>}
               <button className="btn primary block mt14" disabled={availabilitySaving || availabilityLoading || !user?.linked} onClick={saveAvail}>
                 {availabilitySaving ? '⏳ …' : t('save')}
               </button>
@@ -1067,12 +1311,29 @@ export function Therapist() {
               ) : appointments.filter((item) => item.status === 'pending').length === 0 ? (
                 <p className="sub mt8">{t('therapistNoAppointments')}</p>
               ) : appointments.filter((item) => item.status === 'pending').map((item) => {
-                const when = new Date(`${item.start}:00`);
-                const label = Number.isNaN(when.getTime()) ? item.start : when.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+                const label = wallLabel(item.start, lang);
                 return (
                   <div key={item.id} className="card flat mt10">
                     <b>{item.clientEmail || item.clientUid.slice(0, 10)}</b>
-                    <div className="faint mt6" style={{ fontSize: 12 }}>{label}</div>
+                    <div className="faint mt6" style={{ fontSize: 12 }}>{label}{item.time ? ` · ${item.time.timeZone}` : ''}</div>
+                    {item.timeClass?.kind === 'legacy-naive' && (
+                      <>
+                        <div className="row mt8" style={{ gap: 8, alignItems: 'center' }}>
+                          <span className="chip">{lang === 'ru' ? 'Часовой пояс не подтверждён' : 'Time zone not confirmed'}</span>
+                          <button type="button" className="btn small ghost" onClick={() => setLegacyPick(legacyPick === item.id ? null : item.id)}>
+                            {lang === 'ru' ? 'Подтвердить пояс' : 'Confirm time zone'}
+                          </button>
+                        </div>
+                        {legacyPick === item.id && (
+                          <LegacyZoneConfirm record={{ start: item.start, end: item.end }} lang={lang} onClose={() => setLegacyPick(null)} />
+                        )}
+                      </>
+                    )}
+                    {item.timeClass?.kind === 'invalid' && (
+                      <p className="faint mt6" role="alert" style={{ fontSize: 12 }}>
+                        {lang === 'ru' ? 'Время этой записи не читается.' : 'This record’s time could not be read.'}
+                      </p>
+                    )}
                     <div className="row mt10" style={{ gap: 8 }}>
                       <button className="btn primary grow" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'approved')}>
                         {appointmentBusy === item.id ? '⏳ …' : t('appointmentApprove')}

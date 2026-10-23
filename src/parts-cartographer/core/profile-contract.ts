@@ -1,5 +1,5 @@
-import { COMPLEXES, EXILES, NEED, PROTECTORS, RESOURCES, SELF_QUALITIES, SHADOW_PARTS } from '../../app/core/data/parts';
-import type { ScoredProfile } from '../../app/core/data/scoring-v2';
+import { COMPLEXES, EXILES, NEED, PROTECTORS, RESOURCES, SELF_QUALITIES, SHADOW_PARTS } from '../../shared/core/data/parts';
+import type { ScoredProfile } from '../../shared/core/data/scoring-v2';
 
 export const record = (v: unknown): v is Record<string, any> => !!v && typeof v === 'object' && !Array.isArray(v);
 const bounded = (v: unknown, min: number, max: number) => typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max;

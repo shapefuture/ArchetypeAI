@@ -2,13 +2,29 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character.tsx';
 import { CustomizerLike } from './editor-kit.jsx';
-import { SEED_PARTS, FAMILY_LABELS, randomTraits, pid, SHAPES } from '../pal/traits.ts';
+import { SEED_PARTS, FAMILY_LABELS, randomTraits, pid, SHAPES, withCharacterSeed } from '../pal/traits.ts';
 import { Crest, familyColor, Sheet, Confetti } from '../ui/ui.jsx';
 import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus } from '../core/booking.ts';
 import { loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
+import { EntryPanel } from './elevation/e02-entry.jsx';
+import { CapacityPanel } from './elevation/e03-capacity.jsx';
+import { CorrectionsPanel } from './elevation/e06-corrections.jsx';
+import { ValidityPanel } from './elevation/e07-validity.jsx';
+import { FeltRolesPanel } from './elevation/e11-felt-roles.jsx';
+import { PocketCardPanel } from './elevation/e14-export.jsx';
+import { GrammarPanel } from './elevation/e13-grammar.jsx';
+import { SessionPrepPanel } from './elevation/e15-session-prep.jsx';
+import { SaveStatusPanel } from './elevation/e17-save-status.jsx';
+import { DeviceEnvelopePanel } from './elevation/e18-device.jsx';
+import { ExtensionsPanel } from './elevation/e19-extensions.jsx';
+import { EvaluationRubricPanel } from './elevation/e20-evaluation.jsx';
+import { MemoryPanel } from './memory-panel.jsx';
+import { SharedSupportPanel } from './shared-support.jsx';
+import { ReminderSettings } from './reminder-settings.jsx';
+import { PartVersionHistory } from './part-history.jsx';
 
 /* ═══════════ Cabinet ═══════════ */
 export function Cabinet() {
@@ -260,6 +276,21 @@ export function Cabinet() {
             </div>
           ))}
         </div>
+        <EntryPanel />
+        <CapacityPanel />
+        <MemoryPanel />
+        <CorrectionsPanel />
+        <ValidityPanel />
+        <FeltRolesPanel />
+        <PocketCardPanel />
+        <GrammarPanel />
+        <SessionPrepPanel />
+        <SaveStatusPanel />
+        <DeviceEnvelopePanel />
+        <ExtensionsPanel />
+        <SharedSupportPanel />
+        <ReminderSettings />
+        {adminAccess && <EvaluationRubricPanel />}
         {adminAccess && (
           <button className="card mt16 row" style={{ width: '100%', textAlign: 'left', borderColor: 'var(--accent)' }} onClick={() => setOverlay('admin')}>
             <span className="opt-k" style={{ background: 'var(--surface2)', fontSize: 18 }}>🛡️</span>
@@ -344,7 +375,8 @@ export function PartSheet({ id }) {
 /* ═══════════ Part editor (shape/eyes/mouth/color/family) ═══════════ */
 export function PartEditor({ part }) {
   const { t, lang, parts, setParts, setSheet, toast } = useApp();
-  const [draft, setDraft] = useState({ ...part });
+  // Freeze a legacy record's current seed on open, so editing one trait keeps the same sewn character.
+  const [draft, setDraft] = useState(() => ({ ...part, traits: withCharacterSeed(part.traits) }));
   const patch = (p) => setDraft((d) => ({ ...d, ...p }));
   const commit = () => {
     setParts(parts.map((x) => (x.id === draft.id ? draft : x)));
@@ -375,6 +407,8 @@ export function PartEditor({ part }) {
       <div className="mt16">
         <CustomizerLike traits={draft.traits} onChange={(tr2) => patch({ traits: { ...draft.traits, ...tr2 } })} />
       </div>
+
+      <PartVersionHistory partId={draft.id} text={draft.name} lang={lang} onRestore={(text) => patch({ name: text })} />
 
       <div className="row mt16" style={{ gap: 10 }}>
         <button className="btn ghost grow" onClick={() => setSheet(null)}>{t('cancel')}</button>

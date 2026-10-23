@@ -1,11 +1,11 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RESOURCES, SHADOW_PARTS } from '../../app/core/data/parts';
-import { scoreProfile } from '../../app/core/data/scoring-v2';
-import { EXERCISES, EXERCISE_TYPES } from '../../app/core/data/exercises';
+import { RESOURCES, SHADOW_PARTS } from '../../shared/core/data/parts';
+import { scoreProfile } from '../../shared/core/data/scoring-v2';
+import { EXERCISES, EXERCISE_TYPES } from '../../shared/core/data/exercises';
 import { adaptClinicalProfile } from '../core/clinical-profile-adapter';
-import { STRINGS } from '../../i18n/strings';
+import { STRINGS } from '../../shared/i18n/strings';
 
 const appMock = vi.hoisted(() => ({ current: null as null | Record<string, unknown> }));
 const therapistMock = vi.hoisted(() => ({ assignments: [] as unknown[] }));

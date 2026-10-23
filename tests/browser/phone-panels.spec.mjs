@@ -36,6 +36,27 @@ test('each Innerverse panel fits a phone width and has no axe violations', async
   }
 });
 
+test('each Innerverse panel closes on Escape and returns focus to its tray button', async ({ page }) => {
+  await page.goto('/?go=universe');
+  for (const name of [/Replay/, /Negotiate/, /Coordinates/, /Rest/, /List/]) {
+    const opener = page.locator('.tray-btn').filter({ hasText: name });
+    await opener.click();
+    await expect(page.locator('.iv-panel-host')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.iv-panel-host')).toHaveCount(0);
+    await expect(opener).toBeFocused();
+  }
+});
+
+test('the Journal layer labels every field', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /Journal/ }).first().click();
+  const layer = page.getByRole('dialog');
+  await expect(layer).toBeVisible();
+  const accessibility = await new AxeBuilder({ page }).include('.phone').disableRules(['color-contrast']).analyze();
+  expect(accessibility.violations).toEqual([]);
+});
+
 test('the Cabinet screen opened from home has no axe violations', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Cabinet/ }).first().click();

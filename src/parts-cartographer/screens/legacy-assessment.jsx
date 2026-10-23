@@ -4,12 +4,14 @@ import { Steps } from '../ui/ui.jsx';
 import { store } from '../core/local-store';
 import { ASSESSMENT_QUESTIONS } from '../../shared/core/data/assessment-questions';
 import { TRANSLATIONS } from '../../shared/i18n/strings';
-import { CONSENT_TEXT } from '../i18n/strings.ts';
+import { CONSENT_TEXT, DESCENT_UI } from '../i18n/strings.ts';
 import { analyzeLegacyRelationalAssessment } from '../core/ai.adapter.ts';
 import { buildLegacyReportData } from './legacy-report-data';
 import { buildLegacyUniverseParts } from '../core/legacy-universe-adapter';
 import { LegacyClinicalReport } from './legacy-report.jsx';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
+import { writeLegacy64Draft } from '../core/legacy64-responses.ts';
+import { SaveStatus } from '../ui/save-status.jsx';
 
 const RESPONSE_KEY = ROUTE_KEYS.reflection64.responses;
 const INDEX_KEY = ROUTE_KEYS.reflection64.index;
@@ -44,6 +46,9 @@ export function Legacy64Assessment() {
   const translations = TRANSLATIONS[lang] ?? TRANSLATIONS.en;
   const copy = translations.assessment;
   const resultCopy = copy.results;
+  const saveUi = DESCENT_UI[lang] ?? DESCENT_UI.en;
+  /** 'idle' until the first write; 'saved' only after the store read the answers back. */
+  const [save, setSave] = useState({ status: 'idle' });
   const [answers, setAnswers] = useState(readResponses);
   const [index, setIndex] = useState(() => readQuestionIndex(readResponses()));
   const [stage, setStage] = useState(() => {
@@ -82,10 +87,14 @@ export function Legacy64Assessment() {
   const answered = answers.filter((answer) => answer > 0).length;
 
   const saveAnswers = (nextAnswers, nextIndex) => {
-    try {
-      localStorage.setItem(RESPONSE_KEY, JSON.stringify(nextAnswers));
-      localStorage.setItem(INDEX_KEY, String(nextIndex));
-    } catch { /* preserve the in-memory assessment when storage is unavailable */ }
+    // Answers stay in memory when storage fails; the status below says so.
+    const written = writeLegacy64Draft(nextAnswers, nextIndex);
+    setSave(written.ok ? { status: 'saved' } : { status: 'failed', reason: written.reason });
+  };
+
+  const leave = () => {
+    if (save.status === 'failed' && !window.confirm(saveUi.leaveUnsaved)) return;
+    go('intro');
   };
 
   const showResults = (nextAnswers) => {
@@ -153,6 +162,7 @@ export function Legacy64Assessment() {
     setAnswers(fresh);
     setIndex(0);
     setResult(null);
+    setSave({ status: 'idle' });
     store.remove(RESULT_KEY);
     try {
       localStorage.removeItem(RESPONSE_KEY);
@@ -333,7 +343,7 @@ export function Legacy64Assessment() {
     <div className="screen">
       <div className="scroll no-dock">
         <div className="row" style={{ paddingTop: 4 }}>
-          <button className="ibtn" aria-label={copy.cancel} onClick={() => go('intro')}>×</button>
+          <button className="ibtn" aria-label={copy.cancel} onClick={leave}>×</button>
           <div className="grow">
             <div className="kicker">{sectionCopy.title}</div>
             <div className="faint" style={{ fontSize: 11, fontWeight: 800 }}>{index + 1} / {TOTAL} · {answered}/{TOTAL}</div>
@@ -367,7 +377,8 @@ export function Legacy64Assessment() {
           <button className="btn grow" disabled={index <= 0} onClick={previous}>‹ {copy.previous}</button>
           <button className="btn grow" disabled={response < 1 || index >= TOTAL - 1} onClick={next}>{t('next')} ›</button>
         </div>
-        <button className="btn ghost block mt12" onClick={() => go('intro')}>{copy.cancel}</button>
+        <SaveStatus ui={saveUi} save={save} onRetry={() => saveAnswers(answers, index)} />
+        <button className="btn ghost block mt12" onClick={leave}>{copy.cancel}</button>
       </div>
     </div>
   );

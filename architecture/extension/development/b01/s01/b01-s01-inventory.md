@@ -1,5 +1,6 @@
 # B01.S01 candidate inventory: social.profile ownership and actual reuse
 <!-- cite-ref: 09194df -->
+<!-- cite-external: b01s01_check.py -->
 
 > **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, on the consent-seam absence claim, which is false at HEAD. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
 >
@@ -211,7 +212,7 @@ State legend: **N** normal, **U** unknown or sparse, **D** declined, **X** denie
 | A4 | Therapist invite, denied | X | Claim only for a client-created code (emulator `:454-`). Link `get` requires a signed-in session and code regex (`firestore.rules:241-245`). | Any signed-in session can read a link with a valid code; code is a bearer secret (F05). | Specified. |
 | A5 | Booking grant, normal and denied | N, X | Grant requires active appointment (`firestore.rules:37-47, 441-470`). Decline revokes read (emulator `:414-425`). | Booking path has server-side revocation. Model it as the reference for other grants. | Specified. Emulator test exists. |
 | A6 | Public directory, normal | N | Row written on linked sign-in (`src/parts-cartographer/core/auth.service.ts:41-47`). Anonymous session writes nothing (`src/parts-cartographer/core/user-directory.ts:35`; `src/services/user-directory.service.ts:78`). | No purpose, field choice, or consent record (F01). | Specified. |
-| A7 | Public directory, denied | X | Non-owner write denied (emulator `:309-321`). **Read is not denied to any signed-in session** (`firestore.rules:311`; emulator `:314` asserts success). | Read grant is unconditional; no block predicate (F02). | Specified. Gap [inference] for enumeration by `list`. |
+| A7 | Public directory, denied | X | Non-owner write denied (`firestore.rules.emulator.spec.ts:309-321`). **Read is not denied to any signed-in session** (`firestore.rules:311`; `firestore.rules.emulator.spec.ts:314` asserts success). | Read grant is unconditional; no block predicate (F02). | Specified. Gap [inference] for enumeration by `list`. <!-- cite-ids: none --> |
 | A8 | Declined grant | D | Share: checkbox unchecked means no call (`src/parts-cartographer/overlays.jsx:326`; `:1507`). Directory: no decline state exists; publication happens on sign-in. | No declined state for publication (F01). | Specified. Gap. |
 | A9 | Unknown: no directory row | U | `lookupByUid` and `lookupByEmail` return null (`user-directory.ts:55-59, 82-85`). Therapist lookup shows not-found (`src/parts-cartographer/overlays.jsx:702-705`). | Fine as a state. Not distinguishable from "hidden". | Specified. |
 | A10 | Unknown: therapist without profile | U | `getTherapistProfile` returns null; UI shows "not a therapist" (`src/parts-cartographer/overlays.jsx:710-714`). | Fine. | Specified. |
@@ -246,10 +247,10 @@ State legend: **N** normal, **U** unknown or sparse, **D** declined, **X** denie
 | D1 | Share code revoked | I | Document deleted (`src/parts-cartographer/core/cloud-storage.ts:282-287`; `src/parts-cartographer/overlays.jsx:347-361`). Redeem returns null (`src/parts-cartographer/core/cloud-storage.ts:249-256`). Recipient's saved synastry and connection remain (`:150-171`). No client `deleteDoc` on synastry found. | Copies cannot be recalled (roadmap `docs/80-20-plan.md:575`). Disclosure text must say so (F06). | Specified. Emulator covers rule-level delete only. |
 | D2 | Source map cleared locally | N | `setProfile(null)` removes local profile (`src/parts-cartographer/app.jsx:166`). Cloud copies (`users/{uid}/assessment`, `history`, any `shareCodes` snapshot) are untouched; no delete path found. | Cloud copies have no withdrawal path (F04, F06). | Specified. |
 | D3 | Therapist invite withdrawn by client | I | Owner delete allowed on `therapistLinks` (`firestore.rules:251`) but no UI path. Therapist copy in `therapistClients` cannot be deleted by the client (`firestore.rules:532`). | Withdrawal does not reach the therapist copy (F05). | Specified. No emulator test of deletion. |
-| D4 | Booking grant withdrawn | X | Appointment decline removes read (emulator `:414-425`). Client-side `clientShares` delete allowed (`firestore.rules:466`), no UI path. | Booking path is revocable server-side. | Specified. |
+| D4 | Booking grant withdrawn | X | Appointment decline removes read (`firestore.rules.emulator.spec.ts:414-425`). Client-side `clientShares` delete allowed (`firestore.rules:466`), no UI path. | Booking path is revocable server-side. | Specified. |
 | D5 | Public profile withdrawn | I | Owner delete rule exists (`firestore.rules:321`). No client caller in `src/`. Sign-out does not delete it (`src/parts-cartographer/core/auth.service.ts:141-148`). | Withdrawal path missing (F04). | Specified. Gap. |
 | D6 | Therapist availability removed | I | Document cannot be deleted (`firestore.rules:334`). Availability can be overwritten. | Visibility of a practitioner record cannot be fully withdrawn (F03). | Specified. |
-| D7 | Shared snapshot outlives source | N | Share snapshot is a copy in `shareCodes`, independent of `users/{uid}` (`src/parts-cartographer/core/cloud-storage.ts:206-214`). | "Deleted source" and "revoked grant" are separate states; B01 must separate them in the contract. | Specified. |
+| D7 | Shared snapshot outlives source | N | Share snapshot is a copy in `shareCodes`, independent of `users/{uid}` (`src/parts-cartographer/core/cloud-storage.ts:206-214`). | "Deleted source" and "revoked grant" are separate states; B01 must separate them in the contract. | Specified. <!-- cite-ids: none --> |
 
 ### 8.5 Duplicate or cancelled operation
 
@@ -314,7 +315,7 @@ Risk ratings are triage ratings for B01.S02. They are not acceptance decisions.
 | B01-S01-F17 | Medium | Local save failures are swallowed without user feedback. The roadmap requires exposing save failures. | `src/parts-cartographer/core/local-store.ts:22-24`; `docs/80-20-plan.md:87` | Open |
 | B01-S01-F18 | Low | Angular bearer-code generator uses `Math.random`. The React generator uses a CSPRNG. | `src/app/core/adapters/firebase-storage.adapter.ts:8-15`; `src/parts-cartographer/core/cloud-storage.ts:197-204` | Open |
 | B01-S01-F19 | Low | Planning-path drift. The B01 epic write set is `docs/plans/extension/b01/**`. B01.S01 uses `architecture/extension/development/b01/s01/**`. The `architecture/` directory did not exist before this cell. | Social plan JSON B01 and B01.S01 metadata; task file | Open. Coordinator decision. |
-| B01-S01-F20 | Medium | Package-ID collision for C01, C02 and C08 across the creative-commons and elevation plans. | `docs/plans/creative-commons-beads-plan.md:23-30`; `docs/plans/elevation-aaa-v7-beads-plan.json` `slot_streams` and `beads_ids`; social plan B01 `relates_to` edges | Open. Coordinator to confirm mapping. |
+| B01-S01-F20 | Medium | Package-ID collision for C01, C02 and C08 across the creative-commons and elevation plans. | `docs/plans/creative-commons-beads-plan.md:23-30`; `docs/plans/elevation-aaa-v7-beads-plan.json` `slot_streams` and `beads_ids`; social plan B01 `relates_to` edges | Open. Coordinator to confirm mapping. <!-- cite-ids: none --> |
 
 ---
 

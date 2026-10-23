@@ -1,7 +1,7 @@
 # B09.S01 — Current ownership and actual reuse: accessible bounded practice runner
 <!-- cite-ref: 09194df -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the "unit-tested" wording conflicted with §13. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The reviewer found anchors that matched neither the HEAD line nor the base line they named. Corrected: the `src/parts-cartographer/screens/innerverse.jsx` call site (`:581`), the immutability rule (HEAD `firestore.rules:572`), the RED-gate `redAllowed` call at `src/parts-cartographer/screens/practice.jsx:53`, and the header, which now states HEAD as the basis. Not re-verified: `src/parts-cartographer/screens/practice.jsx:101`, `:211`, `:228` and `src/parts-cartographer/screens/innerverse.jsx:546-547`, and roughly half of the table citations. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the "unit-tested" wording conflicted with §13. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The reviewer found anchors that matched neither the HEAD line nor the base line they named. Corrected: the `src/parts-cartographer/screens/innerverse.jsx` call site (`:581`), the immutability rule (HEAD `firestore.rules:572@675118c`), the RED-gate `redAllowed` call at `src/parts-cartographer/screens/practice.jsx:53`, and the header, which now states HEAD as the basis. Not re-verified: `src/parts-cartographer/screens/practice.jsx:101`, `:211`, `:228` and `src/parts-cartographer/screens/innerverse.jsx:546-547`, and roughly half of the table citations. Status is still **candidate, not accepted**; re-review is required.
 
 **Status: candidate awaiting independent review. Not an acceptance claim.**
 
@@ -39,7 +39,7 @@
 | Package | Definition (source) | Declared reuse | Reference to B09 / practice runner | Verdict |
 | --- | --- | --- | --- | --- |
 | `C02` | Living places and temporary camps (`docs/plans/creative-commons-beads-plan.md:24`; node `C02` in `docs/plans/creative-commons-beads-plan.json`) | `F02, F24, F26, F45, B03, B11` (node description) | None. The `C02` node names only `B03` and `B11`. The B09 platform row lists `C02` as a consumer (JSON `platforms.B09[3]`). | **Unsupported as reuse for practice.runner.** Treat as an unverified consumer claim; coordinator to confirm or remove. |
-| `C08` | Cross-circle expeditions (`docs/plans/creative-commons-beads-plan.md:30`; node `C08`) | `F07, F23, F24, F42, F43, F46` | Indirect only. `F43` lists platforms `B06,B09,B11`; `F46` lists `B06,B08,B09` (social JSON `features`). The `C08` node names no B-package. | **Supported indirectly** through `F43` and `F46`. `C08` is a real downstream consumer of the runner seam. |
+| `C08` | Cross-circle expeditions (`docs/plans/creative-commons-beads-plan.md:30`; node `C08`) | `F07, F23, F24, F42, F43, F46` | Indirect only. `F43` lists platforms `B06,B09,B11`; `F46` lists `B06,B08,B09` (social JSON `features`). The `C08` node names no B-package. | **Supported indirectly** through `F43` and `F46`. `C08` is a real downstream consumer of the runner seam. <!-- cite-ids: none --> |
 
 Other reuse relevant to the runner, taken from the social plan:
 
@@ -61,7 +61,7 @@ Line anchors are repository-relative and refer to base `09194df` unless a row sa
 | # | Component | Path (anchors) | Role today | Status |
 | --- | --- | --- | --- | --- |
 | C-1 | React runner screen | `src/parts-cartographer/screens/practice.jsx` (322 lines; mount `src/parts-cartographer/app.jsx:18`, `:341`) | Suggestion, chapter library, detail with stop rule, ladder, 90 s rehearsal, therapist-assigned list | active |
-| C-2 | Runner engine | `src/app/core/data/exercises.ts@675118c` (241 lines at base; `src/shared/core/data/exercises.ts@675118c` at HEAD): types and gates `:34-57@675118c`, catalog build `:69-78@675118c`, selector `:83-134@675118c`, chapters `:151-159@675118c`, depth cap `:181-192@675118c`, container and RED `:204-214@675118c`, ladder `:230-237@675118c` | Pure rules shared by both surfaces | active (React and Angular), with unused exports below |
+| C-2 | Runner engine | `src/app/core/data/exercises.ts` (241 lines at base; `src/shared/core/data/exercises.ts@675118c` at HEAD): types and gates `:34-57@675118c`, catalog build `:69-78@675118c`, selector `:83-134@675118c`, chapters `:151-159@675118c`, depth cap `:181-192@675118c`, container and RED `:204-214@675118c`, ladder `:230-237@675118c` | Pure rules shared by both surfaces | active (React and Angular), with unused exports below |
 | C-3 | Runner copy | `src/shared/i18n/strings.ts@675118c` (HEAD path; at base the file was src/i18n/strings.ts): practice UI copy `:542-580@675118c`; type map and `ExerciseText` `:1516-1575@675118c`; 56 entries `:1577-2309@675118c` | Bilingual copy for runner and catalog | active |
 | C-4 | Retained Angular runner | `src/app/features/practice-panel/practice-panel.component.{ts,html}` (149 / 111 lines); mounted `src/app.component.html:387-391`; opened `src/app.component.ts:814-819` | Parallel runner with local flags, no RED gate (§8, SC-02) | retained |
 | C-5 | Therapist assignment UI | `src/parts-cartographer/screens/innerverse.jsx`: exercise list `:437`, submit handler `:540-552`, selector `:601-616` | Therapist chooses an exercise ID and frequency | active |
@@ -173,7 +173,7 @@ Each row is one scenario from the acceptance criteria. "Status" uses the labels 
 | Effects | Local E1–E3 effects (§5); one non-idempotent E2 create (`src/parts-cartographer/core/therapist-link.ts:186`); no E4 or E5 | Effect identity for assignment create; retraction effect undefined | B09.S02 |
 | Operations | Logging is `console.error` only (`src/parts-cartographer/screens/practice.jsx:82`). No runner metric, flag, or dashboard. Rollback is revert of the commit. Retained Angular deployment not verified. | No observability for denied, failed, or orphaned states | B09.S07, B09.S08 |
 | Performance | No declared SLO. The overlay re-renders every second during rehearsal (`src/parts-cartographer/screens/practice.jsx:153-167`). Assignment fetch runs on each `uid` change. Local history keeps up to 30 full copies per key (`src/parts-cartographer/core/local-store.ts:5`, `:25-33`). Nothing measured. | Declared envelope absent | B09.S02 |
-| Failure semantics | Quota failures swallowed (`src/parts-cartographer/core/local-store.ts:22-23`), yet "done" is toasted (`src/parts-cartographer/screens/practice.jsx:132`). Assignment fetch failure shows an alert (`:81-83`). No timeout, retry, or fallback for `getDocs`. Rehearsal lost on reload. | Failure matrix; truthful success signal | B09.S02 |
+| Failure semantics | Quota failures swallowed (`src/parts-cartographer/core/local-store.ts:22-23`), yet "done" is toasted (`src/parts-cartographer/screens/practice.jsx:132`). Assignment fetch failure shows an alert (`:81-83`). No timeout, retry, or fallback for `getDocs`. Rehearsal lost on reload. | Failure matrix; truthful success signal | B09.S02 <!-- cite-ids: none --> |
 
 ## 9. Findings for the coordinator and B09.S02
 

@@ -63,6 +63,26 @@ class CheckCitesTest(unittest.TestCase):
         doc = self.doc('| `beta` | `src/a.ts:2` and `:9` (`beta`) |\n')
         self.assertIn('outside the file', check_file(doc, self.root)[0][1])
 
+    def test_relative_cite_uses_the_nearest_earlier_path(self):
+        pathlib.Path(self.root, 'src', 'short.ts').write_text('export const x = 1;\n', encoding='utf-8')
+        subprocess.run(GIT + ['add', '.'], cwd=self.root, check=True)
+        subprocess.run(GIT + ['commit', '-q', '-m', 'short file'], cwd=self.root, check=True)
+        head = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=self.root, check=True, capture_output=True, text=True).stdout.strip()
+        doc = self.doc('| `beta` | `src/a.ts:2` and `:4`; `src/short.ts:1` |\n', ref=head)
+        self.assertEqual(check_file(doc, self.root), [])
+
+    def test_span_with_several_ranges_checks_each_range(self):
+        doc = self.doc('| `beta` | `src/a.ts:1, 2-3` (`beta`) |\n')
+        self.assertEqual(check_file(doc, self.root), [])
+        doc = self.doc('| `beta` | `src/a.ts:2, 40-44` |\n')
+        problems = check_file(doc, self.root)
+        self.assertEqual(len(problems), 1)
+        self.assertIn('src/a.ts:40-44 is outside the file', problems[0][1])
+
+    def test_relative_cite_after_a_span_with_several_ranges(self):
+        doc = self.doc('| `beta` | `src/a.ts:1, 3` and `:2` |\n')
+        self.assertEqual(check_file(doc, self.root), [])
+
     def test_relative_cite_without_an_earlier_path_fails(self):
         doc = self.doc('| `beta` | `:3` |\n')
         self.assertIn('no earlier file', check_file(doc, self.root)[0][1])

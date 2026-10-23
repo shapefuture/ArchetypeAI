@@ -5,13 +5,13 @@
  * Results are NEVER stored and never touch the profile.
  */
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
-import { ITEM_BANK, LIKERT } from '../../../i18n/items';
-import { SHADOW_PARTS, SUBTYPES, type ShadowPartId } from '../../core/data/parts';
-import { quickScan } from '../../core/data/scoring-v2';
-import { PART_COPY } from '../../core/data/part-copy';
+import { ITEM_BANK, LIKERT } from '../../../shared/i18n/items';
+import { SHADOW_PARTS, SUBTYPES, type ShadowPartId } from '../../../shared/core/data/parts';
+import { quickScan } from '../../../shared/core/data/scoring-v2';
+import { PART_COPY } from '../../../shared/core/data/part-copy';
 
 const UI = STRINGS.quickscan;
 

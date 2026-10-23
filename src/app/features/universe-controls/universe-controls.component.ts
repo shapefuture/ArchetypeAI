@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, output, input, viewChild, ElementRef } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { UniverseStateService } from '../../../services/universe-state.service';

@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { SHADOW_PARTS, RESOURCES, SELF_QUALITIES } from '../app/core/data/parts';
+import { SHADOW_PARTS, RESOURCES, SELF_QUALITIES } from '../shared/core/data/parts';
 import {
   ITEM_BANK, LIKERT, buildItemSequence, buildDescents, itemText, isReverseKeyed,
   VALIDITY_POSITIONS,
-} from './items';
+} from '../shared/i18n/items';
 
 describe('item bank (§1.2)', () => {
   it('has 112 shadow items: 14 parts × 8, non-empty in both languages', () => {

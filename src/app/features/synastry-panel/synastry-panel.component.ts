@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, signal,
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { GeminiService } from '../../../services/gemini.service';
-import { computeSynastry, SynastryReport } from '../../core/data/synastry';
+import { computeSynastry, SynastryReport } from '../../../shared/core/data/synastry';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 

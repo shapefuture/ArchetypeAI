@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import type { Archetype, DimensionalExpressions } from '../../../services/universe-state.service';
 import { TranslationService } from '../../../services/translation.service';
-import { generateArchetypes } from '../data/scoring';
+import { generateArchetypes } from '../../../shared/core/data/scoring';
 import {
   AIRequest,
   AssessmentAnalysis,
@@ -10,7 +10,7 @@ import {
   AiPort,
   GeneratedArchetype,
 } from '../ports/ai.port';
-import { AiOfflineError } from './resilience';
+import { AiOfflineError } from '../../../shared/core/adapters/resilience';
 import { createStudioArchetype, type Lang } from '../ai/studio-creator';
 
 /**
@@ -48,7 +48,7 @@ export class LocalHeuristicAiAdapter implements AiPort {
   ): Promise<AssessmentAnalysis> {
     const lang = this.lang;
     const { archetypes: scoredPantheon, dynamics } = generateArchetypes(answers, lang);
-    const { computePoleScores } = await import('../data/scoring');
+    const { computePoleScores } = await import('../../../shared/core/data/scoring');
     const poles = computePoleScores(answers);
 
     const pantheon: GeneratedArchetype[] = scoredPantheon.map((sa) => ({

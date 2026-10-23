@@ -14,8 +14,8 @@ import {
   doc, getDoc, setDoc, collection, getDocs, query, where,
 } from 'firebase/firestore';
 import { getFirestoreDb } from '../../environments/firebase-init';
-import type { ScoredProfile } from '../../app/core/data/scoring-v2';
-import type { ContainerState } from '../../app/core/data/exercises';
+import type { ScoredProfile } from '../../shared/core/data/scoring-v2';
+import type { ContainerState } from '../../shared/core/data/exercises';
 
 export type AssignmentFrequency = 'once' | 'daily' | 'weekly' | 'after-trigger';
 
@@ -177,7 +177,7 @@ export async function assignExercise(
   opts: { red?: { profile: ScoredProfile; container: ContainerState } } = {},
 ): Promise<boolean> {
   if (opts.red) {
-    const { redAllowed } = await import('../../app/core/data/exercises');
+    const { redAllowed } = await import('../../shared/core/data/exercises');
     if (!redAllowed(opts.red.profile, opts.red.container, true)) {
       return false; // even therapists cannot skip the container (§3E.3)
     }

@@ -5,21 +5,28 @@ import { Character } from '../pal/Character.tsx';
 import { randomTraits, SEED_PARTS, FAMILY_LABELS } from '../pal/traits.ts';
 import { Ico, Crest, familyColor, Steps, Price } from '../ui/ui.jsx';
 import { uid8 } from '../core/ports.ts';
+import { homeScreen, SLOW_BOOT_AFTER_MS } from '../core/boot.ts';
 import { store, KEYS } from '../core/local-store';
 import { exportBackup } from '../core/backup';
 import { downloadText } from '../core/file-download';
+import { isExamplePart, isSampleProfile, primaryRoutes, secondaryRoutes } from '../core/assessment-routes.ts';
 
-/* ═══════════ loading (auto → intro, ~4.2s) ═══════════ */
+/* ═══════════ loading (shown only while local content is not yet ready; no timed wait) ═══════════ */
 export function Loading() {
-  const { t, lang } = useApp();
+  const { t, go, setOverlay } = useApp();
   const [step, setStep] = useState(0);
-  const [p, setP] = useState(4);
+  const [slow, setSlow] = useState(false);
   useEffect(() => {
-    const iv = setInterval(() => setP((x) => Math.min(100, x + 1.4)), 55);
+    // Copy rotates for ambience only. The work has no measured total, so there is no percentage.
     const sv = setInterval(() => setStep((s) => (s + 1) % 3), 1350);
-    return () => { clearInterval(iv); clearInterval(sv); };
+    const slowAt = setTimeout(() => setSlow(true), SLOW_BOOT_AFTER_MS);
+    return () => { clearInterval(sv); clearTimeout(slowAt); };
   }, []);
   const label = ['boot1', 'boot2', 'boot3'][step];
+  const continueLocal = () => {
+    setOverlay(null);
+    go(homeScreen(store.load(KEYS.onboarded, false)));
+  };
   return (
     <div className="screen" style={{ alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
       <div style={{ width: 250, textAlign: 'center' }}>
@@ -30,9 +37,16 @@ export function Loading() {
         <div className="faint" style={{ fontFamily: 'var(--font-round)', fontSize: 12.5, letterSpacing: '.2em', textTransform: 'uppercase', marginTop: 4 }}>
           {t('appName')}
         </div>
-        <div className="bar mt24" style={{ margin: '24px auto 0' }}><i style={{ width: `${p}%` }} /></div>
+        <div className="bar indeterminate mt24" style={{ margin: '24px auto 0' }} role="progressbar" aria-label={t(label)} aria-busy="true"><i /></div>
         <div className="boot-dots mt16"><i /><i /><i /></div>
         <div className="muted" style={{ marginTop: 14, fontWeight: 800, fontSize: 13.5 }}>{t(label)}</div>
+        {slow && (
+          <div role="status" style={{ marginTop: 18 }}>
+            <div className="muted" style={{ fontSize: 14 }}>{t('bootSlowB')}</div>
+            <button className="btn primary block mt12" onClick={() => window.location.reload()}>⟳ {t('tryAgain')}</button>
+            <button className="btn ghost block mt8" onClick={continueLocal}>{t('bootHome')}</button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -48,17 +62,18 @@ export function Onboarding() {
     { t: t('ob3t'), b: t('ob3b'), traits: SEED_PARTS[12].traits, bg: '#3EE0B0' },
   ];
   const s = slides[i];
-  const finish = (startTest) => {
+  // Every exit, including Skip, lands on the Base tab where all three routes are offered side by side.
+  const finish = () => {
     store.save(KEYS.onboarded, true);
-    if (startTest) go('full-assessment');
-    else { setDockTab('base'); go('intro'); }
+    setDockTab('base');
+    go('intro');
   };
   return (
     <div className="screen">
       <div className="scroll no-dock" style={{ display: 'flex', flexDirection: 'column' }}>
         <div className="row" style={{ paddingTop: 4 }}>
           <div className="grow"><Steps total={3} at={i} /></div>
-          <button className="ghost" style={{ fontWeight: 900, color: 'var(--text-faint)', fontSize: 14 }} onClick={() => finish(false)}>{t('skip')}</button>
+          <button className="ghost" style={{ fontWeight: 900, color: 'var(--text-faint)', fontSize: 14 }} onClick={finish}>{t('skip')}</button>
         </div>
 
         <div style={{
@@ -80,10 +95,10 @@ export function Onboarding() {
         <p className="sub mt12" style={{ fontSize: 16 }}>{s.b}</p>
 
         <div className="grow" style={{ minHeight: 20 }} />
-        <button className="btn primary block" style={{ minHeight: 56, fontSize: 17 }} onClick={() => (i < 2 ? setI(i + 1) : finish(true))}>
-          {i < 2 ? t('next') : t('startTest')} →
+        <button className="btn primary block" style={{ minHeight: 56, fontSize: 17 }} onClick={() => (i < 2 ? setI(i + 1) : finish())}>
+          {i < 2 ? t('next') : t('chooseTitle')} →
         </button>
-        {i < 2 && <button className="btn ghost block mt12" onClick={() => finish(false)}>{t('skip')}</button>}
+        {i < 2 && <button className="btn ghost block mt12" onClick={finish}>{t('skip')}</button>}
       </div>
     </div>
   );
@@ -117,15 +132,13 @@ function PageHead({ kicker, title, right }) {
 function BaseTab() {
   const { t, go, setOverlay, setSheet, profile, parts, premium, theme, setTheme, lang, setLang, user, toast } = useApp();
   const recent = parts.slice(0, 6);
+  const sample = isSampleProfile(profile);
+  // Assessment entries live in RouteChooser and support in SupportSection; this grid is everyday tools.
   const actions = [
     { k: 'report', ico: '📖', label: t('report'), on: () => go(profile ? 'assessment-results' : 'assessment-gate') },
     { k: 'checkin', ico: '🫀', label: t('checkin'), on: () => setOverlay('checkin') },
     { k: 'practice', ico: '🎯', label: t('practice'), on: () => setOverlay('practice') },
     { k: 'synastry', ico: '💞', label: t('synastry'), on: () => setOverlay('synastry') },
-    { k: 'coach', ico: '✨', label: t('coach'), on: () => setOverlay('coach'), lock: !premium },
-    { k: 'quickscan', ico: '🔭', label: t('quickscan'), on: () => setOverlay('quickscan') },
-    { k: 'quick-assessment', ico: '✦', label: t('quickAssessment'), on: () => go('assessment') },
-    { k: 'legacy-assessment', ico: '🧭', label: t('legacy64Assessment'), on: () => go('legacy-assessment') },
     { k: 'universe', ico: '🌌', label: t('universe'), on: () => go('universe') },
     { k: 'cabinet', ico: '🗄️', label: t('cabinet'), on: () => go('cabinet') },
   ];
@@ -147,37 +160,29 @@ function BaseTab() {
         right={<div className="chip">{premium ? '💎 Plus' : t('free')}</div>}
       />
 
-      {/* hero: start test */}
-      <div className="card grad-dark" style={{ overflow: 'hidden', position: 'relative', background: 'linear-gradient(135deg, #1d1a2e, #322d4d)', padding: 20 }}>
-        <div className="blob" style={{ width: 180, height: 180, background: '#8B6CFF', top: -70, left: -40 }} />
-        <div className="row" style={{ position: 'relative' }}>
-          <div className="grow">
-            <div className="kicker" style={{ color: 'var(--accent-text)' }}>{profile ? t('resultsTitle') : t('ethicsTitle')}</div>
-            <div className="h2" style={{ marginTop: 6, fontSize: 20 }}>
-              {profile ? (lang === 'ru' && profile.headlineRu ? profile.headlineRu : profile.headlineConstellation) : t('gateSub')}
+      {/* hero: a saved result only. A sample is labelled as a sample, never as the user's constellation. */}
+      {profile && (
+        <div className="card grad-dark" style={{ overflow: 'hidden', position: 'relative', background: 'linear-gradient(135deg, #1d1a2e, #322d4d)', padding: 20 }}>
+          <div className="blob" style={{ width: 180, height: 180, background: '#8B6CFF', top: -70, left: -40 }} />
+          <div className="row" style={{ position: 'relative' }}>
+            <div className="grow">
+              <div className="kicker" style={{ color: 'var(--accent-text)' }}>{sample ? t('sampleBadge') : t('resultsTitle')}</div>
+              <div className="h2" style={{ marginTop: 6, fontSize: 20 }}>
+                {sample ? t('sampleHeroLine') : (lang === 'ru' && profile.headlineRu ? profile.headlineRu : profile.headlineConstellation)}
+              </div>
+              <button className="btn primary mt12" style={{ minHeight: 46 }} onClick={() => go('assessment-results')}>
+                {t('report')} →
+              </button>
             </div>
-            <button className="btn primary mt12" style={{ minHeight: 46 }} onClick={() => go(profile ? 'assessment-results' : 'full-assessment')}>
-              {profile ? t('report') : t('startTest')} →
-            </button>
-          </div>
-          <div style={{ width: 92, flex: '0 0 92px' }} className="animate-idle">
-            <Character traits={SEED_PARTS[12].traits} lite showShadow={false} />
+            <div style={{ width: 92, flex: '0 0 92px' }} className="animate-idle">
+              <Character traits={SEED_PARTS[12].traits} lite showShadow={false} />
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* booking — only after the test (item 16) */}
-      {profile && (
-        <button className="card flat row press" style={{ width: '100%', marginTop: 12, textAlign: 'left', padding: 14 }}
-          onClick={() => setOverlay('booking')}>
-          <span style={{ fontSize: 26 }}>📅</span>
-          <span className="grow" style={{ marginLeft: 12 }}>
-            <b style={{ fontWeight: 900, fontSize: 15 }}>{t('bookSession')}</b>
-            <span className="mi-sub" style={{ display: 'block', fontSize: 12.5 }}>{t('bookSub')}</span>
-          </span>
-          <span className="mi-go" style={{ fontSize: 22 }}>›</span>
-        </button>
       )}
+
+      <RouteChooser />
+      <SupportSection />
 
       {/* quick actions */}
       <div className="section-title">{t('base')}</div>
@@ -196,18 +201,24 @@ function BaseTab() {
         <button style={{ color: 'var(--accent-text)', fontSize: 13, fontWeight: 900 }} onClick={() => go('cabinet')}>→</button>
       </div>
       <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6 }}>
-        {recent.map((p) => (
-          <button key={p.id} className="card flat press" style={{ flex: '0 0 108px', padding: 10, textAlign: 'center' }}
-            onClick={() => setSheet({ type: 'part', id: p.id })}>
-            <div style={{ height: 64, display: 'grid', placeItems: 'center' }}>
-              <div style={{ width: 58 }}><Character traits={p.traits} lite showShadow={false} /></div>
-            </div>
-            <div style={{ fontFamily: 'var(--font-round)', fontWeight: 600, fontSize: 13, marginTop: 4 }}>{p.name}</div>
-            <div style={{ height: 5, borderRadius: 3, background: 'var(--surface2)', marginTop: 7, overflow: 'hidden' }}>
-              <i style={{ display: 'block', height: '100%', width: `${p.energy}%`, background: familyColor(p.family) }} />
-            </div>
-          </button>
-        ))}
+        {recent.map((p) => {
+          // Example cast entries carry invented energy and wording; they show no energy bar and are labelled.
+          const example = isExamplePart(p);
+          return (
+            <button key={p.id} className="card flat press" style={{ flex: '0 0 108px', padding: 10, textAlign: 'center' }}
+              onClick={() => setSheet({ type: 'part', id: p.id })}>
+              <div style={{ height: 64, display: 'grid', placeItems: 'center' }}>
+                <div style={{ width: 58 }}><Character traits={p.traits} lite showShadow={false} /></div>
+              </div>
+              <div style={{ fontFamily: 'var(--font-round)', fontWeight: 600, fontSize: 13, marginTop: 4 }}>{p.name}</div>
+              {example
+                ? <span className="chip" style={{ fontSize: 10.5, marginTop: 6 }}>{t('examplePart')}</span>
+                : <div style={{ height: 5, borderRadius: 3, background: 'var(--surface2)', marginTop: 7, overflow: 'hidden' }}>
+                  <i style={{ display: 'block', height: '100%', width: `${p.energy}%`, background: familyColor(p.family) }} />
+                </div>}
+            </button>
+          );
+        })}
       </div>
 
       {/* system menu */}
@@ -227,6 +238,73 @@ function BaseTab() {
 }
 
 const STR_VER = (t) => t('footVer');
+
+/* ── Assessment entries: three honest routes, then limited tools ── */
+const ROUTE_ICON = { 'situation-inquiry': '✎', 'reflection-64': '🧭', 'battery-147': '🗺️', 'quick-map-sample': '✦', 'quick-scan-teaser': '⚡' };
+
+function openRoute(route, { go, setOverlay }) {
+  if (!route.available || !route.destination) return;
+  if (route.destination.kind === 'state') go(route.destination.state);
+  else setOverlay(route.destination.overlay);
+}
+
+function RouteChooser() {
+  const { t, go, setOverlay } = useApp();
+  const renderRoute = (route) => {
+    const copy = route.copy;
+    // aria-disabled keeps an unavailable route focusable so its reason is announced, but it cannot open.
+    return (
+      <button key={route.id} className="opt" aria-disabled={route.available ? undefined : 'true'}
+        style={{ marginTop: 10, opacity: route.available ? 1 : 0.72 }}
+        onClick={() => openRoute(route, { go, setOverlay })}>
+        <span className="opt-k" aria-hidden="true">{ROUTE_ICON[route.id]}</span>
+        <span className="grow" style={{ display: 'grid', gap: 3 }}>
+          <span style={{ fontWeight: 900, fontSize: 15 }}>{t(copy.title)}</span>
+          <span className="mi-sub">{t(copy.purpose)}</span>
+          <span className="faint" style={{ fontSize: 12, fontWeight: 800 }}>{t(copy.effort)} · {t(copy.tag)}</span>
+          {!route.available && route.unavailableNote && <span className="faint" style={{ fontSize: 12, fontWeight: 800 }}>{t(route.unavailableNote)}</span>}
+        </span>
+      </button>
+    );
+  };
+  return (
+    <section aria-labelledby="route-chooser-title" className="mt16">
+      <div className="section-title" id="route-chooser-title">{t('chooseTitle')}</div>
+      <p className="sub mt8">{t('chooseSub')}</p>
+      {primaryRoutes().map(renderRoute)}
+      <div className="section-title mt24" id="other-tools-title">{t('otherToolsTitle')}</div>
+      <p className="faint mt8" style={{ fontSize: 12.5, fontWeight: 800 }}>{t('otherToolsSub')}</p>
+      {secondaryRoutes().map(renderRoute)}
+    </section>
+  );
+}
+
+/* Support never depends on an assessment: booking and coaching are reachable from a fresh install. */
+function SupportSection() {
+  const { t, premium, setOverlay } = useApp();
+  return (
+    <section aria-labelledby="support-title" className="mt24">
+      <div className="section-title" id="support-title">{t('supportTitle')}</div>
+      <p className="sub mt8">{t('supportSub')}</p>
+      <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
+        <button className="opt" onClick={() => setOverlay('booking')}>
+          <span className="opt-k" aria-hidden="true">📅</span>
+          <span className="grow">
+            <span style={{ fontWeight: 900, fontSize: 15, display: 'block' }}>{t('bookSession')}</span>
+            <span className="mi-sub" style={{ display: 'block' }}>{t('bookSub')}</span>
+          </span>
+        </button>
+        <button className="opt" onClick={() => setOverlay(premium ? 'coach' : 'paywall')}>
+          <span className="opt-k" aria-hidden="true">✨</span>
+          <span className="grow" style={{ fontWeight: 900, fontSize: 15 }}>
+            {t('coach')}{!premium && <span className="lock" style={{ marginLeft: 6 }}>🔒</span>}
+          </span>
+        </button>
+      </div>
+      <p className="faint mt12" style={{ fontSize: 12.5, fontWeight: 800 }}>{t('supportEmergency')}</p>
+    </section>
+  );
+}
 
 /* ── Sky ── */
 function SkyTab() {
@@ -272,7 +350,7 @@ function SkyTab() {
 
 /* ── You ── */
 function YouTab() {
-  const { t, lang, setLang, theme, setTheme, sensory, applySensoryPreset, updateSensory, premium, setOverlay, user, go, toast, telemetry } = useApp();
+  const { t, lang, setLang, theme, setTheme, sensory, sensoryStored, applySensoryPreset, updateSensory, premium, setOverlay, user, go, toast, telemetry } = useApp();
   const [showData, setShowData] = useState(false);
   return (
     <div className="scroll">
@@ -324,6 +402,13 @@ function YouTab() {
 
       <div className="section-title">{t('sensorySettings')}</div>
       <p className="sub sensory-intro">{t('sensoryIntro')}</p>
+      {!sensoryStored && (
+        <p className="sub sensory-intro" role="status">
+          {lang === 'ru'
+            ? 'Этот браузер не может сохранить настройки. Они действуют только в этой сессии.'
+            : 'This browser cannot save these settings. They apply for this session only.'}
+        </p>
+      )}
       <div className="card sensory-card">
         <div className="sensory-label mb8">{t('sensoryPresets')}</div>
         <div role="group" aria-label={t('sensoryPresets')} className="seg sensory-segment">

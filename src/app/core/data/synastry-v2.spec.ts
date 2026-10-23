@@ -6,8 +6,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   makeProfile, synastry, type SynastryProfile,
-} from './synastry-v2';
-import { SHADOW_PARTS, PROTECTORS, EXILES, RESOURCES, COMPLEXES, type ShadowPartId, type ComplexId } from './parts';
+} from '../../../shared/core/data/synastry-v2';
+import { SHADOW_PARTS, PROTECTORS, EXILES, RESOURCES, COMPLEXES, type ShadowPartId, type ComplexId } from '../../../shared/core/data/parts';
 
 const T = (v: number) => {
   const t = {} as Record<ShadowPartId, number>;

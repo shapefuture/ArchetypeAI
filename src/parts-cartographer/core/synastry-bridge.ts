@@ -1,8 +1,8 @@
 /** Translate the canonical 147-item Angular synastry engine into React's existing report DTO. */
-import { COMPLEXES, NEED, RESOURCES, SHADOW_PARTS } from '../../app/core/data/parts';
-import { PART_NAME_RU } from '../../app/core/data/constellation-copy';
-import { synastry as compareScoredProfiles, toSynastryProfile } from '../../app/core/data/synastry-v2';
-import type { ScoredProfile } from '../../app/core/data/scoring-v2';
+import { COMPLEXES, NEED, RESOURCES, SHADOW_PARTS } from '../../shared/core/data/parts';
+import { PART_NAME_RU } from '../../shared/core/data/constellation-copy';
+import { synastry as compareScoredProfiles, toSynastryProfile } from '../../shared/core/data/synastry-v2';
+import type { ScoredProfile } from '../../shared/core/data/scoring-v2';
 import type { SynastryResult } from './synastry-v2';
 
 const DANCE_COPY = {

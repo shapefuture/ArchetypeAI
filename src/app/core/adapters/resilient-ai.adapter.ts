@@ -7,7 +7,7 @@ import {
   CoachResponse,
   AiPort,
 } from '../ports/ai.port';
-import { DegradationDescriptor, OperationCancelledError } from './resilience';
+import { DegradationDescriptor, OperationCancelledError } from '../../../shared/core/adapters/resilience';
 
 /**
  * ResilientAiAdapter — decorator implementing AiPort over a primary adapter

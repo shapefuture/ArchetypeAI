@@ -1,7 +1,7 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { TRANSLATIONS } from '../../i18n/strings';
+import { TRANSLATIONS } from '../../shared/i18n/strings';
 import { sanitizeLegacyAiAnalysis } from '../core/legacy-ai-analysis';
 import { buildLegacyReportData } from './legacy-report-data';
 

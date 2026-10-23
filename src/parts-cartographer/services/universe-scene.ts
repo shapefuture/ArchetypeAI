@@ -2,15 +2,16 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { Part } from '../pal/traits';
-import type { MotionMode } from '../core/sensory-preferences';
+import { sceneClockStep, type MotionMode } from '../core/sensory-preferences';
 import { feltGroup } from './felt-engine';
 import { bindReducedMotionDamping } from './reduced-motion';
+import { ambience } from './ambience-gate';
 import {
   archetypeCoordinatePosition,
   dimensionalLensOffset,
   sanitizeArchetypeCoordinates,
   ZERO_DIMENSIONS,
-  coordinateAffinity, DEFAULT_AXES,
+  coordinateAffinity, DEFAULT_AXES, normalizeAxes,
   type UniverseAxes, type DimensionKey,
   type ArchetypeCoordinates,
   type UniverseDimensions,
@@ -209,7 +210,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
 
   const loop = () => {
     if (!running) return;
-    if (!motion?.matches && motionMode !== 'still') t += motionMode === 'gentle' ? 0.002 : 0.006;
+    t += sceneClockStep(motionMode, !!motion?.matches);
     controls.update();
     stars.rotation.y = t * 0.05;
     nodes.forEach((node) => {
@@ -232,14 +233,17 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     });
     renderer.render(scene, camera);
   };
-  renderer.setAnimationLoop(loop);
+  // The render loop runs only while the screen is awake and ambience is not suspended (hidden page, text entry, error).
+  const applyLoop = () => renderer.setAnimationLoop(running && ambience.active ? loop : null);
+  const unsubscribeAmbience = ambience.subscribe(() => applyLoop());
+  applyLoop();
 
   api = {
-    wake() { if (!running) { running = true; renderer.setAnimationLoop(loop); } },
-    sleep() { running = false; renderer.setAnimationLoop(null); },
+    wake() { if (!running) { running = true; applyLoop(); } },
+    sleep() { running = false; applyLoop(); },
     setParts: build,
     setView(options) {
-      if (options.axes) axes = options.axes;
+      if (options.axes) axes = normalizeAxes(options.axes);
       if ('isolation' in options) isolation = options.isolation ?? null;
       if ('selectedId' in options) selectedId = options.selectedId ?? null;
     },
@@ -272,6 +276,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     setMotionMode(mode) { motionMode = mode; motionDamping.setMode(mode); },
     dispose() {
       running = false;
+      unsubscribeAmbience();
       renderer.setAnimationLoop(null);
       void renderer.xr.getSession()?.end();
       disposed = true;

@@ -2,17 +2,18 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Steps } from '../ui/ui.jsx';
 import { store } from '../core/local-store';
-import { ASSESSMENT_QUESTIONS } from '../../app/core/data/assessment-questions';
-import { TRANSLATIONS } from '../../i18n/strings';
+import { ASSESSMENT_QUESTIONS } from '../../shared/core/data/assessment-questions';
+import { TRANSLATIONS } from '../../shared/i18n/strings';
 import { CONSENT_TEXT } from '../i18n/strings.ts';
 import { analyzeLegacyRelationalAssessment } from '../core/ai.adapter.ts';
 import { buildLegacyReportData } from './legacy-report-data';
 import { buildLegacyUniverseParts } from '../core/legacy-universe-adapter';
 import { LegacyClinicalReport } from './legacy-report.jsx';
+import { ROUTE_KEYS } from '../core/assessment-routes.ts';
 
-const RESPONSE_KEY = 'ARCHETYPE_ASSESSMENT_RESPONSES';
-const INDEX_KEY = 'ARCHETYPE_ASSESSMENT_INDEX';
-const RESULT_KEY = 'ifs.legacy64.result';
+const RESPONSE_KEY = ROUTE_KEYS.reflection64.responses;
+const INDEX_KEY = ROUTE_KEYS.reflection64.index;
+const RESULT_KEY = ROUTE_KEYS.reflection64.result;
 const TOTAL = ASSESSMENT_QUESTIONS.length;
 
 function readResponses() {

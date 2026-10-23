@@ -3,9 +3,9 @@ import { resolve } from 'node:path';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { PracticePanelComponent } from './practice-panel.component';
-import { SHADOW_PARTS, RESOURCES } from '../../core/data/parts';
-import { scoreProfile, type AssessmentInput } from '../../core/data/scoring-v2';
-import { loadEvents } from '../../core/data/state-v2';
+import { SHADOW_PARTS, RESOURCES } from '../../../shared/core/data/parts';
+import { scoreProfile, type AssessmentInput } from '../../../shared/core/data/scoring-v2';
+import { loadEvents } from '../../../shared/core/data/state-v2';
 
 const DIR = resolve(__dirname);
 const templateHtml = readFileSync(resolve(DIR, 'practice-panel.component.html'), 'utf-8');

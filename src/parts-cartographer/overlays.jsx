@@ -488,7 +488,7 @@ export function SynastryOv() {
       rememberSynastryRun(partnerCode);
     } catch {
       setResult(null);
-      setSavedError(lang === 'ru' ? 'Нужны два полных совместимых опросника. Проверьте файл и свой результат.' : 'Two complete compatible assessments are required. Check the file and your own result.');
+      setSavedError(lang === 'ru' ? 'Нужны два полных совместимых теста. Проверьте файл и свой результат.' : 'Two complete compatible assessments are required. Check the file and your own result.');
     } finally { setBusy(false); }
   };
 
@@ -508,7 +508,7 @@ export function SynastryOv() {
           <div className="center" style={{ paddingTop: 18 }}>
             <Crest family="exile" size={70} />
             <p className="sub mt12">{tr('sw3', lang)}</p>
-            {legacyResponses && <label className="field mt12">{lang === 'ru' ? 'Что передать для сравнения' : 'Assessment to compare'}<select value={shareKind} onChange={(event) => { setShareKind(event.target.value); setShareConfirmed(false); }}>{profile && <option value="map">{lang === 'ru' ? 'Карта — только итоговые показатели' : 'Map — aggregate scores only'}</option>}<option value="legacy64">{lang === 'ru' ? 'Опросник отношений — 64 ответа' : 'Relational assessment — 64 answers'}</option></select></label>}
+            {legacyResponses && <label className="field mt12">{lang === 'ru' ? 'Что передать для сравнения' : 'Assessment to compare'}<select value={shareKind} onChange={(event) => { setShareKind(event.target.value); setShareConfirmed(false); }}>{profile && <option value="map">{lang === 'ru' ? 'Карта — только итоговые показатели' : 'Map — aggregate scores only'}</option>}<option value="legacy64">{lang === 'ru' ? 'Тест отношений — 64 ответа' : 'Relational assessment — 64 answers'}</option></select></label>}
             <p className="sub mt12" style={{ fontSize: 12.5, textAlign: 'left' }}>{shareKind === 'legacy64' ? (lang === 'ru' ? 'Этот код передаёт все 64 ответа в облако для сравнения. Любой вошедший пользователь с кодом сможет их прочитать до отзыва кода. Создавайте его только с этим согласием.' : 'This code uploads all 64 answers for comparison. Any signed-in person holding it can read them until you revoke it. Create it only if you agree to share those answers.') : t('shareCodeConsent')}</p>
             {!user?.linked ? (
               <button className="btn block mt12" onClick={() => setOverlay('login')}>🔐 {t('loginT')}</button>

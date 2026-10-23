@@ -28,9 +28,19 @@
 # domain. We can't suppress those without controlling Google's
 # response headers, and they're warnings rather than errors — the
 # sign-in flow still works once the COOP block is removed here.)
+# Security headers (all paths). The app is never embedded, so framing is
+# refused; it uses no camera, microphone, location, payment or USB, and keeps
+# XR for its own origin only. The CSP here only sets frame-ancestors: it does
+# not restrict scripts, so Google sign-in and Firebase keep working.
 /*
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   Cross-Origin-Resource-Policy: cross-origin
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), xr-spatial-tracking=(self)
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  Strict-Transport-Security: max-age=31536000
 
 # Never let the edge or the browser cache the navigation document or the
 # service worker. If index.html or sw.js is served stale from an HTTP cache,

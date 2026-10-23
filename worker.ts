@@ -113,6 +113,15 @@ function validateAIRequest(value: unknown): AIRequest | null {
   return body as unknown as AIRequest;
 }
 
+/**
+ * A route whose secrets are not set. The operator needs the secret names, so they
+ * go to the Worker log; the caller learns only that the service is not configured.
+ */
+function notConfigured(missingKeys: string[], cors: Record<string, string>): Response {
+  console.error(`[config] Missing Worker secrets: ${missingKeys.join(', ')}. Set them with: wrangler secret put <KEY_NAME>`);
+  return jsonResponse({ error: 'This service is not configured yet.' }, 503, cors);
+}
+
 async function authorizeWorkerRequest(
   request: Request,
   env: Env,
@@ -199,10 +208,7 @@ export default {
 
     const missingKeys = getMissingApiKeys(env);
     if (missingKeys.length > 0) {
-      return jsonResponse({
-        error: `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. Set them with: wrangler secret put <KEY_NAME>`,
-        missingKeys,
-      }, 503, cors);
+      return notConfigured(missingKeys, cors);
     }
 
     const parsed = await parseJsonBody(request, MAX_AI_BODY_BYTES);
@@ -255,10 +261,7 @@ export default {
 
     const missingKeys = getMissingStripeKeys(env);
     if (missingKeys.length > 0) {
-      return jsonResponse({
-        error: `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. Set them with: wrangler secret put <KEY_NAME>`,
-        missingKeys,
-      }, 503, cors);
+      return notConfigured(missingKeys, cors);
     }
 
     const parsed = await parseJsonBody(request, MAX_BILLING_BODY_BYTES);
@@ -332,10 +335,7 @@ export default {
 
     const missingKeys = getMissingStripeKeys(env);
     if (missingKeys.length > 0) {
-      return jsonResponse({
-        error: `Missing required Cloudflare Worker secrets: ${missingKeys.join(', ')}. Set them with: wrangler secret put <KEY_NAME>`,
-        missingKeys,
-      }, 503, cors);
+      return notConfigured(missingKeys, cors);
     }
 
     const sessionId = new URL(request.url).searchParams.get('session_id');

@@ -4,8 +4,8 @@
       {
         "hooks": [
           {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/roadmap/continuity.py\" session",
-            "timeout": 120,
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/roadmap/restore-beads.sh\" >&2; python3 \"$CLAUDE_PROJECT_DIR/scripts/roadmap/continuity.py\" session",
+            "timeout": 300,
             "type": "command"
           }
         ],
@@ -16,8 +16,8 @@
       {
         "hooks": [
           {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/roadmap/continuity.py\" session",
-            "timeout": 120,
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/roadmap/restore-beads.sh\" >&2; python3 \"$CLAUDE_PROJECT_DIR/scripts/roadmap/continuity.py\" session",
+            "timeout": 300,
             "type": "command"
           }
         ],

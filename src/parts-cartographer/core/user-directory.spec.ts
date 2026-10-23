@@ -52,9 +52,9 @@ describe('user directory without a listable collection', () => {
     expect(await lookupByEmail('old@example.com')).toBeNull();
   });
 
-  it('indexes only a verified address, so an unverified account cannot be found by email', async () => {
+  it('writes nothing for an unverified address, so it cannot be found by email or UID', async () => {
     await syncPublicProfile(user('uid_u', 'unverified@example.com', false));
-    expect(commits[0].map((w) => w.path)).toEqual(['publicProfiles/uid_u']);
+    expect(commits).toHaveLength(0);
     clearUserDirectoryCache();
     expect(await lookupByEmail('unverified@example.com')).toBeNull();
   });

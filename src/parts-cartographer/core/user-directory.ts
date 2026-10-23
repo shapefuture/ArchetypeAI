@@ -32,15 +32,14 @@ function writeCache(key: string, result: PublicUserProfile | null): void {
  * sent by this operation. This is best-effort and must not block sign-in.
  */
 export async function syncPublicProfile(user: AuthUser): Promise<void> {
-  if (!user.linked || !user.email) return;
+  // Only a verified address may appear in the directory (the rules require it).
+  if (!user.linked || !user.email || user.emailVerified !== true) return;
   const email = user.email.trim();
   if (!email) return;
   const db = getFirestoreDb();
   const updatedAt = new Date().toISOString();
   // The profile and its email-index entry are written together. The index lets
-  // others resolve this address without being able to list the directory. Only
-  // a verified address is indexed (the rules require it): an unverified account
-  // must not become findable under an address it may not own.
+  // others resolve this address without being able to list the directory.
   const batch = writeBatch(db);
   batch.set(doc(db, 'publicProfiles', user.uid), {
     emailLower: email.toLowerCase(),
@@ -48,7 +47,7 @@ export async function syncPublicProfile(user: AuthUser): Promise<void> {
     displayName: user.displayName?.trim() || null,
     updatedAt,
   }, { merge: true });
-  if (user.emailVerified) batch.set(doc(db, 'directoryEmails', email.toLowerCase()), { uid: user.uid, updatedAt });
+  batch.set(doc(db, 'directoryEmails', email.toLowerCase()), { uid: user.uid, updatedAt });
   await batch.commit();
   cache.delete(`uid:${user.uid}`);
   cache.delete(`email:${email.toLowerCase()}`);

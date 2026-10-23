@@ -17,7 +17,7 @@ The 3D Universe lazily loads Three.js and uses the same plush `Character` artwor
 
 ## Cloudflare Worker
 
-`worker.ts` serves the `/api/ai`, `/api/stripe-checkout`, and `/api/stripe-verify` routes. AI and billing calls require a Firebase ID token, which the React client attaches. The Worker verifies the token against `FIREBASE_PROJECT_ID`, applies Cloudflare rate limits, and does not log prompt or response content. Stripe return URLs must match the server-side `ALLOWED_APP_ORIGINS` list in `wrangler.toml`; add any production custom domain there before deploying.
+`worker.ts` serves the `/api/ai`, `/api/stripe-checkout`, and `/api/stripe-verify` routes. AI and billing calls require a Firebase ID token, which the React client attaches. The Worker verifies the token against `FIREBASE_PROJECT_ID`, applies Cloudflare rate limits, and does not log prompt or response content. Stripe return URLs must match the server-side `ALLOWED_APP_ORIGINS` list in `wrangler.toml` and `wrangler.api.toml` (production origins only; local development reaches the Worker through the same-origin Vite proxy); add any production custom domain to both before deploying.
 
 Configure Worker secrets with `wrangler secret put`:
 

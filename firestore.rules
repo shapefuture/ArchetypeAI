@@ -320,9 +320,12 @@ service cloud.firestore {
     }
 
     // The directory contains only a user's own email/display-name projection.
-    // Signed-in users can resolve a therapist by email; writes stay owner-only.
+    // A signed-in user can read one profile whose UID they already hold, but
+    // nobody can list the collection: every visitor is signed in anonymously, so
+    // a list grant would let anyone harvest every user's email. Writes stay owner-only.
     match /publicProfiles/{userId} {
-      allow read: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if false;
       allow create, update: if isOwner(userId)
         && request.resource.data.keys().hasAll(['emailLower', 'email', 'displayName', 'updatedAt'])
         && request.resource.data.keys().hasOnly(['emailLower', 'email', 'displayName', 'updatedAt'])
@@ -333,6 +336,23 @@ service cloud.firestore {
         && (request.resource.data.displayName == null || request.resource.data.displayName is string)
         && request.resource.data.updatedAt is string;
       allow delete: if isOwner(userId);
+    }
+
+    // Email index for "find a therapist by email": one document per lowercased
+    // address, holding only its owner's UID. A known address resolves with a get;
+    // the collection cannot be listed. Only the holder of the address in their
+    // sign-in token can write its entry, and only to point at themselves.
+    match /directoryEmails/{emailLower} {
+      allow get: if isSignedIn();
+      allow list: if false;
+      allow create, update: if isSignedIn()
+        && request.auth.token.email is string
+        && emailLower == request.auth.token.email.lower()
+        && request.resource.data.keys().hasAll(['uid', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'updatedAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.updatedAt is string;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
     // Therapist availability is visible only to signed-in users. A profile may

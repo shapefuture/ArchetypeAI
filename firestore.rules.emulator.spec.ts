@@ -319,6 +319,31 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         emailLower: 'victim@example.com', email: 'attacker@example.com', displayName: 'Impostor', updatedAt: 'now',
       }));
     });
+
+    it('never lets anyone list the directory, so emails cannot be harvested', async () => {
+      await assertSucceeds(setDoc(doc(asUser(UIDS.victim, 'victim@example.com'), 'publicProfiles', UIDS.victim), {
+        emailLower: 'victim@example.com', email: 'victim@example.com', displayName: 'Vic', updatedAt: 'now',
+      }));
+      const stranger = asUser(UIDS.attacker, 'attacker@example.com');
+      await assertFails(getDocs(collection(stranger, 'publicProfiles')));
+      await assertFails(getDocs(query(collection(stranger, 'publicProfiles'), where('emailLower', '==', 'victim@example.com'))));
+      await assertFails(getDocs(collection(stranger, 'directoryEmails')));
+    });
+
+    it('resolves a known email through the index, which only the email owner can write', async () => {
+      const victim = asUser(UIDS.victim, 'victim@example.com');
+      await assertSucceeds(setDoc(doc(victim, 'directoryEmails', 'victim@example.com'), { uid: UIDS.victim, updatedAt: 'now' }));
+      // A known address resolves for any signed-in user, one document at a time.
+      const stranger = asUser(UIDS.attacker, 'attacker@example.com');
+      await assertSucceeds(getDoc(doc(stranger, 'directoryEmails', 'victim@example.com')));
+      // No one can claim another person's address, point their own address at someone else, or add fields.
+      await assertFails(setDoc(doc(stranger, 'directoryEmails', 'victim@example.com'), { uid: UIDS.attacker, updatedAt: 'now' }));
+      await assertFails(setDoc(doc(stranger, 'directoryEmails', 'attacker@example.com'), { uid: UIDS.victim, updatedAt: 'now' }));
+      await assertFails(setDoc(doc(stranger, 'directoryEmails', 'attacker@example.com'), { uid: UIDS.attacker, updatedAt: 'now', note: 'x' }));
+      await assertFails(deleteDoc(doc(stranger, 'directoryEmails', 'victim@example.com')));
+      await assertFails(getDoc(doc(asAnon(), 'directoryEmails', 'victim@example.com')));
+      await assertSucceeds(deleteDoc(doc(victim, 'directoryEmails', 'victim@example.com')));
+    });
   });
 
   describe('therapist and booking relationships', () => {

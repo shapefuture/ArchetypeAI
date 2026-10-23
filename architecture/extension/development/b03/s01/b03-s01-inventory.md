@@ -1,4 +1,5 @@
 # B03.S01 candidate inventory: membership, moderation and recipient authority
+<!-- cite-ref: 09194df -->
 
 > **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because two premises are false at HEAD (the "report" word search and the emailVerified gate) and one test was described as run when it was not. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
 >

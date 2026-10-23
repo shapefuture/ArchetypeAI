@@ -1,6 +1,7 @@
 # B10.S01 — Inventory: personal meaning, context and accommodations
+<!-- cite-ref: 10d9608 -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because "no personal meaning notes" was false at HEAD. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The deletion row said `deleteWithDerived` removes shares, which was false, and the sharing row cited a server rule that does not exist. Both are corrected, along with the generic rows. Base note: `src/parts-cartographer/core/personal-memory.ts` and `src/parts-cartographer/screens/memory-panel.jsx` are HEAD paths (commit 3670a3a), not present at base 10d9608. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because "no personal meaning notes" was false at HEAD. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The deletion row said `deleteWithDerived` removes shares, which was false, and the sharing row cited a server rule that does not exist. Both are corrected, along with the generic rows. Base note: `src/parts-cartographer/core/personal-memory.ts@675118c` and `src/parts-cartographer/screens/memory-panel.jsx@675118c` are HEAD paths (commit 3670a3a), not present at base 10d9608. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-cpfa` (B10.S01).
 - Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
@@ -10,7 +11,7 @@
 
 ## 1. Finding
 
-Accommodations partly exist: sensory and reduced-motion preferences are implemented and tested. At the base 10d9608, personal meaning and context notes did not exist. HEAD adds a personal memory module (`src/parts-cartographer/core/personal-memory.ts`, commit 3670a3a) with `addMemory` and `contextMemories`, shown in `src/parts-cartographer/screens/memory-panel.jsx`. Whether it meets the meaning-note and context requirements is not assessed here. `meaning` appears only as a measured need category, which must not be confused with a person's own meaning notes.
+Accommodations partly exist: sensory and reduced-motion preferences are implemented and tested. At the base 10d9608, personal meaning and context notes did not exist. HEAD adds a personal memory module (`src/parts-cartographer/core/personal-memory.ts@675118c`, commit 3670a3a) with `addMemory` and `contextMemories`, shown in `src/parts-cartographer/screens/memory-panel.jsx@675118c`. Whether it meets the meaning-note and context requirements is not assessed here. `meaning` appears only as a measured need category, which must not be confused with a person's own meaning notes.
 
 ## 2. Existing code and reuse
 
@@ -19,8 +20,8 @@ Accommodations partly exist: sensory and reduced-motion preferences are implemen
 | Sensory and motion accommodations | `src/parts-cartographer/core/sensory-preferences.ts` | Implemented: presets and individual controls, device-local storage. Reusable for accommodations. |
 | Reduced-motion gating | `src/parts-cartographer/core/sensory-preferences.ts` (`sceneClockStep`) | Implemented: the ambient clock stops for Still and for system reduced motion. |
 | Ambience suspension | `src/parts-cartographer/services/ambience-gate.ts` | Implemented: suspends ambience for hidden pages, text entry, and errors. |
-| Measured need category `meaning` | `src/shared/core/data/parts.ts:25` (HEAD), `src/shared/core/data/scoring-v2.ts:208` (HEAD) | A scored need. Must not be treated as personal meaning notes. |
-| Personal meaning notes and context | At base 10d9608: none. At HEAD: `src/parts-cartographer/core/personal-memory.ts` (commit 3670a3a), not assessed against meaning-note semantics | Partly present at HEAD; not assessed. |
+| Measured need category `meaning` | `src/shared/core/data/parts.ts:25@675118c` (HEAD), `src/shared/core/data/scoring-v2.ts:208@675118c` (HEAD) | A scored need. Must not be treated as personal meaning notes. |
+| Personal meaning notes and context | At base 10d9608: none. At HEAD: `src/parts-cartographer/core/personal-memory.ts@675118c` (commit 3670a3a), not assessed against meaning-note semantics | Partly present at HEAD; not assessed. |
 
 **Reuse packages named by the task.** The planning documents define these codes inconsistently across streams (the B01 inventory recorded the same ambiguity). Each code is an unresolved reuse claim until the coordinator confirms its mapping.
 
@@ -36,16 +37,16 @@ Accommodations partly exist: sensory and reduced-motion preferences are implemen
 
 ## 4. Scenario matrix (planned, not exercised)
 
-Each row is planned behaviour for personal meaning notes and context. HEAD has a personal memory module (`src/parts-cartographer/core/personal-memory.ts`, commit 3670a3a) that the design builds on. It has no meaning-note type, and no Firestore rule covers memory notes.
+Each row is planned behaviour for personal meaning notes and context. HEAD has a personal memory module (`src/parts-cartographer/core/personal-memory.ts@675118c`, commit 3670a3a) that the design builds on. It has no meaning-note type, and no Firestore rule covers memory notes.
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|
-| Normal grant | A meaning note is visible only to its author. Today `addMemory` and `contextMemories` (`src/parts-cartographer/core/personal-memory.ts:9` (HEAD), `:39`) hold device-local memories with no visibility field. | No |
-| Denied grant | No share concept exists: `personal-memory.ts` has no sharing function and no Firestore rule covers memories. Sharing a note would need a new rule and a per-share grant. | No |
+| Normal grant | A meaning note is visible only to its author. Today `addMemory` and `contextMemories` (`src/parts-cartographer/core/personal-memory.ts:9@675118c` (HEAD), `:39@675118c`) hold device-local memories with no visibility field. | No |
+| Denied grant | No share concept exists: `personal-memory.ts@675118c` has no sharing function and no Firestore rule covers memories. Sharing a note would need a new rule and a per-share grant. | No |
 | Stale contract | A stored memory without a meaning-note type is read as an ordinary memory. The module has no meaning-note type yet. | No |
-| Account change | Memories are stored under the device-local key `INNERVERSE_MEMORY_V1` (`MEMORY_KEY` in `src/parts-cartographer/screens/memory-panel.jsx:7` (HEAD)), not under a uid. Another account on the same device sees the same memories. | No |
-| Deleted source | Deleting a note uses `deleteWithDerived` (`src/parts-cartographer/core/personal-memory.ts:23-36` (HEAD)), which removes the target and its derived memories. The module has no share or export record, so nothing else is removed. | No |
-| Duplicate or cancelled operation | `newUserMemory` refuses empty text (`src/parts-cartographer/screens/memory-panel.jsx:119-122` (HEAD)), so an empty submit adds nothing. `addMemory` returns null only when the source is missing (`personal-memory.ts:10`). A cancelled edit leaves the stored memory unchanged. | No |
+| Account change | Memories are stored under the device-local key `INNERVERSE_MEMORY_V1` (`MEMORY_KEY` in `src/parts-cartographer/screens/memory-panel.jsx:7@675118c` (HEAD)), not under a uid. Another account on the same device sees the same memories. | No |
+| Deleted source | Deleting a note uses `deleteWithDerived` (`src/parts-cartographer/core/personal-memory.ts:23-36@675118c` (HEAD)), which removes the target and its derived memories. The module has no share or export record, so nothing else is removed. | No |
+| Duplicate or cancelled operation | `newUserMemory` refuses empty text (`src/parts-cartographer/screens/memory-panel.jsx:119-122@675118c` (HEAD)), so an empty submit adds nothing. `addMemory` returns null only when the source is missing (`personal-memory.ts:10@675118c`). A cancelled edit leaves the stored memory unchanged. | No |
 | Offline or quiet alternative | Notes are stored in the device-local store (`src/parts-cartographer/core/local-store.ts`) and are optional. Accommodations, meaning the sensory and reduced-motion preferences, work with no note. | No |
 
 ## 5. Six compatibility dimensions for `personal meaning, context and accommodations`
@@ -55,11 +56,11 @@ The plan's fixture task names six dimensions: **interface, state, effects, opera
 | Dimension | Planned case for `personal meaning, context and accommodations` | Exercised today |
 |---|---|---|
 | Interface | The meaning-note editor would be an optional panel. The memory panel is mounted in the cabinet (`src/parts-cartographer/screens/cabinet.jsx`). | No |
-| State | Notes would have their own type, separate from the measured `meaning` need category (`src/shared/core/data/parts.ts:25` (HEAD), `src/shared/core/data/scoring-v2.ts:208` (HEAD)). A measured need would never be stored as a note. | No |
+| State | Notes would have their own type, separate from the measured `meaning` need category (`src/shared/core/data/parts.ts:25@675118c` (HEAD), `src/shared/core/data/scoring-v2.ts:208@675118c` (HEAD)). A measured need would never be stored as a note. | No |
 | Effects | A note change that alters a suggestion would write a labelled inference record (planned). The trace from notes to suggestion code is not yet done. | No |
-| Operations | A correction supersedes the earlier version through `correctMemory`, which the memory panel imports (`memory-panel.jsx:5`). Whether history stays visible to the author was not verified. | No |
+| Operations | A correction supersedes the earlier version through `correctMemory`, which the memory panel imports (`memory-panel.jsx:5@675118c`). Whether history stays visible to the author was not verified. | No |
 | Performance | Memory lists are not paged today. A list of 50 or more is an untested bound. | No |
-| Failure | Behaviour on a corrupt memory record was not verified. The planned rule is to copy it aside and never overwrite it, as `assessment-draft.ts` does (`:163`). | No |
+| Failure | Behaviour on a corrupt memory record was not verified. The planned rule is to copy it aside and never overwrite it, as `src/parts-cartographer/core/assessment-draft.ts` does (`:163`). | No |
 
 
 ## 6. Source provenance

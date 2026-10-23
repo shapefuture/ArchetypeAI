@@ -32,7 +32,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('/node_modules/@firebase/') || id.includes('/node_modules/firebase/')) return 'firebase-vendor';
+          // Firebase is split by service: sign-in at boot needs only app + auth,
+          // while Firestore and messaging load when a feature first uses them.
+          if (/\/node_modules\/(@firebase\/(firestore|webchannel-wrapper)|firebase\/firestore|re2js)\//.test(id)) return 'firebase-firestore';
+          if (/\/node_modules\/(@firebase\/(messaging|installations)|firebase\/messaging)\//.test(id)) return 'firebase-messaging';
+          if (/\/node_modules\/(@firebase|firebase)\/auth\//.test(id)) return 'firebase-auth';
+          if (id.includes('/node_modules/@firebase/') || id.includes('/node_modules/firebase/')) return 'firebase-core';
           if (id.includes('/node_modules/three/')) return 'three-vendor';
           if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react-vendor';
         },

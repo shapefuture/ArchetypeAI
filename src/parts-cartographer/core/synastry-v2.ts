@@ -40,7 +40,7 @@ export function synastry(codeA: string, codeB: string): SynastryResult {
     } ${dims[2].value > 65 ? 'Watch polarization: your parts may tag-team.' : 'Polarization risk is low this cycle.'}`,
     narrativeRu: `Связь «${bond.ru}» — ${avg}%. ${
       dims[1].value > 60 ? 'Бремена пересекаются — сильный резонанс и риск эха.' : 'Бремена разные — можно занимать чужой покой.'
-    } ${dims[2].value > 65 ? 'Следи за поляризацией: твои части могут работать в паре.' : 'Риск поляризации в этом цикле низкий.'}`,
+    } ${dims[2].value > 65 ? 'Следите за поляризацией: ваши части могут работать в паре.' : 'Риск поляризации в этом цикле низкий.'}`,
   };
 }
 

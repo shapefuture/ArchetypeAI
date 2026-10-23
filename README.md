@@ -1,8 +1,8 @@
 # ArchetypeAI
 
-Parts Cartographer is the default React/Vite experience. It replaces the previous Angular shell while keeping the Angular app and its existing features available as a separate run/build target. Both frontends use the Cloudflare Worker in `worker.ts` for AI and Stripe routes.
+Parts Cartographer is the React/Vite app in `src/parts-cartographer/`. It uses framework-free code from `src/shared/` (scoring, parts, item texts and the consolidated English/Russian strings) and the Cloudflare Worker in `worker.ts` for AI and Stripe routes. The earlier Angular app was retired on 2026-10-23; it remains in git history.
 
-## React app (default)
+## React app
 
 **Prerequisite:** Node.js 20.19+ or 22.12+
 
@@ -15,19 +15,9 @@ Vite listens on port `5174`. During local development, relative `/api/*` request
 
 The 3D Universe lazily loads Three.js and uses the same plush `Character` artwork as the 2D screens, on shape-matched extruded bodies.
 
-## Existing Angular app
-
-The Angular sources remain in `src/app/` and can be run independently:
-
-```bash
-npm run dev:angular
-npm run build:angular
-npm run preview:angular
-```
-
 ## Cloudflare Worker
 
-`worker.ts` serves the `/api/ai`, `/api/stripe-checkout`, and `/api/stripe-verify` routes. AI and billing calls require a Firebase ID token; both the React and Angular clients attach one. The Worker verifies the token against `FIREBASE_PROJECT_ID`, applies Cloudflare rate limits, and does not log prompt or response content. Stripe return URLs must match the server-side `ALLOWED_APP_ORIGINS` list in `wrangler.toml`; add any production custom domain there before deploying.
+`worker.ts` serves the `/api/ai`, `/api/stripe-checkout`, and `/api/stripe-verify` routes. AI and billing calls require a Firebase ID token, which the React client attaches. The Worker verifies the token against `FIREBASE_PROJECT_ID`, applies Cloudflare rate limits, and does not log prompt or response content. Stripe return URLs must match the server-side `ALLOWED_APP_ORIGINS` list in `wrangler.toml`; add any production custom domain there before deploying.
 
 Configure Worker secrets with `wrangler secret put`:
 
@@ -53,4 +43,4 @@ npm test
 npm run test:rules
 ```
 
-`npm run test:rules` starts the Firestore emulator and executes the security-rules regression suite; a local Java runtime is required. The default build creates the React PWA in `dist/`, stamps the service worker, and copies Cloudflare response headers. `npm run build:angular` remains available for the retained Angular app. GitHub Actions runs the type-check, unit and emulator tests, and both production builds.
+`npm run test:rules` starts the Firestore emulator and executes the security-rules regression suite; a local Java runtime is required. The default build creates the React PWA in `dist/`, stamps the service worker, and copies Cloudflare response headers. GitHub Actions runs the type-check, the unit and emulator tests, the production build and the browser tests.

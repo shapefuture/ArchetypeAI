@@ -322,11 +322,14 @@ service cloud.firestore {
     // The directory contains only a user's own email/display-name projection.
     // A signed-in user can read one profile whose UID they already hold, but
     // nobody can list the collection: every visitor is signed in anonymously, so
-    // a list grant would let anyone harvest every user's email. Writes stay owner-only.
+    // a list grant would let anyone harvest every user's email. Writes stay
+    // owner-only and need a verified address, so an unverified account cannot
+    // publish an identity under an address it may not own (owner decision, u7yqt).
     match /publicProfiles/{userId} {
       allow get: if isSignedIn();
       allow list: if false;
       allow create, update: if isOwner(userId)
+        && hasVerifiedEmail()
         && request.resource.data.keys().hasAll(['emailLower', 'email', 'displayName', 'updatedAt'])
         && request.resource.data.keys().hasOnly(['emailLower', 'email', 'displayName', 'updatedAt'])
         && request.resource.data.email is string

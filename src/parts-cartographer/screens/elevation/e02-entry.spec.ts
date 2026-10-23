@@ -26,7 +26,8 @@ function button(label: string): HTMLButtonElement {
 }
 
 beforeEach(() => {
-  appMock.current = { lang: 'en', go: vi.fn(), setOverlay: vi.fn() };
+  const titles: Record<string, string> = { routeInquiryTitle: 'Think through one situation' };
+  appMock.current = { lang: 'en', go: vi.fn(), setOverlay: vi.fn(), t: (key: string) => titles[key] ?? key };
   localStorage.clear();
 });
 
@@ -51,9 +52,19 @@ describe('E02 entry panel', () => {
     expect(host?.textContent).toContain('No reviewed practice is available yet');
   });
 
-  it('offers no open or stop control when nothing can be started, rather than a fake first result', () => {
+  it('offers the situation inquiry by its name, with a stopping point, and opens it in the check-in layer', () => {
     render();
     act(() => button('I am facing a situation').click());
+    expect(host?.textContent).toContain('Think through one situation');
+    expect(host?.textContent).not.toContain('situation-inquiry');
+    expect(button('That is enough for now')).toBeTruthy();
+    act(() => button('Open').click());
+    expect(appMock.current!.setOverlay).toHaveBeenCalledWith('checkin');
+  });
+
+  it('offers no open or stop control when nothing can be started, rather than a fake first result', () => {
+    render();
+    act(() => button('I need to calm down now').click());
     expect(host?.querySelector('[role="status"]')?.textContent).toBeTruthy();
     expect(Array.from(host!.querySelectorAll('button')).some((b) => b.textContent === 'That is enough for now')).toBe(false);
   });

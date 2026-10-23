@@ -1,4 +1,4 @@
-import React, { useId, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { store } from '../core/local-store';
 import { advance, availablePractices, interrupt, resume, start, stepsFor } from '../core/contextual-checkin.ts';
@@ -18,6 +18,7 @@ import {
   startInquiry,
 } from '../core/situation-inquiry.ts';
 import { loadToolkit, newId, persist, saveToolkit } from './practice-toolkit.jsx';
+import { takeFocusRequest } from '../core/focus-request.ts';
 import './practice-toolkit.css';
 
 // Contextual check-in (INNERVERSE_CHECKIN_FLOW_V1) and the bounded situation inquiry (stored in INNERVERSE_TOOLKIT_V1).
@@ -373,7 +374,15 @@ export function SituationInquiry() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [confirmRestart, setConfirmRestart] = useState(false);
+  const sectionRef = useRef(null);
   const inquiry = toolkit.inquiry;
+
+  // Arriving from the situation-inquiry entry lands here, not at the top of the check-in layer.
+  useEffect(() => {
+    if (!takeFocusRequest('situation-inquiry') || !sectionRef.current) return;
+    sectionRef.current.scrollIntoView({ block: 'start' });
+    sectionRef.current.focus({ preventScroll: true });
+  }, []);
   const askNext = inquiry ? nextQuestion(inquiry, questions) : null;
 
   const commitInquiry = (nextInquiry) => {
@@ -444,7 +453,7 @@ export function SituationInquiry() {
   };
 
   return (
-    <section className="tk" aria-labelledby={titleId}>
+    <section className="tk" aria-labelledby={titleId} id="situation-inquiry" ref={sectionRef} tabIndex={-1}>
       <div className="kicker" id={titleId}>{text.title}</div>
       <p className="sub">{text.intro}</p>
       {!kept && <p className="tk-notice" role="status">{copy.notKept}</p>}

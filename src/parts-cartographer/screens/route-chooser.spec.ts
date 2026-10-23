@@ -10,6 +10,7 @@ const appMock = vi.hoisted(() => ({ current: null as null | Record<string, any> 
 vi.mock('../app.jsx', () => ({ useApp: () => appMock.current }));
 
 import { Intro, Onboarding } from './landing.jsx';
+import { takeFocusRequest } from '../core/focus-request.ts';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -73,14 +74,15 @@ describe('Base tab assessment entries', () => {
     expect(at('Other tools')).toBeLessThan(at('Sample map'));
   });
 
-  it('keeps the situation inquiry visible but unopenable, with its reason stated', () => {
+  it('opens the situation inquiry as its own route in the check-in layer, focused on arrival', () => {
     mountBase();
     const inquiry = findButton(host!, 'Think through one situation');
-    expect(inquiry.getAttribute('aria-disabled')).toBe('true');
-    expect(inquiry.textContent).toContain('Not available in this version yet');
+    expect(inquiry.getAttribute('aria-disabled')).not.toBe('true');
+    expect(inquiry.textContent).not.toContain('Not available in this version yet');
     press(host!, 'Think through one situation');
+    expect(appMock.current!.setOverlay).toHaveBeenLastCalledWith('checkin');
     expect(appMock.current!.go).not.toHaveBeenCalled();
-    expect(appMock.current!.setOverlay).not.toHaveBeenCalled();
+    expect(takeFocusRequest('situation-inquiry')).toBe(true);
   });
 
   it('opens the 64-item and 147-item routes as separate destinations that do not name each other', () => {

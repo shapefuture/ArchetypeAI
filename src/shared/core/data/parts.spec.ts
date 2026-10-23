@@ -3,8 +3,8 @@ import {
   MANAGERS, FIREFIGHTERS, EXILES, RESOURCES, SHADOW_PARTS, PROTECTORS,
   NORM_MEAN, NORM_SD, TRIGGER, GUARDS, COMPLEXES, NEED, tierOf, partClass,
   SUBTYPES, type ProtectorId, type ExileId,
-} from '../../../shared/core/data/parts';
-import { CONSTELLATIONS, constellation } from '../../../shared/core/data/constellations';
+} from './parts';
+import { CONSTELLATIONS, constellation } from './constellations';
 
 describe('parts taxonomy invariants', () => {
   it('has 14 shadow parts (7 managers + 3 firefighters + 4 exiles)', () => {

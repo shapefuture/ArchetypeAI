@@ -11,9 +11,9 @@ import {
   weatherLayer, unburdeningMoments, verdictLockActive, sealVerdict, readyToResurface,
   attributionRatio, attributionWorsening, selectJitaiCard, selfServeGate, shutdownStreak,
   GLOBALIZING_LEXICON, LOCALIZING_LEXICON,
-} from '../../../shared/core/data/state-v2';
-import { SHADOW_PARTS, RESOURCES } from '../../../shared/core/data/parts';
-import { scoreProfile, type AssessmentInput } from '../../../shared/core/data/scoring-v2';
+} from './state-v2';
+import { SHADOW_PARTS, RESOURCES } from './parts';
+import { scoreProfile, type AssessmentInput } from './scoring-v2';
 
 const all = (fill: number): AssessmentInput => {
   const shadow = {} as AssessmentInput['shadow'];

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { buildLayout, starAt } from '../../../shared/core/data/constellation-layout';
-import { SHADOW_PARTS, RESOURCES, SELF_QUALITIES, MANAGERS, FIREFIGHTERS, EXILES } from '../../../shared/core/data/parts';
-import { scoreProfile, type AssessmentInput } from '../../../shared/core/data/scoring-v2';
+import { buildLayout, starAt } from './constellation-layout';
+import { SHADOW_PARTS, RESOURCES, SELF_QUALITIES, MANAGERS, FIREFIGHTERS, EXILES } from './parts';
+import { scoreProfile, type AssessmentInput } from './scoring-v2';
 
 const all = (fill: number): AssessmentInput => {
   const shadow = {} as AssessmentInput['shadow'];

@@ -29,10 +29,12 @@ function writeCache(key: string, result: PublicUserProfile | null): void {
 /**
  * Keep only the user's email and display name in the signed-in directory so
  * clients can resolve a therapist by email. No assessment or clinical data is
- * sent by this operation. This is best-effort and must not block sign-in.
+ * sent by this operation. Only a verified address may claim a directory
+ * identity (owner decision, u7yqt); unverified users are skipped until they
+ * verify. This is best-effort and must not block sign-in.
  */
 export async function syncPublicProfile(user: AuthUser): Promise<void> {
-  if (!user.linked || !user.email) return;
+  if (!user.linked || !user.email || user.emailVerified !== true) return;
   const email = user.email.trim();
   if (!email) return;
   const db = getFirestoreDb();

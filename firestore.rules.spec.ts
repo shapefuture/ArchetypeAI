@@ -63,6 +63,10 @@ describe('firestore.rules — security boundaries', () => {
     expect(emails).toMatch(/emailLower\s*==\s*request\.auth\.token\.email\.lower\(\)/);
     expect(profile).toMatch(/allow\s+create,\s*update:\s*if\s+isOwner\(userId\)/);
     expect(profile).toMatch(/allow\s+delete:\s*if\s+isOwner\(userId\)/);
+    // Owner decision (u7yqt): only a verified email may claim a directory
+    // identity, so an unverified account cannot impersonate an address holder.
+    expect(profile).toMatch(/hasVerifiedEmail\(\)/);
+    expect(emails).toMatch(/allow\s+create,\s*update:\s*if\s+hasVerifiedEmail\(\)/);
   });
 
   it('prevents collection enumeration of bearer share and therapist invite codes', () => {

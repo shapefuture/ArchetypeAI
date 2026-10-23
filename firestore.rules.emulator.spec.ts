@@ -344,6 +344,22 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(getDoc(doc(asAnon(), 'directoryEmails', 'victim@example.com')));
       await assertSucceeds(deleteDoc(doc(victim, 'directoryEmails', 'victim@example.com')));
     });
+
+    it('lets only a verified email claim a directory identity', async () => {
+      // An unverified email/password account cannot register someone else's
+      // address in the directory, even though the token carries that address.
+      const impostor = asUser(UIDS.attacker, 'victim@example.com', false);
+      await assertFails(setDoc(doc(impostor, 'directoryEmails', 'victim@example.com'), { uid: UIDS.attacker, updatedAt: 'now' }));
+      await assertFails(setDoc(doc(impostor, 'publicProfiles', UIDS.attacker), {
+        emailLower: 'victim@example.com', email: 'victim@example.com', displayName: 'Impostor', updatedAt: 'now',
+      }));
+      // The verified holder of the address still can.
+      const victim = asUser(UIDS.victim, 'victim@example.com');
+      await assertSucceeds(setDoc(doc(victim, 'directoryEmails', 'victim@example.com'), { uid: UIDS.victim, updatedAt: 'now' }));
+      await assertSucceeds(setDoc(doc(victim, 'publicProfiles', UIDS.victim), {
+        emailLower: 'victim@example.com', email: 'victim@example.com', displayName: 'Vic', updatedAt: 'now',
+      }));
+    });
   });
 
   describe('therapist and booking relationships', () => {

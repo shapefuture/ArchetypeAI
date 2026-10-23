@@ -322,11 +322,14 @@ service cloud.firestore {
     // The directory contains only a user's own email/display-name projection.
     // A signed-in user can read one profile whose UID they already hold, but
     // nobody can list the collection: every visitor is signed in anonymously, so
-    // a list grant would let anyone harvest every user's email. Writes stay owner-only.
+    // a list grant would let anyone harvest every user's email. Writes stay
+    // owner-only and require a verified address, so an unverified account cannot
+    // claim a directory identity (owner decision, u7yqt).
     match /publicProfiles/{userId} {
       allow get: if isSignedIn();
       allow list: if false;
       allow create, update: if isOwner(userId)
+        && hasVerifiedEmail()
         && request.resource.data.keys().hasAll(['emailLower', 'email', 'displayName', 'updatedAt'])
         && request.resource.data.keys().hasOnly(['emailLower', 'email', 'displayName', 'updatedAt'])
         && request.resource.data.email is string
@@ -341,11 +344,13 @@ service cloud.firestore {
     // Email index for "find a therapist by email": one document per lowercased
     // address, holding only its owner's UID. A known address resolves with a get;
     // the collection cannot be listed. Only the holder of the address in their
-    // sign-in token can write its entry, and only to point at themselves.
+    // sign-in token can write its entry, and only to point at themselves — and
+    // only with a verified address, so bookings and shared maps cannot be
+    // redirected by an unverified impostor account (owner decision, u7yqt).
     match /directoryEmails/{emailLower} {
       allow get: if isSignedIn();
       allow list: if false;
-      allow create, update: if isSignedIn()
+      allow create, update: if hasVerifiedEmail()
         && request.auth.token.email is string
         && emailLower == request.auth.token.email.lower()
         && request.resource.data.keys().hasAll(['uid', 'updatedAt'])

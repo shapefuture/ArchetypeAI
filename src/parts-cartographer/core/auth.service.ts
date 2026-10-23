@@ -138,6 +138,13 @@ export const auth: AUTH_PORT = {
     return persistUser(mapUser(result.user));
   },
 
+  async sendVerificationEmail() {
+    const { sdk, auth: firebaseAuth } = await client();
+    const current = firebaseAuth.currentUser;
+    if (!current || current.isAnonymous) throw new Error('No linked account to verify');
+    await sdk.sendEmailVerification(current);
+  },
+
   async signOut() {
     const { sdk, auth: firebaseAuth } = await client();
     const { disablePushReminder } = await import('./push');

@@ -9,6 +9,7 @@ export interface AUTH_PORT {
   signInGoogle(): Promise<AuthUser>;                // popup w/ redirect fallback
   signInEmail(email: string, mode: 'in' | 'up', password: string): Promise<AuthUser>;
   linkAnonymous(email: string, provider: 'google' | 'email', password?: string): Promise<AuthUser>; // keeps UID
+  sendVerificationEmail(): Promise<void>;           // re-sends the address confirmation link
   signOut(): Promise<void>;
 }
 

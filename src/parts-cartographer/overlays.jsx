@@ -20,6 +20,7 @@ import {
 import { confirmLegacyNaiveRecord, formatInstantInZone, resolveWallClock } from './core/appointment-time.ts';
 import { SuggestionReview, queueCoachReply } from './screens/suggestion-review.jsx';
 import { lookupByEmail, syncPublicProfile } from './core/user-directory.ts';
+import { auth } from './core/auth.service.ts';
 import { checkFacilitatorStatement, STATEMENT_MAX_CHARS } from './core/facilitator-profile.ts';
 import { createTherapistLink } from './core/therapist-link.ts';
 import { LegacySynastryDetails } from './screens/legacy-synastry-report.jsx';
@@ -1085,6 +1086,7 @@ export function Therapist() {
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [availabilitySaving, setAvailabilitySaving] = useState(false);
   const [availabilityError, setAvailabilityError] = useState('');
+  const [verifyBusy, setVerifyBusy] = useState(false);
   // The zone the hours are kept in. A save writes this zone explicitly. Nothing is silently defaulted.
   const [zone, setZone] = useState(() => deviceTimeZone());
   const [zoneNeedsConfirm, setZoneNeedsConfirm] = useState(false);
@@ -1172,6 +1174,21 @@ export function Therapist() {
     }
   };
 
+  // Owner decision (u7yqt): the directory accepts only verified addresses, so an
+  // unverified therapist is guided to confirm their email before lookups find them.
+  const resendVerification = async () => {
+    setVerifyBusy(true);
+    try {
+      await auth.sendVerificationEmail();
+      toast('✓ ' + t('therapistVerifySent'));
+    } catch (err) {
+      console.error('Verification email resend failed', err);
+      toast(t('therapistSaveFailed'));
+    } finally {
+      setVerifyBusy(false);
+    }
+  };
+
   const saveAvail = async () => {
     if (!user?.linked || !user.uid || !user.email) {
       setAvailabilityError(t('therapistLoginRequired'));
@@ -1206,6 +1223,9 @@ export function Therapist() {
       setZoneNeedsConfirm(false);
       try { localStorage.setItem('ifs.avail', JSON.stringify(avail)); } catch { /* */ }
       toast('✓ ' + t('save'));
+      // Saved availability is not enough to be findable: the directory entry
+      // needs a verified address, so say so instead of failing silently.
+      if (user.emailVerified === false) setAvailabilityError(t('therapistVerifyEmail'));
     } catch (err) {
       console.error('Therapist availability save failed', err);
       setAvailabilityError(t('therapistSaveFailed'));
@@ -1242,6 +1262,13 @@ export function Therapist() {
               <div className="card flat mt12">
                 <p className="sub">{t('therapistLoginRequired')}</p>
                 <button className="btn primary block mt12" onClick={() => setOverlay('login')}>🔐 {t('loginT')}</button>
+              </div>
+            )}
+
+            {user?.linked && user.emailVerified === false && (
+              <div className="card flat mt12">
+                <p className="sub">{t('therapistVerifyEmail')}</p>
+                <button className="btn block mt12" disabled={verifyBusy} onClick={resendVerification}>✉️ {t('therapistVerifyResend')}</button>
               </div>
             )}
 

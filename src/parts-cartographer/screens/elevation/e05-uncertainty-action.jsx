@@ -1,7 +1,7 @@
 // E05 useful action under uncertainty (ArchetypeAI-6s7, step 05 UI). The person writes their own readings. An action is
 // offered only when the pure E05 module finds it eligible, and no action has a reviewed record yet, so the panel
 // says that plainly instead of offering one.
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { useApp } from '../../app.jsx';
 import { store } from '../../core/local-store';
 import { addUserReading, emptyState, offerActions, parseState } from '../../elevation/e05-uncertainty-action.ts';
@@ -34,6 +34,8 @@ const COPY = {
 export function UncertaintyPanel() {
   const { lang } = useApp() ?? {};
   const copy = COPY[lang === 'ru' ? 'ru' : 'en'];
+  // The question above the field is its label, so screen readers announce what to write.
+  const askId = useId();
   const [parsed, setParsed] = useState(() => {
     const raw = store.load(UNCERTAINTY_KEY, null);
     return raw === null ? emptyState() : parseState(raw);
@@ -64,7 +66,7 @@ export function UncertaintyPanel() {
   return (
     <section className="card flat mt16" aria-labelledby="e05-title">
       <div className="kicker" id="e05-title">{copy.kicker}</div>
-      <p className="sub mt8" style={{ fontSize: 13 }}>{copy.ask}</p>
+      <p className="sub mt8" id={askId} style={{ fontSize: 13 }}>{copy.ask}</p>
       {parsed.readings.length === 0 && <p className="faint mt6" style={{ fontSize: 12 }}>{copy.none}</p>}
       {parsed.readings.length > 0 && (
         <ul className="mt6" style={{ fontSize: 13 }}>
@@ -72,7 +74,7 @@ export function UncertaintyPanel() {
         </ul>
       )}
       <label className="field mt8">
-        <textarea className="drop" rows={2} value={text} onChange={(e) => setText(e.target.value)} />
+        <textarea className="drop" rows={2} aria-labelledby={askId} value={text} onChange={(e) => setText(e.target.value)} />
       </label>
       <button className="btn small ghost block mt8" disabled={!text.trim()} onClick={add}>{copy.add}</button>
       <p className="mt8" style={{ fontSize: 13 }}>{offer.offered.length ? '' : copy.noActions}</p>

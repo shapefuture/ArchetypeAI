@@ -116,6 +116,18 @@ class CheckCitesTest(unittest.TestCase):
         doc = self.doc('| `beta` | `a.ts:2` (`beta`) |\n', ref=head)
         self.assertIn('matches 2 files', check_file(doc, self.root)[0][1])
 
+    def test_external_names_are_not_resolved(self):
+        doc = self.doc('<!-- cite-external: dist/sw.js -->\n| `beta` | `dist/sw.js:4`, `src/a.ts:2` |\n')
+        self.assertEqual(check_file(doc, self.root), [])
+        doc = self.doc('| `beta` | `dist/sw.js:4`, `src/a.ts:2` |\n')
+        self.assertIn('not in the tree', check_file(doc, self.root)[0][1])
+
+    def test_row_marker_skips_the_identifier_check_only(self):
+        doc = self.doc('| `gamma` | `src/a.ts:1` <!-- cite-ids: none --> |\n')
+        self.assertEqual(check_file(doc, self.root), [])
+        doc = self.doc('| `gamma` | `src/a.ts:40` <!-- cite-ids: none --> |\n')
+        self.assertIn('outside the file', check_file(doc, self.root)[0][1])
+
     def test_missing_header_fails(self):
         doc = self.doc('| `beta` | `src/a.ts:2` |\n', ref='none')
         self.assertEqual(check_file(doc, self.root), [(0, 'missing <!-- cite-ref: <sha> --> header')])

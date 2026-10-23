@@ -93,6 +93,10 @@ describe('Worker AI route security', () => {
     // No Stripe secrets are set in the test env, so authorization and both
     // rate-limit buckets run before the route returns its configuration error.
     expect(response.status).toBe(503);
+    // The caller is not told which secrets are missing; the names go to the Worker log only.
+    const body = await response.json() as Record<string, unknown>;
+    expect(body).toEqual({ error: 'This service is not configured yet.' });
+    expect(JSON.stringify(body)).not.toContain('STRIPE');
     expect(rateLimitMock.mock.calls.map(([, key]) => key)).toEqual([
       'billing:ip:203.0.113.42',
       'billing:uid:firebase-user',

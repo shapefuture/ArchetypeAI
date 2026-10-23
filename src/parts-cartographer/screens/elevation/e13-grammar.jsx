@@ -11,6 +11,7 @@ const COPY = {
   en: {
     kicker: 'What you can save or undo',
     ask: 'The same controls work the same way in each area. This is a plain map of where each one is available.',
+    area: 'Area',
     paths: { assessment: 'Assessment', map: 'Your map', coach: 'Coach', booking: 'Booking' },
     primitives: { save: 'Save', undo: 'Undo', pause: 'Pause', inspect: 'Look at what is saved', return: 'Go back' },
     yes: 'Yes',
@@ -20,11 +21,12 @@ const COPY = {
   ru: {
     kicker: 'Что можно сохранить или отменить',
     ask: 'Одни и те же действия работают одинаково в каждом разделе. Здесь показано, где что доступно.',
-    paths: { assessment: 'Опросник', map: 'Ваша карта', coach: 'Наставник', booking: 'Запись' },
+    area: 'Раздел',
+    paths: { assessment: 'Тест', map: 'Ваша карта', coach: 'ИИ-коуч', booking: 'Запись' },
     primitives: { save: 'Сохранить', undo: 'Отменить', pause: 'Пауза', inspect: 'Посмотреть сохранённое', return: 'Вернуться' },
     yes: 'Да',
     no: 'Недоступно',
-    free: 'Поддержка без опросника',
+    free: 'Поддержка без теста',
   },
 };
 
@@ -38,7 +40,7 @@ export function GrammarPanel() {
       <table className="mt8" style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th scope="col" style={{ textAlign: 'left' }}> </th>
+            <th scope="col" style={{ textAlign: 'left' }}>{copy.area}</th>
             {PRIMITIVES.map((primitive) => <th key={primitive} scope="col">{copy.primitives[primitive]}</th>)}
           </tr>
         </thead>

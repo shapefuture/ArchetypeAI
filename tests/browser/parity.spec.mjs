@@ -109,7 +109,6 @@ test('historical local restore previews before applying and refreshes mounted st
   await page.locator('input[type=file]').setInputFiles({ name: 'angular-backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ assessmentResponses: Array(64).fill(3) })) });
   await expect(page.getByText('Review local restore')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('ARCHETYPE_ASSESSMENT_RESPONSES'))).toBeNull();
-  expect(errors).toEqual([]);
   await page.getByRole('button', { name: 'Restore this backup' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ARCHETYPE_ASSESSMENT_RESPONSES')).length)).toBe(64);

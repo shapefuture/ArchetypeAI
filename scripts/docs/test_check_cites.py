@@ -57,6 +57,16 @@ class CheckCitesTest(unittest.TestCase):
         doc = self.doc('| `gamma` | `src/a.ts:1` |\n')
         self.assertIn('none of gamma appears', check_file(doc, self.root)[0][1])
 
+    def test_identifier_in_the_enclosing_block_passes(self):
+        doc = self.doc('| `beta` | `src/a.ts:3` (`beta`) |\n')
+        self.assertEqual(check_file(doc, self.root), [])
+
+    def test_identifier_far_above_the_cited_lines_fails(self):
+        filler = ''.join(f'const pad{i} = {i};\n' for i in range(60))
+        sha = make_repo(self.root, {'src/far.ts': 'export function gamma() {}\n' + filler})
+        doc = self.doc('| `gamma` | `src/far.ts:61` |\n', ref=sha)
+        self.assertIn('none of gamma appears', check_file(doc, self.root)[0][1])
+
     def test_relative_cite_uses_last_path_in_the_row(self):
         doc = self.doc('| `beta` | `src/a.ts:2` and `:3` (`alpha`) |\n')
         self.assertEqual(check_file(doc, self.root), [])

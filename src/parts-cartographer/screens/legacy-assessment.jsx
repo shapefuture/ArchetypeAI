@@ -12,6 +12,7 @@ import { LegacyClinicalReport } from './legacy-report.jsx';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
 import { writeLegacy64Draft } from '../core/legacy64-responses.ts';
 import { SaveStatus } from '../ui/save-status.jsx';
+import { DraftConflictNotice, useOtherTabDraft } from '../ui/draft-conflict.jsx';
 
 const RESPONSE_KEY = ROUTE_KEYS.reflection64.responses;
 const INDEX_KEY = ROUTE_KEYS.reflection64.index;
@@ -25,6 +26,17 @@ function readResponses() {
     return saved.map((value) => Number.isInteger(value) && value >= 1 && value <= 5 ? value : 0);
   } catch {
     return Array(TOTAL).fill(0);
+  }
+}
+
+/** Another tab's saved 64-item answers, or null when they cannot be read. 0 marks an unanswered item. */
+function parseOtherTabAnswers(raw) {
+  try {
+    const value = JSON.parse(raw);
+    return Array.isArray(value) && value.length === TOTAL
+      && value.every((answer) => Number.isInteger(answer) && answer >= 0 && answer <= 5) ? value : null;
+  } catch {
+    return null;
   }
 }
 
@@ -49,6 +61,8 @@ export function Legacy64Assessment() {
   const saveUi = DESCENT_UI[lang] ?? DESCENT_UI.en;
   /** 'idle' until the first write; 'saved' only after the store read the answers back. */
   const [save, setSave] = useState({ status: 'idle' });
+  const [conflict, clearConflict] = useOtherTabDraft(RESPONSE_KEY, parseOtherTabAnswers,
+    (theirs) => theirs.every((answer, i) => answer === answers[i]));
   const [answers, setAnswers] = useState(readResponses);
   const [index, setIndex] = useState(() => readQuestionIndex(readResponses()));
   const [stage, setStage] = useState(() => {
@@ -87,8 +101,26 @@ export function Legacy64Assessment() {
   const answered = answers.filter((answer) => answer > 0).length;
 
   const saveAnswers = (nextAnswers, nextIndex) => {
+    // While another tab's change is unresolved, nothing is written, so neither set is overwritten.
+    if (conflict) return;
     // Answers stay in memory when storage fails; the status below says so.
     const written = writeLegacy64Draft(nextAnswers, nextIndex);
+    setSave(written.ok ? { status: 'saved' } : { status: 'failed', reason: written.reason });
+  };
+
+  const useOtherTabAnswers = () => {
+    if (conflict?.kind !== 'changed') return;
+    const theirs = conflict.draft;
+    clearConflict();
+    setAnswers(theirs);
+    setIndex(readQuestionIndex(theirs));
+    setSave({ status: 'saved' });
+    if (theirs.every((answer) => answer >= 1 && answer <= 5)) showResults(theirs);
+  };
+
+  const keepThisTabAnswers = () => {
+    clearConflict();
+    const written = writeLegacy64Draft(answers, index);
     setSave(written.ok ? { status: 'saved' } : { status: 'failed', reason: written.reason });
   };
 
@@ -377,7 +409,8 @@ export function Legacy64Assessment() {
           <button className="btn grow" disabled={index <= 0} onClick={previous}>‹ {copy.previous}</button>
           <button className="btn grow" disabled={response < 1 || index >= TOTAL - 1} onClick={next}>{t('next')} ›</button>
         </div>
-        <SaveStatus ui={saveUi} save={save} onRetry={() => saveAnswers(answers, index)} />
+        <DraftConflictNotice ui={saveUi} conflict={conflict} onUseTheirs={useOtherTabAnswers} onKeepMine={keepThisTabAnswers} />
+        {!conflict && <SaveStatus ui={saveUi} save={save} onRetry={() => saveAnswers(answers, index)} />}
         <button className="btn ghost block mt12" onClick={leave}>{copy.cancel}</button>
       </div>
     </div>

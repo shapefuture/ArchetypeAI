@@ -29,8 +29,8 @@ def mission():
 
 def snapshot():
     return {"items": [
-        {"id": "ROOT", "issue_type": "epic", "status": "open", "title": "Complete program"},
-        {"id": "TASK", "issue_type": "task", "parent": "ROOT", "status": "open", "title": "Behavior", "notes": "PRIVATE-NOTE"},
+        {"id": "ROOT", "issue_type": "epic", "status": "open", "title": "Complete program", "acceptance_criteria": "Whole approved program is verified"},
+        {"id": "TASK", "issue_type": "task", "parent": "ROOT", "status": "open", "title": "Behavior", "acceptance_criteria": "A real behavior works and fails safely", "notes": "PRIVATE-NOTE"},
     ], "ready_ids": ["TASK"]}
 
 
@@ -111,6 +111,14 @@ class GuardTests(unittest.TestCase):
             row["metadata"] = accept()
         self.assertIn("cannot authenticate", delivery.require_complete(self.config, self.inspect(), "git:verified"))
 
+    def test_missing_live_acceptance_criteria_prevents_completion(self):
+        for row in self.data["items"]:
+            row.update(status="closed", metadata=accept())
+        self.data["ready_ids"] = []
+        self.data["items"][1]["acceptance_criteria"] = ""
+        with self.assertRaisesRegex(delivery.DeliveryError, "live acceptance criteria are missing"):
+            delivery.require_complete(self.config, self.inspect())
+
     def test_stale_builder_review_and_unobserved_evidence_fail_acceptance(self):
         for row in self.data["items"]:
             row.update(status="closed", metadata=accept())
@@ -137,6 +145,91 @@ class GuardTests(unittest.TestCase):
         with patch.dict(delivery.os.environ, {}, clear=True), patch.object(delivery.shutil, "which", return_value=None):
             with self.assertRaisesRegex(delivery.DeliveryError, "do not initialize/import or read an export"):
                 delivery.Tracker(self.project, self.config).snapshot()
+
+    def test_configured_absolute_dolt_root_binds_live_tracker_without_local_fallback(self):
+        live_root = self.project / "live-dolt"
+        live_root.mkdir()
+        beads_dir = self.project / ".beads"
+        beads_dir.mkdir()
+        self.config["tracker"]["beads_dir"] = ".beads"
+        self.config["tracker"]["dolt_root"] = str(live_root)
+        ambient_dolt = self.project / "ambient-dolt"
+        ambient_dolt.mkdir()
+        ambient_beads = self.project / "ambient-beads"
+        ambient_beads.mkdir()
+        with patch.dict(delivery.os.environ, {"DOLT_ROOT_PATH": str(ambient_dolt), "BEADS_DIR": str(ambient_beads)}, clear=True), \
+                patch.object(delivery.shutil, "which", return_value="/bin/bd"), \
+                patch.object(delivery.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "{}", "")) as run:
+            delivery.Tracker(self.project, self.config).run("list")
+        self.assertEqual(run.call_args.kwargs["env"]["DOLT_ROOT_PATH"], str(live_root.resolve()))
+        self.assertEqual(run.call_args.kwargs["env"]["BEADS_DIR"], str(beads_dir.resolve()))
+        self.assertFalse((self.project / ".delivery/runtime/dolt").exists())
+
+    def test_missing_configured_absolute_dolt_root_fails_closed(self):
+        live_root = self.project / "missing-live-dolt"
+        fallback = self.project / "ambient-dolt"
+        fallback.mkdir()
+        self.config["tracker"]["dolt_root"] = str(live_root)
+        with patch.dict(delivery.os.environ, {"DOLT_ROOT_PATH": str(fallback)}, clear=True), \
+                patch.object(delivery.shutil, "which", return_value="/bin/bd"), \
+                patch.object(delivery.subprocess, "run") as run:
+            with self.assertRaisesRegex(delivery.DeliveryError, "refusing to initialize or use another database"):
+                delivery.Tracker(self.project, self.config).run("list")
+        run.assert_not_called()
+        self.assertFalse(live_root.exists())
+
+    def test_missing_relative_dolt_root_fails_closed_without_creating_a_database(self):
+        relative_root = self.project / ".delivery/runtime/dolt"
+        with patch.dict(delivery.os.environ, {}, clear=True), \
+                patch.object(delivery.shutil, "which", return_value="/bin/bd"), \
+                patch.object(delivery.subprocess, "run") as run:
+            with self.assertRaisesRegex(delivery.DeliveryError, "refusing to initialize or use another database"):
+                delivery.Tracker(self.project, self.config).run("list")
+        run.assert_not_called()
+        self.assertFalse(relative_root.exists())
+
+    def test_missing_configured_beads_workspace_fails_closed(self):
+        fallback = self.project / "ambient-beads"
+        fallback.mkdir()
+        self.config["tracker"]["beads_dir"] = ".missing-beads"
+        with patch.dict(delivery.os.environ, {"BEADS_DIR": str(fallback)}, clear=True), \
+                patch.object(delivery.shutil, "which", return_value="/bin/bd"), \
+                patch.object(delivery.subprocess, "run") as run:
+            with self.assertRaisesRegex(delivery.DeliveryError, "refusing tracker auto-discovery"):
+                delivery.Tracker(self.project, self.config).run("list")
+        run.assert_not_called()
+        self.assertFalse((self.project / ".missing-beads").exists())
+
+    def test_configured_beads_paths_must_be_nonempty_strings(self):
+        for key in ["binary", "beads_dir", "dolt_root"]:
+            config = mission()
+            config["tracker"][key] = []
+            with self.subTest(key=key), self.assertRaisesRegex(delivery.DeliveryError, f"Configured Beads {key}"):
+                delivery.validate_config(config)
+
+    def test_mission_reference_checks_every_summary_field(self):
+        (self.project / ".delivery").mkdir()
+        (self.project / ".delivery/mission.json").write_text(json.dumps(self.config))
+        reference = json.loads(delivery.mission_memory(self.config, self.project))
+        self.assertEqual(delivery.mission_memory_mismatches(reference, self.config, self.project), [])
+        stale_values = {
+            "objective": "stale objective",
+            "mission_file": "other.json",
+            "mission_sha256": "0" * 64,
+            "root_ids": ["OTHER"],
+            "linked_task_ids": ["OTHER"],
+            "authorization": {"implementation": False},
+            "constraints": ["stale constraint"],
+            "requirement_count": 999,
+            "scope_record_count": -1,
+            "unresolved_acceptance_criteria": ["OTHER"],
+            "contract_versions": {"contract": "stale"},
+        }
+        for field, stale_value in stale_values.items():
+            with self.subTest(field=field):
+                tampered = {**reference, field: stale_value}
+                self.assertEqual(delivery.mission_memory_mismatches(tampered, self.config, self.project), [field])
+        self.assertEqual(delivery.mission_memory_mismatches([], self.config, self.project), ["<not-an-object>"])
 
     def test_artifact_symlink_cannot_escape_project(self):
         with tempfile.TemporaryDirectory() as outside:
@@ -349,6 +442,17 @@ class PortableCLITests(unittest.TestCase):
             tool = installed / "scripts/delivery.py"
             run(tool, "schema", "--project", str(project))
             run(tool, "remember-mission", "--project", str(project))
+            state = json.loads(state_path.read_text())
+            mission_reference = json.loads(state["memories"][config["memory_keys"]["mission"]])
+            self.assertEqual(mission_reference["mission_file"], ".delivery/mission.json")
+            self.assertEqual(mission_reference["mission_sha256"], delivery.hashlib.sha256((project / ".delivery/mission.json").read_bytes()).hexdigest())
+            self.assertEqual(mission_reference["requirement_count"], 1)
+            self.assertNotIn("requirements", mission_reference)
+            state["memories"][config["memory_keys"]["mission"]] = json.dumps({**mission_reference, "linked_task_ids": ["STALE"]})
+            state_path.write_text(json.dumps(state))
+            stale_session = run(tool, "session", "--project", str(project))
+            self.assertIn("RECOVERY WARNING: remembered mission reference differs in linked_task_ids", stale_session.stdout)
+            run(tool, "remember-mission", "--project", str(project))
             status = json.loads(run(tool, "status", "--project", str(project), "--json").stdout)
             self.assertEqual(status["ready_ids"], ["TASK", "TASK-2"])
             run(tool, "status", "--task", "ABSENT", expected=2)
@@ -367,6 +471,7 @@ class PortableCLITests(unittest.TestCase):
             result = subprocess.run(command, shell=True, cwd=outer, env=env, capture_output=True, text=True, timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn('"next": "TASK-2"', result.stdout)
+            self.assertIn("RESTORED MISSION REFERENCE", result.stdout)
             self.assertNotIn("PRIVATE-NOTE", result.stdout)
             subprocess.run(["git", "init", "-q"], cwd=project, check=True, capture_output=True)
             subprocess.run(["git", "add", "."], cwd=project, check=True, capture_output=True)

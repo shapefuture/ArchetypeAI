@@ -6,8 +6,8 @@ import { Subscription } from 'rxjs';
 // static graph clean.
 import type { VisualizationService } from './services/webxr.service';
 import { UniverseStateService } from './services/universe-state.service';
-import { localSet, localSetRaw, localGet, localRemove, flushLocal } from './app/core/data/local-store';
-import { STRINGS } from './i18n/strings';
+import { localSet, localSetRaw, localGet, localRemove, flushLocal } from './shared/core/data/local-store';
+import { STRINGS } from './shared/i18n/strings';
 import type { Archetype, Dimension, DimensionalExpressions } from './services/universe-state.service';
 import { GeminiService, ChatMessage, CoachResponse, GeneratedArchetype, AssessmentAnalysis } from './services/gemini.service';
 import { marked } from 'marked';
@@ -28,15 +28,15 @@ import { TherapistPanelComponent } from './app/features/therapist-panel/therapis
 import { InstallPromptComponent } from './app/shared/install-prompt/install-prompt.component';
 import { InstallService } from './services/install.service';
 import { SynastryCompareComponent } from './app/features/synastry-compare/synastry-compare.component';
-import { scoreProfile, type AssessmentInput, type ScoredProfile } from './app/core/data/scoring-v2';
+import { scoreProfile, type AssessmentInput, type ScoredProfile } from './shared/core/data/scoring-v2';
 import { recordAndStore, syncTelemetry, loadTelemetry } from './app/core/data/telemetry';
 import { ResultsPanelComponent, AssessmentResults } from './app/features/results-panel/results-panel.component';
 import { UniverseControlsComponent } from './app/features/universe-controls/universe-controls.component';
 import { SynastryPanelComponent } from './app/features/synastry-panel/synastry-panel.component';
 import { SpecialistClientService } from './services/specialist-client.service';
 
-import { ASSESSMENT_QUESTIONS } from './app/core/data/assessment-questions';
-import { computePoleScores, generateArchetypes } from './app/core/data/scoring';
+import { ASSESSMENT_QUESTIONS } from './shared/core/data/assessment-questions';
+import { computePoleScores, generateArchetypes } from './shared/core/data/scoring';
 import { cardPopIn } from './app/core/animations/storybook.animations';
 import { gsap } from 'gsap';
 import { LandingComponent } from './app/features/landing/landing.component';

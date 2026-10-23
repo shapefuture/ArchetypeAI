@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import type { Group } from 'three';
-import { IV_PARTS, loadLooks, type IvPart } from '../app/features/landing/stickers';
+import { IV_PARTS, loadLooks, type IvPart } from '../shared/features/landing/stickers';
 import type { Archetype } from './universe-state.service';
 import { generate, generateSet, hashStr } from '../../felt-atelier/src/dna.js';
 import type {

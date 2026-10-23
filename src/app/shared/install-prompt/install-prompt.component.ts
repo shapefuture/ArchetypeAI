@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { STRINGS } from '../../../i18n/strings';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { InstallService } from '../../../services/install.service';
 import { TranslationService } from '../../../services/translation.service';

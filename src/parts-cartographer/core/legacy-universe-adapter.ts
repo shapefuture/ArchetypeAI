@@ -10,7 +10,7 @@ import {
   type Part,
   type Traits,
 } from '../pal/traits';
-import type { ScoredArchetype } from '../../app/core/data/scoring';
+import type { ScoredArchetype } from '../../shared/core/data/scoring';
 import type { LegacyAssessmentReport } from '../screens/legacy-report-data';
 import type { LegacyAiArchetype } from './legacy-ai-analysis';
 
@@ -61,7 +61,9 @@ function aiArchetype(item: LegacyAiArchetype | undefined, base: ScoredArchetype)
  */
 export function buildLegacyUniverseParts(report: LegacyAssessmentReport, aiMode = false): Part[] {
   const aiPantheon = aiMode && report.aiAnalysis ? report.aiAnalysis.pantheon : [];
-  return report.archetypes.map((base, index) => {
+  // An applied AI pantheon replaces report.archetypes for narrative; placement stays on the deterministic list.
+  const placement = report.deterministicArchetypes ?? report.archetypes;
+  return placement.map((base, index) => {
     const content = aiArchetype(aiPantheon[index], base);
     const coordinates = coordinateTuple(base.coordinates);
     const cluster = String(base.cluster || 'gift_archetypes').replace(/[^a-z0-9_]/gi, '_');
@@ -73,6 +75,7 @@ export function buildLegacyUniverseParts(report: LegacyAssessmentReport, aiMode 
     const archetype: ArchetypeMapData = {
       schema: 'archetype-map.v1',
       sourceAssessment: 'legacy64',
+      coordinateBasis: 'response-derived-64',
       coordinates,
       cluster: base.cluster,
       prominence,

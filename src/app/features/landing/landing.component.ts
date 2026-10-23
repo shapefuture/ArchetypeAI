@@ -26,8 +26,8 @@ import {
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TranslationService } from '../../../services/translation.service';
 import { InstallService } from '../../../services/install.service';
-import { PART_COPY } from '../../core/data/part-copy';
-import { localGet } from '../../core/data/local-store';
+import { PART_COPY } from '../../../shared/core/data/part-copy';
+import { localGet } from '../../../shared/core/data/local-store';
 import {
   EYE_KINDS,
   IV_PARTS,
@@ -49,8 +49,8 @@ import {
   type IvPart,
   type MouthKind,
   type PartLook,
-} from './stickers';
-import { STRINGS } from '../../../i18n/strings';
+} from '../../../shared/features/landing/stickers';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { FeltCharacterService } from '../../../services/felt-character.service';
 import { ALL_ARCHETYPES } from '../../../services/universe-state.service';
 

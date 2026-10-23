@@ -8,8 +8,8 @@
  * exact payload a future endpoint would receive. Nothing leaves the device
  * without explicit user action.
  */
-import type { AssessmentInput } from './scoring-v2';
-import { SHADOW_PARTS, RESOURCES, SELF_QUALITIES, type ShadowPartId, type ResourceId } from './parts';
+import type { AssessmentInput } from '../../../shared/core/data/scoring-v2';
+import { SHADOW_PARTS, RESOURCES, SELF_QUALITIES, type ShadowPartId, type ResourceId } from '../../../shared/core/data/parts';
 
 const STORE_KEY = 'INNERVERSE_TELEMETRY_V1';
 

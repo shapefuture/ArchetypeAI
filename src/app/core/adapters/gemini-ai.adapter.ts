@@ -1,10 +1,10 @@
 import { Injectable, inject, signal } from '@angular/core';
 import type { Archetype, DimensionalExpressions } from '../../../services/universe-state.service';
 import { TranslationService } from '../../../services/translation.service';
-import { generateArchetypes, ScoredArchetype } from '../data/scoring';
+import { generateArchetypes, ScoredArchetype } from '../../../shared/core/data/scoring';
 import { environment } from '../../../environments/environment';
 import { getFirebaseIdToken } from '../../../environments/firebase-id-token';
-import { ResilientExecutor, isRetryableFailure, OperationCancelledError } from './resilience';
+import { ResilientExecutor, isRetryableFailure, OperationCancelledError } from '../../../shared/core/adapters/resilience';
 import { buildStudioArchetypeId, createStudioArchetype } from '../ai/studio-creator';
 import {
   AIRequest,
@@ -140,7 +140,7 @@ export class GeminiAiAdapter implements AiPort {
   });
 
   /** Last degradation observed on this adapter (CROSS-01 visibility). */
-  readonly lastDegradation = signal<import('./resilience').DegradationDescriptor | null>(null);
+  readonly lastDegradation = signal<import('../../../shared/core/adapters/resilience').DegradationDescriptor | null>(null);
 
   async callAI(payload: AIRequest, options?: { signal?: AbortSignal; timeoutMs?: number }): Promise<string> {
     const TIMEOUT_MS = options?.timeoutMs ?? 180_000; // 180s client-side timeout to allow full failover window and massive generation on Worker
@@ -345,7 +345,7 @@ Analyze the user's prompt and thoughtfully assign the four coordinate values and
       : (lang === 'ru' ? 'Недоступно' : 'Not available');
 
     // Phase 4: Enrich with clinical-grade computed data
-    const { computePoleScores: cp, detectComplexes: dc, computeDefenseHierarchy: ddh, computeTriggerMap: dtm, computeRegulationCapacity: drc, computeBoundaryStyle: dbs, computeNarrativeCoherence: dnc, computeDissociation: ddi } = await import('../data/scoring');
+    const { computePoleScores: cp, detectComplexes: dc, computeDefenseHierarchy: ddh, computeTriggerMap: dtm, computeRegulationCapacity: drc, computeBoundaryStyle: dbs, computeNarrativeCoherence: dnc, computeDissociation: ddi } = await import('../../../shared/core/data/scoring');
     const poles = cp(answers);
 
     // Map algorithm-computed pole scores (8 fields, 4 dimension pairs) to the

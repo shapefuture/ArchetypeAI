@@ -1,18 +1,18 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, input, output, effect, Injector, ChangeDetectorRef, ElementRef, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
-import { localSet, localGet } from '../../core/data/local-store';
-import { STRINGS } from '../../../i18n/strings';
+import { localSet, localGet } from '../../../shared/core/data/local-store';
+import { STRINGS } from '../../../shared/i18n/strings';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../services/translation.service';
 import { GeminiService, GeneratedArchetype } from '../../../services/gemini.service';
 import { UniverseStateService } from '../../../services/universe-state.service';
 import type { DimensionalExpressions } from '../../../services/universe-state.service';
 import { BlobCharacterComponent } from '../../shared/components/blob-character/blob-character.component';
-import { ASSESSMENT_QUESTIONS } from '../../core/data/assessment-questions';
-import { PartsDynamic, PoleScores, computePoleScores, detectComplexes, computeDefenseHierarchy, computeTriggerMap, computeIntegrationPathway, computeDissociation, computeRegulationCapacity, computeBoundaryStyle, computeNarrativeCoherence, generateArchetypes, Complex, DefenseHierarchy, TriggerEntry, PathwayStep, DissociationIndicator, RegulationCapacity, BoundaryAssessment, CoherenceIndicator, ScoredArchetype } from '../../core/data/scoring';
+import { ASSESSMENT_QUESTIONS } from '../../../shared/core/data/assessment-questions';
+import { PartsDynamic, PoleScores, computePoleScores, detectComplexes, computeDefenseHierarchy, computeTriggerMap, computeIntegrationPathway, computeDissociation, computeRegulationCapacity, computeBoundaryStyle, computeNarrativeCoherence, generateArchetypes, Complex, DefenseHierarchy, TriggerEntry, PathwayStep, DissociationIndicator, RegulationCapacity, BoundaryAssessment, CoherenceIndicator, ScoredArchetype } from '../../../shared/core/data/scoring';
 
 
 
-import { parseReportMarkdown } from './report-parser';
+import { parseReportMarkdown } from '../../../shared/features/results-panel/report-parser';
 
 export interface AssessmentResults {
   analysis: string;

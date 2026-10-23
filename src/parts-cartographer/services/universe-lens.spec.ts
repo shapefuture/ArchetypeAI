@@ -3,8 +3,11 @@ import {
   archetypeCoordinatePosition,
   archetypeLensOffset,
   coordinateAffinity,
+  DEFAULT_AXES,
   dimensionalLensOffset,
+  normalizeAxes,
   sanitizeArchetypeCoordinates,
+  setAxisChoice,
   ZERO_DIMENSIONS,
 } from './universe-lens';
 
@@ -57,6 +60,19 @@ describe('universe dimensional lens', () => {
     expectOffset(dimensionalLensOffset('exile', dimensions({ TEMPERATURE: 1 })), [0, 2.08, 0]);
     expectOffset(dimensionalLensOffset('resource', dimensions({ FOCUS: 1 })), [1.12, 0, 0]);
     expectOffset(dimensionalLensOffset('firefighter', dimensions({ ATTACHMENT: 1 })), [0, 1.6, 1.6]);
+  });
+
+  it('keeps the three spatial axes distinct when a chosen axis is already in use', () => {
+    expect(setAxisChoice(['AGENCY', 'TEMPERATURE', 'FOCUS'], 1, 'AGENCY')).toEqual(['TEMPERATURE', 'AGENCY', 'FOCUS']);
+    expect(setAxisChoice(['AGENCY', 'TEMPERATURE', 'FOCUS'], 0, 'AGENCY')).toEqual(['AGENCY', 'TEMPERATURE', 'FOCUS']);
+    expect(setAxisChoice(['AGENCY', 'TEMPERATURE', 'FOCUS'], 2, 'ATTACHMENT')).toEqual(['AGENCY', 'TEMPERATURE', 'ATTACHMENT']);
+  });
+
+  it('normalizes unusable axis tuples to the default distinct projection', () => {
+    expect(normalizeAxes(['AGENCY', 'AGENCY', 'FOCUS'])).toEqual(DEFAULT_AXES);
+    expect(normalizeAxes(['ATTACHMENT', 'TEMPERATURE', 'AGENCY'])).toEqual(['ATTACHMENT', 'TEMPERATURE', 'AGENCY']);
+    expect(normalizeAxes(['AGENCY', 'NOPE', 'FOCUS'])).toEqual(DEFAULT_AXES);
+    expect(normalizeAxes(undefined)).toEqual(DEFAULT_AXES);
   });
 
   it('combines expressions linearly and differentiates family clusters', () => {

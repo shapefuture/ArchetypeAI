@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { flushLocal, resetLocalQueueForTests } from '../../core/data/local-store';
+import { flushLocal, resetLocalQueueForTests } from '../../../shared/core/data/local-store';
 import { DescentPanelComponent } from './descent-panel.component';
-import { scoreProfile } from '../../core/data/scoring-v2';
+import { scoreProfile } from '../../../shared/core/data/scoring-v2';
 
 /**
  * Like the other templateUrl components in this repo, the descent panel is

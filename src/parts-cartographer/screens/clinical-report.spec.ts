@@ -1,8 +1,8 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { scoreProfile } from '../../app/core/data/scoring-v2';
-import { toAssessmentInput } from '../../app/core/data/assessment-adapter';
+import { scoreProfile } from '../../shared/core/data/scoring-v2';
+import { toAssessmentInput } from '../../shared/core/data/assessment-adapter';
 import { adaptClinicalProfile } from '../core/clinical-profile-adapter';
 import { buildClinicalMarkdown } from '../core/clinical-report';
 import { KEYS } from '../core/local-store';

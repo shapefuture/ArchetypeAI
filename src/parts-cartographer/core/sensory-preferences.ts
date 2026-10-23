@@ -23,6 +23,13 @@ export function selectSensoryPreset(preset: MotionMode): SensoryPreferences {
   return { ...PRESETS[preset] };
 }
 
+const SCENE_CLOCK_STEP: Record<MotionMode, number> = { still: 0, gentle: 0.002, lively: 0.006 };
+
+/** Per-frame advance of the ambient scene clock. System reduced motion always stops it, whatever the preset. */
+export function sceneClockStep(mode: MotionMode, systemReducedMotion: boolean): number {
+  return systemReducedMotion ? 0 : SCENE_CLOCK_STEP[mode];
+}
+
 export function updateSensoryPreference<K extends keyof Pick<SensoryPreferences, 'motion' | 'sound' | 'texture' | 'density'>>(
   current: SensoryPreferences,
   key: K,
@@ -56,6 +63,11 @@ export function loadSensoryPreferences(storage = localStoragePort()): SensoryPre
   } catch { return { ...DEFAULT_SENSORY_PREFERENCES }; }
 }
 
-export function saveSensoryPreferences(preferences: SensoryPreferences, storage = localStoragePort()): void {
-  try { storage?.setItem(SENSORY_PREFERENCES_KEY, JSON.stringify(normalizeSensoryPreferences(preferences))); } catch { /* unavailable or full storage */ }
+/** Returns false when the choice could not be stored; the caller keeps it for this session only. */
+export function saveSensoryPreferences(preferences: SensoryPreferences, storage = localStoragePort()): boolean {
+  try {
+    if (!storage) return false;
+    storage.setItem(SENSORY_PREFERENCES_KEY, JSON.stringify(normalizeSensoryPreferences(preferences)));
+    return true;
+  } catch { return false; /* denied, unavailable, or full storage */ }
 }

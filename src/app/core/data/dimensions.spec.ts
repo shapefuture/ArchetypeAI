@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { partDimensions, weakestAxis, AXIS_TARGET } from './dimensions';
 import type { DimensionTelemetry } from './dimensions';
-import { SHADOW_PARTS, RESOURCES } from './parts';
-import type { AssessmentInput } from './scoring-v2';
-import { scoreProfile } from './scoring-v2';
+import { SHADOW_PARTS, RESOURCES } from '../../../shared/core/data/parts';
+import type { AssessmentInput } from '../../../shared/core/data/scoring-v2';
+import { scoreProfile } from '../../../shared/core/data/scoring-v2';
 
 const input = (fill: number): AssessmentInput => {
   const shadow = {} as AssessmentInput['shadow'];

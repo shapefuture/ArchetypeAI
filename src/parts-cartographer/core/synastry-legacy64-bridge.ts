@@ -1,5 +1,5 @@
 /** Adapter for the Angular ResultsPanel's 64-response synastry computation. */
-import { computeSynastry, type SynastryReport } from '../../app/core/data/synastry';
+import { computeSynastry, type SynastryReport } from '../../shared/core/data/synastry';
 import type { SynastryResult } from './synastry-v2';
 
 const AXES: Record<string, { en: string; ru: string }> = {

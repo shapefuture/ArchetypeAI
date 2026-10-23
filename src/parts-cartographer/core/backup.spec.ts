@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { applyBackup, exportBackup, prepareBackup } from './backup';
 import { KEYS, store } from './local-store';
-import { SHADOW_PARTS, RESOURCES } from '../../app/core/data/parts';
-import { scoreProfile } from '../../app/core/data/scoring-v2';
+import { SHADOW_PARTS, RESOURCES } from '../../shared/core/data/parts';
+import { scoreProfile } from '../../shared/core/data/scoring-v2';
 import { adaptClinicalProfile } from './clinical-profile-adapter';
-import { IV_PARTS } from '../../app/features/landing/stickers';
+import { IV_PARTS } from '../../shared/features/landing/stickers';
 import { snapshot, fromDocument } from './cloud-storage';
 import { validClinicalScore } from './profile-contract';
 
@@ -52,12 +52,35 @@ describe('cross-version local backup and cloud boundaries', () => {
     expect((imported.entries[KEYS.profile] as any).clinical).toEqual((prepared.entries[KEYS.profile] as any).clinical);
   });
 
+  it('round-trips the goal record and rejects a corrupt goal before any write', async () => {
+    const goal = { schema: 'goal.v1', id: 'goal-1', status: 'active', updatedAt: '2026-10-01T00:00:00.000Z', revision: 1,
+      season: { goals: ['Speak up in meetings'], endpoints: [] }, statementHistory: ['Speak up in meetings'], hypotheses: [], rejected: [], tools: [], outcomes: [] };
+    store.save('INNERVERSE_GOAL_V1', goal);
+    const exported = exportBackup();
+    localStorage.clear();
+    applyBackup(await prepareBackup(JSON.stringify(exported), 'en'));
+    expect(JSON.parse(localStorage.getItem('INNERVERSE_GOAL_V1')!)).toEqual(goal);
+    localStorage.clear();
+    await expect(prepareBackup(JSON.stringify({ ...exported, data: { ...exported.data, INNERVERSE_GOAL_V1: { schema: 'goal.v1' } } }), 'en')).rejects.toThrow();
+    expect(localStorage.length).toBe(0);
+  });
+
   it('rejects malformed answers, incomplete report contracts, pollution and unknown versions before writes', async () => {
     const malformed = input(); malformed.shadow[SHADOW_PARTS[0]][0] = 8;
     for (const text of [JSON.stringify(malformed), '{"__proto__":{}}', '{"schema":"parts-cartographer.backup.v9","data":{}}', JSON.stringify({ [KEYS.profile]: { testModel: 'angular-v2', clinical: {} } })]) {
       await expect(prepareBackup(text, 'en')).rejects.toThrow();
     }
     expect(localStorage.length).toBe(0);
+  });
+
+  it('restores canonical reference coordinates over a stale saved archetype while keeping user edits', async () => {
+    const parts = adaptClinicalProfile(scoreProfile(input() as any), 'en').parts;
+    const stale = { ...parts[0], need: 'kept edit', archetype: { ...parts[0].archetype!, coordinates: [0.9, 0.9, 0.9, 0.9] as [number, number, number, number] } };
+    const prepared = await prepareBackup(JSON.stringify(input()), 'en', [stale]);
+    const restored = (prepared.entries[KEYS.parts] as any[]).find((p) => p.id === parts[0].id);
+    expect(restored.archetype).toEqual(parts[0].archetype);
+    expect(restored.archetype.coordinateBasis).toBe('fixed-reference-147');
+    expect(restored.need).toBe('kept edit');
   });
 
   it('restores full and partial historical 64-item backups without confusing the two result routes', async () => {

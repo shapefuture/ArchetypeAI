@@ -10,7 +10,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { TranslationService } from './translation.service';
 import { FeltCharacterService } from './felt-character.service';
-import { loadLooks, sticker } from '../app/features/landing/stickers';
+import { loadLooks, sticker } from '../shared/features/landing/stickers';
 import { gsap } from 'gsap';
 
 

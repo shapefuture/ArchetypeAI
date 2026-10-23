@@ -25,7 +25,7 @@ const templateHtml = readFileSync(resolve(CABINET_DIR, 'cabinet.component.html')
 const stylesCss = readFileSync(resolve(CABINET_DIR, 'cabinet.component.css'), 'utf-8');
 const componentTs = readFileSync(resolve(CABINET_DIR, 'cabinet.component.ts'), 'utf-8');
 // i18n copy consolidated into strings.ts (translations.ts is now a re-export shim)
-const translationsTs = readFileSync(resolve(CABINET_DIR, '../../../i18n/strings.ts'), 'utf-8');
+const translationsTs = readFileSync(resolve(CABINET_DIR, '../../../shared/i18n/strings.ts'), 'utf-8');
 const landingHtml = readFileSync(resolve(CABINET_DIR, '../landing/landing.component.html'), 'utf-8');
 const appHtml = readFileSync(resolve(CABINET_DIR, '../../../app.component.html'), 'utf-8');
 const appTs = readFileSync(resolve(CABINET_DIR, '../../../app.component.ts'), 'utf-8');

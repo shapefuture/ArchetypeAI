@@ -116,7 +116,7 @@ The core implementation specification is [docs/80-20-plan.md](docs/80-20-plan.md
 ## Client app: React only (owner decision, 2026-10-23)
 
 - **React is the only maintained client.** All product work goes into `src/parts-cartographer/` (React/Vite) and the framework-free code it imports from `src/shared/` and `src/environments/`.
-- **The Angular app is frozen.** Do not add features, fixes or refactors to `src/app/`, `src/main.ts` or `angular.json`, and do not port React changes back to Angular. Keep it building only until it is removed. Removal is tracked as `ArchetypeAI-hi8.6` and happens after PR #7 merges.
+- **The Angular app is retired.** It was removed under `ArchetypeAI-hi8.6`; its sources remain in git history. Do not reintroduce Angular code, packages or build targets.
 - **Tasks that name Angular** (for example "Bridge React, Angular and worker consumers") are scoped to React and the worker. Each such Bead carries a dated comment recording this; their acceptance criteria text is unchanged.
 - **Russian copy** follows the consolidated `src/shared/i18n/strings.ts`. Address the user as «вы», never «ты», and use its terms: «Self-энергия», «сравнение» (synastry), «ИИ-коуч», «потребность», «нагрузка», «копия» (backup), «практика». Reuse an existing string before writing a new one.
 

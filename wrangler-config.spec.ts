@@ -27,3 +27,23 @@ describe('production Worker config (wrangler.api.toml)', () => {
     }
   });
 });
+
+// wrangler.toml deploys the same Worker with the static app. Production vars
+// carry production origins only (owner decision); `wrangler dev` without a
+// config keeps localhost through the default in worker-security.ts.
+describe('app Worker config (wrangler.toml)', () => {
+  it('allows only HTTPS production origins', () => {
+    const app = readFileSync('wrangler.toml', 'utf8');
+    const origins = (app.match(/^ALLOWED_APP_ORIGINS\s*=\s*"([^"]*)"/m)?.[1] ?? '').split(',').map((origin) => origin.trim()).filter(Boolean);
+    expect(origins.length).toBeGreaterThan(0);
+    for (const origin of origins) {
+      expect(origin).toMatch(/^https:\/\//);
+      expect(origin).not.toMatch(/localhost|127\.0\.0\.1/);
+    }
+  });
+
+  it('keeps localhost in the code default for local wrangler dev', () => {
+    const defaults = readFileSync('worker-security.ts', 'utf8').match(/DEFAULT_ALLOWED_APP_ORIGINS = \[([\s\S]*?)\]/)?.[1] ?? '';
+    expect(defaults).toContain('http://localhost:5174');
+  });
+});

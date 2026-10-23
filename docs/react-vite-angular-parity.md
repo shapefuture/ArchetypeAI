@@ -1,5 +1,7 @@
 # React/Vite ↔ Angular feature traceability
 
+> **Status, 2026-10-23:** the Angular app was retired (`ArchetypeAI-hi8.6`). React is the only client. This document is kept as the historical parity record; paths under `src/app/` refer to git history. Live release sign-off for the React app remains tracked by **ArchetypeAI-hi8.5**.
+
 Updated 2026-10-03. The React core implementation has local fixture, emulator and browser evidence. Live/manual release acceptance remains tracked by **ArchetypeAI-hi8.5**. Angular stays buildable; successful local tests do not certify deployed integrations.
 
 | Angular reference | React implementation / entry | Verification |

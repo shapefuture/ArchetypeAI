@@ -113,6 +113,13 @@ bd close <id>         # Complete work
 
 The core implementation specification is [docs/80-20-plan.md](docs/80-20-plan.md); the preserved archive is [docs/oldplan.md](docs/oldplan.md). [docs/beads-roadmap.md](docs/beads-roadmap.md) maps the dependency-aware core roadmap rooted at `ArchetypeAI-28h`. The elevation, AAA and social/creative roots in the full mission above are equally in scope. Use the continuity guard to account for all roots, then inspect actual ready implementation work; do not mark a feature complete because its plan was written. Preserve the authored loading screen, merged Felt identity, independently controllable sensory richness, the plush inner-cosmos grammar, the four core paths, and the therapist's complete 3+1-axis analytical workspace with explicit 64/147 coordinate provenance. Apply the plan's unprompted intuitiveness and real-service acceptance criteria.
 
+## Client app: React only (owner decision, 2026-10-23)
+
+- **React is the only maintained client.** All product work goes into `src/parts-cartographer/` (React/Vite) and the framework-free code it imports from `src/shared/` and `src/environments/`.
+- **The Angular app is frozen.** Do not add features, fixes or refactors to `src/app/`, `src/main.ts` or `angular.json`, and do not port React changes back to Angular. Keep it building only until it is removed. Removal is tracked as `ArchetypeAI-hi8.6` and happens after PR #7 merges.
+- **Tasks that name Angular** (for example "Bridge React, Angular and worker consumers") are scoped to React and the worker. Each such Bead carries a dated comment recording this; their acceptance criteria text is unchanged.
+- **Russian copy** follows the consolidated `src/shared/i18n/strings.ts`. Address the user as «вы», never «ты», and use its terms: «Self-энергия», «сравнение» (synastry), «ИИ-коуч», «потребность», «нагрузка», «копия» (backup), «практика». Reuse an existing string before writing a new one.
+
 <!-- full-plan-delivery:begin -->
 ## Full-plan delivery continuity
 

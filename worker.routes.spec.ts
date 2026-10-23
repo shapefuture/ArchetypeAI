@@ -130,3 +130,16 @@ describe('Worker AI route security', () => {
     expect(await response.json()).toEqual({ error: 'Request body is too large' });
   });
 });
+
+describe('non-API paths', () => {
+  it('answers 404 on the API-only deploy, which has no static assets binding', async () => {
+    const response = await worker.fetch(new Request('https://worker.example/'), makeEnv(), {} as any);
+    expect(response.status).toBe(404);
+  });
+
+  it('serves static assets when the app deploy binds them', async () => {
+    const env = { ...makeEnv(), ASSETS: { fetch: async () => new Response('app', { status: 200 }) } };
+    const response = await worker.fetch(new Request('https://worker.example/index.html'), env, {} as any);
+    expect(await response.text()).toBe('app');
+  });
+});

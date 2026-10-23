@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Steps } from '../ui/ui.jsx';
 import { SaveStatus } from '../ui/save-status.jsx';
+import { DraftConflictNotice, useOtherTabDraft } from '../ui/draft-conflict.jsx';
 import { telemetry } from '../core/telemetry.ts';
 import { toAssessmentInput } from '../../shared/core/data/assessment-adapter';
 import { scoreProfile } from '../../shared/core/data/scoring-v2';
@@ -10,8 +11,8 @@ import { CONSENT_TEXT, DESCENT_UI, FULL_ASSESSMENT_LIKERT_TEXTS } from '../i18n/
 import { adaptClinicalProfile } from '../core/clinical-profile-adapter.ts';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
 import {
-  DESCENT_DRAFT_SCHEMA, DESCENT_ITEM_COUNT, DESCENT_ITEM_IDS, DESCENT_LAST_INDEX,
-  discardLegacyDescentDraft, draftFromLegacy, fromPositional, readDescentDraft,
+  DESCENT_DRAFT_KEY, DESCENT_DRAFT_SCHEMA, DESCENT_ITEM_COUNT, DESCENT_ITEM_IDS, DESCENT_LAST_INDEX,
+  discardLegacyDescentDraft, draftFromLegacy, fromPositional, isDescentDraft, readDescentDraft,
   removeDescentDraft, resumePoint, writeDescentDraft,
 } from '../core/assessment-draft.ts';
 
@@ -42,6 +43,16 @@ function hasLegacyAssessment() {
   }
 }
 
+/** Another tab's saved draft, or null when it cannot be read. */
+function parseOtherTabDraft(raw) {
+  try {
+    const value = JSON.parse(raw);
+    return isDescentDraft(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 function validFutureSelf(answers) {
   const filled = answers.filter((answer) => answer.trim().length > 0);
   const sentences = filled.join(' ').split(/[.!?…]+/).filter((sentence) => sentence.trim().length > 3);
@@ -61,6 +72,8 @@ export function FullAssessment() {
   /** 'idle' until the first write; 'saved' only after the store read back the same draft. */
   const [save, setSave] = useState({ status: 'idle' });
   const latestSnapshot = useRef(null);
+  const [conflict, clearConflict] = useOtherTabDraft(DESCENT_DRAFT_KEY, parseOtherTabDraft,
+    (theirs) => resumePoint(theirs).positional.every((rating, i) => rating === answers[i]));
   const [futureSelf, setFutureSelf] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(FUTURE_SELF_KEY) ?? 'null');
@@ -77,9 +90,13 @@ export function FullAssessment() {
   const sittingAnswers = answers.slice(sittingIndex * 49, sittingIndex * 49 + 49);
   const answeredCount = answers.filter((answer) => answer > 0).length;
 
-  /** Writes the whole draft and reports only a verified result. The snapshot is kept for retry. */
-  const commit = (nextAnswers, nextIndex, nextStage) => {
+  /**
+   * Writes the whole draft and reports only a verified result. The snapshot is kept for retry.
+   * While another tab's change is unresolved nothing is written, unless `force` resolves it.
+   */
+  const commit = (nextAnswers, nextIndex, nextStage, force = false) => {
     latestSnapshot.current = { answers: nextAnswers, index: nextIndex, stage: nextStage };
+    if (conflict && !force) return false;
     const draft = {
       schema: DESCENT_DRAFT_SCHEMA,
       answers: fromPositional(nextAnswers),
@@ -99,6 +116,24 @@ export function FullAssessment() {
     const snapshot = latestSnapshot.current;
     if (snapshot) commit(snapshot.answers, snapshot.index, snapshot.stage);
   };
+
+  const useOtherTabAnswers = () => {
+    if (conflict?.kind !== 'changed') return;
+    const point = resumePoint(conflict.draft);
+    clearConflict();
+    latestSnapshot.current = { answers: point.positional, index: point.index, stage: point.stage };
+    setAnswers(point.positional);
+    setItemIndex(point.index);
+    setStage(point.stage);
+    setSave({ status: 'saved' });
+  };
+
+  const keepThisTabAnswers = () => {
+    clearConflict();
+    commit(answers, itemIndex, stage === 'break' || stage === 'future-self' ? stage : 'item', true);
+  };
+
+  const conflictNotice = <DraftConflictNotice ui={ui} conflict={conflict} onUseTheirs={useOtherTabAnswers} onKeepMine={keepThisTabAnswers} />;
 
   const exit = () => {
     if (save.status === 'failed' && !window.confirm(ui.leaveUnsaved)) return;
@@ -326,7 +361,8 @@ export function FullAssessment() {
             <div className="bar y mt8"><i style={{ width: `${(sittingAnswers.filter((answer) => answer > 0).length / 49) * 100}%` }} /></div>
             <p className="sub mt8">{ui.retakeNote}</p>
           </div>
-          <SaveStatus ui={ui} save={save} onRetry={retrySave} />
+          {conflictNotice}
+          {!conflict && <SaveStatus ui={ui} save={save} onRetry={retrySave} />}
           <button className="btn primary block mt24" onClick={continueFromBreak}>{ui.breakResume(sittingIndex)}</button>
           <button className="btn ghost block mt12" onClick={exit}>{ui.breakLater}</button>
         </div>
@@ -432,7 +468,8 @@ export function FullAssessment() {
           <button className="btn ghost grow" onClick={exit}>{ui.exit}</button>
           <span className="chip">{answeredCount} / 147</span>
         </div>
-        <SaveStatus ui={ui} save={save} onRetry={retrySave} />
+        {conflictNotice}
+        {!conflict && <SaveStatus ui={ui} save={save} onRetry={retrySave} />}
         {legacyRetained && <p className="faint center mt8" role="status" style={{ fontSize: 12 }}>{ui.legacyRetained}</p>}
       </div>
     </div>

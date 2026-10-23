@@ -62,7 +62,7 @@ describe('firestore.rules — security boundaries', () => {
     expect(emails).toMatch(/allow\s+list:\s*if\s+false/);
     expect(emails).toMatch(/emailLower\s*==\s*request\.auth\.token\.email\.lower\(\)/);
     expect(emails).toMatch(/request\.auth\.token\.email_verified\s*==\s*true/);
-    expect(profile).toMatch(/allow\s+create,\s*update:\s*if\s+isOwner\(userId\)/);
+    expect(profile).toMatch(/allow\s+create,\s*update:\s*if\s+isOwner\(userId\)\s*&&\s*hasVerifiedEmail\(\)/);
     expect(profile).toMatch(/allow\s+delete:\s*if\s+isOwner\(userId\)/);
   });
 

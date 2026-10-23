@@ -188,6 +188,8 @@ export default {
       return new Response('Gone', { status: 410, headers: { 'Cache-Control': 'no-store' } });
     }
 
+    // The API-only deploy (wrangler.api.toml) has no static assets binding.
+    if (!env.ASSETS) return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
     return env.ASSETS.fetch(request);
   },
 
@@ -663,5 +665,6 @@ interface Env {
   /** Stripe subscription checkout (optional — only /api/stripe-* needs them). */
   STRIPE_SECRET_KEY?: string;
   STRIPE_PRICE_ID?: string;
-  ASSETS: Fetcher;
+  /** Bound only by the app deploy (wrangler.toml); absent on the API-only deploy. */
+  ASSETS?: Fetcher;
 }

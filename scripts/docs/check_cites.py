@@ -20,6 +20,19 @@ Checks, per table row that names identifiers (backticked words):
   CONTEXT lines just before them. A cite often points at one statement inside
   a block or function whose name the row gives, so the name sits above it.
 
+Two markers record deliberate exceptions, so a reviewer can see each one:
+
+    <!-- cite-external: dist/sw.js AAA-V7-SPEC.md -->
+
+names paths that the document means to refer to outside the repository, such
+as build output or an external source; those names are not resolved. And a
+table row containing
+
+    <!-- cite-ids: none -->
+
+skips the identifier check for that row, for rows whose backticked words are
+search terms or values rather than names expected on the cited lines.
+
 Usage: check_cites.py [--strict] [--cwd REPO] FILE...
 Without --strict the script reports and exits 0, so it can run as an advisory step.
 """
@@ -35,6 +48,8 @@ PATH_CITE = re.compile(
     r'(?::' + RANGES + r')?(?:@(?P<ref>[0-9a-fA-F]{7,40}))?`')
 REL_CITE = re.compile(r'`:' + RANGES + r'(?:@(?P<ref>[0-9a-fA-F]{7,40}))?`')
 IDENTIFIER = re.compile(r'`([A-Za-z_][A-Za-z0-9_]{3,})`')
+EXTERNAL = re.compile(r'<!--\s*cite-external:\s*(.*?)\s*-->')
+NO_IDS = '<!-- cite-ids: none -->'
 CONTEXT = 40
 
 _TREES = {}
@@ -79,10 +94,11 @@ def check_file(doc_path, cwd=None):
     header = next((m.group(1) for line in lines if (m := HEADER.search(line))), None)
     if header is None:
         return [(0, 'missing <!-- cite-ref: <sha> --> header')]
+    external = {name for line in lines for m in EXTERNAL.finditer(line) for name in m.group(1).split()}
     problems = []
     for number, line in enumerate(lines, 1):
         is_row = line.startswith('|')
-        identifiers = {m.group(1) for m in IDENTIFIER.finditer(line)} if is_row else set()
+        identifiers = {m.group(1) for m in IDENTIFIER.finditer(line)} if is_row and NO_IDS not in line else set()
         found = [(m.start(), m, m.group('path')) for m in PATH_CITE.finditer(line)]
         if is_row:
             found += [(m.start(), m, None) for m in REL_CITE.finditer(line)]
@@ -97,6 +113,8 @@ def check_file(doc_path, cwd=None):
             cites.append((match, last_name))
         windows = []
         for match, name in cites:
+            if name in external:
+                continue
             cite_problems, cite_windows = _check_cite(number, match, name, header, cwd)
             problems += cite_problems
             windows += cite_windows

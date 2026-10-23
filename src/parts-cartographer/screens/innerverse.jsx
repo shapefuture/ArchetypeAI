@@ -71,6 +71,29 @@ export function Innerverse() {
   const [dims, setDims] = useState({ energy: 100 });
   const [dimensions, setDimensions] = useState(readUniverseDimensions);
   const [panel, setPanel] = useState(null);
+  // The tray button that opened the current panel, so closing returns focus there.
+  const panelOpener = useRef(null);
+  const togglePanel = (name, event) => {
+    if (panel === name) { closePanel(); return; }
+    panelOpener.current = event?.currentTarget ?? null;
+    setPanel(name);
+  };
+  const closePanel = () => {
+    setPanel(null);
+    const opener = panelOpener.current;
+    panelOpener.current = null;
+    requestAnimationFrame(() => { if (opener?.isConnected) opener.focus(); });
+  };
+  // Escape closes the panel, as it closes every other layer, unless an app layer is open on top.
+  useEffect(() => {
+    if (!panel) return undefined;
+    const onKey = (event) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || document.querySelector('.modal-layer')) return;
+      closePanel();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [panel]);
   const [famOn, setFamOn] = useState({ manager: true, firefighter: true, exile: true, resource: true });
   const [axes, setAxes] = useState(DEFAULT_AXES);
   const [isolation, setIsolation] = useState(null);
@@ -230,7 +253,7 @@ export function Innerverse() {
 
       {panel && (
         <div className="card iv-panel-host" role="dialog" aria-label={PANEL_NAMES[panel]?.[lang === 'ru' ? 1 : 0]} style={{ position: 'absolute', left: 16, right: 16, top: 112, bottom: 96, zIndex: 44, pointerEvents: 'auto', overflowY: 'auto', background: 'var(--surface)' }}>
-          <button className="ibtn iv-panel-close" aria-label={t('close')} onClick={() => setPanel(null)}>✕</button>
+          <button className="ibtn iv-panel-close" aria-label={t('close')} onClick={closePanel}>✕</button>
           {panel === 'replay' && <ReplayStudio />}
           {panel === 'negotiation' && <InnerNegotiation />}
           {panel === 'coordinates' && <CoordinatesPanel />}
@@ -247,11 +270,11 @@ export function Innerverse() {
         <button className="tray-btn" onClick={() => setOverlay('practice')}>🏋️ {t('practice')}</button>
         <button className="tray-btn" onClick={() => premium ? setDrawer(true) : openPaywall()}>📊 {t('compare')}</button>
         <button className="tray-btn" aria-label={lang === 'ru' ? 'Химия частей' : 'Part chemistry'} onClick={() => setSheet({ type: 'chemistry' })}>⚗️</button>
-        <button className="tray-btn" onClick={() => setPanel(panel === 'replay' ? null : 'replay')}>🎬 {lang === 'ru' ? 'Повтор' : 'Replay'}</button>
-        <button className="tray-btn" onClick={() => setPanel(panel === 'negotiation' ? null : 'negotiation')}>🤝 {lang === 'ru' ? 'Переговоры' : 'Negotiate'}</button>
-        <button className="tray-btn" onClick={() => setPanel(panel === 'coordinates' ? null : 'coordinates')}>🧭 {lang === 'ru' ? 'Координаты' : 'Coordinates'}</button>
-        <button className="tray-btn" onClick={() => setPanel(panel === 'rest' ? null : 'rest')}>🌙 {lang === 'ru' ? 'Отдых' : 'Rest'}</button>
-        <button className="tray-btn" onClick={() => setPanel(panel === 'list' ? null : 'list')}>📋 {lang === 'ru' ? 'Списком' : 'List'}</button>
+        <button className="tray-btn" onClick={(event) => togglePanel('replay', event)}>🎬 {lang === 'ru' ? 'Повтор' : 'Replay'}</button>
+        <button className="tray-btn" onClick={(event) => togglePanel('negotiation', event)}>🤝 {lang === 'ru' ? 'Переговоры' : 'Negotiate'}</button>
+        <button className="tray-btn" onClick={(event) => togglePanel('coordinates', event)}>🧭 {lang === 'ru' ? 'Координаты' : 'Coordinates'}</button>
+        <button className="tray-btn" onClick={(event) => togglePanel('rest', event)}>🌙 {lang === 'ru' ? 'Отдых' : 'Rest'}</button>
+        <button className="tray-btn" onClick={(event) => togglePanel('list', event)}>📋 {lang === 'ru' ? 'Списком' : 'List'}</button>
       </div>
 
       {/* compare tray */}

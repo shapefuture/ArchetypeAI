@@ -63,8 +63,9 @@ _Add your build and test commands here_
 
 ## Architecture Overview
 
-_Add a brief overview of your project architecture_
+React is the only maintained client (owner decision, 2026-10-23). Product code lives in `src/parts-cartographer/` (React/Vite) and the framework-free `src/shared/` and `src/environments/` it imports. The Angular app (`src/app/`, `src/main.ts`, `angular.json`) is frozen and will be removed after PR #7 merges (`ArchetypeAI-hi8.6`). See "Client app: React only" in AGENTS.md.
 
 ## Conventions & Patterns
 
-_Add your project-specific conventions here_
+- Do not change the frozen Angular app or port React changes to it.
+- Russian copy follows `src/shared/i18n/strings.ts`: address the user as «вы», never «ты», and use its terminology («Self-энергия», «сравнение», «ИИ-коуч», «потребность», «нагрузка», «копия», «практика»).

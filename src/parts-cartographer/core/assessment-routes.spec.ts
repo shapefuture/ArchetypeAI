@@ -7,6 +7,7 @@ import {
   ASSESSMENT_ROUTES, ROUTE_KEYS, isCanonicalProfile, isExamplePart, isSampleProfile,
   markSample, primaryRoutes, sampleSavePlan, secondaryRoutes, type AssessmentRoute,
 } from './assessment-routes';
+import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY } from './assessment-draft';
 
 const route = (id: AssessmentRoute['id']) => ASSESSMENT_ROUTES.find((item) => item.id === id)!;
 
@@ -45,6 +46,11 @@ describe('assessment route contract', () => {
     const all = [...reflection, ...battery, ROUTE_KEYS.quickMap.draft];
     expect(new Set(all).size).toBe(all.length);
     expect(reflection.some((key) => battery.includes(key))).toBe(false);
+  });
+
+  it('names the draft keys the 147-item screen actually reads and writes', () => {
+    expect(ROUTE_KEYS.battery147.draft).toBe(DESCENT_DRAFT_KEY);
+    expect(ROUTE_KEYS.battery147.legacyDraft).toBe(LEGACY_DESCENT_DRAFT_KEY);
   });
 
   it('labels a sample so it cannot read as a measured profile', () => {

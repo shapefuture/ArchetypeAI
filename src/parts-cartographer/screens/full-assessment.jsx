@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Steps } from '../ui/ui.jsx';
+import { SaveStatus } from '../ui/save-status.jsx';
 import { telemetry } from '../core/telemetry.ts';
 import { toAssessmentInput } from '../../shared/core/data/assessment-adapter';
 import { scoreProfile } from '../../shared/core/data/scoring-v2';
@@ -14,7 +15,6 @@ import {
   removeDescentDraft, resumePoint, writeDescentDraft,
 } from '../core/assessment-draft.ts';
 
-const DRAFT_KEY = ROUTE_KEYS.battery147.draft;
 const FUTURE_SELF_KEY = ROUTE_KEYS.battery147.futureSelf;
 const LEGACY_64_KEY = ROUTE_KEYS.reflection64.responses;
 const LIKERT_EMOTES = ['🙅', '🤏', '🌗', '👋', '🎯'];
@@ -46,17 +46,6 @@ function validFutureSelf(answers) {
   const filled = answers.filter((answer) => answer.trim().length > 0);
   const sentences = filled.join(' ').split(/[.!?…]+/).filter((sentence) => sentence.trim().length > 3);
   return filled.length >= 2 && sentences.length >= 2;
-}
-
-function SaveStatus({ ui, save, onRetry }) {
-  if (save.status === 'saved') return <p className="faint center mt8" role="status" style={{ fontSize: 12 }}>{ui.saved}</p>;
-  if (save.status !== 'failed') return null;
-  return (
-    <div className="card flat mt12" role="alert" style={{ borderColor: 'var(--accent)' }}>
-      <p className="sub">{ui.saveFailed[save.reason] ?? ui.saveFailed.unavailable}</p>
-      <button className="btn block mt8" onClick={onRetry}>{ui.saveRetry}</button>
-    </div>
-  );
 }
 
 export function FullAssessment() {

@@ -13,3 +13,29 @@ compatibility_flags = ["nodejs_compat"]
 # and are set via `wrangler secret put <KEY_NAME>`.
 OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free"
 AI_PROVIDER_DEFAULT = "ollama"
+# Every route verifies a Firebase ID token for this project; without it the
+# Worker refuses all AI and billing requests (503).
+FIREBASE_PROJECT_ID = "archetype-ai-3e43b"
+# Production origins only. Local development reaches the Worker through the
+# Vite proxy (same-origin, so CORS does not apply); `wrangler dev` without this
+# config keeps the localhost defaults in worker-security.ts. Stripe return URLs
+# must use one of these origins.
+ALLOWED_APP_ORIGINS = "https://archetype-ai-3e43b.web.app,https://archetype-ai-3e43b.firebaseapp.com,https://innerverseai.web.app,https://innerverseai.firebaseapp.com"
+
+# Per-identity and per-IP request limits. Without these bindings every route
+# fails closed (503). Cloudflare rate limits are best-effort per data center;
+# Firebase ID-token validation remains mandatory.
+[[ratelimits]]
+name = "AI_RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 12, period = 60 }
+
+[[ratelimits]]
+name = "AI_IP_RATE_LIMITER"
+namespace_id = "1002"
+simple = { limit = 50, period = 60 }
+
+[[ratelimits]]
+name = "BILLING_RATE_LIMITER"
+namespace_id = "1003"
+simple = { limit = 10, period = 60 }

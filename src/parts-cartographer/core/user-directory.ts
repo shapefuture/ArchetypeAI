@@ -38,7 +38,9 @@ export async function syncPublicProfile(user: AuthUser): Promise<void> {
   const db = getFirestoreDb();
   const updatedAt = new Date().toISOString();
   // The profile and its email-index entry are written together. The index lets
-  // others resolve this address without being able to list the directory.
+  // others resolve this address without being able to list the directory. Only
+  // a verified address is indexed (the rules require it): an unverified account
+  // must not become findable under an address it may not own.
   const batch = writeBatch(db);
   batch.set(doc(db, 'publicProfiles', user.uid), {
     emailLower: email.toLowerCase(),
@@ -46,7 +48,7 @@ export async function syncPublicProfile(user: AuthUser): Promise<void> {
     displayName: user.displayName?.trim() || null,
     updatedAt,
   }, { merge: true });
-  batch.set(doc(db, 'directoryEmails', email.toLowerCase()), { uid: user.uid, updatedAt });
+  if (user.emailVerified) batch.set(doc(db, 'directoryEmails', email.toLowerCase()), { uid: user.uid, updatedAt });
   await batch.commit();
   cache.delete(`uid:${user.uid}`);
   cache.delete(`email:${email.toLowerCase()}`);

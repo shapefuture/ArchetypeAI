@@ -24,6 +24,7 @@ import { checkFacilitatorStatement, STATEMENT_MAX_CHARS } from './core/facilitat
 import { createTherapistLink } from './core/therapist-link.ts';
 import { LegacySynastryDetails } from './screens/legacy-synastry-report.jsx';
 import { ScoredProfileSynastryDetails } from './screens/scored-profile-synastry-report.jsx';
+import { EmailVerifyNotice } from './ui/email-verify-notice.jsx';
 
 const ovHead = (title, onClose, extra) => (
   <div className="ov-head">
@@ -1244,6 +1245,7 @@ export function Therapist() {
                 <button className="btn primary block mt12" onClick={() => setOverlay('login')}>🔐 {t('loginT')}</button>
               </div>
             )}
+            <EmailVerifyNotice />
 
             {/* availability control, persisted in Firestore for client booking */}
             <div className="card mt16">

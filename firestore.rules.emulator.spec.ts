@@ -344,6 +344,13 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(getDoc(doc(asAnon(), 'directoryEmails', 'victim@example.com')));
       await assertSucceeds(deleteDoc(doc(victim, 'directoryEmails', 'victim@example.com')));
     });
+
+    it('refuses an index entry for an unverified address, so no one can squat a therapist email', async () => {
+      const squatter = asUser(UIDS.attacker, 'therapist@example.com', false);
+      await assertFails(setDoc(doc(squatter, 'directoryEmails', 'therapist@example.com'), { uid: UIDS.attacker, updatedAt: 'now' }));
+      const verified = asUser(UIDS.therapist, 'therapist@example.com', true);
+      await assertSucceeds(setDoc(doc(verified, 'directoryEmails', 'therapist@example.com'), { uid: UIDS.therapist, updatedAt: 'now' }));
+    });
   });
 
   describe('therapist and booking relationships', () => {

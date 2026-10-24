@@ -6,6 +6,7 @@ import {
   appointmentTimeFromRecord, bookableDays, bookingTimeMismatch, endOfSlot, freeSlots, normalizeAvailability,
   parseHM, slotEnd, slotOccurrences, slotTime, slotsForDate, stampWindowZones, therapistTimeZone, weekdayOf,
   type AvailabilityWindow,
+  appointmentDisplayTime, nextActiveAppointmentId, ZONE_TIME_WRITES_ENABLED,
 } from './booking';
 import { formatInstantInZone } from './appointment-time';
 
@@ -208,5 +209,39 @@ describe('stored appointment times', () => {
     expect(bookingTimeMismatch(built.time, '2026-06-15T09:00')).toBeNull();
     expect(bookingTimeMismatch(built.time, '2026-06-15T10:00')).toBe('slot-mismatch');
     expect(bookingTimeMismatch({ ...built.time, durationMinutes: 90 }, '2026-06-15T09:00')).toBe('invalid-time');
+  });
+});
+
+describe('appointmentDisplayTime', () => {
+  const time = {
+    schemaVersion: 2, startUtc: '2026-11-02T15:00:00.000Z', endUtc: '2026-11-02T16:00:00.000Z', durationMinutes: 60,
+    timeZone: 'America/New_York', wallStart: '2026-11-02T10:00', repeatedWallTime: null, source: { kind: 'availability-slot' },
+  } as any;
+
+  it('shows a zone-aware booking in the viewer\'s own time', () => {
+    const shown = appointmentDisplayTime({ start: '2026-11-02T10:00', time }, 'ru-RU', 'Europe/Moscow');
+    expect(shown.therapistWallClock).toBe(false);
+    expect(shown.text).toContain('18:00');
+  });
+
+  it('labels a legacy booking as the therapist\'s wall clock instead of passing it off as local', () => {
+    const shown = appointmentDisplayTime({ start: '2026-11-02T10:00', time: null }, 'ru-RU', 'Europe/Moscow');
+    expect(shown).toEqual({ text: expect.stringContaining('10:00'), therapistWallClock: true });
+  });
+
+  it('writes the zone time on new bookings', () => {
+    expect(ZONE_TIME_WRITES_ENABLED).toBe(true);
+  });
+});
+
+describe('nextActiveAppointmentId', () => {
+  it('finds another active appointment with the same therapist, and nothing else', () => {
+    const list = [
+      { id: 'b', therapistUid: 't', status: 'cancelled' },
+      { id: 'x', therapistUid: 'other', status: 'approved' },
+      { id: 'a', therapistUid: 't', status: 'approved' },
+    ] as const;
+    expect(nextActiveAppointmentId(list as any, 't', 'b')).toBe('a');
+    expect(nextActiveAppointmentId(list as any, 't', 'a')).toBeNull();
   });
 });

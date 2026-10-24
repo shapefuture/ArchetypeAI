@@ -72,12 +72,33 @@ export const DEFAULT_AVAILABILITY: AvailabilityWindow[] = [
 ];
 
 /**
- * Whether new bookings also write the schemaVersion-2 `time` map. Off by default:
- * firestore.rules (appointments create) accepts only the legacy key set, so
- * turning this on before the rule change would reject every booking. Enable it
- * only after the rule accepts an optional `time` map on create.
+ * Whether new bookings also write the schemaVersion-2 `time` map. On: the
+ * appointments create rule accepts an optional `time` validated by
+ * validZoneTime (firestore.rules), and without it a client in another zone is
+ * shown the therapist's wall clock as their own.
  */
-export const ZONE_TIME_WRITES_ENABLED = false;
+export const ZONE_TIME_WRITES_ENABLED = true;
+
+/**
+ * How an appointment's time reads to the person viewing it. A zone-aware record
+ * is shown in the viewer's own zone. A legacy record has only the therapist's
+ * wall clock, so it is shown as that and flagged, never passed off as local.
+ */
+export function appointmentDisplayTime(
+  appointment: Pick<Appointment, 'start'> & { time?: AppointmentTimeV2 | null },
+  locale: string,
+  viewerZone?: string,
+): { text: string; therapistWallClock: boolean } {
+  const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' };
+  const instant = appointment.time?.startUtc ? new Date(appointment.time.startUtc) : null;
+  if (instant && !Number.isNaN(instant.getTime())) {
+    return { text: instant.toLocaleString(locale, viewerZone ? { ...options, timeZone: viewerZone } : options), therapistWallClock: false };
+  }
+  // Read the naive wall clock as-is (UTC formatting adds no shift).
+  const wall = new Date(`${appointment.start}:00Z`);
+  if (Number.isNaN(wall.getTime())) return { text: appointment.start, therapistWallClock: true };
+  return { text: wall.toLocaleString(locale, { ...options, timeZone: 'UTC' }), therapistWallClock: true };
+}
 
 export type AppointmentStatus = 'pending' | 'approved' | 'declined' | 'cancelled';
 
@@ -569,6 +590,7 @@ export async function ensureTherapistBusySlots(therapistUid: string, appointment
 export async function setAppointmentStatus(id: string, status: AppointmentStatus): Promise<void> {
   const db = getFirestoreDb();
   const appointmentRef = doc(db, 'appointments', id);
+  let closed: { clientUid: string; therapistUid: string } | null = null;
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(appointmentRef);
     if (!snap.exists()) throw new Error('Appointment not found');
@@ -582,7 +604,48 @@ export async function setAppointmentStatus(id: string, status: AppointmentStatus
     transaction.update(appointmentRef, { status });
     // A retried cancellation must never delete a newer booking's reservation.
     if (busySnap?.exists() && busySnap.data().appointmentId === id) transaction.delete(busyRef);
+    closed = releasing ? { clientUid: String(data.clientUid), therapistUid: String(data.therapistUid) } : null;
   });
+  if (closed && status === 'cancelled') await keepBookingAccess(closed.clientUid, closed.therapistUid, id);
+}
+
+/** The client's other still-active appointment with this therapist, if any. */
+export function nextActiveAppointmentId(
+  appointments: ReadonlyArray<Pick<Appointment, 'id' | 'therapistUid' | 'status'>>,
+  therapistUid: string,
+  closedId: string,
+): string | null {
+  const active = appointments.find((appointment) => appointment.id !== closedId
+    && appointment.therapistUid === therapistUid
+    && (appointment.status === 'approved' || appointment.status === 'pending'));
+  return active?.id ?? null;
+}
+
+/**
+ * The booking share and roster row point at one appointment. When the client
+ * cancels that one while another with the same therapist is still active,
+ * point them at the active one, so the therapist keeps the access it grants.
+ * Best effort: only the client may update the share, and a failure leaves the
+ * cancellation itself in place.
+ */
+async function keepBookingAccess(clientUid: string, therapistUid: string, closedId: string): Promise<void> {
+  try {
+    const db = getFirestoreDb();
+    const shareRef = doc(db, 'clientShares', `${therapistUid}_${clientUid}`);
+    const share = await getDoc(shareRef);
+    if (!share.exists() || share.data().appointmentId !== closedId) return;
+    const next = nextActiveAppointmentId(await myAppointments(clientUid), therapistUid, closedId);
+    if (!next) return;
+    const now = new Date().toISOString();
+    await setDoc(shareRef, { appointmentId: next, grantedAt: now }, { merge: true });
+    const rosterRef = doc(db, 'therapistClients', `${therapistUid}_${clientUid}`);
+    const roster = await getDoc(rosterRef);
+    if (roster.exists() && roster.data().source === 'booking') {
+      await setDoc(rosterRef, { appointmentId: next, linkedAt: now }, { merge: true });
+    }
+  } catch (error) {
+    console.error('Keeping booking access after cancellation failed', error);
+  }
 }
 
 /**

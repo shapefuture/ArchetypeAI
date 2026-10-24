@@ -138,28 +138,23 @@ export async function claimTherapistLink(
 
 /**
  * Client side: end every therapist relationship, as the consent text
- * promises. Deletes each roster row with its invite code or booking share,
- * so no therapist keeps the summary or can assign practices. Appointments
- * themselves stay, for both parties' records. Returns how many were ended.
+ * promises. Deletes every invite code the client issued (claimed or not),
+ * every roster row and booking share, so no therapist keeps the summary or
+ * can assign practices. Appointments themselves stay, for both parties'
+ * records. Returns how many records were removed (0: nothing was shared).
  */
 export async function revokeTherapistAccess(clientUid: string): Promise<number> {
   const db = getFirestoreDb();
-  const rows = await getDocs(query(collection(db, 'therapistClients'), where('clientUid', '==', clientUid)));
-  const shares = await getDocs(query(collection(db, 'clientShares'), where('clientUid', '==', clientUid)));
+  const byClient = (name: string) => getDocs(query(collection(db, name), where('clientUid', '==', clientUid)));
+  const [rows, shares, codes] = await Promise.all([byClient('therapistClients'), byClient('clientShares'), byClient('therapistLinks')]);
+  if (rows.empty && shares.empty && codes.empty) return 0;
   const batch = writeBatch(db);
-  for (const row of rows.docs) {
-    const linkCode = row.data()['linkCode'];
-    // The rules evaluate a delete against the stored code, so skip codes already gone.
-    if (typeof linkCode === 'string' && linkCode && (await getDoc(doc(db, 'therapistLinks', linkCode))).exists()) {
-      batch.delete(doc(db, 'therapistLinks', linkCode));
-    }
-    batch.delete(row.ref);
-  }
+  // Every code this client issued, claimed or not, so no one can link with it later.
+  for (const code of codes.docs) batch.delete(code.ref);
+  for (const row of rows.docs) batch.delete(row.ref);
   for (const share of shares.docs) batch.delete(share.ref);
-  const therapists = new Set([...rows.docs, ...shares.docs].map((d) => d.data()['therapistUid']));
-  if (rows.empty && shares.empty) return 0;
   await batch.commit();
-  return therapists.size;
+  return codes.size + rows.size + shares.size;
 }
 
 /**

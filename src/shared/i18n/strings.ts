@@ -329,7 +329,8 @@ export const STRINGS = {
         specialistCodeHint: 'Read it to your specialist, or send it any way you like.',
         copied: 'Copied!',
         tierNames: { dormant: 'dormant', present: 'present', prominent: 'prominent', dominant: 'often solos' } as Record<Tier, string>,
-        complexTierNames: { active: 'active', gripping: 'gripping' } as Record<string, string>,
+        complexTierNames: { latent: 'latent', active: 'active', gripping: 'gripping' } as Record<string, string>,
+        bandNames: { hypo: 'under-used', healthy: 'balanced', hyper: 'overused' } as Record<string, string>,
       },
       ru: {
         report: 'Ваша внутренняя вселенная',
@@ -390,7 +391,8 @@ export const STRINGS = {
         specialistCodeHint: 'Продиктуйте код специалисту или отправьте сообщением.',
         copied: 'Скопировано!',
         tierNames: { dormant: 'дремлет', present: 'присутствует', prominent: 'заметна', dominant: 'часто солирует' } as Record<Tier, string>,
-        complexTierNames: { active: 'активен', gripping: 'сжимает' } as Record<string, string>,
+        complexTierNames: { latent: 'дремлет', active: 'активен', gripping: 'сжимает' } as Record<string, string>,
+        bandNames: { hypo: 'проявлен слабо', healthy: 'в балансе', hyper: 'в избытке' } as Record<string, string>,
       },
     },
     needPractice:     {

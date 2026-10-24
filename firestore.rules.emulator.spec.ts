@@ -106,8 +106,8 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
   async function createValidBooking(appointmentId = `${UIDS.client}_1000`): Promise<void> {
     const client = asUser(UIDS.client, 'client@example.com');
     await seedTherapistProfile();
-    const start = '2026-10-05T10:00';
-    const end = '2026-10-05T11:00';
+    const start = '2099-10-05T10:00';
+    const end = '2099-10-05T11:00';
     const bookingBatch = writeBatch(client);
     bookingBatch.set(doc(client, 'appointments', appointmentId), {
       clientUid: UIDS.client,
@@ -416,17 +416,17 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         clientEmail: 'attacker@example.com',
         therapistUid: UIDS.therapist,
         therapistEmail: 'therapist@example.com',
-        start: '2026-10-05T10:00',
-        end: '2026-10-05T11:00',
+        start: '2099-10-05T10:00',
+        end: '2099-10-05T11:00',
         status: 'pending',
         createdAt: '2026-10-01T00:00:00.000Z',
         accessGranted: true,
       });
-      duplicate.set(doc(secondClient, 'therapistBusySlots', `${UIDS.therapist}_2026-10-05T10:00`), {
+      duplicate.set(doc(secondClient, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`), {
         therapistUid: UIDS.therapist,
         appointmentId: 'second-random-id',
-        start: '2026-10-05T10:00',
-        end: '2026-10-05T11:00',
+        start: '2099-10-05T10:00',
+        end: '2099-10-05T11:00',
       });
       await assertFails(duplicate.commit());
     });
@@ -439,11 +439,11 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         const batch = writeBatch(db);
         batch.set(doc(db, 'appointments', id), {
           clientUid, clientEmail: `client${index}@example.com`, therapistUid: UIDS.therapist,
-          therapistEmail: 'therapist@example.com', start: '2026-10-05T10:00', end: '2026-10-05T11:00',
+          therapistEmail: 'therapist@example.com', start: '2099-10-05T10:00', end: '2099-10-05T11:00',
           status: 'pending', createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
         });
-        batch.set(doc(db, 'therapistBusySlots', `${UIDS.therapist}_2026-10-05T10:00`), {
-          therapistUid: UIDS.therapist, appointmentId: id, start: '2026-10-05T10:00', end: '2026-10-05T11:00',
+        batch.set(doc(db, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`), {
+          therapistUid: UIDS.therapist, appointmentId: id, start: '2099-10-05T10:00', end: '2099-10-05T11:00',
         });
         return batch.commit();
       });
@@ -464,7 +464,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertSucceeds(getDoc(doc(therapist, 'users', UIDS.client, 'history', 'h1')));
       const decline = writeBatch(therapist);
       decline.update(doc(therapist, 'appointments', `${UIDS.client}_1000`), { status: 'declined' });
-      decline.delete(doc(therapist, 'therapistBusySlots', `${UIDS.therapist}_2026-10-05T10:00`));
+      decline.delete(doc(therapist, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`));
       await assertSucceeds(decline.commit());
       await assertFails(getDoc(doc(therapist, 'users', UIDS.client, 'assessment', 'current')));
     });
@@ -492,7 +492,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         endUtc: '2026-10-06T15:00:00.000Z',
         durationMinutes: 60,
         timeZone: 'America/New_York',
-        wallStart: '2026-10-06T10:00',
+        wallStart: '2099-10-06T10:00',
         repeatedWallTime: null,
         source: { kind: 'availability-slot' },
       };
@@ -520,12 +520,12 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         return batch.commit();
       };
 
-      await assertSucceeds(bookWithTime(`${UIDS.client}_3100`, valid, '2026-10-06T10:00', '2026-10-06T11:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3101`, 'nope', '2026-10-06T11:00', '2026-10-06T12:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3102`, { ...valid, schemaVersion: 1 }, '2026-10-06T12:00', '2026-10-06T13:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3103`, { ...valid, approvedBy: UIDS.client }, '2026-10-06T13:00', '2026-10-06T14:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3104`, { ...valid, timeZone: 'x'.repeat(65) }, '2026-10-06T14:00', '2026-10-06T15:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3105`, { ...valid, durationMinutes: 'sixty' }, '2026-10-06T15:00', '2026-10-06T16:00'));
+      await assertSucceeds(bookWithTime(`${UIDS.client}_3100`, valid, '2099-10-06T10:00', '2099-10-06T11:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3101`, 'nope', '2099-10-06T11:00', '2099-10-06T12:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3102`, { ...valid, schemaVersion: 1 }, '2099-10-06T12:00', '2099-10-06T13:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3103`, { ...valid, approvedBy: UIDS.client }, '2099-10-06T13:00', '2099-10-06T14:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3104`, { ...valid, timeZone: 'x'.repeat(65) }, '2099-10-06T14:00', '2099-10-06T15:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3105`, { ...valid, durationMinutes: 'sixty' }, '2099-10-06T15:00', '2099-10-06T16:00'));
     });
 
     it('rejects appointment field injection and invalid status transitions', async () => {
@@ -536,8 +536,8 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         clientEmail: 'client@example.com',
         therapistUid: UIDS.therapist,
         therapistEmail: 'therapist@example.com',
-        start: '2026-10-05T10:00',
-        end: '2026-10-05T11:00',
+        start: '2099-10-05T10:00',
+        end: '2099-10-05T11:00',
         status: 'pending',
         createdAt: '2026-10-01T00:00:00.000Z',
         accessGranted: true,
@@ -551,7 +551,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(updateDoc(doc(client, 'appointments', `${UIDS.client}_2000`), { status: 'cancelled' }));
       const cancel = writeBatch(client);
       cancel.update(doc(client, 'appointments', `${UIDS.client}_2000`), { status: 'cancelled' });
-      cancel.delete(doc(client, 'therapistBusySlots', `${UIDS.therapist}_2026-10-05T10:00`));
+      cancel.delete(doc(client, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`));
       await assertSucceeds(cancel.commit());
     });
 
@@ -609,6 +609,28 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(updateDoc(doc(asUser(UIDS.client, 'client@example.com'), 'therapistLinks', code), { claimedBy: UIDS.client }));
     });
 
+    it('lets the client find and delete codes nobody has claimed yet', async () => {
+      await seedInvite('UNUSED2345');
+      const client = asUser(UIDS.client, 'client@example.com');
+      const mine = await getDocs(query(collection(client, 'therapistLinks'), where('clientUid', '==', UIDS.client)));
+      expect(mine.docs.map((d) => d.id)).toContain('UNUSED2345');
+      await assertFails(getDocs(query(collection(asUser(UIDS.attacker, 'attacker@example.com'), 'therapistLinks'), where('clientUid', '==', UIDS.client))));
+      await assertSucceeds(deleteDoc(doc(client, 'therapistLinks', 'UNUSED2345')));
+    });
+
+    it('marks a code claimed only together with the roster row, and hides a claimed code from others', async () => {
+      const code = 'CLAIMED234';
+      await seedInvite(code);
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      await assertFails(updateDoc(doc(therapist, 'therapistLinks', code), { claimedBy: UIDS.therapist }));
+      await assertSucceeds(claimInvite(therapist, UIDS.therapist, code));
+      await assertSucceeds(getDoc(doc(therapist, 'therapistLinks', code)));
+      await assertSucceeds(getDoc(doc(asUser(UIDS.client, 'client@example.com'), 'therapistLinks', code)));
+      await assertFails(getDoc(doc(asUser(UIDS.attacker, 'attacker@example.com'), 'therapistLinks', code)));
+      // A code that does not exist can still be checked, so new codes avoid collisions.
+      await assertSucceeds(getDoc(doc(asUser(UIDS.client, 'client@example.com'), 'therapistLinks', 'NOSUCH2345')));
+    });
+
     it('lets the client revoke an invite link, which ends assignment rights and roster access', async () => {
       const code = 'REVOKE2345';
       await seedInvite(code);
@@ -636,31 +658,61 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     it('refuses a booking from an unverified address, so no one can book as someone else', async () => {
       await seedTherapistProfile();
       const impostor = asUser(UIDS.attacker, 'client@example.com', false);
-      const start = '2026-10-06T10:00';
+      const start = '2099-10-06T10:00';
       const batch = writeBatch(impostor);
       batch.set(doc(impostor, 'appointments', `${UIDS.attacker}_1`), {
         clientUid: UIDS.attacker, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
-        therapistEmail: 'therapist@example.com', start, end: '2026-10-06T11:00', status: 'pending',
+        therapistEmail: 'therapist@example.com', start, end: '2099-10-06T11:00', status: 'pending',
         createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
       });
       batch.set(doc(impostor, 'therapistBusySlots', `${UIDS.therapist}_${start}`), {
-        therapistUid: UIDS.therapist, appointmentId: `${UIDS.attacker}_1`, start, end: '2026-10-06T11:00',
+        therapistUid: UIDS.therapist, appointmentId: `${UIDS.attacker}_1`, start, end: '2099-10-06T11:00',
       });
       await assertFails(batch.commit());
+    });
+
+    it('lets a therapist cancel an approved appointment, releasing its slot', async () => {
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      await createValidBooking('appt_T');
+      await assertSucceeds(updateDoc(doc(therapist, 'appointments', 'appt_T'), { status: 'approved' }));
+      // Without releasing the slot the cancellation is refused.
+      await assertFails(updateDoc(doc(therapist, 'appointments', 'appt_T'), { status: 'cancelled' }));
+      const cancel = writeBatch(therapist);
+      cancel.update(doc(therapist, 'appointments', 'appt_T'), { status: 'cancelled' });
+      cancel.delete(doc(therapist, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`));
+      await assertSucceeds(cancel.commit());
+    });
+
+    it('rejects bookings in the past or longer than one day', async () => {
+      await seedTherapistProfile();
+      const client = asUser(UIDS.client, 'client@example.com');
+      const attempt = async (id: string, start: string, end: string) => {
+        const batch = writeBatch(client);
+        batch.set(doc(client, 'appointments', id), {
+          clientUid: UIDS.client, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
+          therapistEmail: 'therapist@example.com', start, end, status: 'pending',
+          createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+        });
+        batch.set(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${start}`), { therapistUid: UIDS.therapist, appointmentId: id, start, end });
+        return batch.commit();
+      };
+      await assertFails(attempt(`${UIDS.client}_past`, '2000-01-01T03:00', '2000-01-01T04:00'));
+      await assertFails(attempt(`${UIDS.client}_long`, '2099-01-01T03:00', '2170-12-31T23:59'));
+      await assertSucceeds(attempt(`${UIDS.client}_ok`, '2099-01-01T03:00', '2099-01-01T04:00'));
     });
 
     it('rejects impossible appointment times', async () => {
       await seedTherapistProfile();
       const client = asUser(UIDS.client, 'client@example.com');
-      const start = '2026-13-45T25:99';
+      const start = '2099-13-45T25:99';
       const batch = writeBatch(client);
       batch.set(doc(client, 'appointments', `${UIDS.client}_bad`), {
         clientUid: UIDS.client, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
-        therapistEmail: 'therapist@example.com', start, end: '2026-13-45T26:99', status: 'pending',
+        therapistEmail: 'therapist@example.com', start, end: '2099-13-45T26:99', status: 'pending',
         createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
       });
       batch.set(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${start}`), {
-        therapistUid: UIDS.therapist, appointmentId: `${UIDS.client}_bad`, start, end: '2026-13-45T26:99',
+        therapistUid: UIDS.therapist, appointmentId: `${UIDS.client}_bad`, start, end: '2099-13-45T26:99',
       });
       await assertFails(batch.commit());
     });
@@ -676,6 +728,41 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(setDoc(doc(asUser(UIDS.attacker, 'attacker@example.com'), 'therapists', UIDS.attacker), { email: 'famous@clinic.test', availability: [] }));
       await assertFails(setDoc(doc(asUser(UIDS.attacker, 'attacker@example.com', false), 'therapists', UIDS.attacker), { email: 'attacker@example.com', availability: [] }));
       await assertSucceeds(setDoc(doc(asUser(UIDS.attacker, 'attacker@example.com'), 'therapists', UIDS.attacker), { email: 'attacker@example.com', availability: [] }));
+    });
+
+    it('lets the client keep a therapist\'s access on an approved booking after cancelling a newer one', async () => {
+      const client = asUser(UIDS.client, 'client@example.com');
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      await createValidBooking('appt_A');
+      await assertSucceeds(updateDoc(doc(therapist, 'appointments', 'appt_A'), { status: 'approved' }));
+      const bStart = '2099-10-07T10:00';
+      const book = writeBatch(client);
+      book.set(doc(client, 'appointments', 'appt_B'), {
+        clientUid: UIDS.client, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
+        therapistEmail: 'therapist@example.com', start: bStart, end: '2099-10-07T11:00', status: 'pending',
+        createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+      });
+      book.set(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${bStart}`), {
+        therapistUid: UIDS.therapist, appointmentId: 'appt_B', start: bStart, end: '2099-10-07T11:00',
+      });
+      await assertSucceeds(book.commit());
+      const share = doc(client, 'clientShares', `${UIDS.therapist}_${UIDS.client}`);
+      const roster = doc(client, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`);
+      await assertSucceeds(setDoc(share, { appointmentId: 'appt_B', grantedAt: 'later' }, { merge: true }));
+      await assertSucceeds(setDoc(roster, { appointmentId: 'appt_B', linkedAt: 'later' }, { merge: true }));
+      const cancel = writeBatch(client);
+      cancel.update(doc(client, 'appointments', 'appt_B'), { status: 'cancelled' });
+      cancel.delete(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${bStart}`));
+      await assertSucceeds(cancel.commit());
+      const assign = (id: string) => setDoc(doc(therapist, 'assignments', id), {
+        id, therapistUid: UIDS.therapist, clientUid: UIDS.client, exerciseId: 'e1', frequency: 'once', assignedAt: 'now',
+      });
+      // Pointing at the cancelled booking, the therapist is cut off...
+      await assertFails(assign('a-cut'));
+      // ...and the client's re-point to the approved one (keepBookingAccess) restores access.
+      await assertSucceeds(setDoc(share, { appointmentId: 'appt_A', grantedAt: 'again' }, { merge: true }));
+      await assertSucceeds(setDoc(roster, { appointmentId: 'appt_A', linkedAt: 'again' }, { merge: true }));
+      await assertSucceeds(assign('a-kept'));
     });
 
     it('requires a trusted roster relationship before exercise assignment', async () => {

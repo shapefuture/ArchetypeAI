@@ -16,7 +16,7 @@ import {
   subtypeName,
   PART_NAME_RU,
 } from '../../shared/core/data/constellation-copy';
-import { PART_COPY as CLINICAL_PART_COPY, COMPLEX_COPY_RU } from '../../shared/i18n/strings';
+import { PART_COPY as CLINICAL_PART_COPY, COMPLEX_COPY_RU, STRINGS as SHARED_STRINGS } from '../../shared/i18n/strings';
 import { hashStr } from './ports';
 import { FAMILY_LABELS, SEED_PARTS, type Family, type Part } from '../pal/traits';
 import { SCORING_NAME_POOLS, type Lang } from '../i18n/strings';
@@ -134,7 +134,8 @@ function projectedPart(
   const copyIndex = lang === 'ru' ? 1 : 0;
   const intensity = Math.max(1, Math.min(5, Math.round((score.T - 20) / 15 + 1)));
   const felt = score.T < 45 ? 'low' : score.T >= 60 ? 'high' : 'mid';
-  const band = score.band ? ` · ${score.band}` : '';
+  const tierUi = SHARED_STRINGS.innerverseReport.ui[lang === 'ru' ? 'ru' : 'en'];
+  const band = score.band ? ` · ${tierUi.bandNames[score.band] ?? score.band}` : '';
   const reference = IV_PARTS.find((part) => part.id === id)!;
 
   return {
@@ -147,7 +148,7 @@ function projectedPart(
     role: localCopy?.face[copyIndex] ?? FAMILY_LABELS[family][lang],
     blurb: localCopy?.shadow[copyIndex] ?? localCopy?.face[copyIndex] ?? '',
     energy: Math.max(0, Math.min(1, (score.T - 20) / 60)),
-    burden: `T ${Math.round(score.T)} · ${score.tier}${band}`,
+    burden: `T ${Math.round(score.T)} · ${tierUi.tierNames[score.tier as keyof typeof tierUi.tierNames] ?? score.tier}${band}`,
     need: localCopy?.need[copyIndex] ?? '',
     voice: localCopy?.superpower[copyIndex] ?? '',
     star: false,

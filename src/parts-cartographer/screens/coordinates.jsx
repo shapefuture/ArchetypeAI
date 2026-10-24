@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { localizeParts } from '../pal/seed-copy.ts';
 import { useApp } from '../app.jsx';
 import { store, KEYS } from '../core/local-store.ts';
 import { coordinatesFromTuple, project, projectionsAgree } from '../core/analytic-coordinates.ts';
@@ -88,7 +89,7 @@ export function CoordinatesPanel() {
   const app = useApp();
   const lang = app?.lang === 'ru' ? 'ru' : 'en';
   const ui = copyFor(app?.lang);
-  const parts = useMemo(() => readCoordinateParts(app?.parts), [app?.parts]);
+  const parts = useMemo(() => localizeParts(readCoordinateParts(app?.parts), app?.lang), [app?.parts, app?.lang]);
   const [chosenId, setChosenId] = useState('');
   const selected = parts.find((part) => part.id === chosenId) ?? parts.find(hasArchetype) ?? parts[0] ?? null;
 

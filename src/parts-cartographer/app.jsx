@@ -11,6 +11,7 @@ import { loadSensoryPreferences, saveSensoryPreferences, selectSensoryPreset, up
 import { ambience, bindAmbienceSignals } from './services/ambience-gate.ts';
 import { navEntry, navOverlay, navSheet, planNavigation, readNavEntry, sameSheet } from './core/navigation-history.ts';
 import { SEED_PARTS } from './pal/traits.ts';
+import { localizeParts, storedParts } from './pal/seed-copy.ts';
 import { t as translate, STRINGS } from './i18n/strings.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
 const AdminDashboard = lazy(() => import('./screens/admin.jsx').then((module) => ({ default: module.AdminDashboard })));
@@ -210,7 +211,24 @@ export default function App() {
     toast._t = setTimeout(() => setToastMsg(null), 2600);
   }, []);
 
-  const setParts = useCallback((next) => { setPartsRaw(next); store.save(KEYS.parts, next); }, []);
+  // Sample-part text is shown in the reader's language but stored in English (pal/seed-copy.ts).
+  const setParts = useCallback((next) => {
+    const stored = storedParts(next);
+    setPartsRaw(stored);
+    store.save(KEYS.parts, stored);
+  }, []);
+  const shownParts = useMemo(() => localizeParts(parts, lang), [parts, lang]);
+
+  // Another tab saved the parts map: adopt it, so an edit here never writes back stale state.
+  useEffect(() => {
+    const onStorage = (event) => {
+      if (event.key !== KEYS.parts || event.storageArea !== localStorage) return;
+      const saved = store.load(KEYS.parts, null);
+      if (Array.isArray(saved)) setPartsRaw(saved);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
   const setProfile = useCallback((next) => {
     setProfileRaw(next);
     if (next) { store.save(KEYS.profile, next); store.archive(KEYS.history, next); }
@@ -332,7 +350,7 @@ export default function App() {
     sensory, sensoryStored, applySensoryPreset, updateSensory,
     t, state, go, dockTab, setDockTab,
     user, setUser, premium, setPremiumOn: (v) => { setPremium(v); },
-    parts, setParts, profile, setProfile,
+    parts: shownParts, setParts, profile, setProfile,
     overlay, setOverlay, sheet, setSheet, toast,
     downloadBackup,
     billing, AI, telemetry, auth,
@@ -343,7 +361,7 @@ export default function App() {
     openSky,
     universeMode, setUniverseMode,
     retryUniverse: () => { setUniError(false); enterUniverse(); },
-  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode, sensory, sensoryStored, applySensoryPreset, updateSensory]);
+  }), [lang, theme, t, state, go, dockTab, user, premium, shownParts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode, sensory, sensoryStored, applySensoryPreset, updateSensory]);
 
   /* ── universe host: outside the switch; renderer chunk on first entry ── */
   const enterUniverse = useCallback(async (isActive = () => true) => {
@@ -354,7 +372,7 @@ export default function App() {
       if (!isActive() || !host.isConnected) return;
       if (!uniRef.current) uniRef.current = mod.initUniverse(host, theme === 'dark', sensory.motion);
       uniRef.current.setMotionMode(sensory.motion);
-      uniRef.current.setParts(parts);
+      uniRef.current.setParts(shownParts);
       uniRef.current.onPick((id) => setSheet({ type: 'part', id }));
       uniRef.current.wake();
       uniRef.current.resize();
@@ -367,7 +385,7 @@ export default function App() {
       setUniError(true);
       setOverlay('universe-fail');
     }
-  }, [parts, sensory.motion, theme]);
+  }, [shownParts, sensory.motion, theme]);
 
   useEffect(() => {
     let active = true;

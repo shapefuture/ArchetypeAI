@@ -11,7 +11,7 @@
  * The consent contract at link time is exactly this paragraph.
  */
 import {
-  doc, getDoc, setDoc, collection, getDocs, query, where,
+  doc, getDoc, setDoc, collection, getDocs, query, where, writeBatch,
 } from 'firebase/firestore';
 import { getFirestoreDb } from '../../environments/firebase-init';
 import type { ScoredProfile } from '../../shared/core/data/scoring-v2';
@@ -101,17 +101,27 @@ export async function createTherapistLink(
   return code;
 }
 
-/** Therapist side: claim a code → it appears in the dashboard list. */
+/**
+ * Therapist side: claim a code → it appears in the dashboard list. A code is
+ * single-use: the claim records this therapist on it in the same batch, and
+ * a code another therapist already claimed resolves to null.
+ */
 export async function claimTherapistLink(
   therapistUid: string, code: string,
 ): Promise<TherapistClientSummary | null> {
   const db = getFirestoreDb();
   const linkCode = code.trim().toUpperCase();
-  const snap = await getDoc(doc(db, 'therapistLinks', linkCode));
+  const linkRef = doc(db, 'therapistLinks', linkCode);
+  const snap = await getDoc(linkRef);
   if (!snap.exists()) return null;
-  const summary = snap.data()['summary'] as TherapistClientSummary;
-  const clientUid = snap.data()['clientUid'] as string;
-  await setDoc(
+  const data = snap.data();
+  const claimedBy = data['claimedBy'] as string | undefined;
+  if (claimedBy && claimedBy !== therapistUid) return null;
+  const summary = data['summary'] as TherapistClientSummary;
+  const clientUid = data['clientUid'] as string;
+  const batch = writeBatch(db);
+  if (!claimedBy) batch.update(linkRef, { claimedBy: therapistUid });
+  batch.set(
     doc(db, 'therapistClients', `${therapistUid}_${clientUid}`),
     {
       therapistUid,
@@ -122,7 +132,34 @@ export async function claimTherapistLink(
       summary,
     },
   );
+  await batch.commit();
   return summary;
+}
+
+/**
+ * Client side: end every therapist relationship, as the consent text
+ * promises. Deletes each roster row with its invite code or booking share,
+ * so no therapist keeps the summary or can assign practices. Appointments
+ * themselves stay, for both parties' records. Returns how many were ended.
+ */
+export async function revokeTherapistAccess(clientUid: string): Promise<number> {
+  const db = getFirestoreDb();
+  const rows = await getDocs(query(collection(db, 'therapistClients'), where('clientUid', '==', clientUid)));
+  const shares = await getDocs(query(collection(db, 'clientShares'), where('clientUid', '==', clientUid)));
+  const batch = writeBatch(db);
+  for (const row of rows.docs) {
+    const linkCode = row.data()['linkCode'];
+    // The rules evaluate a delete against the stored code, so skip codes already gone.
+    if (typeof linkCode === 'string' && linkCode && (await getDoc(doc(db, 'therapistLinks', linkCode))).exists()) {
+      batch.delete(doc(db, 'therapistLinks', linkCode));
+    }
+    batch.delete(row.ref);
+  }
+  for (const share of shares.docs) batch.delete(share.ref);
+  const therapists = new Set([...rows.docs, ...shares.docs].map((d) => d.data()['therapistUid']));
+  if (rows.empty && shares.empty) return 0;
+  await batch.commit();
+  return therapists.size;
 }
 
 /**

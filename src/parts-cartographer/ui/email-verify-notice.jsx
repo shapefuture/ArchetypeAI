@@ -12,6 +12,9 @@ const COPY = {
     still: 'Not verified yet. Open the link in the email, then try again.',
     done: 'Verified. Clients can now find you by email.',
     failed: 'That did not work. Check your connection and try again.',
+    bookingTitle: 'Verify your email to book a session',
+    bookingBody: (email) => `A therapist sees the address you book with, so it has to be confirmed first. ${email} is not verified yet.`,
+    bookingDone: 'Verified. You can book a session now.',
   },
   ru: {
     title: 'Подтвердите email, чтобы клиенты могли вас найти',
@@ -22,13 +25,22 @@ const COPY = {
     still: 'Адрес пока не подтверждён. Откройте ссылку в письме и попробуйте снова.',
     done: 'Адрес подтверждён. Теперь клиенты могут найти вас по email.',
     failed: 'Не получилось. Проверьте подключение и попробуйте снова.',
+    bookingTitle: 'Подтвердите email, чтобы записаться на сессию',
+    bookingBody: (email) => `Терапевт видит адрес, с которым вы записываетесь, поэтому его нужно сначала подтвердить. Адрес ${email} ещё не подтверждён.`,
+    bookingDone: 'Адрес подтверждён. Теперь можно записаться на сессию.',
   },
 };
 
-/** Shown to a signed-in email account whose address is not yet verified. */
-export function EmailVerifyNotice() {
+/**
+ * Shown to a signed-in email account whose address is not yet verified.
+ * `purpose` picks the copy: being found as a therapist, or booking a session.
+ */
+export function EmailVerifyNotice({ purpose = 'directory' } = {}) {
   const { lang, user, setUser } = useApp();
-  const copy = COPY[lang === 'ru' ? 'ru' : 'en'];
+  const base = COPY[lang === 'ru' ? 'ru' : 'en'];
+  const copy = purpose === 'booking'
+    ? { ...base, title: base.bookingTitle, body: base.bookingBody, done: base.bookingDone }
+    : base;
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
   if (!user?.linked || !user.email || user.emailVerified) return status === 'done' ? <p className="sub mt12" role="status">{copy.done}</p> : null;

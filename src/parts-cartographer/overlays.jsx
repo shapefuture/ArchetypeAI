@@ -21,7 +21,7 @@ import { confirmLegacyNaiveRecord, formatInstantInZone, resolveWallClock } from 
 import { SuggestionReview, queueCoachReply } from './screens/suggestion-review.jsx';
 import { lookupByEmail, syncPublicProfile } from './core/user-directory.ts';
 import { checkFacilitatorStatement, STATEMENT_MAX_CHARS } from './core/facilitator-profile.ts';
-import { createTherapistLink } from './core/therapist-link.ts';
+import { createTherapistLink, revokeTherapistAccess } from './core/therapist-link.ts';
 import { LegacySynastryDetails } from './screens/legacy-synastry-report.jsx';
 import { ScoredProfileSynastryDetails } from './screens/scored-profile-synastry-report.jsx';
 import { EmailVerifyNotice } from './ui/email-verify-notice.jsx';
@@ -784,6 +784,11 @@ export function Booking() {
 
   const confirmBooking = async () => {
     if (!user?.linked || !user.email || !therapist || !slot || !therapistZone || busy) return;
+    // The rules accept a booking only from a verified address; the notice above explains it.
+    if (user.emailVerified !== true) {
+      setError(t('bookingVerifyEmail'));
+      return;
+    }
     const picked = chosenOccurrence(slot, fold);
     if (!picked || !picked.offered) {
       setError(t('bookingFailed'));
@@ -818,6 +823,7 @@ export function Booking() {
     <div className="overlay">
       {ovHead('📅 ' + t('bookSession'), () => setOverlay(null))}
       <div className="ov-body">
+        <EmailVerifyNotice purpose="booking" />
         <div className="steps mt8"><i className={step >= 0 ? 'on' : ''} /><i className={step >= 1 ? 'on' : ''} /><i className={step >= 2 ? 'on' : ''} /></div>
 
         {profile && step === 0 && (
@@ -1203,7 +1209,8 @@ export function Therapist() {
       const windows = enabled.map(([index, value]) => ({
         days: [Number(index) + 1], start: value.from, end: value.to, minutes: 60, timeZone: zone,
       }));
-      await saveTherapistAvailability(user.uid, windows, user.email, trimmedStatement);
+      // The rules accept a published email only once it is verified; until then the schedule saves without it.
+      await saveTherapistAvailability(user.uid, windows, user.emailVerified === true ? user.email : null, trimmedStatement);
       setZoneNeedsConfirm(false);
       try { localStorage.setItem('ifs.avail', JSON.stringify(avail)); } catch { /* */ }
       toast('✓ ' + t('save'));
@@ -1731,6 +1738,8 @@ export function Share() {
   const [therapistCode, setTherapistCode] = useState('');
   const [linkBusy, setLinkBusy] = useState(false);
   const [linkError, setLinkError] = useState('');
+  const [unlinkAsk, setUnlinkAsk] = useState(false);
+  const [unlinkStatus, setUnlinkStatus] = useState('');
   const headline = profile
     ? (lang === 'ru' && profile.headlineRu ? profile.headlineRu : profile.headlineConstellation)
     : '';
@@ -1783,6 +1792,23 @@ export function Share() {
     }
   };
 
+  const unlinkAll = async () => {
+    if (!user?.linked || !user.uid || linkBusy) return;
+    setLinkBusy(true);
+    setUnlinkStatus('');
+    try {
+      const ended = await revokeTherapistAccess(user.uid);
+      setTherapistCode('');
+      setUnlinkStatus(t(ended ? 'therapistUnlinked' : 'therapistUnlinkNone'));
+    } catch (err) {
+      console.error('Therapist unlink failed', err);
+      setUnlinkStatus(t('therapistUnlinkFailed'));
+    } finally {
+      setLinkBusy(false);
+      setUnlinkAsk(false);
+    }
+  };
+
   return (
     <div className="overlay">
       {ovHead('📤 ' + t('shareT'), () => setOverlay(null))}
@@ -1822,6 +1848,16 @@ export function Share() {
                   </div>
                 </div>
               )}
+              {unlinkAsk ? (
+                <div className="card mt12" role="alertdialog" aria-labelledby="unlink-ask">
+                  <p id="unlink-ask" className="sub">{t('therapistUnlinkConfirm')}</p>
+                  <button className="btn primary block mt12" disabled={linkBusy} onClick={unlinkAll}>{linkBusy ? '⏳ …' : t('therapistUnlinkConfirmYes')}</button>
+                  <button className="btn ghost block mt8" disabled={linkBusy} onClick={() => setUnlinkAsk(false)}>{t('cancel')}</button>
+                </div>
+              ) : (
+                <button className="btn ghost block mt12" disabled={linkBusy} onClick={() => { setUnlinkStatus(''); setUnlinkAsk(true); }}>{t('therapistUnlink')}</button>
+              )}
+              {unlinkStatus && <p className="sub mt8" role="status">{unlinkStatus}</p>}
             </>
           )}
         </div>

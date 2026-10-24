@@ -558,15 +558,117 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         summary: THERAPIST_SUMMARY,
       }));
       await assertSucceeds(getDoc(doc(therapist, 'therapistLinks', code)));
-      await assertSucceeds(setDoc(doc(therapist, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`), {
-        therapistUid: UIDS.therapist,
+      await assertSucceeds(claimInvite(therapist, UIDS.therapist, code));
+      await assertSucceeds(getDoc(doc(therapist, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`)));
+    });
+
+    function inviteRow(therapistUid: string, code: string) {
+      return {
+        therapistUid,
         clientUid: UIDS.client,
         linkedAt: '2026-10-01T00:00:00.000Z',
         source: 'invite',
         linkCode: code,
         summary: THERAPIST_SUMMARY,
+      };
+    }
+
+    /** The claim marks the code as used by this therapist and adds the roster row in one batch. */
+    function claimInvite(db: Firestore, therapistUid: string, code: string) {
+      const batch = writeBatch(db);
+      batch.update(doc(db, 'therapistLinks', code), { claimedBy: therapistUid });
+      batch.set(doc(db, 'therapistClients', `${therapistUid}_${UIDS.client}`), inviteRow(therapistUid, code));
+      return batch.commit();
+    }
+
+    async function seedInvite(code: string) {
+      await assertSucceeds(setDoc(doc(asUser(UIDS.client, 'client@example.com'), 'therapistLinks', code), {
+        clientUid: UIDS.client, createdAt: '2026-10-01T00:00:00.000Z', summary: THERAPIST_SUMMARY,
       }));
-      await assertSucceeds(getDoc(doc(therapist, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`)));
+    }
+
+    it('lets only one therapist claim an invite code', async () => {
+      const code = 'ONEUSE2345';
+      await seedInvite(code);
+      const first = asUser(UIDS.therapist, 'therapist@example.com');
+      const second = asUser(UIDS.attacker, 'attacker@example.com');
+      // Without marking the code as claimed, the roster row is refused.
+      await assertFails(setDoc(doc(second, 'therapistClients', `${UIDS.attacker}_${UIDS.client}`), inviteRow(UIDS.attacker, code)));
+      await assertSucceeds(claimInvite(first, UIDS.therapist, code));
+      await assertFails(claimInvite(second, UIDS.attacker, code));
+      await assertFails(setDoc(doc(second, 'therapistClients', `${UIDS.attacker}_${UIDS.client}`), inviteRow(UIDS.attacker, code)));
+      await assertFails(claimInvite(asAnon(), 'anon', code));
+      // The client cannot claim their own code.
+      await assertFails(updateDoc(doc(asUser(UIDS.client, 'client@example.com'), 'therapistLinks', code), { claimedBy: UIDS.client }));
+    });
+
+    it('lets the client revoke an invite link, which ends assignment rights and roster access', async () => {
+      const code = 'REVOKE2345';
+      await seedInvite(code);
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      const client = asUser(UIDS.client, 'client@example.com');
+      await assertSucceeds(claimInvite(therapist, UIDS.therapist, code));
+      await assertSucceeds(setDoc(doc(therapist, 'assignments', 'a-before'), {
+        id: 'a-before', therapistUid: UIDS.therapist, clientUid: UIDS.client, exerciseId: 'e1', frequency: 'once', assignedAt: 'now',
+      }));
+      // The client can find their own relationships to end them.
+      await assertSucceeds(getDocs(query(collection(client, 'therapistClients'), where('clientUid', '==', UIDS.client))));
+      await assertSucceeds(getDocs(query(collection(client, 'clientShares'), where('clientUid', '==', UIDS.client))));
+      // Nobody but the two parties can delete the roster row.
+      await assertFails(deleteDoc(doc(asUser(UIDS.attacker, 'attacker@example.com'), 'therapistClients', `${UIDS.therapist}_${UIDS.client}`)));
+      const revoke = writeBatch(client);
+      revoke.delete(doc(client, 'therapistLinks', code));
+      revoke.delete(doc(client, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`));
+      await assertSucceeds(revoke.commit());
+      await assertFails(getDoc(doc(therapist, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`)));
+      await assertFails(setDoc(doc(therapist, 'assignments', 'a-after'), {
+        id: 'a-after', therapistUid: UIDS.therapist, clientUid: UIDS.client, exerciseId: 'e1', frequency: 'once', assignedAt: 'now',
+      }));
+    });
+
+    it('refuses a booking from an unverified address, so no one can book as someone else', async () => {
+      await seedTherapistProfile();
+      const impostor = asUser(UIDS.attacker, 'client@example.com', false);
+      const start = '2026-10-06T10:00';
+      const batch = writeBatch(impostor);
+      batch.set(doc(impostor, 'appointments', `${UIDS.attacker}_1`), {
+        clientUid: UIDS.attacker, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
+        therapistEmail: 'therapist@example.com', start, end: '2026-10-06T11:00', status: 'pending',
+        createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+      });
+      batch.set(doc(impostor, 'therapistBusySlots', `${UIDS.therapist}_${start}`), {
+        therapistUid: UIDS.therapist, appointmentId: `${UIDS.attacker}_1`, start, end: '2026-10-06T11:00',
+      });
+      await assertFails(batch.commit());
+    });
+
+    it('rejects impossible appointment times', async () => {
+      await seedTherapistProfile();
+      const client = asUser(UIDS.client, 'client@example.com');
+      const start = '2026-13-45T25:99';
+      const batch = writeBatch(client);
+      batch.set(doc(client, 'appointments', `${UIDS.client}_bad`), {
+        clientUid: UIDS.client, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
+        therapistEmail: 'therapist@example.com', start, end: '2026-13-45T26:99', status: 'pending',
+        createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+      });
+      batch.set(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${start}`), {
+        therapistUid: UIDS.therapist, appointmentId: `${UIDS.client}_bad`, start, end: '2026-13-45T26:99',
+      });
+      await assertFails(batch.commit());
+    });
+
+    it('does not let anyone list therapists or publish a profile under an address they do not hold', async () => {
+      await seedTherapistProfile();
+      // Every visitor is signed in, at least anonymously.
+      const visitor = asUser('uid_visitor');
+      await assertFails(getDocs(collection(visitor, 'therapists')));
+      await assertSucceeds(getDoc(doc(visitor, 'therapists', UIDS.therapist)));
+      await assertFails(setDoc(doc(visitor, 'therapists', 'uid_visitor'), { email: 'famous@clinic.test', availability: [] }));
+      await assertSucceeds(setDoc(doc(visitor, 'therapists', 'uid_visitor'), { email: null, availability: [] }));
+      await assertFails(setDoc(doc(asUser(UIDS.attacker, 'attacker@example.com'), 'therapists', UIDS.attacker), { email: 'famous@clinic.test', availability: [] }));
+      await assertFails(setDoc(doc(asUser(UIDS.attacker, 'attacker@example.com', false), 'therapists', UIDS.attacker), { email: 'attacker@example.com', availability: [] }));
+      await assertSucceeds(setDoc(doc(asUser(UIDS.attacker, 'attacker@example.com'), 'therapists', UIDS.attacker), { email: 'attacker@example.com', availability: [] }));
     });
 
     it('requires a trusted roster relationship before exercise assignment', async () => {

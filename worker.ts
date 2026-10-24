@@ -348,7 +348,9 @@ export default {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15_000);
     try {
-      const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
+      // The subscription is expanded: a Checkout Session stays `complete` forever,
+      // so only the subscription's own status says whether it is still paid.
+      const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}?expand%5B%5D=subscription`, {
         headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
         signal: controller.signal,
       });
@@ -372,10 +374,12 @@ export default {
         return jsonResponse({ error: 'Checkout Session not found' }, 404, cors);
       }
 
-      const hasPaidSubscription = !!session.subscription
+      const subscription = session.subscription as { status?: unknown } | string | null | undefined;
+      const subscriptionStatus = typeof subscription === 'object' && subscription ? subscription.status : undefined;
+      const hasPaidSubscription = (subscriptionStatus === 'active' || subscriptionStatus === 'trialing')
         && (session.payment_status === 'paid' || session.payment_status === 'no_payment_required');
-      const status = session.status === 'complete' && hasPaidSubscription
-        ? 'complete'
+      const status = session.status === 'complete'
+        ? (hasPaidSubscription ? 'complete' : 'inactive')
         : session.status === 'expired' ? 'expired' : 'open';
       return jsonResponse({ status }, 200, cors);
     } catch {

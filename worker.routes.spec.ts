@@ -143,3 +143,32 @@ describe('non-API paths', () => {
     expect(await response.text()).toBe('app');
   });
 });
+
+describe('Stripe subscription verification', () => {
+  const stripeEnv = () => ({ ...makeEnv(), STRIPE_SECRET_KEY: 'sk_test_x', STRIPE_PRICE_ID: 'price_x' });
+  const verify = () => worker.handleStripeVerify(new Request('https://worker.example/api/stripe-verify?session_id=cs_live_abc', {
+    headers: { Origin: 'https://app.example.com', 'CF-Connecting-IP': '203.0.113.42', Authorization: 'Bearer t' },
+  }), stripeEnv());
+  const session = (subscription: unknown) => ({
+    status: 'complete', mode: 'subscription', payment_status: 'paid', client_reference_id: 'firebase-user', subscription,
+  });
+
+  beforeEach(() => { authMock.mockResolvedValue({ uid: 'firebase-user', email: null, emailVerified: false }); });
+
+  it('reports a cancelled subscription as inactive, though its Checkout Session stays complete', async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(session({ id: 'sub_1', status: 'canceled' })), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const response = await verify();
+    expect(await response.json()).toEqual({ status: 'inactive' });
+    expect(String(fetchMock.mock.calls[0][0])).toContain('expand%5B%5D=subscription');
+    vi.unstubAllGlobals();
+  });
+
+  it('reports an active or trialing subscription as complete', async () => {
+    for (const status of ['active', 'trialing']) {
+      vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(session({ id: 'sub_1', status })), { status: 200 })));
+      expect(await (await verify()).json()).toEqual({ status: 'complete' });
+    }
+    vi.unstubAllGlobals();
+  });
+});

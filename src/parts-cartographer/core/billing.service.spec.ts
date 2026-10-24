@@ -53,6 +53,21 @@ describe('account-scoped Stripe verification', () => {
     expect(await restoring).toBe(false);
     expect(localStorage.getItem('ifs.billing.verified.v2')).toBeNull();
   });
+  it('drops a saved receipt the server rejects or reports inactive, but keeps it through a network failure', async () => {
+    const saved = JSON.stringify({ uid: 'owner', sessionId: 'cs_live_forged', verifiedAt: Date.now() });
+    for (const [answer, premium] of [
+      [{ ok: false, status: 404, json: async () => ({}) }, false],
+      [{ ok: true, status: 200, json: async () => ({ status: 'inactive' }) }, false],
+      [{ ok: false, status: 502, json: async () => ({}) }, true],
+    ] as const) {
+      vi.resetModules(); localStorage.clear();
+      localStorage.setItem('ifs.billing.verified.v2', saved);
+      vi.stubGlobal('fetch', vi.fn(async () => answer));
+      const { billing } = await import('./billing.service');
+      expect(await billing.restore()).toBe(premium);
+      expect(billing.isPremium()).toBe(premium);
+    }
+  });
   it('expires an offline receipt even if the tab stays open', async () => {
     vi.useFakeTimers();
     localStorage.setItem('ifs.billing.verified.v2', JSON.stringify({ uid: 'owner', sessionId: 'cs_old', verifiedAt: Date.now() }));

@@ -72,6 +72,9 @@ export const billing: BILLING_PORT & {
       const response = await fetch(`${VERIFY_URL}?session_id=${encodeURIComponent(candidate)}`, {
         headers: { Authorization: `Bearer ${identity.token}` },
       });
+      // The server knows this session and it is not ours or not paid: drop the receipt.
+      // A server or network failure keeps the cached state, so offline use still works.
+      if (response.status === 400 || response.status === 404) { setPremium(false); return false; }
       if (!response.ok) return this.isPremium();
       const result = await response.json() as { status?: string };
       if (version !== verificationVersion || auth.currentUser()?.uid !== identity.uid) return false;
@@ -80,8 +83,8 @@ export const billing: BILLING_PORT & {
         setPremium(true);
         return true;
       }
-      if (result.status === 'open' || result.status === 'expired') setPremium(false);
-      return this.isPremium();
+      setPremium(false);
+      return false;
     } catch {
       return this.isPremium();
     } finally {

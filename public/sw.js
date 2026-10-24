@@ -2,11 +2,28 @@
 const BUILD = '__BUILD_ID__';
 const CACHE = `parts-cartographer-${BUILD}`;
 const BUILD_ASSETS = [];
-const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/firebase-messaging-sw.js', ...BUILD_ASSETS];
+const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/firebase-messaging-sw.js'];
+const PRECACHE = [...SHELL, ...BUILD_ASSETS];
+
+// A script or stylesheet URL answered with HTML is the SPA fallback for a file
+// that no longer exists (an old build's chunk). It must never be cached.
+function cacheable(url, res) {
+  if (!res || res.status !== 200 || res.type !== 'basic') return false;
+  const type = res.headers.get('content-type') || '';
+  return !(/\.(js|css)$/.test(url.pathname) && type.includes('text/html'));
+}
 
 self.addEventListener('install', (e) => {
+  // The shell must install; build assets are cached one by one, so a single
+  // failed download cannot leave the app without offline support.
+  const precacheAsset = (cache, asset) => fetch(asset).then((res) => {
+    if (cacheable(new URL(asset, self.location.origin), res)) return cache.put(asset, res);
+    return undefined;
+  });
   e.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then((cache) => cache.addAll(SHELL).then(() => Promise.allSettled(BUILD_ASSETS.map((asset) => precacheAsset(cache, asset)))))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -47,7 +64,7 @@ self.addEventListener('fetch', (e) => {
     caches.match(req, { ignoreVary: true }).then((hit) => {
       const net = fetch(req)
         .then((res) => {
-          if (res && res.status === 200 && res.type === 'basic') {
+          if (cacheable(url, res)) {
             const copy = res.clone();
             caches.open(CACHE).then((c) => c.put(req, copy));
           }

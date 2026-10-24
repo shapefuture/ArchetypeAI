@@ -351,7 +351,7 @@ service cloud.firestore {
         && request.resource.data.email is string
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.emailLower is string
-        && request.resource.data.emailLower == request.auth.token.email
+        && request.resource.data.emailLower == request.auth.token.email.lower()
         && (request.resource.data.displayName == null || request.resource.data.displayName is string)
         && request.resource.data.updatedAt is string;
       allow delete: if isOwner(userId);

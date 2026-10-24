@@ -26,7 +26,13 @@ let sw = readFileSync(swSrc, 'utf8');
 sw = sw.replace('__BUILD_ID__', stamp);
 // Precache lazy screens, workers and fonts as well as the initial bundle, so a
 // previously unopened assessment/report remains usable after going offline.
-const assets = readdirSync(join(root, 'dist', 'assets')).map((name) => `/assets/${name}`);
+// Fonts: only woff2 (every browser that runs the app reads it) in the Latin
+// and Cyrillic subsets the copy uses; other subsets still load on demand online.
+const isSkippedFont = (name) => /\.woff$/.test(name)
+  || (/\.woff2$/.test(name) && !/-(latin|cyrillic)-\d{3}-/.test(name));
+const assets = readdirSync(join(root, 'dist', 'assets'))
+  .filter((name) => !isSkippedFont(name))
+  .map((name) => `/assets/${name}`);
 sw = sw.replace('const BUILD_ASSETS = [];', `const BUILD_ASSETS = ${JSON.stringify(assets)};`);
 
 mkdirSync(dirname(swDst), { recursive: true });

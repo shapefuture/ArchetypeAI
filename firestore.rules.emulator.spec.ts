@@ -352,6 +352,13 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertSucceeds(setDoc(doc(verified, 'directoryEmails', 'therapist@example.com'), { uid: UIDS.therapist, updatedAt: 'now' }));
     });
 
+    it('accepts a public profile for a verified address with capital letters', async () => {
+      const mixed = asUser('uid_mixed', 'Bob@Example.test', true);
+      await assertSucceeds(setDoc(doc(mixed, 'publicProfiles', 'uid_mixed'), {
+        emailLower: 'bob@example.test', email: 'Bob@Example.test', displayName: null, updatedAt: 'now',
+      }));
+    });
+
     it('refuses a public profile for an unverified address', async () => {
       const profile = { emailLower: 'therapist@example.com', email: 'therapist@example.com', displayName: 'Dr Vale', updatedAt: 'now' };
       await assertFails(setDoc(doc(asUser(UIDS.attacker, 'therapist@example.com', false), 'publicProfiles', UIDS.attacker), profile));

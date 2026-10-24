@@ -61,12 +61,14 @@ const OVERLAY_LABEL_KEYS = {
 };
 const overlayLabelKey = (kind) => OVERLAY_LABEL_KEYS[kind] ?? kind;
 
-/** Fetches the deferred screens in the background after the first render. */
+/**
+ * Fetches the deferred screens right after the first render. Downloads run off
+ * the main thread, so starting early costs the first paint nothing, and a tap
+ * on Cabinet does not wait for the felt thumbnails' rendering to finish first.
+ */
 function warmDeferredScreens() {
-  const warm = () => { for (const load of [loadCabinet, loadAssessment, loadOverlays, loadInnerverse]) load().catch(() => {}); };
   if (typeof window === 'undefined') return;
-  if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 4000 });
-  else setTimeout(warm, 2000);
+  setTimeout(() => { for (const load of [loadCabinet, loadAssessment, loadOverlays, loadInnerverse]) load().catch(() => {}); }, 0);
 }
 import { RouteBoundary, RouteFrame } from './ui/route-boundary.jsx';
 import { homeScreen, resolveBootRoute, withoutDeepLink } from './core/boot.ts';

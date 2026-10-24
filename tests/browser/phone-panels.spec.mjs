@@ -60,7 +60,9 @@ test('the Journal layer labels every field', async ({ page }) => {
 test('the Cabinet screen opened from home has no axe violations', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Cabinet/ }).first().click();
-  await expect(page.locator('section[aria-labelledby="e17-title"]')).toBeVisible();
+  // Software WebGL (swiftshader) here can hold the main thread for seconds while
+  // felt thumbnails compile shaders; a real GPU does not. Allow for it.
+  await expect(page.locator('section[aria-labelledby="e17-title"]')).toBeVisible({ timeout: 15_000 });
   await noHorizontalScroll(page);
   const accessibility = await new AxeBuilder({ page }).include('.phone').disableRules(['color-contrast']).analyze();
   expect(accessibility.violations).toEqual([]);

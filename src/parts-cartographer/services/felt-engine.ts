@@ -70,7 +70,9 @@ export function feltThumbnail(traits: Traits): Promise<string> {
     const job = sewFelt(traits).then((result) => {
       const next = thumbnailQueue.then(() => new Promise<string>((resolve) => {
         const render = () => resolve(renderThumbnail(result));
-        if ('requestIdleCallback' in window) window.requestIdleCallback(render, { timeout: 500 });
+        // Each render is one long task (the first compiles shaders), so wait for a
+        // real idle moment instead of forcing it into the first seconds of use.
+        if ('requestIdleCallback' in window) window.requestIdleCallback(render, { timeout: 2500 });
         else setTimeout(render, 0);
       }));
       thumbnailQueue = next.catch(() => undefined);

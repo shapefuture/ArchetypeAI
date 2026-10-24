@@ -236,7 +236,8 @@ export default {
         // can contain fragments of the user's sensitive prompt.
       }
 
-      const result = await this.raceAI(body, env);
+      // Ollama was just tried above, so the race uses the other providers.
+      const result = await this.raceAI(body, env, ['Ollama/gemma4']);
       return jsonResponse({ text: result.text, provider: result.provider, duration: result.duration }, 200, cors);
     } catch {
       // Do not log prompts, model outputs, provider bodies, or exception text.
@@ -389,14 +390,14 @@ export default {
     }
   },
 
-  async raceAI(payload: AIRequest, env: Env): Promise<{ text: string; provider: string; duration: number }> {
+  async raceAI(payload: AIRequest, env: Env, skip: ReadonlyArray<string> = []): Promise<{ text: string; provider: string; duration: number }> {
     const providers = [
       { name: 'Ollama/gemma4', fn: () => this.fetchOllama(payload, env, 'gemma4:31b-cloud') },
       { name: 'OpenRouter/NemotronUltra', fn: () => this.fetchOpenRouter(payload, env, env.OPENROUTER_MODEL) },
       { name: 'OpenRouter/AutoFree', fn: () => this.fetchOpenRouter(payload, env, 'openrouter/auto:free') },
       { name: 'NVIDIA/NimNemotronUltra', fn: () => this.fetchNvidiaNIM(payload, env) },
       { name: 'Google/Gemini', fn: () => this.fetchGemini(payload, env) },
-    ];
+    ].filter((provider) => !skip.includes(provider.name));
 
     const tasks = providers.map(async (provider) => {
       const startedAt = Date.now();

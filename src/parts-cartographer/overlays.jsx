@@ -25,12 +25,15 @@ import { createTherapistLink, revokeTherapistAccess } from './core/therapist-lin
 import { LegacySynastryDetails } from './screens/legacy-synastry-report.jsx';
 import { ScoredProfileSynastryDetails } from './screens/scored-profile-synastry-report.jsx';
 import { EmailVerifyNotice } from './ui/email-verify-notice.jsx';
+import { authErrorKey } from './core/auth-errors.ts';
+import { sendPasswordReset } from './core/auth.service.ts';
 
 const ovHead = (title, onClose, extra) => (
   <div className="ov-head">
     <div className="ov-title">{title}</div>
     {extra}
-    <button className="ibtn" onClick={onClose} aria-label="Close / Закрыть">✕</button>
+    {/* The app keeps <html lang> in step with the chosen language. */}
+    <button className="ibtn" onClick={onClose} aria-label={tr('close', document.documentElement.lang === 'ru' ? 'ru' : 'en')}>✕</button>
   </div>
 );
 
@@ -1373,6 +1376,17 @@ export function Login({ onClose }) {
   const [busy, setBusy] = useState(false);
 
   const done = (u) => { setUser(u); toast('✓ ' + t('done')); onClose?.(); };
+  const fail = (error) => {
+    console.error('Sign-in failed', error);
+    const key = authErrorKey(error);
+    if (key) toast('⚠ ' + t(key));
+  };
+  const forgot = async () => {
+    if (!email.includes('@')) { toast(t('loginResetNeedsEmail')); return; }
+    setBusy(true);
+    try { await sendPasswordReset(email); toast('✉️ ' + t('loginResetSent')); } catch (error) { fail(error); }
+    setBusy(false);
+  };
 
   return (
     <div className="overlay">
@@ -1382,7 +1396,7 @@ export function Login({ onClose }) {
 
         <button className="btn primary block mt16" disabled={busy} onClick={async () => {
           setBusy(true);
-          try { done(await auth.signInGoogle()); } catch { toast('⚠ ' + t('loginGoogle')); }
+          try { done(await auth.signInGoogle()); } catch (error) { fail(error); }
           setBusy(false);
         }}>
           G · {t('loginGoogle')}
@@ -1397,21 +1411,25 @@ export function Login({ onClose }) {
         </div>
         <div className="field mt12">
           <div className="field">
-            <input value={email} type="email" placeholder="you@ifs.map"
+            <input value={email} type="email" placeholder="you@ifs.map" aria-label={t('loginEmailLabel')} autoComplete="email"
               onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="field">
-            <input value={pass} type="password" placeholder="••••••••"
+            <input value={pass} type="password" placeholder="••••••••" aria-label={t('loginPasswordLabel')}
+              autoComplete={mode === 'up' ? 'new-password' : 'current-password'}
               onChange={(e) => setPass(e.target.value)} />
           </div>
         </div>
         <button className="btn block" disabled={busy || !email.includes('@') || pass.length < 6} onClick={async () => {
           setBusy(true);
-          try { done(await auth.signInEmail(email, mode, pass)); } catch (e) { toast('⚠ ' + (e?.message || 'email')); }
+          try { done(await auth.signInEmail(email, mode, pass)); } catch (error) { fail(error); }
           setBusy(false);
         }}>
           → {t('continue')}
         </button>
+        {mode === 'in' && (
+          <button className="btn ghost block mt8" disabled={busy} onClick={forgot}>{t('loginForgot')}</button>
+        )}
 
         <button className="btn ghost block mt16" onClick={onClose}>{t('loginSkip')}</button>
         <p className="faint mt12" style={{ fontSize: 11.5, fontWeight: 700 }}>

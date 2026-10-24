@@ -54,6 +54,13 @@ const Journal = named(loadOverlays, 'Journal');
 const Share = named(loadOverlays, 'Share');
 const Booking = named(loadOverlays, 'Booking');
 
+/* Dialog names for screen readers: the overlay kind is a route id, not copy. */
+const OVERLAY_LABEL_KEYS = {
+  booking: 'bookSession', login: 'loginT', mapgate: 'mapGateT', paywall: 'pwT',
+  'universe-fail': 'uniFailT', admin: 'adminTools', journal: 'journalT', help: 'helpT', install: 'installT',
+};
+const overlayLabelKey = (kind) => OVERLAY_LABEL_KEYS[kind] ?? kind;
+
 /** Fetches the deferred screens in the background after the first render. */
 function warmDeferredScreens() {
   const warm = () => { for (const load of [loadCabinet, loadAssessment, loadOverlays, loadInnerverse]) load().catch(() => {}); };
@@ -497,7 +504,7 @@ export default function App() {
           {toastMsg && <div className="toast" role="status">{toastMsg}</div>}
 
           {sheetEl && <ModalLayer label={t('parts')} onClose={() => setSheet(null)}><RouteBoundary resetKey={sheet?.type}><Suspense fallback={<Loading />}>{sheetEl}</Suspense></RouteBoundary></ModalLayer>}
-          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(typeof overlay === 'string' ? overlay : overlay?.kind)} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}><Suspense fallback={<Loading />}>{ov}</Suspense></RouteBoundary></ModalLayer>}
+          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(overlayLabelKey(typeof overlay === 'string' ? overlay : overlay?.kind))} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}><Suspense fallback={<Loading />}>{ov}</Suspense></RouteBoundary></ModalLayer>}
         </div>
       </div>
     </AppCtx.Provider>

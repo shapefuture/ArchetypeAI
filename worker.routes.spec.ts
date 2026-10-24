@@ -172,3 +172,19 @@ describe('Stripe subscription verification', () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe('AI provider fallback', () => {
+  it('does not call Ollama a second time after its first answer is unusable', async () => {
+    authMock.mockResolvedValue({ uid: 'firebase-user', email: null, emailVerified: false });
+    const urls: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (input: string | Request) => {
+      const url = typeof input === 'string' ? input : input.url;
+      urls.push(url);
+      if (url.includes('ollama')) return new Response(JSON.stringify({ message: { content: '' } }), { status: 200 });
+      return new Response('unavailable', { status: 503 });
+    }));
+    await worker.handleAI(makeRequest({}, JSON.stringify({ prompt: 'hello' })), makeEnv());
+    expect(urls.filter((url) => url.includes('ollama')).length).toBe(1);
+    vi.unstubAllGlobals();
+  });
+});

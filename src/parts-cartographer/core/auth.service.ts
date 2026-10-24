@@ -73,6 +73,20 @@ export async function getFirebaseIdentity(): Promise<{ uid: string; token: strin
   return { uid: user.uid, token: await user.getIdToken() };
 }
 
+/**
+ * Sends Firebase's password-reset email. A missing account is not reported,
+ * so the form cannot be used to find out who has an account.
+ */
+export async function sendPasswordReset(email: string): Promise<void> {
+  const { sdk, auth } = await client();
+  try {
+    await sdk.sendPasswordResetEmail(auth, email.trim());
+  } catch (error) {
+    if ((error as { code?: string })?.code === 'auth/user-not-found') return;
+    throw error;
+  }
+}
+
 /** Sends Firebase's verification email to the signed-in address. */
 export async function sendVerificationEmail(): Promise<void> {
   const { sdk, auth } = await client();

@@ -862,7 +862,7 @@ export const EXERCISE_TYPE_MAP: Record<string, S> = {
   breathing: { en: 'Breathing', ru: 'Дыхание' },
   witnessing: { en: 'Witnessing', ru: 'Свидетельство' },
   dialogue: { en: 'Parts dialogue', ru: 'Диалог с частью' },
-  unburden: { en: 'Unburdening', ru: 'Снятие бремени' },
+  unburden: { en: 'Unburdening', ru: 'Снятие нагрузки' },
   body: { en: 'Body scan', ru: 'Сканирование тела' },
   imaginal: { en: 'Imaginal scene', ru: 'Воображаемая сцена' },
   journal: { en: 'Journaling', ru: 'Журналирование' },
@@ -871,30 +871,30 @@ export const EXERCISE_TYPE_MAP: Record<string, S> = {
 };
 
 export const EXERCISE_COPY: Record<string, S> = {
-  e1: { en: 'Feel both feet. Name 5 things you see. You are here, now.', ru: 'Почувствуй ступни. Назови 5 вещей, которые видишь. Ты здесь, сейчас.' },
-  e2: { en: 'Breathe 4-7-8 three times while resting a hand on your chest.', ru: 'Дыши 4-7-8 три раза, положив руку на грудь.' },
-  e3: { en: 'Notice the part without asking it to change. Just notice.', ru: 'Заметь часть, не прося её меняться. Просто заметь.' },
-  e4: { en: 'Ask the part: what are you afraid would happen if you stopped?', ru: 'Спроси часть: чего ты боишься, если перестанешь?' },
-  e5: { en: 'Thank the part. Ask what it needs instead. Listen 90 seconds.', ru: 'Поблагодари часть. Спроси, что ей нужно вместо этого. Слушай 90 секунд.' },
-  e6: { en: 'Let the image of the burden float away on water. Watch it go.', ru: 'Представь, как бремя уплывает по воде. Смотри, как уходит.' },
-  e7: { en: 'Scan jaw → shoulders → belly. Soften one millimeter each.', ru: 'Пройдись по челюсти → плечам → животу. Мягче на миллиметр в каждом.' },
-  e8: { en: 'Write one sentence the exiled part has never been told.', ru: 'Напиши одно предложение, которое Изгнанник никогда не слышал.' },
-  e9: { en: 'Shake your hands for 60 seconds like an animal after a scare.', ru: 'Потряси руками 60 секунд — как зверь после испуга.' },
-  e10: { en: 'Pick an anchor object. Touch it when the wave rises.', ru: 'Выбери якорный предмет. Касайся, когда волна растёт.' },
-  e11: { en: 'Two chairs: part speaks, Self answers. Switch seats.', ru: 'Два стула: часть говорит, Себе отвечает. Поменяйся местами.' },
-  e12: { en: 'Name the polarization out loud: "two of me are fighting."', ru: 'Назови поляризацию вслух: «двое во мне дерутся».' },
-  e13: { en: 'Place the burden in a container you choose. Lock it gently.', ru: 'Положи бремя в выбранную твой контейнер. Закрой мягко.' },
-  e14: { en: 'Breathe into the place the feeling lives. Send it air.', ru: 'Дыши туда, где живёт чувство. Отдай ему воздух.' },
-  e15: { en: 'Draw the part in 90 seconds. No erasing. Sign it.', ru: 'Нарисуй часть за 90 секунд. Без стирания. Подпиши.' },
-  e16: { en: 'Walk slowly for 3 minutes and narrate the ground kindly.', ru: 'Иди медленно 3 минуты и добро рассказывай про землю.' },
+  e1: { en: 'Feel both feet. Name 5 things you see. You are here, now.', ru: 'Почувствуйте обе ступни. Назовите 5 вещей, которые видите. Вы здесь, сейчас.' },
+  e2: { en: 'Breathe 4-7-8 three times while resting a hand on your chest.', ru: 'Подышите по схеме 4-7-8 три раза, положив руку на грудь.' },
+  e3: { en: 'Notice the part without asking it to change. Just notice.', ru: 'Заметьте часть, не прося её меняться. Просто заметьте.' },
+  e4: { en: 'Ask the part: what are you afraid would happen if you stopped?', ru: 'Спросите часть: чего она боится, если перестанет?' },
+  e5: { en: 'Thank the part. Ask what it needs instead. Listen 90 seconds.', ru: 'Поблагодарите часть. Спросите, что ей нужно вместо этого. Слушайте 90 секунд.' },
+  e6: { en: 'Let the image of the burden float away on water. Watch it go.', ru: 'Представьте, как образ нагрузки уплывает по воде. Смотрите, как он уходит.' },
+  e7: { en: 'Scan jaw → shoulders → belly. Soften one millimeter each.', ru: 'Пройдитесь вниманием: челюсть → плечи → живот. Смягчите каждое место на миллиметр.' },
+  e8: { en: 'Write one sentence the exiled part has never been told.', ru: 'Напишите одно предложение, которого изгнанная часть никогда не слышала.' },
+  e9: { en: 'Shake your hands for 60 seconds like an animal after a scare.', ru: 'Потрясите руками 60 секунд — как зверь после испуга.' },
+  e10: { en: 'Pick an anchor object. Touch it when the wave rises.', ru: 'Выберите предмет-якорь. Касайтесь его, когда поднимается волна.' },
+  e11: { en: 'Two chairs: part speaks, Self answers. Switch seats.', ru: 'Два стула: говорит часть, отвечает Self. Меняйтесь местами.' },
+  e12: { en: 'Name the polarization out loud: "two of me are fighting."', ru: 'Назовите поляризацию вслух: «две мои части спорят».' },
+  e13: { en: 'Place the burden in a container you choose. Lock it gently.', ru: 'Положите нагрузку в контейнер, который выберете сами. Мягко закройте его.' },
+  e14: { en: 'Breathe into the place the feeling lives. Send it air.', ru: 'Дышите туда, где живёт чувство. Дайте ему воздух.' },
+  e15: { en: 'Draw the part in 90 seconds. No erasing. Sign it.', ru: 'Нарисуйте часть за 90 секунд. Ничего не стирайте. Подпишите рисунок.' },
+  e16: { en: 'Walk slowly for 3 minutes and narrate the ground kindly.', ru: 'Медленно идите 3 минуты и доброжелательно описывайте землю под ногами.' },
   e17: { en: 'Hand on heart: "this is a moment of difficulty."', ru: 'Рука на сердце: «это трудный момент».' },
-  e18: { en: 'Ask which part is loudest. Thank it for the volume.', ru: 'Спроси, какая часть громче всего. Поблагодари за громкость.' },
-  e19: { en: 'Let the firefighter rest 10 minutes by choice, not by force.', ru: 'Дай Пожарному отдохнуть 10 минут по выбору, не по принуждению.' },
-  e20: { en: 'Close: name one resource you met today.', ru: 'Финал: назови один ресурс, который встретил сегодня.' },
+  e18: { en: 'Ask which part is loudest. Thank it for the volume.', ru: 'Спросите, какая часть звучит громче всех. Поблагодарите её за громкость.' },
+  e19: { en: 'Let the firefighter rest 10 minutes by choice, not by force.', ru: 'Дайте Пожарному отдохнуть 10 минут по выбору, а не по принуждению.' },
+  e20: { en: 'Close: name one resource you met today.', ru: 'Завершение: назовите один ресурс, который вы встретили сегодня.' },
 };
 
 export const CONSTELLATION_ESSAYS: Record<string, S> = {
-  default: { en: 'Your parts organize around protection before permission. The sky of your system shows early guards, loud rescuers, and tender stars kept behind them — plus enough Self-energy to begin visiting them safely.', ru: 'Твои части организуются вокруг защиты, а не разрешения. Небо системы — ранние стражи, громкие спасатели и нежные звёзды за ними — плюс достаточно энергии Себя, чтобы начать их навещать.' },
+  default: { en: 'Your parts organize around protection before permission. The sky of your system shows early guards, loud rescuers, and tender stars kept behind them — plus enough Self-energy to begin visiting them safely.', ru: 'Ваши части организованы вокруг защиты, а не разрешения. В небе вашей системы — ранние стражи, громкие спасатели и нежные звёзды за ними, а ещё достаточно Self-энергии, чтобы начать безопасно их навещать.' },
 };
 
 export const UNIVERSE_FAMILY_META: Record<string, { en: string; ru: string; color: string; icon: string }> = {
@@ -915,7 +915,7 @@ export const BOND_TYPES: { id: string; en: string; ru: string }[] = [
 
 export const SYNASTRY_DIM_LABELS: Record<string, S> = {
   energySync: { en: 'Energy sync', ru: 'Синхрон энергий' },
-  burdenOverlap: { en: 'Burden overlap', ru: 'Пересечение бремени' },
+  burdenOverlap: { en: 'Burden overlap', ru: 'Пересечение нагрузки' },
   polarizationRisk: { en: 'Polarization risk', ru: 'Риск поляризации' },
   careFlow: { en: 'Care flow', ru: 'Поток заботы' },
   exileSafety: { en: 'Exile safety', ru: 'Безопасность изгоев' },

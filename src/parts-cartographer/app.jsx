@@ -146,7 +146,10 @@ export default function App() {
   }, []);
   /* keep <html lang> + theme in sync (RU font fallback, no theme flash) */
   useEffect(() => { warmDeferredScreens(); }, []);
-  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title = lang === 'ru' ? 'Innerverse · карта ваших частей' : 'Innerverse · your inner system';
+  }, [lang]);
   useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
   // Restore is an explicit local action. Refresh mounted state immediately;
   // it must not require a reload or trigger a cloud upload.
@@ -486,7 +489,7 @@ export default function App() {
   return (
     <AppCtx.Provider value={ctx}>
       <div className="stage">
-        <div className="stage-caption">Innerverse · your inner system</div>
+        <div className="stage-caption">{lang === 'ru' ? 'Innerverse · ваша внутренняя система' : 'Innerverse · your inner system'}</div>
         <div className="phone grain" data-theme={theme} data-motion={sensory.motion}
           data-texture={sensory.texture ? 'rich' : 'quiet'} data-density={sensory.density}>
           <StatusBar />

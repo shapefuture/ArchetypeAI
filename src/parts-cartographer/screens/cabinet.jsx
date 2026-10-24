@@ -5,7 +5,7 @@ import { CustomizerLike } from './editor-kit.jsx';
 import { SEED_PARTS, FAMILY_LABELS, randomTraits, pid, SHAPES, withCharacterSeed } from '../pal/traits.ts';
 import { Crest, familyColor, Sheet, Confetti } from '../ui/ui.jsx';
 import { t as tr, PART_COPY } from '../i18n/strings.ts';
-import { myAppointments, setAppointmentStatus } from '../core/booking.ts';
+import { myAppointments, setAppointmentStatus, appointmentDisplayTime } from '../core/booking.ts';
 import { loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
@@ -100,11 +100,10 @@ export function Cabinet() {
     }
   };
 
-  const appointmentDate = (value) => {
-    const date = new Date(`${value}:00`);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', {
-      weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-    });
+  // Zone-aware records show in your own time; older ones are labelled as the therapist's time.
+  const appointmentDate = (appointment) => {
+    const shown = appointmentDisplayTime(appointment, lang === 'ru' ? 'ru-RU' : 'en-US');
+    return shown.therapistWallClock ? `${shown.text} (${t('appointmentTherapistTime')})` : shown.text;
   };
 
   const saveToCloud = async () => {
@@ -238,7 +237,7 @@ export function Cabinet() {
                 <b className="grow">{appointment.therapistEmail || appointment.therapistUid.slice(0, 12)}</b>
                 <span className="chip">{t(`status${appointment.status[0].toUpperCase()}${appointment.status.slice(1)}`)}</span>
               </div>
-              <div className="faint mt8" style={{ fontSize: 12 }}>{appointmentDate(appointment.start)}</div>
+              <div className="faint mt8" style={{ fontSize: 12 }}>{appointmentDate(appointment)}</div>
               {(appointment.status === 'pending' || appointment.status === 'approved') && (
                 <button className="btn ghost block mt10" disabled={cancelling === appointment.id} onClick={() => cancelAppointment(appointment.id)}>
                   {cancelling === appointment.id ? '⏳ …' : t('cancelAppointment')}

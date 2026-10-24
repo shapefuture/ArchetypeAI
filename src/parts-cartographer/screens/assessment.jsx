@@ -4,6 +4,7 @@ import { Character } from '../pal/Character.tsx';
 import { Crest, familyColor, Radar, Bars, Confetti, Seg, Steps } from '../ui/ui.jsx';
 import { FAMILY_LABELS, SEED_PARTS, pid, randomTraits } from '../pal/traits.ts';
 import { t as tr, CONSENT_TEXT, LIKERT_TEXTS, PART_COPY, ITEM_TEXTS, SCORING_NAME_POOLS, PART_NAMES } from '../i18n/strings.ts';
+import { STRINGS as SHARED_STRINGS } from '../../shared/i18n/strings.ts';
 import { scoreSystem, profileToCode } from '../core/scoring-v2.ts';
 import { clinicalNeedName, clinicalPartName, clinicalPolarizationName } from '../core/clinical-display.ts';
 import { COMPLEXES } from '../../shared/core/data/parts';
@@ -696,7 +697,7 @@ export function QuickResults() {
               {prof.activeComplexes.length === 0 && <p className="sub mt8">{t('empty')}</p>}
               {prof.activeComplexes.map((complex) => (
                 <div className="mt12" key={complex.id}>
-                  <div className="row"><b className="grow">{lang === 'ru' ? complex.nameRu : complex.name}</b><span className="chip">{Math.round(complex.activation)} · {complex.tier}</span></div>
+                  <div className="row"><b className="grow">{lang === 'ru' ? complex.nameRu : complex.name}</b><span className="chip">{Math.round(complex.activation)} · {SHARED_STRINGS.innerverseReport.ui[lang === 'ru' ? 'ru' : 'en'].complexTierNames[complex.tier] ?? complex.tier}</span></div>
                   <p className="sub mt6">{lang === 'ru' ? complex.beliefRu ?? complex.belief : complex.beliefEn ?? complex.belief}</p>
                   <p className="faint mt6" style={{ fontSize: 12 }}>{lang === 'ru' ? complex.experimentRu ?? complex.experiment : complex.experimentEn ?? complex.experiment}</p>
                 </div>

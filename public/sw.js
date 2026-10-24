@@ -48,8 +48,13 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('/index.html', copy));
+          // Only the app shell may become the offline page: a navigation to the
+          // manifest, an icon or an error page must not replace it.
+          const isShell = cacheable(url, res) && (res.headers.get('content-type') || '').includes('text/html');
+          if (isShell) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put('/index.html', copy));
+          }
           return res;
         })
         .catch(() => caches.match('/index.html').then((r) => r || caches.match('/')))

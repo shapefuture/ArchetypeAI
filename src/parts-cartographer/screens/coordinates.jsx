@@ -148,7 +148,8 @@ export function CoordinatesPanel() {
 
       <details>
         <summary className="iv-panel-note"><strong>{ui.textVersion}</strong></summary>
-        <pre className="iv-pre">{view.staticText}</pre>
+        {/* The same rows as the table, in the reader's language (the core's staticText is the English audit form). */}
+        <pre className="iv-pre">{view.numeric.map((row) => `${ui.axis} ${row.axis + 1} · ${dimensionNames[row.axis]}: ${row.value === null ? ui.unknown : view.table[row.axis][1]} (${ui.status[row.status]})`).join('\n')}</pre>
       </details>
 
       <div className="iv-field-group">

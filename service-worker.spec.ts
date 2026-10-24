@@ -51,4 +51,17 @@ describe('service worker', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect([...stored.keys()].some((key) => key.includes('OLDHASH'))).toBe(false);
   });
+
+  it('keeps the app shell as the offline page when a navigation returns something else', async () => {
+    const json = () => Object.defineProperty(new Response('{"name":"x"}', { status: 200, headers: { 'content-type': 'application/manifest+json' } }), 'type', { value: 'basic' });
+    const { listeners, stored } = loadWorker(async () => json());
+    let response: Promise<Response> | undefined;
+    listeners.fetch({
+      request: { method: 'GET', mode: 'navigate', url: 'https://app.test/manifest.webmanifest' },
+      respondWith: (p: Promise<Response>) => { response = p; },
+    });
+    await response;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(stored.has('/index.html')).toBe(false);
+  });
 });

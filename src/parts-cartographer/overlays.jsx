@@ -762,7 +762,8 @@ export function Booking() {
       // Hours saved before zones existed take the device zone of the device that reads them (see normalizeAvailability).
       const zone = therapistTimeZone(therapistProfile.availability);
       const bookDays = zone ? bookableDays(therapistProfile.availability, new Date(), 14, { timeZone: zone }) : [];
-      setTherapist({ uid: match.uid, email: therapistProfile.email || match.email || email, displayName: match.displayName });
+      // `email` is for display; `profileEmail` is what the rules compare a booking against (it may be null).
+      setTherapist({ uid: match.uid, email: therapistProfile.email || match.email || email, profileEmail: therapistProfile.email ?? null, displayName: match.displayName });
       setAvailability(therapistProfile.availability);
       setTherapistZone(zone);
       setTherapistStatement(therapistProfile.statement ?? '');
@@ -806,7 +807,7 @@ export function Booking() {
         clientUid: user.uid,
         clientEmail: user.email,
         therapistUid: therapist.uid,
-        therapistEmail: therapist.email,
+        therapistEmail: therapist.profileEmail ?? null,
         start: slot,
         end: endOfSlot(slot, availability),
         // Written only when the appointments rule accepts `time` (see ZONE_TIME_WRITES_ENABLED).
@@ -829,17 +830,12 @@ export function Booking() {
         <EmailVerifyNotice purpose="booking" />
         <div className="steps mt8"><i className={step >= 0 ? 'on' : ''} /><i className={step >= 1 ? 'on' : ''} /><i className={step >= 2 ? 'on' : ''} /></div>
 
+        {/* A local profile hash cannot link a therapist; the real invite code is made in Share. */}
         {profile && step === 0 && (
           <div className="card flat mt16" style={{ width: '100%' }}>
             <div className="kicker" style={{ color: 'var(--accent-text)' }}>{t('codeForTher')}</div>
-            <div className="row mt8" style={{ gap: 10 }}>
-              <div className="grow" style={{ fontFamily: 'var(--font-display)', fontSize: 15.5, letterSpacing: '.1em', fontWeight: 800 }}>
-                {String(profileToCode(profile).slice(0, 8))}
-              </div>
-              <button className="btn small" onClick={() => { navigator.clipboard?.writeText(profileToCode(profile).slice(0, 8)); toast('📋 ' + t('copied')); }}>
-                ⧉ {t('copy')}
-              </button>
-            </div>
+            <p className="sub mt8" style={{ fontSize: 13 }}>{t('codeForTherHint')}</p>
+            <button className="btn small mt8" onClick={() => setOverlay('share')}>📤 {t('therapistShareCreate')}</button>
           </div>
         )}
 
@@ -1130,6 +1126,13 @@ export function Therapist() {
         // Hours saved before zones existed took this device's zone on load. The therapist confirms it by saving.
         setZoneNeedsConfirm(remote.availability.some((window) => window.zoneFallback));
         setStatement(remote.statement ?? '');
+        // Hours saved before the email was verified carry no email. Publish it now
+        // that it is verified, so clients who find this therapist can book.
+        const zonesConfirmed = !remote.availability.some((window) => window.zoneFallback);
+        if (user.emailVerified === true && user.email && remote.email !== user.email && zonesConfirmed) {
+          saveTherapistAvailability(user.uid, remote.availability, user.email, remote.statement ?? '')
+            .catch((err) => console.error('Publishing the verified therapist email failed', err));
+        }
       })
       .catch((err) => {
         console.error('Therapist availability load failed', err);
@@ -1137,7 +1140,7 @@ export function Therapist() {
       })
       .finally(() => { if (active) setAvailabilityLoading(false); });
     return () => { active = false; };
-  }, [user?.uid, user?.linked, t]);
+  }, [user?.uid, user?.linked, user?.emailVerified, user?.email, t]);
 
   const refreshAppointments = async () => {
     if (!user?.linked || !user.uid) return;
@@ -1173,7 +1176,7 @@ export function Therapist() {
     try {
       await setAppointmentStatus(appointmentId, status);
       await refreshAppointments();
-      toast('✓ ' + t(status === 'approved' ? 'appointmentApproved' : 'appointmentDeclined'));
+      toast('✓ ' + t(status === 'approved' ? 'appointmentApproved' : status === 'cancelled' ? 'statusCancelled' : 'appointmentDeclined'));
     } catch (err) {
       console.error('Appointment status update failed', err);
       setAppointmentError(t('therapistSaveFailed'));
@@ -1320,9 +1323,9 @@ export function Therapist() {
               {appointmentError && <p className="faint mt8" role="alert" style={{ color: 'var(--danger, #b54a4a)', fontSize: 12 }}>{appointmentError}</p>}
               {!user?.linked ? (
                 <p className="sub mt8">{t('therapistLoginRequired')}</p>
-              ) : appointments.filter((item) => item.status === 'pending').length === 0 ? (
+              ) : appointments.filter((item) => item.status === 'pending' || item.status === 'approved').length === 0 ? (
                 <p className="sub mt8">{t('therapistNoAppointments')}</p>
-              ) : appointments.filter((item) => item.status === 'pending').map((item) => {
+              ) : appointments.filter((item) => item.status === 'pending' || item.status === 'approved').map((item) => {
                 const label = wallLabel(item.start, lang);
                 return (
                   <div key={item.id} className="card flat mt10">
@@ -1346,14 +1349,23 @@ export function Therapist() {
                         {lang === 'ru' ? 'Время этой записи не читается.' : 'This record’s time could not be read.'}
                       </p>
                     )}
-                    <div className="row mt10" style={{ gap: 8 }}>
-                      <button className="btn primary grow" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'approved')}>
-                        {appointmentBusy === item.id ? '⏳ …' : t('appointmentApprove')}
-                      </button>
-                      <button className="btn ghost grow" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'declined')}>
-                        {t('appointmentDecline')}
-                      </button>
-                    </div>
+                    {item.status === 'approved' ? (
+                      <div className="row mt10" style={{ gap: 8, alignItems: 'center' }}>
+                        <span className="chip grow">{t('statusApproved')}</span>
+                        <button className="btn ghost" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'cancelled')}>
+                          {appointmentBusy === item.id ? '⏳ …' : t('cancelAppointment')}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="row mt10" style={{ gap: 8 }}>
+                        <button className="btn primary grow" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'approved')}>
+                          {appointmentBusy === item.id ? '⏳ …' : t('appointmentApprove')}
+                        </button>
+                        <button className="btn ghost grow" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'declined')}>
+                          {t('appointmentDecline')}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -1479,7 +1491,9 @@ export function Paywall() {
       // Checkout navigates to Stripe. Do not mark the account premium here;
       // the return route verifies the session with the Worker first.
     } catch (error) {
-      toast('⚠ ' + (error?.message || t('checkout')));
+      // Worker and SDK messages are English and technical; log them, show copy.
+      console.error('Checkout failed', error);
+      toast('⚠ ' + t('checkoutFailed'));
       setBusy(false);
     }
   };
@@ -1513,12 +1527,12 @@ export function Paywall() {
         <button className="btn block mt16" onClick={async () => {
           const r = await billing.restore();
           setPremiumOn(r); setOk(r);
-          toast(r ? '✓ ' + t('verified') : '— ' + t('restorePurchase'));
+          toast(r ? '✓ ' + t('verified') : t('restoreNone'));
         }}>
           ↺ {t('restorePurchase')}
         </button>
         <p className="faint mt12" style={{ fontSize: 11, fontWeight: 700 }}>
-          {t('dataPrivacy')} · Stripe checkout · {t('version')}
+          {t('dataPrivacy')} · {t('stripeCheckoutNote')} · {t('version')}
         </p>
       </div>
     </div>

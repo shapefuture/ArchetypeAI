@@ -111,7 +111,8 @@ export function CheckIn() {
   };
 
   const rateResurfaced = (verdict, rating) => {
-    const next = verdicts.map((item) => item.createdAt === verdict.createdAt ? { ...item, reRating: rating } : item);
+    // Fresh from storage, so a verdict sealed in another tab is kept.
+    const next = safeArray(VERDICT_KEY).filter(isSealedVerdict).map((item) => item.createdAt === verdict.createdAt ? { ...item, reRating: rating } : item);
     setVerdicts(next);
     store.save(VERDICT_KEY, next);
   };
@@ -166,7 +167,7 @@ export function CheckIn() {
   const sealCurrentVerdict = () => {
     const text = verdictDraft.trim();
     if (!text || !locked) return;
-    const next = [...verdicts, sealVerdict(text, new Date())];
+    const next = [...safeArray(VERDICT_KEY).filter(isSealedVerdict), sealVerdict(text, new Date())];
     setVerdicts(next);
     store.save(VERDICT_KEY, next);
     setVerdictDraft('');
@@ -174,7 +175,7 @@ export function CheckIn() {
   };
 
   const recordCharter = (repairLogged, told) => {
-    const next = [...charterDeliveries, { blame, license, at: new Date().toISOString() }];
+    const next = [...safeArray(CHARTER_KEY), { blame, license, at: new Date().toISOString() }];
     setCharterDeliveries(next);
     store.save(CHARTER_KEY, next);
     const legacyCharters = safeArray(KEYS.charter);

@@ -17,7 +17,25 @@ const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.sy
   'INNERVERSE_CHARTER_V1', 'INNERVERSE_EVENTS_V1', 'INNERVERSE_GOAL_V1', 'INNERVERSE_PRACTICE_V1', 'INNERVERSE_SYNASTRY_RUNS_V1',
   'ARCHETYPE_ASSESSMENT_RESPONSES', 'ARCHETYPE_ASSESSMENT_INDEX', 'ARCHETYPE_COMPLETED_BACKUP',
   'archetype_scoring_method', 'ARCHETYPE_SYNASTRY_CONNECTIONS', 'ARCHETYPE_SYNASTRY_REPORTS', 'ARCHETYPE_SYNASTRY_PARTNER'];
-export const PORTABLE_KEYS = new Set([...BASE_KEYS, ...BASE_KEYS.map((key) => `${key}.hist`)]);
+/**
+ * Everything the person writes is portable: every key with an app prefix,
+ * except sign-in, billing, push and telemetry data, device-only presentation
+ * and hardware choices, and bearer share codes. BASE_KEYS remain the keys with
+ * their own shape checks below.
+ */
+const APP_KEY = /^(ifs\.|INNERVERSE_|ARCHETYPE_|archetype_)/;
+const NOT_PORTABLE = new Set([
+  'ifs.auth', 'ifs.billing', 'ifs.billing.verified.v2', 'ifs.telemetry', 'ifs.chunk-reload', 'ifs.share.codes', 'ifs.state',
+  'ifs.sensory.v1', 'INNERVERSE_PUSH_TOKEN_V1', 'INNERVERSE_PUSH_LAST_NUDGE_V1', 'INNERVERSE_DEVICE_ENVELOPE_V1',
+]);
+export function isPortableKey(key: string): boolean {
+  const base = key.endsWith('.hist') ? key.slice(0, -5) : key;
+  return APP_KEY.test(base) && !NOT_PORTABLE.has(base);
+}
+export const PORTABLE_KEYS = { has: isPortableKey };
+/** Device preferences a "replace" restore keeps when the backup does not carry them. */
+const DEVICE_PREFERENCES = new Set(['ifs.lang', 'ifs.theme', 'ifs.onboarded', 'ifs.help.seen', 'ifs.install.seen']);
+void BASE_KEYS;
 const object = (value: unknown): value is Record<string, any> => !!value && typeof value === 'object' && !Array.isArray(value);
 const ratings = (value: unknown, count: number, draft = false): value is number[] => Array.isArray(value)
   && value.length === count && value.every((v) => Number.isInteger(v) && v >= (draft ? 0 : 1) && v <= 5);
@@ -70,6 +88,10 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === 'ifs.lang') return value === 'en' || value === 'ru';
   if (key === 'ifs.theme') return value === 'light' || value === 'dark';
   if (key === 'ifs.onboarded') return typeof value === 'boolean';
+  // Simple flags and timestamps some screens store as plain values.
+  if (key === 'ifs.attested' || key === 'ifs.mapgate.done' || key === 'ifs.install.nudge' || key === 'ifs.help.seen' || key === 'ifs.install.seen') {
+    return ['string', 'number', 'boolean'].includes(typeof value);
+  }
   return object(value) || Array.isArray(value);
 }
 
@@ -107,7 +129,7 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
     } else {
       if (!object(data)) throw new Error('Unsupported backup format');
       for (const [key, value] of Object.entries(data)) {
-        if (!PORTABLE_KEYS.has(key)) continue;
+        if (!isPortableKey(key)) continue;
         // One malformed value must not make the rest of a person's backup unrestorable.
         if (!validEntry(key, value)) { skipped.push(key); continue; }
         entries[key] = value;
@@ -143,8 +165,19 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
 }
 
 /** Transactional local merge/replace. Roll back every affected key on quota or storage failure. */
+function storageKeys(storage: Storage): string[] {
+  const keys: string[] = [];
+  for (let i = 0; i < storage.length; i += 1) { const key = storage.key(i); if (key !== null) keys.push(key); }
+  return keys;
+}
+
 export function applyBackup(backup: PreparedBackup, storage: Storage = localStorage, mode: 'merge' | 'replace' = 'merge'): void {
-  const keys = mode === 'replace' ? [...PORTABLE_KEYS] : Object.keys(backup.entries);
+  // Replace clears portable data the backup does not carry, but never a key it
+  // reported as damaged (the local copy stays) nor this device's preferences.
+  const keep = new Set([...(backup.skipped ?? []), ...(backup.skipped ?? []).map((key) => `${key}.hist`), ...DEVICE_PREFERENCES]);
+  const keys = mode === 'replace'
+    ? [...new Set([...storageKeys(storage).filter((key) => isPortableKey(key) && !keep.has(key)), ...Object.keys(backup.entries)])]
+    : Object.keys(backup.entries);
   const before = new Map(keys.map((key) => [key, storage.getItem(key)]));
   try {
     for (const key of keys) {
@@ -161,7 +194,7 @@ export function applyBackup(backup: PreparedBackup, storage: Storage = localStor
 
 export function exportBackup(storage: Storage = localStorage) {
   const data: Record<string, unknown> = {};
-  for (const key of PORTABLE_KEYS) {
+  for (const key of storageKeys(storage).filter(isPortableKey).sort()) {
     const raw = storage.getItem(key);
     if (raw === null) continue;
     try { data[key] = JSON.parse(raw); } catch { /* skip malformed records */ }

@@ -682,6 +682,19 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertSucceeds(deleteDoc(doc(asUser(UIDS.client, 'client@example.com'), 'assignments', 'a-del')));
     });
 
+    it('ends assignment and roster access when the therapist steps back', async () => {
+      await seedInvite('STEPBACK23');
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      await assertSucceeds(claimInvite(therapist, UIDS.therapist, 'STEPBACK23'));
+      await assertSucceeds(deleteDoc(doc(therapist, 'therapists', UIDS.therapist)));
+      await assertFails(setDoc(doc(therapist, 'assignments', 'a-after-stepback'), {
+        id: 'a-after-stepback', therapistUid: UIDS.therapist, clientUid: UIDS.client, exerciseId: 'red-1', frequency: 'daily', assignedAt: 'now',
+      }));
+      await assertFails(getDoc(doc(therapist, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`)));
+      // The client still sees their own row.
+      await assertSucceeds(getDoc(doc(asUser(UIDS.client, 'client@example.com'), 'therapistClients', `${UIDS.therapist}_${UIDS.client}`)));
+    });
+
     it('lets the client find and delete codes nobody has claimed yet', async () => {
       await seedInvite('UNUSED2345');
       const client = asUser(UIDS.client, 'client@example.com');

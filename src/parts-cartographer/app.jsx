@@ -12,6 +12,15 @@ import { ambience, bindAmbienceSignals } from './services/ambience-gate.ts';
 import { navEntry, navOverlay, navSheet, planNavigation, readNavEntry, sameSheet } from './core/navigation-history.ts';
 import { SEED_PARTS } from './pal/traits.ts';
 import { localizeParts, storedParts } from './pal/seed-copy.ts';
+import { validMapParts } from './core/backup';
+
+/* Stored parts may come from an older build, a restore or another tab: keep
+   only parts every screen can draw, so one bad entry cannot break them all. */
+function usableParts(saved) {
+  if (!Array.isArray(saved)) return SEED_PARTS;
+  const kept = saved.filter((part) => validMapParts([part]));
+  return kept.length || !saved.length ? kept : SEED_PARTS;
+}
 import { t as translate, STRINGS } from './i18n/strings.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
 const AdminDashboard = lazy(() => import('./screens/admin.jsx').then((module) => ({ default: module.AdminDashboard })));
@@ -126,8 +135,7 @@ export default function App() {
   const [user, setUser] = useState(() => auth.currentUser());
   const [premium, setPremium] = useState(() => billing.isPremium());
   const [parts, setPartsRaw] = useState(() => {
-    const saved = store.load(KEYS.parts, null);
-    return Array.isArray(saved) ? saved : SEED_PARTS;
+    return usableParts(store.load(KEYS.parts, null));
   });
   const [profile, setProfileRaw] = useState(() => store.load(KEYS.profile, null));
   const [overlay, setOverlay] = useState(null); // string | {kind, ...payload}
@@ -159,9 +167,9 @@ export default function App() {
   // it must not require a reload or trigger a cloud upload.
   useEffect(() => {
     const refresh = () => {
-      setPartsRaw(store.load(KEYS.parts, SEED_PARTS));
+      setPartsRaw(usableParts(store.load(KEYS.parts, null)));
       setProfileRaw(store.load(KEYS.profile, null));
-      setLang(store.load('ifs.lang', 'ru'));
+      setLang(store.load('ifs.lang', 'ru') === 'en' ? 'en' : 'ru');
       setTheme(store.load('ifs.theme', 'light'));
       setState('intro');
       setSheet(null);
@@ -240,7 +248,7 @@ export default function App() {
     const onStorage = (event) => {
       if (event.key !== KEYS.parts || event.storageArea !== localStorage) return;
       const saved = store.load(KEYS.parts, null);
-      if (Array.isArray(saved)) setPartsRaw(saved);
+      if (Array.isArray(saved)) setPartsRaw(usableParts(saved));
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);

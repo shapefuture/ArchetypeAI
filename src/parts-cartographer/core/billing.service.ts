@@ -31,7 +31,8 @@ export const billing: BILLING_PORT & {
   locale(): 'USD' | 'RUB';
   checkout(planId: string, email?: string): Promise<{ ok: boolean; verified: boolean }>;
 } = {
-  locale() { return store.load<'en' | 'ru'>('ifs.lang', 'en') === 'ru' ? 'RUB' : 'USD'; },
+  // Russian is the app default, so only an explicit English choice means English.
+  locale() { return store.load<'en' | 'ru'>('ifs.lang', 'ru') === 'en' ? 'USD' : 'RUB'; },
   // The current Worker is configured with one Stripe Price ID, so the UI does
   // not advertise local-only monthly/yearly/lifetime prices as purchasable.
   plans() { return []; },
@@ -46,7 +47,7 @@ export const billing: BILLING_PORT & {
       body: JSON.stringify({
         origin: window.location.origin,
         ...(email ? { email } : {}),
-        locale: store.load<'en' | 'ru'>('ifs.lang', 'en') === 'ru' ? 'ru' : 'en',
+        locale: store.load<'en' | 'ru'>('ifs.lang', 'ru') === 'en' ? 'en' : 'ru',
       }),
     });
     const data = await response.json().catch(() => ({})) as { url?: string; error?: string };

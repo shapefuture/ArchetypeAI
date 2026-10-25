@@ -6,7 +6,7 @@ import { SEED_PARTS, FAMILY_LABELS, randomTraits, pid, SHAPES, withCharacterSeed
 import { Crest, familyColor, Sheet, Confetti } from '../ui/ui.jsx';
 import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus, appointmentDisplayTime } from '../core/booking.ts';
-import { loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
+import { CLOUD_PART_LIMIT, loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
 import { EntryPanel } from './elevation/e02-entry.jsx';
@@ -108,6 +108,7 @@ export function Cabinet() {
 
   const saveToCloud = async () => {
     if (!user?.linked || !user.uid || !profile || cloudBusy) return;
+    if (parts.length > CLOUD_PART_LIMIT) { setCloudMessage(t('cloudSaveTooManyParts')); return; }
     setCloudBusy(true);
     setCloudMessage('');
     try {
@@ -141,6 +142,8 @@ export function Cabinet() {
   };
 
   const restoreCloudSnapshot = async (entry) => {
+    // A restore replaces what is on this device, so it waits for a clear yes.
+    if (!window.confirm(t('cloudRestoreConfirm'))) return;
     if (entry.source?.schema === 'angular-assessment64') {
       try {
         applyBackup(await prepareBackup(JSON.stringify(entry.source), lang, parts));

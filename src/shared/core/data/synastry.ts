@@ -242,7 +242,7 @@ function describeResonance(
 ): { en: string; ru: string } {
   const labels = DIM_LABELS[dim];
   const absDelta = Math.abs(v1 - v2);
-  const pct = Math.round(absDelta * 100);
+  const pct = Math.min(100, Math.round(absDelta * 100));
   const who1 = v1 < -0.2 ? labels.poleNeg : v1 > 0.2 ? labels.polePos : { en: 'balanced', ru: 'сбалансированный' };
   const who2 = v2 < -0.2 ? labels.poleNeg : v2 > 0.2 ? labels.polePos : { en: 'balanced', ru: 'сбалансированный' };
 
@@ -713,7 +713,7 @@ function buildContract(
   if ((p1Anx > 0.3 && p2Avo > 0.3) || (p2Anx > 0.3 && p1Avo > 0.3)) {
     return {
       en: 'The unconscious contract: "I will pursue and you will withdraw, confirming both our fears — yours that intimacy is dangerous, mine that I am unlovable." This is the most common and most painful relational contract.',
-      ru: 'Бессознательный контракт: «Я буду преследовать, а ты отстраняться, подтверждая оба наших страха — твой, что близость опасна, и мой, что я нелюбим(а)». Это самый частый и самый болезненный реляционный контракт.',
+      ru: 'Бессознательный контракт: «Я буду преследовать, а ты будешь отстраняться, подтверждая оба наших страха — твой, что близость опасна, и мой, что я нелюбим(а)». Это самый частый и самый болезненный реляционный контракт.',
     };
   }
   if (p1Anx > 0.3 && p2Anx > 0.3) {

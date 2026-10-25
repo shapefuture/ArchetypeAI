@@ -415,6 +415,8 @@ export const STRINGS = {
   cloudHistoryLoaded: s('Cloud history loaded.', 'Облачная история загружена.'),
   cloudHistoryEmpty: s('No cloud history has been saved yet.', 'Облачная история пока пуста.'),
   cloudRestoreOk: s('Cloud snapshot restored to this device.', 'Снимок из облака восстановлен на это устройство.'),
+  cloudRestoreConfirm: s('Replace the map on this device with this cloud snapshot? The parts and profile here will be replaced.', 'Заменить карту на этом устройстве снимком из облака? Текущие части и профиль здесь будут заменены.'),
+  cloudSaveTooManyParts: s('A cloud copy holds up to 100 parts. Remove some parts before saving.', 'В облачной копии может быть до 100 частей. Уберите несколько частей перед сохранением.'),
   therapistShareTitle: s('Share a summary with a therapist', 'Поделиться сводкой с терапевтом'),
   therapistShareConsent: s('The code exposes only your headline, part scores, active themes, coping pattern, and adherence summary. It does not include raw answers, journal notes, or body sensations. Anyone holding the code can claim it, so share it only with your intended practitioner.', 'Код открывает только заголовок, оценки частей, активные темы, стратегии совладания и сводку практик. Сырые ответы, заметки дневника и телесные ощущения не передаются. Код может использовать любой, у кого он есть — отправляй его только своему специалисту.'),
   therapistShareAgree: s('I understand what this summary contains and choose to share it.', 'Я понимаю, что входит в сводку, и соглашаюсь поделиться ею.'),

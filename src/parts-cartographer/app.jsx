@@ -549,7 +549,7 @@ export default function App() {
           {toastMsg && <div className="toast" role="status">{toastMsg}</div>}
 
           {sheetEl && <ModalLayer label={t('parts')} onClose={() => setSheet(null)}><RouteBoundary resetKey={sheet?.type}><Suspense fallback={<Loading />}>{sheetEl}</Suspense></RouteBoundary></ModalLayer>}
-          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(overlayLabelKey(typeof overlay === 'string' ? overlay : overlay?.kind))} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}><Suspense fallback={<Loading />}>{ov}</Suspense></RouteBoundary></ModalLayer>}
+          {ov && <ModalLayer key={`${user?.linked ? user.uid : 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(overlayLabelKey(typeof overlay === 'string' ? overlay : overlay?.kind))} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}><Suspense fallback={<Loading />}>{ov}</Suspense></RouteBoundary></ModalLayer>}
         </div>
       </div>
     </AppCtx.Provider>

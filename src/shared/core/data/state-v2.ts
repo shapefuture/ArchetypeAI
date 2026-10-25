@@ -71,7 +71,7 @@ export function adjustTriggerWeights(history: CheckIn[]): TriggerWeights {
   if (history.length < 14) return w;
   const clamp = (lo: number, hi: number, v: number) => Math.min(hi, Math.max(lo, v));
   for (const ci of history) {
-    if (!ci.eventType || !ci.confirmedPart) continue;
+    if (!ci.eventType || !Object.hasOwn(CRISIS_TRIGGERS, ci.eventType) || !ci.confirmedPart) continue;
     if (ci.predictedPart && ci.predictedPart !== ci.confirmedPart) {
       const bucket = w[ci.eventType];
       bucket[ci.predictedPart] = clamp(0, 2, (bucket[ci.predictedPart] ?? 1) - 0.1);

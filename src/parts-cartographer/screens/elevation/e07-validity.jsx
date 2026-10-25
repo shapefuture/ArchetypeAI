@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../app.jsx';
 import { store } from '../../core/local-store';
-import { MEMORY_KEY } from '../memory-panel.jsx';
+import { loadMemories } from '../memory-panel.jsx';
 import { applyChange, markFor } from '../../elevation/e07-validity.ts';
 
 export const VALIDITY_KEY = 'INNERVERSE_VALIDITY_V1';
@@ -37,7 +37,7 @@ const COPY = {
 export function ValidityPanel() {
   const { lang } = useApp() ?? {};
   const copy = COPY[lang === 'ru' ? 'ru' : 'en'];
-  const [memories] = useState(() => store.load(MEMORY_KEY, []));
+  const [memories] = useState(loadMemories);
   const [ledger, setLedger] = useState(() => store.load(VALIDITY_KEY, []));
   const [where, setWhere] = useState({});
   const [message, setMessage] = useState('');

@@ -96,7 +96,8 @@ function readCorrection(item) {
 
 /** Validates the stored envelope. Malformed entries are dropped, and a correction whose memory is gone is dropped with it. */
 export function readMemoryStore(raw) {
-  const value = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  // The store is { memories, corrections }; an older build kept a bare array of memories.
+  const value = Array.isArray(raw) ? { memories: raw } : raw && typeof raw === 'object' ? raw : {};
   const memories = [];
   for (const item of Array.isArray(value.memories) ? value.memories : []) {
     const memory = readMemory(item);
@@ -110,6 +111,11 @@ export function readMemoryStore(raw) {
 
 export function loadMemoryStore() {
   return readMemoryStore(store.load(MEMORY_KEY, null));
+}
+
+/** The memories alone, for panels that only list or mark them. Every reader of MEMORY_KEY goes through here. */
+export function loadMemories() {
+  return loadMemoryStore().memories;
 }
 
 function saveMemoryStore(state) {

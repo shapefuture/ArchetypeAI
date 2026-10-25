@@ -46,10 +46,18 @@ describe('deploy security headers', () => {
 });
 
 describe('missing build files', () => {
-  it('answers 404 for a missing /assets file instead of the app shell (checked in the Hosting emulator)', () => {
+  // Checked in the Hosting emulator: app routes get index.html, real files are served,
+  // and a missing file with a static extension (anywhere, not only /assets) gets 404,
+  // so the app shell is never cached under a script, style or image URL.
+  it('answers 404 for any missing static file instead of the app shell', () => {
     const hosting = JSON.parse(readFileSync('firebase.json', 'utf8')).hosting as Array<{ site: string; rewrites: Array<{ source: string; destination: string }> }>;
     for (const site of hosting) {
-      expect(site.rewrites, site.site).toEqual([{ source: '!/assets/**', destination: '/index.html' }]);
+      expect(site.rewrites, site.site).toHaveLength(1);
+      expect(site.rewrites[0].destination).toBe('/index.html');
+      expect(site.rewrites[0].source.startsWith('!**/*.@(')).toBe(true);
+      for (const extension of ['js', 'css', 'png', 'svg', 'woff2', 'json', 'webmanifest']) {
+        expect(site.rewrites[0].source, extension).toMatch(new RegExp(`[(|]${extension}[|)]`));
+      }
     }
   });
 });

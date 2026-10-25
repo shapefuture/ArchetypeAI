@@ -201,3 +201,18 @@ describe('replace restore', () => {
     expect(localStorage.getItem('INNERVERSE_MEMORY_V1')).toBeNull();
   });
 });
+
+describe('plain values round-trip', () => {
+  it('exports and restores the capacity preference and the scoring method as the app stores them', async () => {
+    localStorage.clear();
+    store.save('INNERVERSE_CAPACITY_PREF_V1', 'low');
+    localStorage.setItem('archetype_scoring_method', 'fallback');
+    const exported = exportBackup();
+    const prepared = await prepareBackup(JSON.stringify(exported), 'en');
+    expect(prepared.skipped).toEqual([]);
+    localStorage.clear();
+    applyBackup(prepared);
+    expect(store.load('INNERVERSE_CAPACITY_PREF_V1', null)).toBe('low');
+    expect(localStorage.getItem('archetype_scoring_method')).toBe('fallback');
+  });
+});

@@ -43,7 +43,7 @@ export function FeltRolesPanel() {
   const { lang } = useApp() ?? {};
   const lk = lang === 'ru' ? 'ru' : 'en';
   const copy = COPY[lk];
-  const parts = localizeParts(Array.isArray(store.load(KEYS.parts, [])) ? store.load(KEYS.parts, []) : [], lang);
+  const parts = localizeParts((Array.isArray(store.load(KEYS.parts, [])) ? store.load(KEYS.parts, []) : []).filter((part) => part && typeof part === 'object' && typeof part.id === 'string'), lang);
   const [authored, setAuthored] = useState(() => normalizeAuthoredRole(store.load(FELT_ROLE_KEY, null)));
   const [selected, setSelected] = useState(null);
   const [message, setMessage] = useState('');

@@ -24,7 +24,9 @@ function fallbackBody() {
   return /^ru\b/i.test(self.navigator?.language || '') ? 'Какая часть вела сегодня?' : 'Which part drove today?';
 }
 self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : {};
+  // A push without a JSON body must still show the fallback, not throw.
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch { data = {}; }
   event.waitUntil(self.registration.showNotification(
     data.notification?.title || 'Innerverse',
     { body: data.notification?.body || fallbackBody(), icon: '/icons/icon-192.png', tag: 'innerverse-daily' },

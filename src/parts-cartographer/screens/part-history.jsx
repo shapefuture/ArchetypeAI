@@ -89,7 +89,8 @@ export function PartVersionHistory({ partId, text, lang, onRestore }) {
   const latest = latestFor(history, localeKey);
 
   const commit = (nextHistory) => {
-    const nextMap = { ...map, [partId]: nextHistory };
+    // Merge into the stored map, read fresh, so another tab's versions of other parts are kept.
+    const nextMap = { ...readVersionMap(store.load(PART_VERSIONS_KEY, {})), [partId]: nextHistory };
     setMap(nextMap);
     store.save(PART_VERSIONS_KEY, nextMap);
   };

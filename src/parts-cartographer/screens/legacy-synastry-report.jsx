@@ -69,8 +69,9 @@ export function LegacySynastryDetails({ report, lang = 'en', onDownload }) {
   const pathway = report.jointPathway ?? [];
   const triggers = report.crossPersonTriggers ?? [];
   const resonance = report.dimensionalResonance ?? [];
-  const personOneComplexes = report.person1Complexes?.map((complex) => complex.name) ?? [];
-  const personTwoComplexes = report.person2Complexes?.map((complex) => complex.name) ?? [];
+  const complexLabel = (complex) => (lang === 'ru' ? complex.nameRu : complex.name);
+  const personOneComplexes = report.person1Complexes?.map(complexLabel) ?? [];
+  const personTwoComplexes = report.person2Complexes?.map(complexLabel) ?? [];
 
   return (
     <div className="mt12" data-synastry-details>

@@ -11,8 +11,9 @@
  * suggestions; Chapter 5 is unreachable solo; solo surfaces max 1 suggestion
  * per day by selector priority.
  */
-import { selfServeGate, type CheckIn } from './state-v2';
+import { pauseNonRegulation, selfServeGate, type CheckIn } from './state-v2';
 import type { ScoredProfile } from './scoring-v2';
+import { EXILES } from './parts';
 import { EXERCISE_COPY, EXERCISE_TYPE_MAP } from '../../i18n/strings';
 
 export type ExerciseTypeId =
@@ -82,7 +83,7 @@ export const EXERCISES: Exercise[] = Object.entries(EXERCISE_COPY).map(([id, tex
 /** Selector priority order (§3B.3). */
 export const SELECTOR_PRIORITY: ExerciseTypeId[] = [
   'regulation', 'unblending', 'self_energy', 'resource', 'firefighter',
-  'defusion', 'experiment', 'somatic', 'polarity', 'part_dialogue',
+  'defusion', 'experiment', 'somatic', 'polarization', 'part_dialogue',
 ];
 
 export interface SuggestInput {
@@ -90,12 +91,14 @@ export interface SuggestInput {
   checkIns: CheckIn[];
   now: Date;
   lastSuggestedAt?: Date | null;
+  /** Somatic zones the person has recorded. Zero means the somatic exercise has nothing to work on. */
+  somaticZones?: number;
 }
 
 export interface Suggestion { exercise: Exercise; type: ExerciseTypeDef; reasonKey: string; }
 
 /** Auto-target selectors: which construct makes each type "for you" (§3B.2). */
-export function selectorMatches(type: ExerciseTypeId, profile: ScoredProfile, checkIns: CheckIn[], now: Date = new Date()): boolean {
+export function selectorMatches(type: ExerciseTypeId, profile: ScoredProfile, checkIns: CheckIn[], now: Date = new Date(), somaticZones = 0): boolean {
   const last7 = checkIns.filter(c =>
     (now.getTime() - new Date(c.date).getTime()) / 86400000 <= 7);
   const outOfWindow = last7.filter(c => Math.abs(c.arousal) >= 1);
@@ -110,7 +113,8 @@ export function selectorMatches(type: ExerciseTypeId, profile: ScoredProfile, ch
     case 'firefighter': return ffHot;
     case 'defusion':
     case 'experiment': return profile.activeComplexes.length > 0;
-    case 'somatic': return true; // any recorded somatic zone qualifies; keep available
+    case 'somatic': return somaticZones > 0; // needs a recorded somatic zone
+    case 'polarization': return profile.polarizations.length > 0;
     case 'polarity': return profile.resourceLeaks.length > 0;
     case 'part_dialogue': return true; // top of coping stack always relevant
     default: return false;
@@ -122,11 +126,17 @@ export function suggestExercise(input: SuggestInput): Suggestion | null {
   if (lastSuggestedAt && input.now.getTime() - lastSuggestedAt.getTime() < 24 * 60 * 60 * 1000) {
     return null; // max 1 suggestion per 24h
   }
+  // §3B.3 pause rule: shutdown 3 days running, or a gripping complex with 2+ exiles at 60T or more.
+  // While paused only regulation is offered, and nothing else.
+  const exilesHigh = EXILES.filter(e => profile.parts[e].T >= 60).length;
+  const gripping = Object.values(profile.complexes).some(c => c.tier === 'gripping');
+  const paused = pauseNonRegulation(input.checkIns) || (gripping && exilesHigh >= 2);
   for (const type of SELECTOR_PRIORITY) {
+    if (paused && type !== 'regulation') continue;
     const def = EXERCISE_TYPES[type];
     if (def.gate === 'red') continue; // never auto-suggested, ever
     if (def.gate === 'yellow' && selfServeGate('yellow', profile) !== 'ok') continue;
-    if (!selectorMatches(type, profile, input.checkIns, input.now)) continue;
+    if (!selectorMatches(type, profile, input.checkIns, input.now, input.somaticZones ?? 0)) continue;
     const exercise = EXERCISES.find(e => e.type === type);
     if (exercise) return { exercise, type: def, reasonKey: type };
   }
@@ -231,7 +241,8 @@ export function ladderRung(s: LadderState): 0 | 1 | 2 | 3 | 4 | 5 {
   if (s.verifiedUnderLoad) return 5;
   if (s.liveRep) return 4;
   if (s.rehearsed) return 3;
-  if (s.ifThen && s.ifThen.trim().length > 5) return 2;
+  // Backups can carry any shape here, so only a real string counts as a plan.
+  if (typeof s.ifThen === 'string' && s.ifThen.trim().length > 5) return 2;
   if (s.principleNamed) return 1;
   return 0;
 }

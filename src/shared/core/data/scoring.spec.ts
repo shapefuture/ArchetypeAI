@@ -451,3 +451,14 @@ describe('synastry semantics', () => {
     expect(report.crossPersonTriggers.some(t => t.interactionDesc.includes('Classic pursue-withdraw'))).toBe(true);
   });
 });
+
+describe('narrative coherence measures disagreement within a pole', () => {
+  it('does not call a decisive, consistent answerer fragmented', () => {
+    const r = [...Array(6).fill(5), ...Array(6).fill(1), ...Array(6).fill(5), ...Array(6).fill(1), ...Array(6).fill(5), ...Array(6).fill(1), ...Array(8).fill(1), ...Array(8).fill(5), ...Array(12).fill(5)];
+    expect(computeNarrativeCoherence(r, computePoleScores(r)).level).toBe('high');
+  });
+  it('does not call uniform answers inconsistent', () => {
+    const r = Array(64).fill(3);
+    expect(computeNarrativeCoherence(r, computePoleScores(r)).description).not.toMatch(/inconsistent/);
+  });
+});

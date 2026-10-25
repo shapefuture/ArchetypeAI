@@ -774,7 +774,7 @@ export function Booking() {
       setStep(1);
       if (!zone && therapistProfile.availability.length) {
         setError(lang === 'ru'
-          ? 'Терапевт ещё не подтвердил часовой пояс своего расписания. Попросите его открыть «Терапевт» и сохранить расписание.'
+          ? 'Часовой пояс в расписании терапевта ещё не подтверждён. Попросите терапевта открыть экран «Терапевт» и сохранить расписание.'
           : 'This therapist has not confirmed the time zone of their hours yet. Ask them to open Therapist, check the zone, and save.');
       } else if (!bookDays.length) setError(t('bookingNoAvailability'));
     } catch (err) {

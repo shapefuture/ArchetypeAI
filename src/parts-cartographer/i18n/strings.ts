@@ -423,6 +423,7 @@ export const STRINGS = {
   therapistShareFailed: s('Could not create the sharing code. Please try again.', 'Не удалось создать код. Попробуйте ещё раз.'),
   appointmentTherapistTime: s("therapist's time", 'по времени терапевта'),
   bookingVerifyEmail: s('Verify your email first: open the link we sent, then try again.', 'Сначала подтвердите email: откройте ссылку из письма и попробуйте снова.'),
+  storageFull: s('This device is out of storage for the app, so the last change was not saved. Export your data, then free some space.', 'На этом устройстве закончилось место для приложения, поэтому последнее изменение не сохранилось. Экспортируйте данные и освободите место.'),
   claimNeedsProfile: s('To accept a client code, verify your email and save your hours in the Therapist screen first.', 'Чтобы принять код клиента, сначала подтвердите email и сохраните расписание на экране терапевта.'),
   therapistStop: s('Stop working as a therapist', 'Больше не работать как терапевт'),
   therapistStopConfirm: s('Remove your therapist profile and stop being findable by email? Existing appointments stay in the history.', 'Удалить профиль терапевта и перестать находиться по email? Существующие записи останутся в истории.'),

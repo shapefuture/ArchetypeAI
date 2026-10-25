@@ -15,6 +15,8 @@ import { RehearsalPanel } from './elevation/e10-rehearsal.jsx';
 const PRACTICE_KEY = 'INNERVERSE_PRACTICE_V1';
 const CHECKIN_KEY = 'INNERVERSE_CHECKINS_V1';
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** The if-then plan as text. Backups can store any shape here, so anything but a string shows as empty. */
+const planText = (value) => (typeof value === 'string' ? value : '');
 const EMPTY_STATE = { lastSuggestedAt: null, completed: [], daysOfCheckIns: 0, synastryRun: false, therapistLinked: false, ladder: {} };
 
 function loadPracticeState() {
@@ -96,7 +98,7 @@ export function Practice() {
   }, []);
 
   useEffect(() => {
-    setIfThenDraft(selectedId ? practiceState.ladder[selectedId]?.ifThen ?? '' : '');
+    setIfThenDraft(selectedId ? planText(practiceState.ladder[selectedId]?.ifThen) : '');
   }, [selectedId, practiceState.ladder]);
 
   // A persisted flag is advisory only; therapist-only access is derived from the signed-in server assignment.
@@ -269,7 +271,7 @@ export function Practice() {
           {rung === 2 && (rehearsalLeft === null
             ? <button className="btn small mt10" onClick={() => startRehearsal(exercise.id)}>{copy.rungStart}</button>
             : <div className="chip mt10">{rehearsalLeft}s</div>)}
-          {rung >= 3 && <p className="faint mt8" style={{ fontSize: 11 }}>{ladder.ifThen}</p>}
+          {rung >= 3 && <p className="faint mt8" style={{ fontSize: 11 }}>{planText(ladder.ifThen)}</p>}
           {rung >= 4 && <p className="chip mt8">{copy.integrated}</p>}
         </div>
       </div>

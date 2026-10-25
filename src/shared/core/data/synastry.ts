@@ -248,28 +248,28 @@ function describeResonance(
 
   switch (pattern) {
     case 'harmonic': {
-      const qual = absDelta < 0.15 ? { en: 'nearly identical', ru: 'почти идентичны' } : { en: 'closely matched', ru: 'очень близки' };
+      const qual = absDelta < 0.15 ? { en: 'nearly identical', ru: 'вы почти совпадаете' } : { en: 'closely matched', ru: 'вы близки' };
       return {
         en: `Your ${labels.en} is ${qual.en} (${pct}% apart). Both of you are ${who1.en} in how you engage — a shared rhythm that creates instant understanding.`,
-        ru: `Ваша ${labels.ru} ${qual.ru} (разница ${pct}%). Вы оба ${who1.ru} — этот общий ритм создаёт мгновенное взаимопонимание.`,
+        ru: `По линии «${labels.ru}» разница ${pct}%: ${qual.ru}. Общий ритм в обоих создаёт мгновенное взаимопонимание.`,
       };
     }
     case 'complementary': {
       return {
         en: `Your ${labels.en} differs by ${pct}% — Person 1 leans ${who1.en}, Person 2 leans ${who2.en}. This creates a natural dynamic where each brings what the other lacks.`,
-        ru: `Ваша ${labels.ru} различается на ${pct}% — Первый скорее ${who1.ru}, Второй — ${who2.ru}. Это создаёт естественную динамику, где каждый привносит то, чего не хватает другому.`,
+        ru: `По линии «${labels.ru}» различие ${pct}%: первый — ${who1.ru}, второй — ${who2.ru}. Это создаёт естественную динамику, где каждый привносит то, чего не хватает другому.`,
       };
     }
     case 'polarized': {
       return {
         en: `Strong polarity on ${labels.en} (${pct}% gap) — Person 1 is ${who1.en} while Person 2 is ${who2.en}. This tension is powerful but requires conscious navigation to avoid power struggles.`,
-        ru: `Резкая полярность в ${labels.ru} (разрыв ${pct}%) — Первый ${who1.ru}, Второй ${who2.ru}. Это напряжённая динамика, которая требует осознанной навигации, чтобы не скатиться в борьбу.`,
+        ru: `Резкая полярность по линии «${labels.ru}» (разрыв ${pct}%): первый — ${who1.ru}, второй — ${who2.ru}. Это напряжённая динамика, которая требует осознанной навигации, чтобы не скатиться в борьбу.`,
       };
     }
     case 'dissonant': {
       return {
         en: `Extreme dissonance on ${labels.en} (${pct}% gap) — you inhabit fundamentally different positions. Person 1 is ${who1.en}, Person 2 is ${who2.en}. This is the hardest dimension to bridge, but also the one with the greatest transformational potential.`,
-        ru: `Острый диссонанс в ${labels.ru} (разрыв ${pct}%) — вы находитесь в принципиально разных позициях. Первый ${who1.ru}, Второй ${who2.ru}. Это самое сложное измерение для моста — и самое трансформирующее.`,
+        ru: `Острый диссонанс по линии «${labels.ru}» (разрыв ${pct}%): вы находитесь в принципиально разных позициях. Первый — ${who1.ru}, второй — ${who2.ru}. Это самое сложное измерение для моста — и самое трансформирующее.`,
       };
     }
   }

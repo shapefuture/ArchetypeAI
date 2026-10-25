@@ -4,6 +4,7 @@ import { Confetti } from '../ui/ui.jsx';
 import { clinicalPartName } from '../core/clinical-display.ts';
 import { KEYS, store } from '../core/local-store';
 import {
+  adjustTriggerWeights,
   charterTrend,
   predictFlare,
   readyToResurface,
@@ -11,7 +12,7 @@ import {
   selectJitaiCard,
   storeEvent,
   stricterCharter,
-  unburdeningMoments,
+  unburdeningInWindows,
   verdictLockActive,
   weatherLayer,
 } from '../../shared/core/data/state-v2';
@@ -25,6 +26,8 @@ const CHECKIN_KEY = 'INNERVERSE_CHECKINS_V1';
 const VERDICT_KEY = 'INNERVERSE_SEALED_VERDICTS_V1';
 const JITAI_KEY = 'INNERVERSE_JITAI_V1';
 const CHARTER_KEY = 'INNERVERSE_CHARTER_V1';
+/** Parts whose softening card was already shown. The card appears once per part (§1.10). */
+const UNBURDENED_KEY = 'INNERVERSE_UNBURDENED_V1';
 const AROUSAL_VALUES = [-2, -1, 0, 1, 2];
 const EVENT_VALUES = ['relational', 'achievement', 'loss', 'boundary', 'change', 'calm'];
 const RATING_VALUES = ['still true', 'partly', 'state artifact'];
@@ -88,10 +91,12 @@ export function CheckIn() {
   const locked = verdictLockActive(history, now);
   const weather = weatherLayer(history, now);
   const weatherRows = Object.entries(weather).sort((a, b) => b[1].count - a[1].count).slice(0, 4);
-  const unburdened = useMemo(() => {
-    const middle = Math.floor(history.length / 2);
-    return unburdeningMoments(history.slice(0, middle), history.slice(middle));
-  }, [history]);
+  // Read once per visit, so a card shown now stays on screen until the person leaves.
+  const [unburdenedBefore] = useState(() => new Set(safeArray(UNBURDENED_KEY).filter((id) => typeof id === 'string')));
+  const unburdened = useMemo(() => unburdeningInWindows(history, new Date()).filter((part) => !unburdenedBefore.has(part)), [history, unburdenedBefore]);
+  useEffect(() => {
+    if (unburdened.length) store.save(UNBURDENED_KEY, [...new Set([...safeArray(UNBURDENED_KEY), ...unburdened])]);
+  }, [unburdened]);
   const partName = (id) => {
     const index = SHADOW_PARTS.indexOf(id);
     const adaptedSubtype = lang === 'ru' ? profile?.subtypesRu?.[index] : profile?.subtypesEn?.[index];
@@ -120,7 +125,7 @@ export function CheckIn() {
   const chooseEvent = (selectedEvent) => {
     setEventType(selectedEvent);
     if (clinical) {
-      setPredicted(selectedEvent ? predictFlare(clinical, selectedEvent) : clinical.copingStack.l1 ?? null);
+      setPredicted(selectedEvent ? predictFlare(clinical, selectedEvent, adjustTriggerWeights(history)) : clinical.copingStack.l1 ?? null);
     } else {
       setPredicted(null);
     }
@@ -312,7 +317,7 @@ export function CheckIn() {
                       <label className="block mt12" style={{ fontSize: 12, fontWeight: 800 }}>{lang === 'ru' ? 'Вина' : 'Blame'} · {blame}/10
                         <input type="range" min="0" max="10" value={blame} onChange={(event) => setBlame(Number(event.target.value))} style={{ display: 'block', width: '100%', accentColor: '#FF2D8A' }} />
                       </label>
-                      <label className="block mt12" style={{ fontSize: 12, fontWeight: 800 }}>{lang === 'ru' ? 'Ответственность' : 'License'} · {license}/10
+                      <label className="block mt12" style={{ fontSize: 12, fontWeight: 800 }}>{lang === 'ru' ? 'Ощущение «это неважно»' : 'License'} · {license}/10
                         <input type="range" min="0" max="10" value={license} onChange={(event) => setLicense(Number(event.target.value))} style={{ display: 'block', width: '100%', accentColor: '#3EE0B0' }} />
                       </label>
                       <label className="row mt12" style={{ fontSize: 12, gap: 8 }}><input type="checkbox" checked={repairLogged} onChange={(event) => setRepairLogged(event.target.checked)} />{lang === 'ru' ? 'Я сделал(а) действие по исправлению' : 'I took a repair action'}</label>

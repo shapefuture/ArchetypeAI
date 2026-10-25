@@ -59,21 +59,23 @@ export function predictFlare(
 
 /**
  * §1.10 adaptive weights — the ONLY adaptive element in the app. Corrections
- * shift the predicted part −0.1 and the confirmed part +0.1 (band 0..1), but
- * only once 14+ check-ins exist; before that every weight is the neutral 1.
+ * shift the predicted part −0.1 and the confirmed part +0.1, but only once 14+
+ * check-ins exist; before that every weight is the neutral 1. The band is 0..2:
+ * a confirmed part must be able to rise above neutral, or it can never win a
+ * prediction over a part it was confused with.
  */
 export function adjustTriggerWeights(history: CheckIn[]): TriggerWeights {
   const w: TriggerWeights = {
     relational: {}, achievement: {}, loss: {}, boundary: {}, change: {}, calm: {},
   };
   if (history.length < 14) return w;
-  const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+  const clamp = (lo: number, hi: number, v: number) => Math.min(hi, Math.max(lo, v));
   for (const ci of history) {
     if (!ci.eventType || !ci.confirmedPart) continue;
     if (ci.predictedPart && ci.predictedPart !== ci.confirmedPart) {
       const bucket = w[ci.eventType];
-      bucket[ci.predictedPart] = clamp01((bucket[ci.predictedPart] ?? 1) - 0.1);
-      bucket[ci.confirmedPart] = clamp01((bucket[ci.confirmedPart] ?? 1) + 0.1);
+      bucket[ci.predictedPart] = clamp(0, 2, (bucket[ci.predictedPart] ?? 1) - 0.1);
+      bucket[ci.confirmedPart] = clamp(0, 2, (bucket[ci.confirmedPart] ?? 1) + 0.1);
     }
   }
   return w;
@@ -128,6 +130,18 @@ export function unburdeningMoments(priorWindow: CheckIn[], recentWindow: CheckIn
     const selfRising = regulation(recentWindow) > regulation(priorWindow);
     return drop && selfRising;
   }) as PartId[];
+}
+
+/**
+ * §1.10 as the check-in screen asks it: the last 30 days against the 30 before. Each window needs
+ * a few check-ins, or a single early entry would read as a 100% drop.
+ */
+export function unburdeningInWindows(history: CheckIn[], now: Date, minPerWindow = 4): PartId[] {
+  const age = (c: CheckIn) => daysBetween(new Date(c.date), now);
+  const recent = history.filter(c => age(c) >= 0 && age(c) <= 30);
+  const prior = history.filter(c => age(c) > 30 && age(c) <= 60);
+  if (recent.length < minPerWindow || prior.length < minPerWindow) return [];
+  return unburdeningMoments(prior, recent);
 }
 
 // --- §3C.1 Sealed Verdict ---
@@ -188,7 +202,8 @@ const countTokens = (texts: string[], lexicon: readonly string[], lang: 'en' | '
     for (const token of lexicon) {
       // "i am <adj>" style prefixes match as prefixes; plain words need word boundaries
       if (token.endsWith(' ')) n += text.split(token).length - 1;
-      else n += (text.match(new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g')) ?? []).length;
+      // \b only knows Latin letters, so word edges are any non-letter (Cyrillic included).
+      else n += (text.match(new RegExp(`(?<![\\p{L}\\p{N}_])${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}_])`, 'gu')) ?? []).length;
     }
   }
   return n;
@@ -366,12 +381,12 @@ export function selfServeGate(tier: GateTier, profile: ScoredProfile): GateResul
 
 /** Consecutive shutdown days ending at the most recent check-in (§3B.3 pause rule). */
 export function shutdownStreak(history: CheckIn[]): number {
-  const days = [...history].sort((a, b) => a.date < b.date ? 1 : -1)
-    .filter(c => c.arousal === -2);
-  if (days.length === 0) return 0;
+  const latest = [...history].sort((a, b) => a.date < b.date ? 1 : -1)[0];
+  // A person back in the window today is no longer in a shutdown run.
+  if (!latest || latest.arousal !== -2) return 0;
   const seen = new Set(history.filter(c => c.arousal === -2).map(c => dayOf(c.date)));
   let streak = 0;
-  let cursor = new Date(days[0].date);
+  let cursor = new Date(latest.date);
   for (let i = 0; i < 60; i++) {
     if (seen.has(localDay(cursor))) { streak++; cursor = new Date(cursor.getTime() - DAY_MS); }
     else break;

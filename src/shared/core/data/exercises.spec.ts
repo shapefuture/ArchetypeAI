@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import {
   EXERCISES, EXERCISE_TYPES, suggestExercise, chapterUnlocked, unlockedTypes,
   hasBehavioralHook, SELECTOR_PRIORITY, depthCap, allowedDepth, containerReady, redAllowed,
-  ladderRung, integrated,
+  ladderRung, integrated, selectorMatches,
   type ChapterState,
 } from './exercises';
 import { SHADOW_PARTS, RESOURCES } from './parts';
 import { scoreProfile, type AssessmentInput } from './scoring-v2';
-import { selfServeGate } from './state-v2';
+import { selfServeGate, type CheckIn } from './state-v2';
 
 const all = (fill: number): AssessmentInput => {
   const shadow = {} as AssessmentInput['shadow'];
@@ -79,8 +79,12 @@ describe('suggestion engine (§3B.3 solo rules)', () => {
     expect(s?.type.id).toBe('regulation');
   });
   it('unblending fires when a part is dominant (all-5s)', () => {
-    // no out-of-window history → regulation skipped; dominant present → unblending
-    const s = suggestExercise({ profile: scoreProfile(all(5)), checkIns: [], now: new Date(2026, 7, 15, 12) });
+    // no out-of-window history → regulation skipped; dominant present → unblending.
+    // all-5s also has gripping complexes and high exiles, which pauses everything but
+    // regulation (§3B.3). This case is about priority, so take the gripping tier away.
+    const p = scoreProfile(all(5));
+    for (const c of Object.values(p.complexes)) c.tier = 'active';
+    const s = suggestExercise({ profile: p, checkIns: [], now: new Date(2026, 7, 15, 12) });
     expect(s?.type.id).toBe('unblending');
   });
   it('YELLOW suggestions lock out when self_energy < 40 (all-1s profile)', () => {
@@ -93,7 +97,7 @@ describe('suggestion engine (§3B.3 solo rules)', () => {
   it('selector priority order is exactly §3B.3', () => {
     expect(SELECTOR_PRIORITY).toEqual([
       'regulation', 'unblending', 'self_energy', 'resource', 'firefighter',
-      'defusion', 'experiment', 'somatic', 'polarity', 'part_dialogue',
+      'defusion', 'experiment', 'somatic', 'polarization', 'part_dialogue',
     ]);
   });
 });
@@ -159,5 +163,48 @@ describe('§3C.5 proceduralization ladder', () => {
   });
   it('a blank if-then plan does not count as rung 2', () => {
     expect(ladderRung({ principleNamed: true, ifThen: '   ' })).toBe(1);
+  });
+});
+
+describe('gap fixes from the tenth critic pass', () => {
+  const now = new Date('2026-08-15T12:00:00');
+  const shutdownDays = (n: number): CheckIn[] => Array.from({ length: n }, (_, i) => ({
+    date: new Date(2026, 7, 15 - i, 10).toISOString(), arousal: -2 as const,
+  }));
+
+  it('pauses everything but regulation after three shutdown days (§3B.3)', () => {
+    const s = suggestExercise({ profile: scoreProfile(all(5)), checkIns: shutdownDays(3), now });
+    expect(s?.type.id ?? 'none').toMatch(/^(regulation|none)$/);
+  });
+
+  it('pauses after a gripping complex with two exiles at 60T or more', () => {
+    const p = scoreProfile(all(3));
+    p.parts.ashamed.T = 66; p.parts.abandoned.T = 64;
+    const complex = Object.values(p.complexes)[0];
+    complex.tier = 'gripping';
+    p.activeComplexes = [complex];
+    p.selfEnergy = 60;
+    const s = suggestExercise({ profile: p, checkIns: [], now });
+    expect(s?.type.id ?? 'none').toMatch(/^(regulation|none)$/);
+  });
+
+  it('somatic is only suggested when a somatic zone is recorded', () => {
+    const p = scoreProfile(all(3));
+    p.selfEnergy = 60;
+    expect(selectorMatches('somatic', p, [], now, 0)).toBe(false);
+    expect(selectorMatches('somatic', p, [], now, 1)).toBe(true);
+  });
+
+  it('polarization fires on a polarization, not on a resource leak', () => {
+    const p = scoreProfile(all(3));
+    p.polarizations = [{ pair: ['controller', 'numb'], name: 'White-Knuckle–Checkout Cycle' }] as any;
+    p.resourceLeaks = [];
+    expect(selectorMatches('polarization', p, [], now)).toBe(true);
+    expect(selectorMatches('polarization', { ...p, polarizations: [] }, [], now)).toBe(false);
+  });
+
+  it('a non-string if-then plan from a backup does not crash the ladder', () => {
+    expect(ladderRung({ ifThen: 42 as unknown as string })).toBe(0);
+    expect(ladderRung({ ifThen: { text: 'x' } as unknown as string, principleNamed: true })).toBe(1);
   });
 });

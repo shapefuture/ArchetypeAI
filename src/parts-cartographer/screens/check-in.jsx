@@ -39,7 +39,8 @@ function safeArray(key) {
 
 function isCheckIn(value) {
   return value && typeof value.date === 'string' && Number.isFinite(Date.parse(value.date))
-    && Number.isInteger(value.arousal) && value.arousal >= -2 && value.arousal <= 2;
+    && Number.isInteger(value.arousal) && value.arousal >= -2 && value.arousal <= 2
+    && (value.eventType === undefined || EVENT_VALUES.includes(value.eventType));
 }
 
 function isSealedVerdict(value) {
@@ -94,9 +95,11 @@ export function CheckIn() {
   // Read once per visit, so a card shown now stays on screen until the person leaves.
   const [unburdenedBefore] = useState(() => new Set(safeArray(UNBURDENED_KEY).filter((id) => typeof id === 'string')));
   const unburdened = useMemo(() => unburdeningInWindows(history, new Date()).filter((part) => !unburdenedBefore.has(part)), [history, unburdenedBefore]);
+  // Written only once the card is on screen (the done stage). A visit that never gets there keeps the card for later.
   useEffect(() => {
-    if (unburdened.length) store.save(UNBURDENED_KEY, [...new Set([...safeArray(UNBURDENED_KEY), ...unburdened])]);
-  }, [unburdened]);
+    if (stage !== 'done' || !unburdened.length) return;
+    store.save(UNBURDENED_KEY, [...new Set([...safeArray(UNBURDENED_KEY), ...unburdened])]);
+  }, [stage, unburdened]);
   const partName = (id) => {
     const index = SHADOW_PARTS.indexOf(id);
     const adaptedSubtype = lang === 'ru' ? profile?.subtypesRu?.[index] : profile?.subtypesEn?.[index];
@@ -149,7 +152,9 @@ export function CheckIn() {
 
     if (clinical) {
       const lapse = lapseToday(nextHistory, nowAtRecord);
-      if (lapse) storeEvent('lapse');
+      // One lapse event per episode: this check-in starts a lapse only if none was logged in the last day.
+      const startsLapse = ['numb', 'rebel', 'charmer'].includes(checkIn.confirmedPart) && Math.abs(checkIn.arousal) >= 1;
+      if (startsLapse && !lapseToday(nextHistory.slice(0, -1), nowAtRecord)) storeEvent('lapse');
       const lastJitaiAt = store.load(JITAI_KEY, null);
       const stackL1Flared = nextHistory.some((item) => item.confirmedPart === clinical.copingStack.l1
         && (nowAtRecord.getTime() - new Date(item.date).getTime()) / 86400000 <= 1);

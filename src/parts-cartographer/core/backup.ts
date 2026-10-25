@@ -1,4 +1,5 @@
 import { RESOURCES, SHADOW_PARTS } from '../../shared/core/data/parts';
+import { CRISIS_TRIGGERS } from '../../shared/core/data/state-v2';
 import type { AssessmentInput } from '../../shared/core/data/scoring-v2';
 import type { Lang } from '../i18n/strings';
 import { KEYS } from './local-store';
@@ -95,6 +96,14 @@ function validEntry(key: string, value: unknown): boolean {
   return object(value) || Array.isArray(value) || ['string', 'number', 'boolean'].includes(typeof value);
 }
 
+/** A check-in the engine can read: a time, an arousal from -2 to 2, and an event type it knows if one is set. */
+function readableCheckIn(row: unknown): boolean {
+  const item = row as Record<string, unknown> | null;
+  return object(item) && typeof item.date === 'string' && Number.isFinite(Date.parse(item.date))
+    && Number.isInteger(item.arousal) && (item.arousal as number) >= -2 && (item.arousal as number) <= 2
+    && (item.eventType === undefined || (typeof item.eventType === 'string' && Object.hasOwn(CRISIS_TRIGGERS, item.eventType)));
+}
+
 /** `skipped` lists keys whose stored value had the wrong shape; the rest restores. */
 export interface PreparedBackup { schema: 'parts-cartographer.backup.v2'; source: string; entries: Record<string, unknown>; skipped: string[]; }
 
@@ -132,7 +141,7 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
         if (!isPortableKey(key)) continue;
         // One malformed value must not make the rest of a person's backup unrestorable.
         if (!validEntry(key, value)) { skipped.push(key); continue; }
-        entries[key] = value;
+        entries[key] = key === 'INNERVERSE_CHECKINS_V1' && Array.isArray(value) ? value.filter(readableCheckIn) : value;
       }
     }
   }

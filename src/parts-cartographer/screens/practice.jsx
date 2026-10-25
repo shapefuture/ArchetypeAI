@@ -272,7 +272,7 @@ export function Practice() {
             ? <button className="btn small mt10" onClick={() => startRehearsal(exercise.id)}>{copy.rungStart}</button>
             : <div className="chip mt10">{rehearsalLeft}s</div>)}
           {rung >= 3 && <p className="faint mt8" style={{ fontSize: 11 }}>{planText(ladder.ifThen)}</p>}
-          {rung >= 4 && <p className="chip mt8">{copy.integrated}</p>}
+          {rung >= 5 && <p className="chip mt8">{copy.integrated}</p>}
         </div>
       </div>
     );

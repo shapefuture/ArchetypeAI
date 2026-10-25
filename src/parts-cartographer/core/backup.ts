@@ -57,6 +57,8 @@ export function validMapParts(value: unknown): value is Part[] {
     if (!object(part) || typeof part.id !== 'string' || !part.id || ids.has(part.id)
       || typeof part.name !== 'string' || !['manager', 'firefighter', 'exile', 'resource'].includes(part.family)
       || !Number.isFinite(part.energy) || part.energy < 0 || part.energy > 100 || !object(part.traits)) return false;
+    // Cards and the Cabinet draw these as text; an object here would break the screen.
+    if (!['role', 'blurb', 'burden', 'need', 'voice', 'since'].every((field) => part[field] === undefined || typeof part[field] === 'string')) return false;
     ids.add(part.id);
     const traits = part.traits;
     if (traits.characterSeed !== undefined && (!Number.isInteger(traits.characterSeed) || traits.characterSeed < 0 || traits.characterSeed > 0xffffffff)) return false;
@@ -80,7 +82,8 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === LEGACY_DESCENT_DRAFT_KEY) return object(value) && ratings(value.answers, 147, true);
   // Journal entries are listed and prepended to: each needs its text and an id.
   if (key === 'ifs.journal') return Array.isArray(value) && value.length <= 5000
-    && value.every((item) => object(item) && typeof item.what === 'string' && item.what.length <= 20_000 && (typeof item.id === 'number' || typeof item.id === 'string'));
+    && value.every((item) => object(item) && typeof item.what === 'string' && item.what.length <= 20_000 && (typeof item.id === 'number' || typeof item.id === 'string')
+      && ['where', 'part', 'note'].every((field) => item[field] === undefined || item[field] === null || typeof item[field] === 'string'));
   // Sealed notes resurface on open: each needs a numeric due time and its text.
   if (key === 'ifs.sealed') return Array.isArray(value) && value.length <= 500
     && value.every((item) => object(item) && typeof item.until === 'number' && Number.isFinite(item.until) && typeof item.text === 'string' && item.text.length <= 20_000);
@@ -189,11 +192,17 @@ function storageKeys(storage: Storage): string[] {
   return keys;
 }
 
-/** Lists a merge combines with the device's own copy, by item id or date, instead of replacing them. */
-const MERGED_LISTS: Record<string, (item: any) => unknown> = {
-  'ifs.journal': (item) => item?.id,
-  [KEYS.parts]: (item) => item?.id,
-  INNERVERSE_CHECKINS_V1: (item) => item?.date,
+/** Lists a merge combines with the device's own copy instead of replacing them. Items match by id (or date). */
+interface MergedList {
+  idOf: (item: any) => unknown;
+  /** Which of this device's own items the merge keeps. */
+  keep?: (item: any) => boolean;
+  sort?: (a: any, b: any) => number;
+}
+const MERGED_LISTS: Record<string, MergedList> = {
+  'ifs.journal': { idOf: (item) => item?.id, sort: (a, b) => (Number(b?.at) || 0) - (Number(a?.at) || 0) },
+  [KEYS.parts]: { idOf: (item) => item?.id, keep: (item) => !String(item?.id ?? '').startsWith('seed-') },
+  INNERVERSE_CHECKINS_V1: { idOf: (item) => item?.date, sort: (a, b) => (Date.parse(a?.date) || 0) - (Date.parse(b?.date) || 0) },
 };
 
 function readList(storage: Storage, key: string): unknown[] {
@@ -203,10 +212,13 @@ function readList(storage: Storage, key: string): unknown[] {
   } catch { return []; }
 }
 
-/** The incoming items, then this device's items the incoming list does not carry. */
-function mergeLists(incoming: unknown[], existing: unknown[], idOf: (item: any) => unknown): unknown[] {
-  const incomingIds = new Set(incoming.map(idOf).filter((id) => id !== undefined));
-  return [...incoming, ...existing.filter((item) => { const id = idOf(item); return id === undefined || !incomingIds.has(id); })];
+/** The incoming items plus this device's items the file does not carry, in the list's own order. */
+function mergeLists(incoming: unknown[], existing: unknown[], list: MergedList): unknown[] {
+  const incomingIds = new Set(incoming.map(list.idOf).filter((id) => id !== undefined));
+  const kept = existing.filter((item) => (!list.keep || list.keep(item))
+    && (list.idOf(item) === undefined || !incomingIds.has(list.idOf(item))));
+  const merged = [...incoming, ...kept];
+  return list.sort ? merged.sort(list.sort) : merged;
 }
 
 export function applyBackup(backup: PreparedBackup, storage: Storage = localStorage, mode: 'merge' | 'replace' = 'merge'): void {
@@ -220,10 +232,10 @@ export function applyBackup(backup: PreparedBackup, storage: Storage = localStor
   try {
     for (const key of keys) {
       if (Object.hasOwn(backup.entries, key)) {
-        const idOf = mode === 'merge' ? MERGED_LISTS[key] : undefined;
+        const list = mode === 'merge' ? MERGED_LISTS[key] : undefined;
         const incoming = backup.entries[key];
         // A merge keeps this device's own journal entries, parts and check-ins that the file does not carry.
-        if (idOf && Array.isArray(incoming)) storage.setItem(key, JSON.stringify(mergeLists(incoming, readList(storage, key), idOf)));
+        if (list && Array.isArray(incoming)) storage.setItem(key, JSON.stringify(mergeLists(incoming, readList(storage, key), list)));
         else storage.setItem(key, key === 'ARCHETYPE_ASSESSMENT_INDEX' || RAW_STRING_KEYS.has(key)
           ? String(incoming) : JSON.stringify(incoming));
       }

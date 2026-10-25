@@ -245,6 +245,13 @@ function describeResonance(
   const labels = DIM_LABELS[dim];
   const absDelta = Math.abs(v1 - v2);
   const pct = Math.round(absDelta * 50); // share of the -1..1 axis
+  // Both on the same side of the line: neither an opposition nor a complement.
+  if (pattern !== 'harmonic' && ((v1 > 0.2 && v2 > 0.2) || (v1 < -0.2 && v2 < -0.2))) {
+    return {
+      en: `Both of you are on the same side of this line (${pct}% apart).`,
+      ru: `По линии «${labels.ru}» вы оба на одной стороне (разница ${pct}%).`,
+    };
+  }
   const who1 = v1 < -0.2 ? labels.poleNeg : v1 > 0.2 ? labels.polePos : BALANCED;
   const who2 = v2 < -0.2 ? labels.poleNeg : v2 > 0.2 ? labels.polePos : BALANCED;
 

@@ -13,6 +13,7 @@ import { navEntry, navOverlay, navSheet, planNavigation, readNavEntry, sameSheet
 import { SEED_PARTS } from './pal/traits.ts';
 import { localizeParts, storedParts } from './pal/seed-copy.ts';
 import { validMapParts } from './core/backup';
+import { canonicalEnergyPart } from './core/universe-controls.ts';
 
 /* A stored report of the wrong shape (not an object with its parts) is treated as no report, not drawn. */
 const usableProfile = (saved) => (saved && typeof saved === 'object' && !Array.isArray(saved) && Array.isArray(saved.parts) ? saved : null);
@@ -21,7 +22,7 @@ const usableProfile = (saved) => (saved && typeof saved === 'object' && !Array.i
    only parts every screen can draw, so one bad entry cannot break them all. */
 function usableParts(saved) {
   if (!Array.isArray(saved)) return SEED_PARTS;
-  const kept = saved.filter((part) => validMapParts([part]));
+  const kept = saved.filter((part) => validMapParts([part])).map(canonicalEnergyPart);
   return kept.length || !saved.length ? kept : SEED_PARTS;
 }
 import { t as translate, STRINGS } from './i18n/strings.ts';

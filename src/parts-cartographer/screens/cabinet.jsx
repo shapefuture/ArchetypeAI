@@ -7,6 +7,7 @@ import { Crest, familyColor, Sheet, Confetti } from '../ui/ui.jsx';
 import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus, appointmentDisplayTime } from '../core/booking.ts';
 import { CLOUD_PART_LIMIT, loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
+import { canonicalEnergyPart } from '../core/universe-controls.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
 import { EntryPanel } from './elevation/e02-entry.jsx';
@@ -153,7 +154,7 @@ export function Cabinet() {
       return;
     }
     setProfile(entry.profile);
-    setParts(entry.parts);
+    setParts(entry.parts.map(canonicalEnergyPart));
     toast('✓ ' + t('cloudRestoreOk'));
     go('assessment-results');
   };

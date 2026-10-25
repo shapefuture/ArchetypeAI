@@ -1,13 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { SEED_PARTS } from '../pal/traits';
-import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
+import { canonicalEnergyPart, filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
 
 describe('React universe controls', () => {
-  it('normalizes native 0..100 and canonical 0..1 activation values', () => {
+  it('reads parts on the 0..100 scale and clamps the ends', () => {
     expect(normalizedEnergy(SEED_PARTS[0])).toBe(74);
-    expect(normalizedEnergy({ energy: 0.74 })).toBe(74);
     expect(normalizedEnergy({ energy: 8 })).toBe(8);
+    expect(normalizedEnergy({ energy: 1 })).toBe(1);
     expect(normalizedEnergy({ energy: 180 })).toBe(100);
+  });
+
+  it('converts a saved 0..1 fraction to 0..100 on load, and leaves whole numbers alone', () => {
+    expect(canonicalEnergyPart({ energy: 0.74 }).energy).toBe(74);
+    expect(canonicalEnergyPart({ energy: 0.555 }).energy).toBe(56);
+    expect(canonicalEnergyPart({ energy: 74 }).energy).toBe(74);
+    expect(canonicalEnergyPart({ energy: 0 }).energy).toBe(0);
   });
 
   it('applies both family and energy filters to the actual visible parts', () => {

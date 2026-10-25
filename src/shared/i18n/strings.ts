@@ -5979,7 +5979,7 @@ export const SYNASTRY_DIM_LABELS: Record<string, { en: string; ru: string; poleN
   AGENCY: { en: 'initiative', ru: 'инициативность', poleNeg: { en: 'leading', ru: 'ведёт за собой' }, polePos: { en: 'following', ru: 'идёт за другими' } },
   TEMPERATURE: { en: 'emotionality', ru: 'эмоциональность', poleNeg: { en: 'composed', ru: 'сдержанный' }, polePos: { en: 'expressive', ru: 'выразительный' } },
   FOCUS: { en: 'focus', ru: 'фокус внимания', poleNeg: { en: 'pragmatic', ru: 'прагматичный' }, polePos: { en: 'empathic', ru: 'эмпатичный' } },
-  ATTACHMENT: { en: 'closeness and distance', ru: 'близость и дистанция', poleNeg: { en: 'valuing independence', ru: 'ценит независимость' }, polePos: { en: 'seeking reassurance', ru: 'ищет подтверждений' } },
+  ATTACHMENT: { en: 'closeness-distance balance', ru: 'близость и дистанция', poleNeg: { en: 'valuing independence', ru: 'ценит независимость' }, polePos: { en: 'seeking reassurance', ru: 'ищет подтверждений' } },
 };
 
 // ── THERAPIST CONSENT ── client-facing consent text for specialist linking (moved from therapist-link.ts) ──

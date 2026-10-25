@@ -674,7 +674,7 @@ export const STRINGS = {
   instStep3: s("Tap Add", "Нажмите «Добавить»"),
   instIosSub: s("Safari can add this app to your home screen.", "Safari может добавить это приложение на ваш экран «Домой»."),
   footVer: s("v1.0 · local-first · IFS-inspired cartography", "v1.0 · локально · IFS-карта частей"),
-  telemSubK: s("{n} items · local only", "{n} записей · только локально"),
+  telemSubK: s("{n} items · local only", "Записей: {n} · только локально"),
   restoreOk: s("backup restored — reload to apply", "копия восстановлена — перезагрузите страницу"),
   restoreBad: s("unreadable backup file", "не удалось прочитать копию"),
   backupK: s("backup saved", "копия сохранена"),

@@ -245,6 +245,15 @@ function describeResonance(
   const labels = DIM_LABELS[dim];
   const absDelta = Math.abs(v1 - v2);
   const pct = Math.round(absDelta * 50); // share of the -1..1 axis
+  const who1 = v1 < -0.2 ? labels.poleNeg : v1 > 0.2 ? labels.polePos : BALANCED;
+  const who2 = v2 < -0.2 ? labels.poleNeg : v2 > 0.2 ? labels.polePos : BALANCED;
+  // One person at the middle: there is no pole to be opposed to.
+  if ((pattern === 'polarized' || pattern === 'dissonant') && (who1 === BALANCED || who2 === BALANCED)) {
+    return {
+      en: `Your ${labels.en} differs by ${pct}% — Person 1 is ${who1.en}, Person 2 is ${who2.en}.`,
+      ru: `По линии «${labels.ru}» различие ${pct}%: первый — ${who1.ru}, второй — ${who2.ru}.`,
+    };
+  }
   // Both on the same side of the line: neither an opposition nor a complement.
   if (pattern !== 'harmonic' && ((v1 > 0.2 && v2 > 0.2) || (v1 < -0.2 && v2 < -0.2))) {
     return {
@@ -252,8 +261,6 @@ function describeResonance(
       ru: `По линии «${labels.ru}» вы оба на одной стороне (разница ${pct}%).`,
     };
   }
-  const who1 = v1 < -0.2 ? labels.poleNeg : v1 > 0.2 ? labels.polePos : BALANCED;
-  const who2 = v2 < -0.2 ? labels.poleNeg : v2 > 0.2 ? labels.polePos : BALANCED;
 
   switch (pattern) {
     case 'harmonic': {

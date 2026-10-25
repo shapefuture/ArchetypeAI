@@ -37,7 +37,7 @@ describe('firestore.rules — security boundaries', () => {
     const data = matchBlock(/match\s+\/assessment\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
     const history = matchBlock(/match\s+\/history\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
     for (const block of [data, history]) {
-      expect(block).toMatch(/isOwner\(userId\)\s*\|\|\s*hasAdminReadGrant\(userId\)\s*\|\|\s*hasTherapistReadGrant\(userId\)/);
+      expect(block).toMatch(/isOwner\(userId\)\s*\|\|\s*hasAdminReadGrant\(userId\)\s*\|\|\s*\(hasTherapistReadGrant\(userId\)\s*&&\s*\(resource == null \|\| resource\.data == null \|\| !holdsRawAnswers\(resource\.data\)\)\)/);
       expect(block).toMatch(/allow\s+create,\s*update:\s*if\s+isOwner\(userId\)\s*&&\s*ownMapWithinLimit\(\)/);
       expect(block).toMatch(/allow\s+delete:\s*if\s+isOwner\(userId\)/);
     }

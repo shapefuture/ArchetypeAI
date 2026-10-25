@@ -1588,17 +1588,20 @@ export function Journal() {
   const [part, setPart] = useState('');
   const [note, setNote] = useState('');
 
+  // Returns whether the write fit in storage; the screen changes only if it did.
   const persist = (next) => {
+    try { localStorage.setItem('ifs.journal', JSON.stringify(next)); } catch { toast('⚠ ' + t('storageFull')); return false; }
     setEntries(next);
-    try { localStorage.setItem('ifs.journal', JSON.stringify(next)); } catch { /* */ }
+    return true;
   };
   const save = () => {
     if (!what.trim()) { toast('⚠ ' + t('jWhat')); return; }
     const e = { id: Date.now(), at: Date.now(), kind, what: what.trim(), where: where.trim(), part: part.trim(), note: note.trim() };
-    persist([e, ...readJournal()]);
+    // A save that did not fit keeps the draft so nothing typed is lost.
+    if (!persist([e, ...readJournal()])) return;
     setWhat(''); setWhere(''); setPart(''); setNote('');
     try { import('./pal/sfx.ts').then((m) => m.sfx.pop()).catch(() => {}); } catch { /* */ }
-    toast('✓ ' + t('save'));
+    toast('✓ ' + t('savedLocally'));
   };
   const del = (id) => persist(readJournal().filter((x) => x.id !== id));
 

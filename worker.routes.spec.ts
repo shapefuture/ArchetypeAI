@@ -188,3 +188,13 @@ describe('AI provider fallback', () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe('NVIDIA answers', () => {
+  it('never returns the model reasoning as the answer', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+      choices: [{ message: { content: '', reasoning: 'The user said: my secret. I should...' } }],
+    }), { status: 200 })));
+    await expect(worker.fetchNvidiaNIM({ prompt: 'hello' } as any, makeEnv())).rejects.toThrow(/no answer/);
+    vi.unstubAllGlobals();
+  });
+});

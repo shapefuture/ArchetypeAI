@@ -355,10 +355,14 @@ export function Descent() {
   };
 
   const save = () => {
-    setSaved(true);
     try {
       localStorage.setItem('ifs.sealed.verdict', JSON.stringify({ sealed: true, at: Date.now(), text: prof?.headlineConstellation ?? '' }));
-    } catch { /* */ }
+    } catch {
+      // Say so when it did not fit, instead of claiming it was saved.
+      toast('⚠ ' + t('storageFull'));
+      return;
+    }
+    setSaved(true);
     toast('✓ ' + t('savedLocally'));
   };
 

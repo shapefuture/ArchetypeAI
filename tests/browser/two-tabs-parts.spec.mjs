@@ -60,3 +60,28 @@ test('journal entries saved in two tabs are both kept', async ({ context }) => {
   await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.journal') ?? '[]').map((e) => e.what).sort()))
     .toEqual(['from tab A', 'from tab B']);
 });
+
+// Eighth pass, finding 4: after another tab switched language, this tab showed the other language's names.
+import { readFileSync } from 'node:fs';
+const CANONICAL_INPUT = readFileSync(new URL('./fixtures/canonical-input.json', import.meta.url), 'utf8');
+
+test('a language switch in another tab leaves this tab in its own language', async ({ context }) => {
+  await context.route(/googleapis\.com|firebaseio\.com|\/api\//, (route) => route.abort());
+  await context.addInitScript((input) => {
+    if (!localStorage.getItem('ifs.lang')) localStorage.setItem('ifs.lang', '"ru"');
+    localStorage.setItem('ifs.onboarded', 'true');
+    localStorage.setItem('ifs.help.seen', 'true');
+    if (!localStorage.getItem('INNERVERSE_PROFILE_V1')) localStorage.setItem('INNERVERSE_PROFILE_V1', input);
+  }, CANONICAL_INPUT);
+  const a = await context.newPage();
+  await a.goto('/');
+  await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.profile') ?? 'null')?.testModel), { timeout: 15_000 }).toBe('angular-v2');
+  const b = await context.newPage();
+  await b.goto('/');
+  await b.getByRole('button', { name: /Язык/ }).first().click();
+  await expect.poll(() => b.evaluate(() => document.documentElement.lang)).toBe('en');
+  // Tab B saved English names; tab A must keep showing Russian ones.
+  await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.parts') ?? '[]').some((p) => p.name === 'Taskmaster')), { timeout: 15_000 }).toBe(true);
+  await expect(a.getByText('Taskmaster')).toHaveCount(0, { timeout: 15_000 });
+  await expect(a.getByText('Деятель').first()).toBeVisible({ timeout: 15_000 });
+});

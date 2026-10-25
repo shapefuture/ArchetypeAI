@@ -51,3 +51,20 @@ test('a malformed journal does not break the Journal', async ({ page }) => {
   await page.getByRole('dialog').getByRole('button', { name: /Save/ }).first().click();
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ifs.journal') ?? '[]').map((e) => e.what))).toEqual(['still works']);
 });
+
+// Fifth pass, finding 4: one stored part without traits broke every screen.
+test('a stored part of the wrong shape does not break the home screen', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(String(error)));
+  await page.addInitScript(() => {
+    localStorage.setItem('ifs.lang', '"en"');
+    localStorage.setItem('ifs.onboarded', 'true');
+    localStorage.setItem('ifs.help.seen', 'true');
+    localStorage.setItem('ifs.parts', JSON.stringify([{ id: 'a', name: 'x', family: 'manager', energy: 50 }]));
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Cabinet/ }).first().click();
+  await expect(page.locator('section[aria-labelledby="e17-title"]')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('This screen did not open')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

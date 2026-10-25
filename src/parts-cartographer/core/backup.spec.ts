@@ -161,3 +161,43 @@ describe('partly damaged backups', () => {
     expect(prepared.skipped).toEqual(['ifs.journal']);
   });
 });
+
+describe('export everything', () => {
+  it('carries every key the person writes and none of the device secrets', () => {
+    localStorage.clear();
+    for (const key of ['INNERVERSE_TOOLKIT_V1', 'INNERVERSE_MEMORY_V1', 'INNERVERSE_REPLAY_V1', 'INNERVERSE_CUSTOM_PARTS_V1', 'INNERVERSE_REMINDERS_V1']) {
+      localStorage.setItem(key, JSON.stringify({ kept: key }));
+    }
+    for (const key of ['ifs.auth', 'ifs.billing.verified.v2', 'INNERVERSE_PUSH_TOKEN_V1', 'ifs.sensory.v1', 'ifs.share.codes', 'unrelated.token']) {
+      localStorage.setItem(key, JSON.stringify({ secret: true }));
+    }
+    const data = exportBackup().data as Record<string, unknown>;
+    expect(Object.keys(data).sort()).toEqual(['INNERVERSE_CUSTOM_PARTS_V1', 'INNERVERSE_MEMORY_V1', 'INNERVERSE_REMINDERS_V1', 'INNERVERSE_REPLAY_V1', 'INNERVERSE_TOOLKIT_V1']);
+  });
+
+  it('restores those keys from an export', async () => {
+    localStorage.clear();
+    localStorage.setItem('INNERVERSE_TOOLKIT_V1', JSON.stringify({ tools: ['breath'] }));
+    const exported = exportBackup();
+    localStorage.clear();
+    applyBackup(await prepareBackup(JSON.stringify(exported), 'en'));
+    expect(JSON.parse(localStorage.getItem('INNERVERSE_TOOLKIT_V1')!)).toEqual({ tools: ['breath'] });
+  });
+});
+
+describe('replace restore', () => {
+  it('keeps the local copy of a key the backup reported as damaged, and this device\'s language', async () => {
+    localStorage.clear();
+    localStorage.setItem('ifs.lang', JSON.stringify('en'));
+    localStorage.setItem('ifs.journal', JSON.stringify([{ id: 1, what: 'mine' }]));
+    localStorage.setItem('INNERVERSE_MEMORY_V1', JSON.stringify({ old: true }));
+    const prepared = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.theme': 'dark', 'ifs.journal': [{ what: 5 }] } }), 'en');
+    expect(prepared.skipped).toEqual(['ifs.journal']);
+    applyBackup(prepared, localStorage, 'replace');
+    expect(JSON.parse(localStorage.getItem('ifs.journal')!)).toEqual([{ id: 1, what: 'mine' }]);
+    expect(JSON.parse(localStorage.getItem('ifs.lang')!)).toBe('en');
+    expect(JSON.parse(localStorage.getItem('ifs.theme')!)).toBe('dark');
+    // Portable data the backup does not carry is still replaced (cleared).
+    expect(localStorage.getItem('INNERVERSE_MEMORY_V1')).toBeNull();
+  });
+});

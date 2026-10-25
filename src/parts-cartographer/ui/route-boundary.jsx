@@ -2,6 +2,7 @@ import React, { Suspense, useEffect } from 'react';
 import { useApp } from '../app.jsx';
 import { homeScreen } from '../core/boot.ts';
 import { store, KEYS } from '../core/local-store';
+import { RECOVERY_COPY, resetLocalData, saveLocalData } from './app-error-boundary.jsx';
 
 /* Runs onCommit only after the wrapped screen has rendered, never while a lazy chunk is suspended. */
 function Committed({ onCommit, children }) {
@@ -46,7 +47,7 @@ export function RouteFrame({ resetKey, fallback, onCommit, children }) {
 }
 
 function RouteFailure() {
-  const { t, go, setOverlay } = useApp();
+  const { t, lang, go, setOverlay } = useApp();
   const home = () => {
     setOverlay(null);
     go(homeScreen(store.load(KEYS.onboarded, false)));
@@ -58,6 +59,9 @@ function RouteFailure() {
         <p className="sub mt8">{t('routeErrB')}</p>
         <button className="btn primary block mt16" onClick={() => window.location.reload()}>⟳ {t('tryAgain')}</button>
         <button className="btn ghost block mt12" onClick={home}>{t('bootHome')}</button>
+        {/* A screen that keeps failing may be stuck on stored data: offer the same way out as a full crash. */}
+        <button className="btn ghost block mt12" onClick={saveLocalData}>{RECOVERY_COPY[lang === 'en' ? 'en' : 'ru'].save}</button>
+        <button className="btn ghost block mt12" onClick={resetLocalData}>{RECOVERY_COPY[lang === 'en' ? 'en' : 'ru'].reset}</button>
       </div>
     </div>
   );

@@ -22,8 +22,9 @@ const COPY = {
   },
 };
 
+// Same default as the app: Russian unless English was chosen.
 function language() {
-  try { return JSON.parse(localStorage.getItem('ifs.lang') ?? '"en"') === 'ru' ? 'ru' : 'en'; } catch { return 'en'; }
+  try { return JSON.parse(localStorage.getItem('ifs.lang') ?? '"ru"') === 'en' ? 'en' : 'ru'; } catch { return 'ru'; }
 }
 
 /** Everything in local storage, as a backup file the Restore screen accepts. */
@@ -37,6 +38,25 @@ export function localDataSnapshot() {
   }
   return { schema: 'parts-cartographer.backup.v2', exportedAt: new Date().toISOString(), data };
 }
+
+/** Downloads everything stored on this device as a restorable backup file. */
+export function saveLocalData() {
+  const blob = new Blob([JSON.stringify(localDataSnapshot(), null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'innerverse-backup.json';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+/** Clears this app's local data after the person confirms, then reloads. */
+export function resetLocalData() {
+  if (!window.confirm(COPY[language()].confirm)) return;
+  try { localStorage.clear(); } catch { /* storage unavailable */ }
+  window.location.reload();
+}
+
+export const RECOVERY_COPY = COPY;
 
 export class AppErrorBoundary extends React.Component {
   constructor(props) {
@@ -55,19 +75,8 @@ export class AppErrorBoundary extends React.Component {
   render() {
     if (!this.state.failed) return this.props.children;
     const copy = COPY[language()];
-    const save = () => {
-      const blob = new Blob([JSON.stringify(localDataSnapshot(), null, 2)], { type: 'application/json' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'innerverse-backup.json';
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-    };
-    const reset = () => {
-      if (!window.confirm(copy.confirm)) return;
-      try { localStorage.clear(); } catch { /* storage unavailable */ }
-      window.location.reload();
-    };
+    const save = saveLocalData;
+    const reset = resetLocalData;
     return (
       <main role="alert" style={{ maxWidth: 420, margin: '15vh auto', padding: '0 16px', fontFamily: 'system-ui, sans-serif' }}>
         <h1 style={{ fontSize: 22 }}>{copy.title}</h1>

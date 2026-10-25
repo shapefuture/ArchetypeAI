@@ -153,7 +153,9 @@ service cloud.firestore {
 
     function hasTrustedTherapistClientLink(therapistUid, clientUid) {
       let rosterPath = /databases/$(database)/documents/therapistClients/$(therapistUid + '_' + clientUid);
-      return exists(rosterPath)
+      // A therapist who stepped back (deleted their profile) loses these rights.
+      return exists(/databases/$(database)/documents/therapists/$(therapistUid))
+        && exists(rosterPath)
         && get(rosterPath).data.therapistUid == therapistUid
         && get(rosterPath).data.clientUid == clientUid
         && (
@@ -583,7 +585,9 @@ service cloud.firestore {
     // therapists may claim a code and maintain archive state.
     match /therapistClients/{docId} {
       allow read: if isSignedIn()
-        && (resource.data.therapistUid == request.auth.uid || resource.data.clientUid == request.auth.uid);
+        && (resource.data.clientUid == request.auth.uid
+          || (resource.data.therapistUid == request.auth.uid
+            && exists(/databases/$(database)/documents/therapists/$(request.auth.uid))));
       allow create: if isSignedIn()
         && docId == request.resource.data.therapistUid + '_' + request.resource.data.clientUid
         && (

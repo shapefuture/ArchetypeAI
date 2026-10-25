@@ -71,8 +71,8 @@ export function adjustTriggerWeights(history: CheckIn[]): TriggerWeights {
   if (history.length < 14) return w;
   const clamp = (lo: number, hi: number, v: number) => Math.min(hi, Math.max(lo, v));
   for (const ci of history) {
-    if (!ci.eventType || !Object.hasOwn(CRISIS_TRIGGERS, ci.eventType) || !ci.confirmedPart) continue;
-    if (ci.predictedPart && ci.predictedPart !== ci.confirmedPart) {
+    if (!ci.eventType || !Object.hasOwn(CRISIS_TRIGGERS, ci.eventType) || !ci.confirmedPart || !ALL_PART_IDS.includes(ci.confirmedPart)) continue;
+    if (ci.predictedPart && ci.predictedPart !== ci.confirmedPart && ALL_PART_IDS.includes(ci.predictedPart)) {
       const bucket = w[ci.eventType];
       bucket[ci.predictedPart] = clamp(0, 2, (bucket[ci.predictedPart] ?? 1) - 0.1);
       bucket[ci.confirmedPart] = clamp(0, 2, (bucket[ci.confirmedPart] ?? 1) + 0.1);
@@ -96,9 +96,10 @@ export interface PartWeather { count: number; meanArousal: number | null; }
 
 /** Trailing-30-day confirmed-flare counts per part (the "weather"). */
 export function weatherLayer(history: CheckIn[], now: Date): Record<string, PartWeather> {
-  const out: Record<string, PartWeather> = {};
+  // No prototype: a stored part id such as "__proto__" must not reach Object.prototype.
+  const out: Record<string, PartWeather> = Object.create(null);
   for (const ci of history) {
-    if (!ci.confirmedPart) continue;
+    if (!ci.confirmedPart || !ALL_PART_IDS.includes(ci.confirmedPart)) continue;
     if (daysBetween(new Date(ci.date), now) > 30) continue;
     const w = (out[ci.confirmedPart] ??= { count: 0, meanArousal: null });
     const n = w.count + 1;

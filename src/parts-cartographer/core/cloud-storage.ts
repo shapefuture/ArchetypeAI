@@ -36,7 +36,7 @@ const pick = (value: unknown, keys: string[]): Record<string, any> => {
   const record = value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
   return Object.fromEntries(keys.filter((key) => record[key] !== undefined).map((key) => [key, record[key]]));
 };
-/** Most parts a cloud copy holds. The Firestore rules enforce the same limit. */
+/** Most parts a cloud copy holds. The shared-map rule in firestore.rules enforces the same limit. */
 export const CLOUD_PART_LIMIT = 100;
 
 /** Allowlisted projection: no raw answers, free-text journal, future self, auth or body-map data. */

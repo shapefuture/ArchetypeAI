@@ -143,8 +143,9 @@ export function Cabinet() {
 
   const restoreCloudSnapshot = async (entry) => {
     // A restore replaces what is on this device, so it waits for a clear yes.
-    if (!window.confirm(t('cloudRestoreConfirm'))) return;
-    if (entry.source?.schema === 'angular-assessment64') {
+    const legacy = entry.source?.schema === 'angular-assessment64';
+    if (!window.confirm(t(legacy ? 'cloudRestoreLegacyConfirm' : 'cloudRestoreConfirm'))) return;
+    if (legacy) {
       try {
         applyBackup(await prepareBackup(JSON.stringify(entry.source), lang, parts));
         go('legacy-assessment');

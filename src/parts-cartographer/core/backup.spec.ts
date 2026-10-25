@@ -216,3 +216,22 @@ describe('plain values round-trip', () => {
     expect(localStorage.getItem('archetype_scoring_method')).toBe('fallback');
   });
 });
+
+describe('a restored profile survives a backup round trip', () => {
+  const answers = (high: string[]) => ({
+    shadow: Object.fromEntries(SHADOW_PARTS.map((id) => { const v = high.includes(id) ? 5 : 1; return [id, [v, v, v, v, v, v, 6 - v, 6 - v]]; })),
+    resources: Object.fromEntries(RESOURCES.map((id) => [id, Array(6).fill(3)])),
+    self: Array(8).fill(3),
+    validity: { attention: 3, infrequency: [1, 1] },
+  }) as any;
+
+  it('keeps the profile chosen from History instead of the last test taken on this device', async () => {
+    const last = answers(['rebel', 'frightened']);
+    const chosen = { ...adaptClinicalProfile(scoreProfile(answers(['pleaser', 'abandoned'])), 'en').profile, createdAt: 1700000000000 };
+    expect(chosen.headlineConstellation).not.toBe(adaptClinicalProfile(scoreProfile(last), 'en').profile.headlineConstellation);
+    const prepared = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.profile': chosen, INNERVERSE_PROFILE_V1: last, 'ifs.lang': 'en' } }), 'en');
+    const profile = prepared.entries['ifs.profile'] as any;
+    expect(profile.headlineConstellation).toBe(chosen.headlineConstellation);
+    expect(profile.createdAt).toBe(chosen.createdAt);
+  });
+});

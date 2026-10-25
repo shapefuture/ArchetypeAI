@@ -13,7 +13,8 @@
     "test": "bash scripts/run-with-node-version.sh ./node_modules/vitest/vitest.mjs run",
     "_deploy:headers": "echo 'Verify _headers is in dist/ before wrangler deploy' && test -f dist/_headers",
     "test:rules": "firebase emulators:exec --only firestore --project demo-archetypeai \"vitest run --config vitest.rules.config.ts\"",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "verify": "bash scripts/verify.sh"
   },
   "dependencies": {
     "@fontsource/fredoka": "^5.3.0",

@@ -186,13 +186,16 @@ export default function App() {
     let active = true;
     import('./core/clinical-profile-adapter.ts').then(({ adaptClinicalProfile }) => {
       if (!active) return;
+      // Another tab may have saved a newer result: adopt it instead of writing this tab's older copy over it.
+      const stored = usableProfile(store.load(KEYS.profile, null));
+      if (stored && stored.createdAt !== profile.createdAt) { setProfileRaw(stored); return; }
       const rebuilt = adaptClinicalProfile(profile.clinical, lang);
       const translated = { ...rebuilt.profile, createdAt: profile.createdAt };
       setProfileRaw(translated);
       store.save(KEYS.profile, translated);
-      setPartsRaw((current) => {
+      setPartsRaw(() => {
         const byId = new Map(rebuilt.parts.map((part) => [part.id, part]));
-        const next = current.map((part) => {
+        const next = usableParts(store.load(KEYS.parts, null)).map((part) => {
           const canonical = byId.get(part.id);
           if (!canonical) return part;
           const autoName = !part.name || [part.nameEn, part.nameRu, canonical.nameEn, canonical.nameRu].includes(part.name);
@@ -246,10 +249,19 @@ export default function App() {
   }, []);
   const shownParts = useMemo(() => localizeParts(parts, lang), [parts, lang]);
 
-  // Another tab saved the parts map: adopt it, so an edit here never writes back stale state.
+  // A save that did not fit in this browser's storage is said out loud, not lost silently.
+  useEffect(() => {
+    const onFull = () => toast('⚠ ' + t('storageFull'));
+    window.addEventListener('ifs:storage-full', onFull);
+    return () => window.removeEventListener('ifs:storage-full', onFull);
+  }, [toast, t]);
+
+  // Another tab saved the parts map or a report: adopt it, so an edit here never writes back stale state.
   useEffect(() => {
     const onStorage = (event) => {
-      if (event.key !== KEYS.parts || event.storageArea !== localStorage) return;
+      if (event.storageArea !== localStorage) return;
+      if (event.key === KEYS.profile) { setProfileRaw(usableProfile(store.load(KEYS.profile, null))); return; }
+      if (event.key !== KEYS.parts) return;
       const saved = store.load(KEYS.parts, null);
       if (Array.isArray(saved)) setPartsRaw(usableParts(saved));
     };

@@ -368,7 +368,7 @@ export function Legacy64Assessment() {
 
   const response = answers[index] ?? 0;
   const responseLabels = lang === 'ru'
-    ? ['Совсем не согласен', 'Скорее не согласен', 'Ни да, ни нет', 'Скорее согласен', 'Полностью согласен']
+    ? ['Совсем не согласен(на)', 'Скорее не согласен(на)', 'Ни да, ни нет', 'Скорее согласен(на)', 'Полностью согласен(на)']
     : ['Strongly disagree', 'Disagree', 'Neither agree nor disagree', 'Agree', 'Strongly agree'];
 
   return (

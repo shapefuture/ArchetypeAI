@@ -206,7 +206,7 @@ export const STRINGS = {
   assessmentResponsesLabel: s('responses', 'ответов'),
   myClients: s('My clients', 'Мои клиенты'),
   viewMatrix: s('View matrix', 'Матрица'),
-  viewReport: s('AI report', 'AI-отчёт'),
+  viewReport: s('AI report', 'ИИ-отчёт'),
   downloadReport: s('Download', 'Скачать'),
   appointments: s('Appointments', 'Записи'),
   metrics: s('Metrics', 'Метрики'),

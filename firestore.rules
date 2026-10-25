@@ -205,14 +205,21 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if isOwner(userId);
 
+      // A saved map holds at most 100 parts: the limit the client enforces and the shared-map rule uses.
+      function ownMapWithinLimit() {
+        return !('parts' in request.resource.data) || (request.resource.data.parts is list && request.resource.data.parts.size() <= 100);
+      }
+
       match /assessment/{docId} {
         allow read: if isOwner(userId) || hasAdminReadGrant(userId) || hasTherapistReadGrant(userId);
-        allow write: if isOwner(userId);
+        allow create, update: if isOwner(userId) && ownMapWithinLimit();
+        allow delete: if isOwner(userId);
       }
 
       match /history/{docId} {
         allow read: if isOwner(userId) || hasAdminReadGrant(userId) || hasTherapistReadGrant(userId);
-        allow write: if isOwner(userId);
+        allow create, update: if isOwner(userId) && ownMapWithinLimit();
+        allow delete: if isOwner(userId);
       }
 
       match /connections/{docId} {

@@ -234,6 +234,8 @@ export function computeSynastry(
 
 const DIM_LABELS = SYNASTRY_DIM_LABELS;
 
+const BALANCED = { en: 'balanced', ru: 'сбалансированный' };
+
 function describeResonance(
   pattern: 'harmonic' | 'complementary' | 'polarized' | 'dissonant',
   dim: string,
@@ -243,8 +245,8 @@ function describeResonance(
   const labels = DIM_LABELS[dim];
   const absDelta = Math.abs(v1 - v2);
   const pct = Math.round(absDelta * 50); // share of the -1..1 axis
-  const who1 = v1 < -0.2 ? labels.poleNeg : v1 > 0.2 ? labels.polePos : { en: 'balanced', ru: 'сбалансированный' };
-  const who2 = v2 < -0.2 ? labels.poleNeg : v2 > 0.2 ? labels.polePos : { en: 'balanced', ru: 'сбалансированный' };
+  const who1 = v1 < -0.2 ? labels.poleNeg : v1 > 0.2 ? labels.polePos : BALANCED;
+  const who2 = v2 < -0.2 ? labels.poleNeg : v2 > 0.2 ? labels.polePos : BALANCED;
 
   switch (pattern) {
     case 'harmonic': {
@@ -255,6 +257,13 @@ function describeResonance(
       };
     }
     case 'complementary': {
+      // Neither person is at a pole, so there is nothing to complement.
+      if (who1 === BALANCED && who2 === BALANCED) {
+        return {
+          en: `Your ${labels.en} differs by ${pct}%, but both of you sit near the middle here.`,
+          ru: `По линии «${labels.ru}» различие ${pct}%, но вы оба ближе к середине.`,
+        };
+      }
       return {
         en: `Your ${labels.en} differs by ${pct}% — Person 1 is ${who1.en}, Person 2 is ${who2.en}. This creates a natural dynamic where each brings what the other lacks.`,
         ru: `По линии «${labels.ru}» различие ${pct}%: первый — ${who1.ru}, второй — ${who2.ru}. Это создаёт естественную динамику, где каждый привносит то, чего не хватает другому.`,

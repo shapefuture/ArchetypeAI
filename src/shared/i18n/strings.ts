@@ -4027,7 +4027,7 @@ export const TRANSLATIONS = {
       exploreUniverse: 'Исследовать вселенную',
       relationalCartography: 'Карта ваших отношений',
       archetypeStudio: 'Каталог архетипов',
-      uploadBackup: 'Загрузить бэкап'
+      uploadBackup: 'Загрузить копию'
     },
     assessment: {
       previous: 'Назад',
@@ -4287,7 +4287,7 @@ export const TRANSLATIONS = {
       // Footer
       footerTitle: 'Откройте свою', footerTitleEmphasis: 'вселенную.', footerChip: 'Бесплатно и конфиденциально', installAppCta: 'Установить приложение',
       footerSubtitle: 'Пройдите тест за 10 минут и получите личную карту ваших отношений. Бесплатно и конфиденциально.',
-      uploadBackup: 'Загрузить бэкап',
+      uploadBackup: 'Загрузить копию',
       downloadNoticeTitle: 'Важно',
       downloadNoticeDesc: 'Ответы остаются на вашем устройстве. Полный тест — три части по 49 утверждений: можно остановиться после любой части, и прогресс сохранится. Резервную копию в любой момент можно скачать из кабинета.',
       restoreBackup: 'Восстановить прошлый тест',
@@ -4942,7 +4942,7 @@ export const TRANSLATIONS = {
     // AI Coach floating panel — см. en.coach
     coach: {
       characterName: 'Мудрый Наставник',
-      title: 'ИИ-Коуч',
+      title: 'ИИ-коуч',
       closeAria: 'Закрыть панель коуча',
       suggestedQuestionsLabel: '💭 Предложенные вопросы:',
       inputPlaceholder: 'Спросите о чём угодно...',
@@ -5001,13 +5001,13 @@ export const DEEP_FREEZE = {
   cycleEn: 'Both withdraw → relationship becomes functional but lifeless → loneliness builds → one person reaches out awkwardly → vulnerability feels dangerous → withdraw again',
   cycleRu: 'Оба отдаляются → отношения держатся, но в них не остаётся тепла → одиночество нарастает → кто-то неловко пытается сблизиться → открытость кажется опасной → снова отстранение',
   deactivationEn: 'Someone has to go first — risk vulnerability in small, safe doses. Couples therapy is strongly recommended to create a structured container for emotional expression.',
-  deactivationRu: 'Кому-то нужно сделать первый шаг — рискнуть быть немного более открытым, начиная с малого и безопасного. Совместная работа с семейным терапевтом может сильно помочь создать безопасное пространство для разговора о чувствах.',
+  deactivationRu: 'Кому-то нужно сделать первый шаг — рискнуть быть немного более открытым, начиная с малого и безопасного. Парная терапия может сильно помочь создать безопасное пространство для разговора о чувствах.',
 } as const;
 
 export const VOLATILE_BOND = {
   pattern: 'volatile-bond',
   descriptionEn: 'At least one partner has disorganized attachment — creating unpredictable swings between intense closeness and sudden withdrawal. The relationship feels like an emotional rollercoaster.',
-  descriptionRu: 'У одного из партнёров, а иногда у обоих, привязанность смешанного типа — из-за этого отношения раскачиваются между сильной близостью и внезапным отстранением. Как будто эмоциональные американские горки.',
+  descriptionRu: 'У одного из партнёров, а иногда у обоих, привязанность смешанного типа — из-за этого отношения раскачиваются между сильной близостью и внезапным отстранением. Это похоже на эмоциональные американские горки.',
   cycleEn: 'Intense connection → one partner gets triggered → sudden withdrawal or eruption → the other partner is confused and hurt → guilt and repair attempt → brief closeness → trigger again',
   cycleRu: 'Сильная близость → что-то задевает одного из партнёров → он резко отстраняется или срывается → другой в растерянности и боли → чувство вины и попытка всё уладить → недолгая близость → снова что-то задевает',
   deactivationEn: 'Both partners need individual therapeutic support. The disorganized partner needs to develop earned security. Patience and professional guidance are essential.',

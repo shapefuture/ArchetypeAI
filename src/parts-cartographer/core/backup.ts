@@ -25,7 +25,7 @@ const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.sy
  */
 const APP_KEY = /^(ifs\.|INNERVERSE_|ARCHETYPE_|archetype_)/;
 const NOT_PORTABLE = new Set([
-  'ifs.auth', 'ifs.billing', 'ifs.billing.verified.v2', 'ifs.telemetry', 'ifs.chunk-reload', 'ifs.share.codes', 'ifs.state',
+  'ifs.auth', 'ifs.billing', 'ifs.billing.verified.v2', 'ifs.billing.pending', 'ifs.telemetry', 'ifs.chunk-reload', 'ifs.share.codes', 'ifs.state',
   'ifs.sensory.v1', 'INNERVERSE_PUSH_TOKEN_V1', 'INNERVERSE_PUSH_LAST_NUDGE_V1', 'INNERVERSE_DEVICE_ENVELOPE_V1',
 ]);
 export function isPortableKey(key: string): boolean {

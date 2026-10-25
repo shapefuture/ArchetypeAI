@@ -628,10 +628,11 @@ export default {
 
       const data = await response.json() as any;
       const message = data.choices?.[0]?.message;
-      let text = message?.content || message?.reasoning || message?.reasoning_content || '';
-      if (!message?.content && (message?.reasoning || message?.reasoning_content)) {
-        text = message.reasoning || message.reasoning_content;
-      }
+      // Only the model's answer is ever returned. Its reasoning trace is not an
+      // answer (and can echo the prompt), so an empty answer fails this provider
+      // and the race moves on to the next one.
+      let text: string = typeof message?.content === 'string' ? message.content : '';
+      if (!text.trim()) throw new Error('NVIDIA provider returned no answer');
       if (payload.responseSchema && text) {
         const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/s);
         if (jsonMatch) text = jsonMatch[1].trim();

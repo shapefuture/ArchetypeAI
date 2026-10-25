@@ -141,6 +141,8 @@ export default function App() {
     return usableParts(store.load(KEYS.parts, null));
   });
   const [profile, setProfileRaw] = useState(() => usableProfile(store.load(KEYS.profile, null)));
+  const [crossTabSync, setCrossTabSync] = useState(0);
+  const persistTranslation = useRef(true);
   const [overlay, setOverlay] = useState(null); // string | {kind, ...payload}
   const [sheet, setSheet] = useState(null);      // {type, ...}
   const [toastMsg, setToastMsg] = useState(null);
@@ -182,6 +184,10 @@ export default function App() {
     return () => window.removeEventListener('ifs:local-restored', refresh);
   }, []);
   useEffect(() => {
+    // After adopting data from another tab, translate it for this tab in memory only:
+    // writing it back would make two tabs in different languages overwrite each other.
+    const persist = persistTranslation.current;
+    persistTranslation.current = true;
     if (profile?.testModel !== 'angular-v2' || !profile.clinical) return;
     let active = true;
     import('./core/clinical-profile-adapter.ts').then(({ adaptClinicalProfile }) => {
@@ -192,7 +198,7 @@ export default function App() {
       const rebuilt = adaptClinicalProfile(profile.clinical, lang);
       const translated = { ...rebuilt.profile, createdAt: profile.createdAt };
       setProfileRaw(translated);
-      store.save(KEYS.profile, translated);
+      if (persist) store.save(KEYS.profile, translated);
       setPartsRaw(() => {
         const byId = new Map(rebuilt.parts.map((part) => [part.id, part]));
         const next = usableParts(store.load(KEYS.parts, null)).map((part) => {
@@ -202,12 +208,12 @@ export default function App() {
           return { ...part, name: autoName ? canonical.name : part.name, nameEn: canonical.nameEn, nameRu: canonical.nameRu,
             archetype: { ...canonical.archetype, ...part.archetype } };
         });
-        store.save(KEYS.parts, next);
+        if (persist) store.save(KEYS.parts, next);
         return next;
       });
     });
     return () => { active = false; };
-  }, [lang, profile?.createdAt, profile?.testModel]);
+  }, [lang, profile?.createdAt, profile?.testModel, crossTabSync]);
   useEffect(() => {
     if (profile) return undefined;
     let active = true;
@@ -260,10 +266,15 @@ export default function App() {
   useEffect(() => {
     const onStorage = (event) => {
       if (event.storageArea !== localStorage) return;
-      if (event.key === KEYS.profile) { setProfileRaw(usableProfile(store.load(KEYS.profile, null))); return; }
-      if (event.key !== KEYS.parts) return;
-      const saved = store.load(KEYS.parts, null);
-      if (Array.isArray(saved)) setPartsRaw(usableParts(saved));
+      if (event.key !== KEYS.profile && event.key !== KEYS.parts) return;
+      if (event.key === KEYS.profile) setProfileRaw(usableProfile(store.load(KEYS.profile, null)));
+      else {
+        const saved = store.load(KEYS.parts, null);
+        if (Array.isArray(saved)) setPartsRaw(usableParts(saved));
+      }
+      // The other tab may use the other language: re-translate here, without saving.
+      persistTranslation.current = false;
+      setCrossTabSync((value) => value + 1);
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);

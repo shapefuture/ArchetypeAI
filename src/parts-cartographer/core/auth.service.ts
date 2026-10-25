@@ -79,6 +79,7 @@ export async function getFirebaseIdentity(): Promise<{ uid: string; token: strin
  */
 export async function sendPasswordReset(email: string): Promise<void> {
   const { sdk, auth } = await client();
+  emailLanguage(auth);
   try {
     await sdk.sendPasswordResetEmail(auth, email.trim());
   } catch (error) {
@@ -87,9 +88,15 @@ export async function sendPasswordReset(email: string): Promise<void> {
   }
 }
 
+/** Firebase's own emails follow the app language, not the project default. */
+function emailLanguage(auth: { languageCode: string | null }): void {
+  auth.languageCode = store.load<string>('ifs.lang', 'ru') === 'en' ? 'en' : 'ru';
+}
+
 /** Sends Firebase's verification email to the signed-in address. */
 export async function sendVerificationEmail(): Promise<void> {
   const { sdk, auth } = await client();
+  emailLanguage(auth);
   await sdk.sendEmailVerification(requireFirebaseUser(auth.currentUser));
 }
 

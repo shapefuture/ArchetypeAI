@@ -61,7 +61,10 @@ describe('cross-version local backup and cloud boundaries', () => {
     applyBackup(await prepareBackup(JSON.stringify(exported), 'en'));
     expect(JSON.parse(localStorage.getItem('INNERVERSE_GOAL_V1')!)).toEqual(goal);
     localStorage.clear();
-    await expect(prepareBackup(JSON.stringify({ ...exported, data: { ...exported.data, INNERVERSE_GOAL_V1: { schema: 'goal.v1' } } }), 'en')).rejects.toThrow();
+    // A corrupt goal is left out (and listed) while the rest of the backup stays restorable; nothing is written yet.
+    const partial = await prepareBackup(JSON.stringify({ ...exported, data: { ...exported.data, INNERVERSE_GOAL_V1: { schema: 'goal.v1' } } }), 'en');
+    expect(partial.skipped).toEqual(['INNERVERSE_GOAL_V1']);
+    expect(partial.entries.INNERVERSE_GOAL_V1).toBeUndefined();
     expect(localStorage.length).toBe(0);
   });
 
@@ -138,5 +141,23 @@ describe('sealed notes in a backup', () => {
     }
     const ok = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.sealed': [{ until: 1, text: 'note' }] } }), 'en');
     expect(ok.entries['ifs.sealed']).toEqual([{ until: 1, text: 'note' }]);
+  });
+});
+
+describe('partly damaged backups', () => {
+  it('restores the good keys and lists the damaged ones', async () => {
+    const prepared = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: {
+      'ifs.lang': 'ru',
+      'ifs.journal': [{ id: 1, at: 1, kind: 'jTrigger', what: 'kept', where: '', part: '', note: '' }],
+      'ifs.sealed': {},
+    } }), 'en');
+    expect(prepared.entries['ifs.journal']).toEqual([{ id: 1, at: 1, kind: 'jTrigger', what: 'kept', where: '', part: '', note: '' }]);
+    expect(prepared.skipped).toEqual(['ifs.sealed']);
+  });
+
+  it('refuses a journal of the wrong shape', async () => {
+    const prepared = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.lang': 'en', 'ifs.journal': {} } }), 'en');
+    expect(prepared.entries['ifs.journal']).toBeUndefined();
+    expect(prepared.skipped).toEqual(['ifs.journal']);
   });
 });

@@ -57,6 +57,9 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === 'INNERVERSE_GOAL_V1') return readGoalRecord(value).status !== 'rejected';
   if (key === DESCENT_DRAFT_KEY) return isDescentDraft(value);
   if (key === LEGACY_DESCENT_DRAFT_KEY) return object(value) && ratings(value.answers, 147, true);
+  // Journal entries are listed and prepended to: each needs its text and an id.
+  if (key === 'ifs.journal') return Array.isArray(value) && value.length <= 5000
+    && value.every((item) => object(item) && typeof item.what === 'string' && item.what.length <= 20_000 && (typeof item.id === 'number' || typeof item.id === 'string'));
   // Sealed notes resurface on open: each needs a numeric due time and its text.
   if (key === 'ifs.sealed') return Array.isArray(value) && value.length <= 500
     && value.every((item) => object(item) && typeof item.until === 'number' && Number.isFinite(item.until) && typeof item.text === 'string' && item.text.length <= 20_000);
@@ -70,7 +73,8 @@ function validEntry(key: string, value: unknown): boolean {
   return object(value) || Array.isArray(value);
 }
 
-export interface PreparedBackup { schema: 'parts-cartographer.backup.v2'; source: string; entries: Record<string, unknown>; }
+/** `skipped` lists keys whose stored value had the wrong shape; the rest restores. */
+export interface PreparedBackup { schema: 'parts-cartographer.backup.v2'; source: string; entries: Record<string, unknown>; skipped: string[]; }
 
 /** Parse first and write only after the entire import validates. Accept historical Angular formats. */
 export async function prepareBackup(text: string, lang: Lang, existingParts: Part[] = []): Promise<PreparedBackup> {
@@ -80,6 +84,7 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
     return value;
   });
   const entries: Record<string, unknown> = {};
+  const skipped: string[] = [];
   let source = 'parts-cartographer';
   if (object(parsed) && parsed.schema?.startsWith('parts-cartographer.backup') && parsed.schema !== 'parts-cartographer.backup.v2') throw new Error('Unsupported backup version');
   let data = object(parsed) && parsed.schema === 'parts-cartographer.backup.v2' ? parsed.data : parsed;
@@ -103,7 +108,8 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
       if (!object(data)) throw new Error('Unsupported backup format');
       for (const [key, value] of Object.entries(data)) {
         if (!PORTABLE_KEYS.has(key)) continue;
-        if (!validEntry(key, value)) throw new Error(`Invalid data for ${key}`);
+        // One malformed value must not make the rest of a person's backup unrestorable.
+        if (!validEntry(key, value)) { skipped.push(key); continue; }
         entries[key] = value;
       }
     }
@@ -133,7 +139,7 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
       } catch { entries['ifs.legacy64.result'] = rebuilt; entries.archetype_scoring_method = 'deterministic'; }
     } else { entries['ifs.legacy64.result'] = rebuilt; entries.archetype_scoring_method = 'deterministic'; }
   } else if (responses) entries['ifs.legacy64.result'] = null;
-  return { schema: 'parts-cartographer.backup.v2', source, entries };
+  return { schema: 'parts-cartographer.backup.v2', source, entries, skipped };
 }
 
 /** Transactional local merge/replace. Roll back every affected key on quota or storage failure. */

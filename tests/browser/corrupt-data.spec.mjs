@@ -35,3 +35,19 @@ test('a backup with a malformed value is refused, and the app keeps working', as
   await page.reload();
   await expect(page.getByRole('button', { name: /Cabinet/ }).first()).toBeVisible({ timeout: 15_000 });
 });
+
+// Fourth pass, finding 1: a journal of the wrong shape broke the Journal for good.
+test('a malformed journal does not break the Journal', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('ifs.lang', '"en"');
+    localStorage.setItem('ifs.onboarded', 'true');
+    localStorage.setItem('ifs.help.seen', 'true');
+    if (!sessionStorage.getItem('seeded')) { localStorage.setItem('ifs.journal', '{}'); sessionStorage.setItem('seeded', '1'); }
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Journal/ }).first().click();
+  await expect(page.getByLabel('What happened?')).toBeVisible({ timeout: 15_000 });
+  await page.getByLabel('What happened?').fill('still works');
+  await page.getByRole('dialog').getByRole('button', { name: /Save/ }).first().click();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ifs.journal') ?? '[]').map((e) => e.what))).toEqual(['still works']);
+});

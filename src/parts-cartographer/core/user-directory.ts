@@ -79,6 +79,18 @@ export async function refreshDirectoryEntry(user: AuthUser): Promise<void> {
   cache.delete(`email:${emailLower}`);
 }
 
+/**
+ * Stop working as a therapist: remove the therapist profile, then the
+ * directory entry, so the address can no longer be looked up. Appointments
+ * already made stay in both parties' records.
+ */
+export async function stopBeingTherapist(user: AuthUser): Promise<void> {
+  const db = getFirestoreDb();
+  const { deleteDoc } = await import('firebase/firestore');
+  await deleteDoc(doc(db, 'therapists', user.uid));
+  await refreshDirectoryEntry(user);
+}
+
 export async function lookupByUid(uid: string): Promise<PublicUserProfile | null> {
   const normalized = (uid || '').trim();
   if (!normalized) return null;

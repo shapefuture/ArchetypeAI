@@ -116,7 +116,8 @@ async function restoreCanonicalProfile(lang) {
 
 export default function App() {
   /* ── cross-cutting state ── */
-  const [lang, setLang] = useState(() => store.load('ifs.lang', 'ru'));
+  // Only en and ru exist; any other stored value would blank every label.
+  const [lang, setLang] = useState(() => (store.load('ifs.lang', 'ru') === 'en' ? 'en' : 'ru'));
   const [theme, setTheme] = useState(() => store.load('ifs.theme', 'light'));
   const [sensory, setSensory] = useState(() => loadSensoryPreferences());
   const [sensoryStored, setSensoryStored] = useState(true); // false when the browser refused to save the last choice

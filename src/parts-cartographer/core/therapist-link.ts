@@ -146,15 +146,19 @@ export async function claimTherapistLink(
 export async function revokeTherapistAccess(clientUid: string): Promise<number> {
   const db = getFirestoreDb();
   const byClient = (name: string) => getDocs(query(collection(db, name), where('clientUid', '==', clientUid)));
-  const [rows, shares, codes] = await Promise.all([byClient('therapistClients'), byClient('clientShares'), byClient('therapistLinks')]);
-  if (rows.empty && shares.empty && codes.empty) return 0;
+  const [rows, shares, codes, assignments] = await Promise.all([
+    byClient('therapistClients'), byClient('clientShares'), byClient('therapistLinks'), byClient('assignments'),
+  ]);
+  if (rows.empty && shares.empty && codes.empty && assignments.empty) return 0;
   const batch = writeBatch(db);
   // Every code this client issued, claimed or not, so no one can link with it later.
   for (const code of codes.docs) batch.delete(code.ref);
   for (const row of rows.docs) batch.delete(row.ref);
   for (const share of shares.docs) batch.delete(share.ref);
+  // Assigned practices go too, so the therapist keeps nothing about this client.
+  for (const assignment of assignments.docs) batch.delete(assignment.ref);
   await batch.commit();
-  return codes.size + rows.size + shares.size;
+  return codes.size + rows.size + shares.size + assignments.size;
 }
 
 /**

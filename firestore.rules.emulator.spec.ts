@@ -20,6 +20,8 @@ import {
   type Firestore,
 } from 'firebase/firestore';
 
+// Booking dates must be real, upcoming and within two years, so fixtures use next year.
+const NEXT_YEAR = new Date().getUTCFullYear() + 1;
 const RULES = readFileSync(resolve(process.cwd(), 'firestore.rules'), 'utf8');
 const EMULATOR = !!process.env.FIRESTORE_EMULATOR_HOST;
 const UIDS = {
@@ -86,7 +88,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     await seed(async (db) => {
       await setDoc(doc(db, 'users', uid, 'assessment', 'current'), {
         answers: { mwt: 'grief', shadow: 'abandonment' },
-        at: '2026-10-01T00:00:00.000Z',
+        at: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
       });
       await setDoc(doc(db, 'users', uid, 'history', 'h1'), {
         at: '2026-09-01T00:00:00.000Z',
@@ -99,7 +101,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     await seed(async (db) => {
       await setDoc(doc(db, 'adminAllowlist', email), {
         email,
-        createdAt: '2026-10-01T00:00:00.000Z',
+        createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         createdByUid: UIDS.admin,
       });
     });
@@ -115,8 +117,8 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
   async function createValidBooking(appointmentId = `${UIDS.client}_1000`): Promise<void> {
     const client = asUser(UIDS.client, 'client@example.com');
     await seedTherapistProfile();
-    const start = '2099-10-05T10:00';
-    const end = '2099-10-05T11:00';
+    const start = `${NEXT_YEAR}-10-05T10:00`;
+    const end = `${NEXT_YEAR}-10-05T11:00`;
     const bookingBatch = writeBatch(client);
     bookingBatch.set(doc(client, 'appointments', appointmentId), {
       clientUid: UIDS.client,
@@ -126,7 +128,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       start,
       end,
       status: 'pending',
-      createdAt: '2026-10-01T00:00:00.000Z',
+      createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
       accessGranted: true,
     });
     bookingBatch.set(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${start}`), {
@@ -140,7 +142,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       clientUid: UIDS.client,
       clientEmail: 'client@example.com',
       therapistUid: UIDS.therapist,
-      grantedAt: '2026-10-01T00:00:00.000Z',
+      grantedAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
       source: 'booking',
       appointmentId,
     }));
@@ -148,7 +150,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       therapistUid: UIDS.therapist,
       clientUid: UIDS.client,
       clientEmail: 'client@example.com',
-      linkedAt: '2026-10-01T00:00:00.000Z',
+      linkedAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
       source: 'booking',
       appointmentId,
     }));
@@ -162,7 +164,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         clientUid: UIDS.victim,
         clientEmail: 'victim@example.com',
         notes: '',
-        addedAt: '2026-10-01T00:00:00.000Z',
+        addedAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         addedByUid: UIDS.attacker,
       }));
     });
@@ -185,10 +187,10 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     it('denies self-promotion and non-admin allowlist writes', async () => {
       const attacker = asUser(UIDS.attacker, 'attacker@example.com');
       await assertFails(setDoc(doc(attacker, 'adminAllowlist', 'attacker@example.com'), {
-        email: 'attacker@example.com', createdAt: '2026-10-01T00:00:00.000Z', createdByUid: UIDS.attacker,
+        email: 'attacker@example.com', createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, createdByUid: UIDS.attacker,
       }));
       await assertFails(setDoc(doc(attacker, 'adminAllowlist', 'someone-else@example.com'), {
-        email: 'someone-else@example.com', createdAt: '2026-10-01T00:00:00.000Z', createdByUid: UIDS.attacker,
+        email: 'someone-else@example.com', createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, createdByUid: UIDS.attacker,
       }));
     });
 
@@ -196,7 +198,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await seedVictimRecords();
       const root = asUser('uid_root', 'admin@example.com');
       await assertSucceeds(setDoc(doc(root, 'adminAllowlist', 'admin@example.com'), {
-        email: 'admin@example.com', createdAt: '2026-10-01T00:00:00.000Z', createdByUid: 'uid_root',
+        email: 'admin@example.com', createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, createdByUid: 'uid_root',
       }));
       const admin = asUser(UIDS.admin, 'admin@example.com');
       await assertSucceeds(setDoc(doc(admin, 'adminClients', `${UIDS.admin}_${UIDS.victim}`), {
@@ -204,7 +206,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         clientUid: UIDS.victim,
         clientEmail: 'victim@example.com',
         notes: '',
-        addedAt: '2026-10-01T00:00:00.000Z',
+        addedAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         addedByUid: UIDS.admin,
       }));
       await assertSucceeds(getDoc(doc(admin, 'users', UIDS.victim, 'assessment', 'current')));
@@ -225,7 +227,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         clientUid: UIDS.victim,
         clientEmail: null,
         notes: '',
-        addedAt: '2026-10-01T00:00:00.000Z',
+        addedAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         addedByUid: 'uid_unverified',
       }));
     });
@@ -269,7 +271,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     it('allows authenticated single-code lookup but denies share-code collection listing', async () => {
       const owner = asUser(UIDS.victim, 'victim@example.com');
       await assertSucceeds(setDoc(doc(owner, 'shareCodes', 'abc123xy'), {
-        uid: UIDS.victim, createdAt: '2026-10-01T00:00:00.000Z',
+        uid: UIDS.victim, createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
       }));
       await assertSucceeds(getDoc(doc(asUser(UIDS.attacker, 'attacker@example.com'), 'shareCodes', 'abc123xy')));
       await assertFails(getDocs(collection(asUser(UIDS.attacker, 'attacker@example.com'), 'shareCodes')));
@@ -281,14 +283,14 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       const codeRef = doc(owner, 'shareCodes', 'map123code45');
       await assertSucceeds(setDoc(codeRef, {
         uid: UIDS.victim,
-        createdAt: '2026-10-01T00:00:00.000Z',
+        createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         schema: 'parts-cartographer.v1',
         mapSnapshot: {
           schema: 'parts-cartographer.v1',
           profile: { headlineConstellation: 'A map' },
           parts: [{ id: 'part-1', name: 'A part' }],
-          createdAt: '2026-10-01T00:00:00.000Z',
-          updatedAt: '2026-10-01T00:00:00.000Z',
+          createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
+          updatedAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         },
       }));
       const recipient = asUser(UIDS.attacker, 'attacker@example.com');
@@ -304,13 +306,13 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       const owner = asUser(UIDS.victim, 'victim@example.com');
       await assertSucceeds(setDoc(doc(owner, 'shareCodes', 'legacy123'), {
         uid: UIDS.victim,
-        createdAt: '2026-10-01T00:00:00.000Z',
+        createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         assessment: {
           responses: Array(64).fill(3),
           dimensionalExpressions: { AGENCY: 0, TEMPERATURE: 0, FOCUS: 0, ATTACHMENT: 0 },
           results: { analysis: 'report', pantheon: [] },
           scoringMethod: 'deterministic',
-          updatedAt: '2026-10-01T00:00:00.000Z',
+          updatedAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         },
       }));
     });
@@ -439,17 +441,17 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         clientEmail: 'attacker@example.com',
         therapistUid: UIDS.therapist,
         therapistEmail: 'therapist@example.com',
-        start: '2099-10-05T10:00',
-        end: '2099-10-05T11:00',
+        start: `${NEXT_YEAR}-10-05T10:00`,
+        end: `${NEXT_YEAR}-10-05T11:00`,
         status: 'pending',
-        createdAt: '2026-10-01T00:00:00.000Z',
+        createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         accessGranted: true,
       });
-      duplicate.set(doc(secondClient, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`), {
+      duplicate.set(doc(secondClient, 'therapistBusySlots', `${UIDS.therapist}_${NEXT_YEAR}-10-05T10:00`), {
         therapistUid: UIDS.therapist,
         appointmentId: 'second-random-id',
-        start: '2099-10-05T10:00',
-        end: '2099-10-05T11:00',
+        start: `${NEXT_YEAR}-10-05T10:00`,
+        end: `${NEXT_YEAR}-10-05T11:00`,
       });
       await assertFails(duplicate.commit());
     });
@@ -462,11 +464,11 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         const batch = writeBatch(db);
         batch.set(doc(db, 'appointments', id), {
           clientUid, clientEmail: `client${index}@example.com`, therapistUid: UIDS.therapist,
-          therapistEmail: 'therapist@example.com', start: '2099-10-05T10:00', end: '2099-10-05T11:00',
-          status: 'pending', createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+          therapistEmail: 'therapist@example.com', start: `${NEXT_YEAR}-10-05T10:00`, end: `${NEXT_YEAR}-10-05T11:00`,
+          status: 'pending', createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, accessGranted: true,
         });
-        batch.set(doc(db, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`), {
-          therapistUid: UIDS.therapist, appointmentId: id, start: '2099-10-05T10:00', end: '2099-10-05T11:00',
+        batch.set(doc(db, 'therapistBusySlots', `${UIDS.therapist}_${NEXT_YEAR}-10-05T10:00`), {
+          therapistUid: UIDS.therapist, appointmentId: id, start: `${NEXT_YEAR}-10-05T10:00`, end: `${NEXT_YEAR}-10-05T11:00`,
         });
         return batch.commit();
       });
@@ -487,7 +489,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertSucceeds(getDoc(doc(therapist, 'users', UIDS.client, 'history', 'h1')));
       const decline = writeBatch(therapist);
       decline.update(doc(therapist, 'appointments', `${UIDS.client}_1000`), { status: 'declined' });
-      decline.delete(doc(therapist, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`));
+      decline.delete(doc(therapist, 'therapistBusySlots', `${UIDS.therapist}_${NEXT_YEAR}-10-05T10:00`));
       await assertSucceeds(decline.commit());
       await assertFails(getDoc(doc(therapist, 'users', UIDS.client, 'assessment', 'current')));
     });
@@ -511,11 +513,11 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       const client = asUser(UIDS.client, 'client@example.com');
       const valid = {
         schemaVersion: 2,
-        startUtc: '2026-10-06T14:00:00.000Z',
-        endUtc: '2026-10-06T15:00:00.000Z',
+        startUtc: `${NEXT_YEAR}-10-06T14:00:00.000Z`,
+        endUtc: `${NEXT_YEAR}-10-06T15:00:00.000Z`,
         durationMinutes: 60,
         timeZone: 'America/New_York',
-        wallStart: '2099-10-06T10:00',
+        wallStart: `${NEXT_YEAR}-10-06T10:00`,
         repeatedWallTime: null,
         source: { kind: 'availability-slot' },
       };
@@ -530,7 +532,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
           start,
           end,
           status: 'pending',
-          createdAt: '2026-10-01T00:00:00.000Z',
+          createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
           accessGranted: true,
           time,
         });
@@ -543,19 +545,19 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         return batch.commit();
       };
 
-      await assertSucceeds(bookWithTime(`${UIDS.client}_3100`, valid, '2099-10-06T10:00', '2099-10-06T11:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3101`, 'nope', '2099-10-06T11:00', '2099-10-06T12:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3102`, { ...valid, schemaVersion: 1 }, '2099-10-06T12:00', '2099-10-06T13:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3103`, { ...valid, approvedBy: UIDS.client }, '2099-10-06T13:00', '2099-10-06T14:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3104`, { ...valid, timeZone: 'x'.repeat(65) }, '2099-10-06T14:00', '2099-10-06T15:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3105`, { ...valid, durationMinutes: 'sixty' }, '2099-10-06T15:00', '2099-10-06T16:00'));
+      await assertSucceeds(bookWithTime(`${UIDS.client}_3100`, valid, `${NEXT_YEAR}-10-06T10:00`, `${NEXT_YEAR}-10-06T11:00`));
+      await assertFails(bookWithTime(`${UIDS.client}_3101`, 'nope', `${NEXT_YEAR}-10-06T11:00`, `${NEXT_YEAR}-10-06T12:00`));
+      await assertFails(bookWithTime(`${UIDS.client}_3102`, { ...valid, schemaVersion: 1 }, `${NEXT_YEAR}-10-06T12:00`, `${NEXT_YEAR}-10-06T13:00`));
+      await assertFails(bookWithTime(`${UIDS.client}_3103`, { ...valid, approvedBy: UIDS.client }, `${NEXT_YEAR}-10-06T13:00`, `${NEXT_YEAR}-10-06T14:00`));
+      await assertFails(bookWithTime(`${UIDS.client}_3104`, { ...valid, timeZone: 'x'.repeat(65) }, `${NEXT_YEAR}-10-06T14:00`, `${NEXT_YEAR}-10-06T15:00`));
+      await assertFails(bookWithTime(`${UIDS.client}_3105`, { ...valid, durationMinutes: 'sixty' }, `${NEXT_YEAR}-10-06T15:00`, `${NEXT_YEAR}-10-06T16:00`));
       // The zone time must describe the slot it reserves.
-      const at = (hour: string) => ({ ...valid, wallStart: `2099-10-07T${hour}:00` });
-      await assertSucceeds(bookWithTime(`${UIDS.client}_3200`, at('09'), '2099-10-07T09:00', '2099-10-07T10:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3201`, { ...at('10'), wallStart: '2099-10-07T03:00' }, '2099-10-07T10:00', '2099-10-07T11:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3202`, { ...at('11'), durationMinutes: -5 }, '2099-10-07T11:00', '2099-10-07T12:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3203`, { ...at('12'), endUtc: '2020-01-01T00:00:00.000Z' }, '2099-10-07T12:00', '2099-10-07T13:00'));
-      await assertFails(bookWithTime(`${UIDS.client}_3204`, { ...at('13'), timeZone: 'Not a zone!' }, '2099-10-07T13:00', '2099-10-07T14:00'));
+      const at = (hour: string) => ({ ...valid, wallStart: `${NEXT_YEAR}-10-07T${hour}:00` });
+      await assertSucceeds(bookWithTime(`${UIDS.client}_3200`, at('09'), `${NEXT_YEAR}-10-07T09:00`, `${NEXT_YEAR}-10-07T10:00`));
+      await assertFails(bookWithTime(`${UIDS.client}_3201`, { ...at('10'), wallStart: `${NEXT_YEAR}-10-07T03:00` }, `${NEXT_YEAR}-10-07T10:00`, `${NEXT_YEAR}-10-07T11:00`));
+      await assertFails(bookWithTime(`${UIDS.client}_3202`, { ...at('11'), durationMinutes: -5 }, `${NEXT_YEAR}-10-07T11:00`, `${NEXT_YEAR}-10-07T12:00`));
+      await assertFails(bookWithTime(`${UIDS.client}_3203`, { ...at('12'), endUtc: '2020-01-01T00:00:00.000Z' }, `${NEXT_YEAR}-10-07T12:00`, `${NEXT_YEAR}-10-07T13:00`));
+      await assertFails(bookWithTime(`${UIDS.client}_3204`, { ...at('13'), timeZone: 'Not a zone!' }, `${NEXT_YEAR}-10-07T13:00`, `${NEXT_YEAR}-10-07T14:00`));
     });
 
     it('rejects appointment field injection and invalid status transitions', async () => {
@@ -566,10 +568,10 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         clientEmail: 'client@example.com',
         therapistUid: UIDS.therapist,
         therapistEmail: 'therapist@example.com',
-        start: '2099-10-05T10:00',
-        end: '2099-10-05T11:00',
+        start: `${NEXT_YEAR}-10-05T10:00`,
+        end: `${NEXT_YEAR}-10-05T11:00`,
         status: 'pending',
-        createdAt: '2026-10-01T00:00:00.000Z',
+        createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         accessGranted: true,
       };
       await assertFails(setDoc(doc(client, 'appointments', 'injected'), { ...base, approvedBy: UIDS.client }));
@@ -581,17 +583,18 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(updateDoc(doc(client, 'appointments', `${UIDS.client}_2000`), { status: 'cancelled' }));
       const cancel = writeBatch(client);
       cancel.update(doc(client, 'appointments', `${UIDS.client}_2000`), { status: 'cancelled' });
-      cancel.delete(doc(client, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`));
+      cancel.delete(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${NEXT_YEAR}-10-05T10:00`));
       await assertSucceeds(cancel.commit());
     });
 
     it('allows a therapist to claim only a client-created invite code', async () => {
+      await seedTherapistProfile();
       const client = asUser(UIDS.client, 'client@example.com');
       const therapist = asUser(UIDS.therapist, 'therapist@example.com');
       const code = 'ABC2345678';
       await assertSucceeds(setDoc(doc(client, 'therapistLinks', code), {
         clientUid: UIDS.client,
-        createdAt: '2026-10-01T00:00:00.000Z',
+        createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         summary: THERAPIST_SUMMARY,
       }));
       await assertSucceeds(getDoc(doc(therapist, 'therapistLinks', code)));
@@ -603,7 +606,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       return {
         therapistUid,
         clientUid: UIDS.client,
-        linkedAt: '2026-10-01T00:00:00.000Z',
+        linkedAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`,
         source: 'invite',
         linkCode: code,
         summary: THERAPIST_SUMMARY,
@@ -619,8 +622,10 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     }
 
     async function seedInvite(code: string) {
+      // The claiming therapist in these tests has a therapist profile; the attacker does not.
+      await seedTherapistProfile();
       await assertSucceeds(setDoc(doc(asUser(UIDS.client, 'client@example.com'), 'therapistLinks', code), {
-        clientUid: UIDS.client, createdAt: '2026-10-01T00:00:00.000Z', summary: THERAPIST_SUMMARY,
+        clientUid: UIDS.client, createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, summary: THERAPIST_SUMMARY,
       }));
     }
 
@@ -652,6 +657,29 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertSucceeds(setDoc(doc(therapist, 'assignments', 'a-invite'), {
         id: 'a-invite', therapistUid: UIDS.therapist, clientUid: UIDS.client, exerciseId: 'e1', frequency: 'once', assignedAt: 'now',
       }));
+    });
+
+    it('lets only a verified therapist claim a code', async () => {
+      await seedInvite('THERONLY23');
+      const anon = asUser('uid_anon_claimer');
+      const anonClaim = writeBatch(anon);
+      anonClaim.update(doc(anon, 'therapistLinks', 'THERONLY23'), { claimedBy: 'uid_anon_claimer' });
+      anonClaim.set(doc(anon, 'therapistClients', `uid_anon_claimer_${UIDS.client}`), inviteRow('uid_anon_claimer', 'THERONLY23'));
+      await assertFails(anonClaim.commit());
+      await assertSucceeds(claimInvite(asUser(UIDS.therapist, 'therapist@example.com'), UIDS.therapist, 'THERONLY23'));
+    });
+
+    it('keeps an invite roster row free of booking fields, and lets the client remove assignments', async () => {
+      await seedInvite('ROWKEYS234');
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      await assertSucceeds(claimInvite(therapist, UIDS.therapist, 'ROWKEYS234'));
+      await assertFails(setDoc(doc(therapist, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`),
+        { ...inviteRow(UIDS.therapist, 'ROWKEYS234'), clientEmail: 'someone@else.test', appointmentId: 'fake' }));
+      await assertSucceeds(setDoc(doc(therapist, 'assignments', 'a-del'), {
+        id: 'a-del', therapistUid: UIDS.therapist, clientUid: UIDS.client, exerciseId: 'e1', frequency: 'once', assignedAt: 'now',
+      }));
+      await assertFails(deleteDoc(doc(asUser(UIDS.attacker, 'attacker@example.com'), 'assignments', 'a-del')));
+      await assertSucceeds(deleteDoc(doc(asUser(UIDS.client, 'client@example.com'), 'assignments', 'a-del')));
     });
 
     it('lets the client find and delete codes nobody has claimed yet', async () => {
@@ -703,15 +731,15 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     it('refuses a booking from an unverified address, so no one can book as someone else', async () => {
       await seedTherapistProfile();
       const impostor = asUser(UIDS.attacker, 'client@example.com', false);
-      const start = '2099-10-06T10:00';
+      const start = `${NEXT_YEAR}-10-06T10:00`;
       const batch = writeBatch(impostor);
       batch.set(doc(impostor, 'appointments', `${UIDS.attacker}_1`), {
         clientUid: UIDS.attacker, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
-        therapistEmail: 'therapist@example.com', start, end: '2099-10-06T11:00', status: 'pending',
-        createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+        therapistEmail: 'therapist@example.com', start, end: `${NEXT_YEAR}-10-06T11:00`, status: 'pending',
+        createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, accessGranted: true,
       });
       batch.set(doc(impostor, 'therapistBusySlots', `${UIDS.therapist}_${start}`), {
-        therapistUid: UIDS.therapist, appointmentId: `${UIDS.attacker}_1`, start, end: '2099-10-06T11:00',
+        therapistUid: UIDS.therapist, appointmentId: `${UIDS.attacker}_1`, start, end: `${NEXT_YEAR}-10-06T11:00`,
       });
       await assertFails(batch.commit());
     });
@@ -724,7 +752,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(updateDoc(doc(therapist, 'appointments', 'appt_T'), { status: 'cancelled' }));
       const cancel = writeBatch(therapist);
       cancel.update(doc(therapist, 'appointments', 'appt_T'), { status: 'cancelled' });
-      cancel.delete(doc(therapist, 'therapistBusySlots', `${UIDS.therapist}_2099-10-05T10:00`));
+      cancel.delete(doc(therapist, 'therapistBusySlots', `${UIDS.therapist}_${NEXT_YEAR}-10-05T10:00`));
       await assertSucceeds(cancel.commit());
     });
 
@@ -736,28 +764,30 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
         batch.set(doc(client, 'appointments', id), {
           clientUid: UIDS.client, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
           therapistEmail: 'therapist@example.com', start, end, status: 'pending',
-          createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+          createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, accessGranted: true,
         });
         batch.set(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${start}`), { therapistUid: UIDS.therapist, appointmentId: id, start, end });
         return batch.commit();
       };
       await assertFails(attempt(`${UIDS.client}_past`, '2000-01-01T03:00', '2000-01-01T04:00'));
-      await assertFails(attempt(`${UIDS.client}_long`, '2099-01-01T03:00', '2170-12-31T23:59'));
-      await assertSucceeds(attempt(`${UIDS.client}_ok`, '2099-01-01T03:00', '2099-01-01T04:00'));
+      await assertFails(attempt(`${UIDS.client}_long`, `${NEXT_YEAR}-01-01T03:00`, '2170-12-31T23:59'));
+      await assertFails(attempt(`${UIDS.client}_far`, '9999-01-01T03:00', '9999-01-01T04:00'));
+      const soon = new Date(Date.now() + 10 * 86_400_000).toISOString().slice(0, 10);
+      await assertSucceeds(attempt(`${UIDS.client}_ok`, `${soon}T03:00`, `${soon}T04:00`));
     });
 
     it('rejects impossible appointment times', async () => {
       await seedTherapistProfile();
       const client = asUser(UIDS.client, 'client@example.com');
-      const start = '2099-13-45T25:99';
+      const start = `${NEXT_YEAR}-13-45T25:99`;
       const batch = writeBatch(client);
       batch.set(doc(client, 'appointments', `${UIDS.client}_bad`), {
         clientUid: UIDS.client, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
-        therapistEmail: 'therapist@example.com', start, end: '2099-13-45T26:99', status: 'pending',
-        createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+        therapistEmail: 'therapist@example.com', start, end: `${NEXT_YEAR}-13-45T26:99`, status: 'pending',
+        createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, accessGranted: true,
       });
       batch.set(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${start}`), {
-        therapistUid: UIDS.therapist, appointmentId: `${UIDS.client}_bad`, start, end: '2099-13-45T26:99',
+        therapistUid: UIDS.therapist, appointmentId: `${UIDS.client}_bad`, start, end: `${NEXT_YEAR}-13-45T26:99`,
       });
       await assertFails(batch.commit());
     });
@@ -780,15 +810,15 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       const therapist = asUser(UIDS.therapist, 'therapist@example.com');
       await createValidBooking('appt_A');
       await assertSucceeds(updateDoc(doc(therapist, 'appointments', 'appt_A'), { status: 'approved' }));
-      const bStart = '2099-10-07T10:00';
+      const bStart = `${NEXT_YEAR}-10-07T10:00`;
       const book = writeBatch(client);
       book.set(doc(client, 'appointments', 'appt_B'), {
         clientUid: UIDS.client, clientEmail: 'client@example.com', therapistUid: UIDS.therapist,
-        therapistEmail: 'therapist@example.com', start: bStart, end: '2099-10-07T11:00', status: 'pending',
-        createdAt: '2026-10-01T00:00:00.000Z', accessGranted: true,
+        therapistEmail: 'therapist@example.com', start: bStart, end: `${NEXT_YEAR}-10-07T11:00`, status: 'pending',
+        createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, accessGranted: true,
       });
       book.set(doc(client, 'therapistBusySlots', `${UIDS.therapist}_${bStart}`), {
-        therapistUid: UIDS.therapist, appointmentId: 'appt_B', start: bStart, end: '2099-10-07T11:00',
+        therapistUid: UIDS.therapist, appointmentId: 'appt_B', start: bStart, end: `${NEXT_YEAR}-10-07T11:00`,
       });
       await assertSucceeds(book.commit());
       const share = doc(client, 'clientShares', `${UIDS.therapist}_${UIDS.client}`);

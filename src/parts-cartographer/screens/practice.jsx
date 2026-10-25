@@ -124,15 +124,15 @@ export function Practice() {
     });
   }, [clinical, checkIns, practiceState.lastSuggestedAt]);
 
-  const saveState = (next) => {
+  // Changes apply to the stored state, read fresh, so another tab's progress is kept.
+  const saveState = (change) => {
+    const next = change(loadPracticeState());
     setPracticeState(next);
     store.save(PRACTICE_KEY, next);
   };
 
   const markDone = (exercise) => {
-    if (!practiceState.completed.includes(exercise.id)) {
-      saveState({ ...practiceState, completed: [...practiceState.completed, exercise.id] });
-    }
+    saveState((latest) => (latest.completed.includes(exercise.id) ? latest : { ...latest, completed: [...latest.completed, exercise.id] }));
     setRehearsalLeft(null);
     if (rehearsalTimer.current) clearInterval(rehearsalTimer.current);
     toast('✓ ' + t('done'));
@@ -142,15 +142,15 @@ export function Practice() {
     setSelectedId(exercise.id);
     const lastSuggestedAt = Date.parse(practiceState.lastSuggestedAt ?? '');
     if (!Number.isFinite(lastSuggestedAt) || Date.now() - lastSuggestedAt >= DAY_MS) {
-      saveState({ ...practiceState, lastSuggestedAt: new Date().toISOString() });
+      saveState((latest) => ({ ...latest, lastSuggestedAt: new Date().toISOString() }));
     }
   };
 
   const patchLadder = (id, patch) => {
-    saveState({
-      ...practiceState,
-      ladder: { ...practiceState.ladder, [id]: { ...practiceState.ladder[id], ...patch } },
-    });
+    saveState((latest) => ({
+      ...latest,
+      ladder: { ...latest.ladder, [id]: { ...latest.ladder[id], ...patch } },
+    }));
   };
 
   const startRehearsal = (id) => {

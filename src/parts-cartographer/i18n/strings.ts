@@ -302,7 +302,7 @@ export const STRINGS = {
   premiumOn: s('Plus is active', 'Плюс активен'),
   cardNumber: s('Card number', 'Номер карты'),
   // install
-  installT: s('Install on home screen', 'Установи на домашний экран'),
+  installT: s('Install on home screen', 'Установите на домашний экран'),
   installB: s('Full screen, offline-ready, opens like an app.', 'Полный экран, работает офлайн, открывается как приложение.'),
   installNow: s('Install now', 'Установить'),
   later: s('Later', 'Позже'),
@@ -344,7 +344,7 @@ export const STRINGS = {
   history: s('Assessment history', 'История оценок'),
   notes: s('Notes', 'Заметки'),
   intoDescend: s('Understand it →', 'Понять её →'),
-  gateLeft: s('5 readings per week on the free plan. Keep going — depth beats frequency.', '5 замеров в неделю в бесплатном плане. Углубляйся — глубина важнее частоты.'),
+  gateLeft: s('5 readings per week on the free plan. Keep going — depth beats frequency.', '5 замеров в неделю в бесплатном плане. Продолжайте — глубина важнее частоты.'),
   gateEmpty: s('Weekly limit reached. New window opens soon, or go unlimited.', 'Лимит недели достигнут. Окно скоро откроется — или сними лимит.'),
   seePlans: s('See plans', 'Смотреть тарифы'),
   layer1: s('Understand', 'Понять'),
@@ -423,6 +423,10 @@ export const STRINGS = {
   therapistShareFailed: s('Could not create the sharing code. Please try again.', 'Не удалось создать код. Попробуйте ещё раз.'),
   appointmentTherapistTime: s("therapist's time", 'по времени терапевта'),
   bookingVerifyEmail: s('Verify your email first: open the link we sent, then try again.', 'Сначала подтвердите email: откройте ссылку из письма и попробуйте снова.'),
+  claimNeedsProfile: s('To accept a client code, verify your email and save your hours in the Therapist screen first.', 'Чтобы принять код клиента, сначала подтвердите email и сохраните расписание на экране терапевта.'),
+  therapistStop: s('Stop working as a therapist', 'Больше не работать как терапевт'),
+  therapistStopConfirm: s('Remove your therapist profile and stop being findable by email? Existing appointments stay in the history.', 'Удалить профиль терапевта и перестать находиться по email? Существующие записи останутся в истории.'),
+  therapistStopped: s('Done. You are no longer listed as a therapist.', 'Готово. Вы больше не числитесь терапевтом.'),
   therapistUnlink: s('Unlink all therapists', 'Отключить всех терапевтов'),
   therapistUnlinkConfirm: s('Unlink now? Every therapist you shared with loses access to your summary and can no longer assign practices. Your appointments stay in the history.', 'Отключить сейчас? Все терапевты, с которыми вы делились данными, потеряют доступ к вашей сводке и больше не смогут назначать практики. Записи на приём останутся в истории.'),
   therapistUnlinkConfirmYes: s('Yes, unlink', 'Да, отключить'),
@@ -587,7 +591,7 @@ export const STRINGS = {
   jSources: s('Sources · ifs.space · ifsguide.com', 'Источники · ifs.space · ifsguide.com'),
   // ── share ──
   shareBtn: s('Share', 'Поделиться'),
-  shareT: s('Share your inner map', 'Поделись своей картой'),
+  shareT: s('Share your inner map', 'Поделитесь своей картой'),
   shareSub: s('Your constellation as a picture — one tap to share anywhere.', 'Ваше созвездие картинкой — один клик, чтобы поделиться.'),
   shareSystem: s('Share via device…', 'Поделиться…'),
   // ── therapist availability ──
@@ -677,7 +681,7 @@ export const STRINGS = {
   ocExile: s("This young one is close to an old hurt", "Этот маленький рядом со старой болью"),
   ocResource: s("This resource shows up as a quality of Self", "Этот ресурс проявляется как качество Себя"),
   shareHint: s("Pass the test to share your constellation.", "Пройдите тест, чтобы поделиться созвездием."),
-  attestB1: s("For licensed practitioners only. Confirm your status to accept clients, assign practices and see metrics.", "Раздел для лицензированных специалистов. Подтверди статус, чтобы принимать клиентов, назначать практики и видеть метрики."),
+  attestB1: s("For licensed practitioners only. Confirm your status to accept clients, assign practices and see metrics.", "Раздел для лицензированных специалистов. Подтвердите статус, чтобы принимать клиентов, назначать практики и видеть метрики."),
   attestB2: s("Confirm you are a licensed practitioner. License is verified on the first incoming claim request.", "Подтвердите, что вы практикующий специалист с лицензией. Лицензия проверяется при первом запросе клиента на подключение."),
   shareNote: s('A picture, not your code — the code stays in Synastry and for your therapist.', 'Картинка, а не код — код остаётся в разделе «Сравнение» и для терапевта.'),
   mapKicker: s("MY INNER PARTS MAP", "\u041c\u041e\u042f \u041a\u0410\u0420\u0422\u0410 \u0427\u0410\u0421\u0422\u0415\u0419"),
@@ -951,7 +955,7 @@ export const SYNASTRY_DIM_LABELS: Record<string, S> = {
 
 export const CONSENT_TEXT = {
   en: 'Reflective self-help tool. Not a medical device, diagnosis or treatment. If you are in crisis, contact local support.',
-  ru: 'Инструмент рефлексивной самопомощи. Не медицинское устройство, не диагноз и не лечение. В кризисе обратись в местную службу поддержки.',
+  ru: 'Инструмент рефлексивной самопомощи. Не медицинское устройство, не диагноз и не лечение. В кризисе обратитесь в местную службу поддержки.',
 };
 
 export const TRANSLATIONS: Record<string, { en: string; ru: string }> = {};

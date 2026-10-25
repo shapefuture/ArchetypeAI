@@ -548,6 +548,11 @@ export function SpecialistView() {
     setBusy(true);
     setError('');
     try {
+      // Claiming a client's code is for verified therapists with a saved profile (the rules enforce it).
+      if (user.emailVerified !== true || !(await getTherapistProfile(user.uid))) {
+        setError(t('claimNeedsProfile'));
+        return;
+      }
       const summary = await claimTherapistLink(user.uid, code);
       if (!summary) setError(t('badCode'));
       else {

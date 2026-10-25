@@ -70,7 +70,7 @@ export function snapshot(profile: unknown, parts: unknown[], at: string): CloudM
   const safeParts = Array.isArray(parts) ? parts.map((part) => {
     const projected = pick(part, ['id', 'name', 'nameEn', 'nameRu', 'family', 'traits', 'role', 'blurb', 'energy', 'burden', 'need', 'voice', 'star', 'since', 'archetype']);
     projected.traits = pick(projected.traits, ['characterSeed', 'shape', 'color', 'eyes', 'mouth', 'head', 'face', 'bow', 'cheeks']);
-    if (projected.archetype) projected.archetype = pick(projected.archetype, ['schema', 'sourceAssessment', 'coordinates', 'cluster', 'prominence', 'size', 'partType', 'developmentalOrigin', 'description', 'wound', 'shadow', 'invitation', 'coreBelief', 'attracts']);
+    if (projected.archetype) projected.archetype = pick(projected.archetype, ['schema', 'sourceAssessment', 'coordinates', 'coordinateBasis', 'cluster', 'prominence', 'size', 'partType', 'developmentalOrigin', 'description', 'wound', 'shadow', 'invitation', 'coreBelief', 'attracts']);
     return projected;
   }) : [];
   return {

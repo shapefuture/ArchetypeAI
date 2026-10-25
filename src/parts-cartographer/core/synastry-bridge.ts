@@ -82,7 +82,7 @@ function narrative(result: ReturnType<typeof compareScoredProfiles>, language: '
     return [
       'Это карта возможной динамики, а не оценка совместимости или клиническое заключение.',
       `Стиль взаимодействия: ${dance}.`,
-      `Возможный цикл: ваша часть «${displayPart(loop.aProtector, language)}» может задеть уязвимую часть партнёра «${displayPart(loop.bExile, language)}»; его защитная реакция может коснуться вашей части «${displayPart(loop.aExile, language)}». Это гипотеза, не прогноз.`,
+      `Возможный цикл: ваша часть «${displayPart(loop.aProtector, language)}» может задеть уязвимую часть партнёра «${displayPart(loop.bExile, language)}»; защитная реакция партнёра может коснуться вашей части «${displayPart(loop.aExile, language)}». Это гипотеза, не прогноз.`,
       `Сигналы трения (${Math.round(result.FRICTION)}/100) описывают потенциальные взаимные триггеры, а не вину. Сходство уязвимых паттернов (${Math.round(result.RESONANCE)}/100) также не означает близость или совместимость.`,
       locked,
       'Показатели — ориентиры для бережного разговора; они не заменяют собственное суждение или профессиональную поддержку.',

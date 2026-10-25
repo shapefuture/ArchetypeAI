@@ -189,6 +189,26 @@ function storageKeys(storage: Storage): string[] {
   return keys;
 }
 
+/** Lists a merge combines with the device's own copy, by item id or date, instead of replacing them. */
+const MERGED_LISTS: Record<string, (item: any) => unknown> = {
+  'ifs.journal': (item) => item?.id,
+  [KEYS.parts]: (item) => item?.id,
+  INNERVERSE_CHECKINS_V1: (item) => item?.date,
+};
+
+function readList(storage: Storage, key: string): unknown[] {
+  try {
+    const value = JSON.parse(storage.getItem(key) ?? 'null');
+    return Array.isArray(value) ? value : [];
+  } catch { return []; }
+}
+
+/** The incoming items, then this device's items the incoming list does not carry. */
+function mergeLists(incoming: unknown[], existing: unknown[], idOf: (item: any) => unknown): unknown[] {
+  const incomingIds = new Set(incoming.map(idOf).filter((id) => id !== undefined));
+  return [...incoming, ...existing.filter((item) => { const id = idOf(item); return id === undefined || !incomingIds.has(id); })];
+}
+
 export function applyBackup(backup: PreparedBackup, storage: Storage = localStorage, mode: 'merge' | 'replace' = 'merge'): void {
   // Replace clears portable data the backup does not carry, but never a key it
   // reported as damaged (the local copy stays) nor this device's preferences.
@@ -199,8 +219,14 @@ export function applyBackup(backup: PreparedBackup, storage: Storage = localStor
   const before = new Map(keys.map((key) => [key, storage.getItem(key)]));
   try {
     for (const key of keys) {
-      if (Object.hasOwn(backup.entries, key)) storage.setItem(key, key === 'ARCHETYPE_ASSESSMENT_INDEX' || RAW_STRING_KEYS.has(key)
-        ? String(backup.entries[key]) : JSON.stringify(backup.entries[key]));
+      if (Object.hasOwn(backup.entries, key)) {
+        const idOf = mode === 'merge' ? MERGED_LISTS[key] : undefined;
+        const incoming = backup.entries[key];
+        // A merge keeps this device's own journal entries, parts and check-ins that the file does not carry.
+        if (idOf && Array.isArray(incoming)) storage.setItem(key, JSON.stringify(mergeLists(incoming, readList(storage, key), idOf)));
+        else storage.setItem(key, key === 'ARCHETYPE_ASSESSMENT_INDEX' || RAW_STRING_KEYS.has(key)
+          ? String(incoming) : JSON.stringify(incoming));
+      }
       else if (mode === 'replace') storage.removeItem(key);
     }
   } catch (error) {

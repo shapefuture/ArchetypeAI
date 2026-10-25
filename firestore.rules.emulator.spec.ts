@@ -246,6 +246,22 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(getDoc(doc(asAnon(), 'users', UIDS.victim, 'assessment', 'current')));
     });
 
+    it('caps the parts in an owner map at 100, the same limit the client enforces', async () => {
+      const victim = asUser(UIDS.victim, 'victim@example.com');
+      const map = (count: number) => ({
+        schema: 'parts-cartographer.v1',
+        profile: { headlineConstellation: 'x' },
+        parts: Array.from({ length: count }, (_, i) => ({ id: `p${i}` })),
+        createdAt: '2026-10-01T00:00:00.000Z',
+        updatedAt: '2026-10-01T00:00:00.000Z',
+      });
+      await assertSucceeds(setDoc(doc(victim, 'users', UIDS.victim, 'history', 'at-limit'), map(100)));
+      await assertFails(setDoc(doc(victim, 'users', UIDS.victim, 'history', 'over-limit'), map(101)));
+      await assertFails(setDoc(doc(victim, 'users', UIDS.victim, 'assessment', 'current'), map(5000)));
+      // Deleting a saved map is never blocked by the size rule.
+      await assertSucceeds(deleteDoc(doc(victim, 'users', UIDS.victim, 'history', 'at-limit')));
+    });
+
     it('requires Firebase auth for telemetry and rejects oversized payloads', async () => {
       await assertFails(setDoc(doc(asAnon(), 'telemetryResponses', 'anonymous'), { payload: '{}', at: 'now' }));
       const client = asUser(UIDS.client, 'client@example.com');

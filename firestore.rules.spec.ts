@@ -38,7 +38,8 @@ describe('firestore.rules — security boundaries', () => {
     const history = matchBlock(/match\s+\/history\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
     for (const block of [data, history]) {
       expect(block).toMatch(/isOwner\(userId\)\s*\|\|\s*hasAdminReadGrant\(userId\)\s*\|\|\s*hasTherapistReadGrant\(userId\)/);
-      expect(block).toMatch(/allow\s+write:\s*if\s+isOwner\(userId\)/);
+      expect(block).toMatch(/allow\s+create,\s*update:\s*if\s+isOwner\(userId\)\s*&&\s*ownMapWithinLimit\(\)/);
+      expect(block).toMatch(/allow\s+delete:\s*if\s+isOwner\(userId\)/);
     }
     expect(rules).toMatch(/function\s+hasActiveAppointment\s*\(/);
     expect(rules).toMatch(/function\s+hasValidBookingShare\s*\(/);

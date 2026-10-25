@@ -213,6 +213,12 @@ describe('§1.8 need hungers', () => {
     expect(p.needHunger.joy).toBe(0);
     expect(p.topHunger?.need).toBe('autonomy');
   });
+  it('names no top need when every measured need is fed, and never the unmeasured joy', () => {
+    const shadow = Object.fromEntries(SHADOW_PARTS.map((id) => [id, [1, 1, 1, 1, 1, 1, 5, 5]]));
+    const p = scoreProfile(input(5, shadow));
+    expect(Object.entries(p.needHunger).filter(([need]) => need !== 'joy').every(([, h]) => h < 0)).toBe(true);
+    expect(p.topHunger).toBeUndefined();
+  });
 });
 
 describe('§1.11 coping stack', () => {

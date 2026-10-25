@@ -292,6 +292,8 @@ export const STRINGS = {
         floorLabel: 'at the very bottom',
         needs: 'What your system is asking for',
         needsSub: 'Your loudest unmet need right now.',
+        needsNone: 'Every need the test measures looks met right now.',
+        retakeDraftConfirm: 'You have an unfinished test. Start again and delete those answers?',
         resources: 'Your qualities · where they stand',
         resourcesSub: 'Every quality has a range: too little, just right, or too much. The bar shows where you are today.',
         band: { hypo: 'too little', healthy: 'just right', hyper: 'too much' },
@@ -354,10 +356,12 @@ export const STRINGS = {
         floorLabel: 'в самом низу',
         needs: 'Чего просит ваша система',
         needsSub: 'Самая громкая неудовлетворённая потребность прямо сейчас.',
+        needsNone: 'Сейчас все потребности, которые измеряет тест, выглядят удовлетворёнными.',
+        retakeDraftConfirm: 'У вас есть незаконченное прохождение теста. Начать заново и удалить эти ответы?',
         resources: 'Ваши качества · в каком они состоянии',
         resourcesSub: 'У каждого качества есть диапазон: слишком мало, в самый раз, слишком много. Полоска показывает, где вы сегодня.',
         band: { hypo: 'слишком мало', healthy: 'в самый раз', hyper: 'слишком много' },
-        leak: r => `переходит в качество «${r}» — эта связь показана на карте`,
+        leak: r => `перетекает в часть «${r}» — эта связь показана на карте`,
         burden: 'Что тяжелее всего даётся системе',
         vane: 'Слова и поступки · насколько они совпадают (общий взгляд)',
         vaneEssence: 'что вы говорите о себе', vaneBehavior: 'что вы на самом деле делаете',
@@ -1004,7 +1008,7 @@ export type PartCopyTuple = { face: [string, string]; need: [string, string]; sh
 
 export const PART_COPY: Record<string, PartCopyTuple> = {
   taskmaster: {
-    face: ['The one who is always visibly productive.', 'Тот, кто всегда на виду продуктивен.'],
+    face: ['The one who is always visibly productive.', 'Тот, кто всегда на виду и всегда продуктивен.'],
     need: ['Needs to know worth exists without output.', 'Нужно знать: ценность есть и без результата.'],
     shadow: ['Grinds past exhaustion to outrun a sense of worthlessness.', 'Грызёт себя до изнеможения, убегая от чувства ничтожности.'],
     superpower: ['Disciplined drive that serves a chosen life.', 'Дисциплина, служащая выбранной жизни.'],
@@ -1022,13 +1026,13 @@ export const PART_COPY: Record<string, PartCopyTuple> = {
     superpower: ['Real warmth and diplomatic care.', 'Настоящее тепло и дар дипломатии.'],
   },
   controller: {
-    face: ['The planner with a contingency for everything.', 'Плановой с запасным вариантом на всё.'],
+    face: ['The planner with a contingency for everything.', 'Планировщик, у которого на всё есть запасной вариант.'],
     need: ['Needs to know the world holds without being held.', 'Нужно знать: мир держится и без вашей хватки.'],
     shadow: ['Clamps down on life to prevent collapse.', 'Сжимает жизнь, предотвращая крах.'],
     superpower: ['Stewardship — order that serves, not constricts.', 'Попечительство: порядок, который служит человеку.'],
   },
   analyst: {
-    face: ['The calm explainer of whatever happens.', 'Спокойный объясняющий всё происходящее.'],
+    face: ['The calm explainer of whatever happens.', 'Спокойный толкователь всего, что происходит.'],
     need: ['Needs to know feelings will not drown it.', 'Нужно знать: чувства не утопят.'],
     shadow: ['Lives in the explanation to avoid the experience.', 'Живёт в объяснении, избегая переживания.'],
     superpower: ['Clarity that maps hard things truly.', 'Ясность, честно отображающая сложное.'],

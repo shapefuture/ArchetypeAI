@@ -138,9 +138,12 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
   }
   if (!Object.keys(entries).length) throw new Error('No supported data in backup');
   const savedLang = entries['ifs.lang'] === 'ru' || entries['ifs.lang'] === 'en' ? entries['ifs.lang'] as Lang : lang;
-  if (isCanonicalAssessmentInput(entries.INNERVERSE_PROFILE_V1)) {
+  // The saved profile may be one restored from History or the cloud, not the last test taken here,
+  // so its own score wins over the raw answers of the last test.
+  const savedScore = (entries[KEYS.profile] as any)?.testModel === 'angular-v2' ? (entries[KEYS.profile] as any).clinical : undefined;
+  if (savedScore || isCanonicalAssessmentInput(entries.INNERVERSE_PROFILE_V1)) {
     const [{ scoreProfile }, { adaptClinicalProfile }] = await Promise.all([import('../../shared/core/data/scoring-v2'), import('./clinical-profile-adapter')]);
-    const rebuilt = adaptClinicalProfile(scoreProfile(entries.INNERVERSE_PROFILE_V1), savedLang);
+    const rebuilt = adaptClinicalProfile(savedScore ?? scoreProfile(entries.INNERVERSE_PROFILE_V1 as any), savedLang);
     const map = validMapParts(entries[KEYS.parts]) ? entries[KEYS.parts] as Part[] : existingParts;
     const ids = new Set(rebuilt.parts.map((part) => part.id));
     // Saved edits (traits, need, star, ...) win; canonical placement and provenance are rebuilt from the assessment.

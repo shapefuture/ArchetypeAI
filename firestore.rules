@@ -179,6 +179,11 @@ service cloud.firestore {
           get(/databases/$(database)/documents/clientShares/$(request.auth.uid + '_' + userId)).data.appointmentId);
     }
 
+    // Raw answers are never shared with a therapist, including older records that stored them.
+    function holdsRawAnswers(record) {
+      return 'responses' in record || 'assessmentResponses' in record;
+    }
+
     function hasAdminReadGrant(userId) {
       return isAdmin()
         && exists(/databases/$(database)/documents/adminClients/$(request.auth.uid + '_' + userId))
@@ -211,13 +216,13 @@ service cloud.firestore {
       }
 
       match /assessment/{docId} {
-        allow read: if isOwner(userId) || hasAdminReadGrant(userId) || hasTherapistReadGrant(userId);
+        allow read: if isOwner(userId) || hasAdminReadGrant(userId) || (hasTherapistReadGrant(userId) && (resource == null || resource.data == null || !holdsRawAnswers(resource.data)));
         allow create, update: if isOwner(userId) && ownMapWithinLimit();
         allow delete: if isOwner(userId);
       }
 
       match /history/{docId} {
-        allow read: if isOwner(userId) || hasAdminReadGrant(userId) || hasTherapistReadGrant(userId);
+        allow read: if isOwner(userId) || hasAdminReadGrant(userId) || (hasTherapistReadGrant(userId) && (resource == null || resource.data == null || !holdsRawAnswers(resource.data)));
         allow create, update: if isOwner(userId) && ownMapWithinLimit();
         allow delete: if isOwner(userId);
       }

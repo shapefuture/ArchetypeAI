@@ -293,7 +293,8 @@ export function adaptClinicalProfile(score: ClinicalScore, lang: Lang): { profil
     clinical: score,
   };
 
-  return { profile, parts };
+  // Stored parts use the canonical 0..100 energy every screen draws; the profile keeps 0..1 for the assessment.
+  return { profile, parts: parts.map((part) => ({ ...part, energy: Math.round(part.energy * 100) })) };
 }
 
 export function clinicalPartName(id: string, lang: Lang): string {

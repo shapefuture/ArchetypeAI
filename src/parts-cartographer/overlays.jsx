@@ -1572,7 +1572,7 @@ export function Journal() {
     try {
       const stored = JSON.parse(localStorage.getItem('ifs.journal') ?? '[]');
       return Array.isArray(stored) ? stored.filter((entry) => entry && typeof entry === 'object' && typeof entry.what === 'string'
-        && ['where', 'part', 'note'].every((field) => entry[field] === undefined || entry[field] === null || typeof entry[field] === 'string')) : [];
+        && typeof entry.kind === 'string' && ['where', 'part', 'note'].every((field) => entry[field] === undefined || entry[field] === null || typeof entry[field] === 'string')) : [];
     } catch { return []; }
   };
   const [entries, setEntries] = useState(readJournal);

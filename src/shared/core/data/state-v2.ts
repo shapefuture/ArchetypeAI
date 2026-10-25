@@ -296,7 +296,8 @@ export interface CharterDelivery { blame: number; license: number; at: string }
  * anti-shame bound is working but the anti-license bound is leaking — flag
  * (therapist) or swap to the stricter per-complex variant (solo).
  */
-export function charterTrend(d: CharterDelivery[]): 'ok' | 'watch' {
+export function charterTrend(entries: CharterDelivery[]): 'ok' | 'watch' {
+  const d = entries.filter((entry) => entry && typeof entry.blame === 'number' && typeof entry.license === 'number');
   if (d.length < 3) return 'ok';
   const last = d[d.length - 1], first = d[0];
   const blameFalling = last.blame < first.blame;

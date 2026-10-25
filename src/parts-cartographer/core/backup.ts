@@ -56,6 +56,7 @@ export function validMapParts(value: unknown): value is Part[] {
   return value.every((part) => {
     if (!object(part) || typeof part.id !== 'string' || !part.id || ids.has(part.id)
       || typeof part.name !== 'string' || !['manager', 'firefighter', 'exile', 'resource'].includes(part.family)
+      || !['nameEn', 'nameRu'].every((field) => part[field] === undefined || typeof part[field] === 'string')
       || !Number.isFinite(part.energy) || part.energy < 0 || part.energy > 100 || !object(part.traits)) return false;
     // Cards and the Cabinet draw these as text; an object here would break the screen.
     if (!['role', 'blurb', 'burden', 'need', 'voice', 'since'].every((field) => part[field] === undefined || typeof part[field] === 'string')) return false;
@@ -65,7 +66,8 @@ export function validMapParts(value: unknown): value is Part[] {
     return SHAPES.includes(traits.shape) && EYES.includes(traits.eyes) && MOUTHS.includes(traits.mouth)
       && HEADS.includes(traits.head) && FACES.includes(traits.face) && /^#[a-f0-9]{3,8}$/i.test(traits.color)
       && (!part.archetype || object(part.archetype) && Array.isArray(part.archetype.coordinates)
-        && part.archetype.coordinates.length === 4 && part.archetype.coordinates.every((n: unknown) => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 1));
+        && part.archetype.coordinates.length === 4 && part.archetype.coordinates.every((n: unknown) => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 1)
+        && (part.archetype.cluster === undefined || typeof part.archetype.cluster === 'string'));
   });
 }
 
@@ -83,7 +85,10 @@ function validEntry(key: string, value: unknown): boolean {
   // Journal entries are listed and prepended to: each needs its text and an id.
   if (key === 'ifs.journal') return Array.isArray(value) && value.length <= 5000
     && value.every((item) => object(item) && typeof item.what === 'string' && item.what.length <= 20_000 && (typeof item.id === 'number' || typeof item.id === 'string')
-      && ['where', 'part', 'note'].every((field) => item[field] === undefined || item[field] === null || typeof item[field] === 'string'));
+      && typeof item.kind === 'string' && ['where', 'part', 'note'].every((field) => item[field] === undefined || item[field] === null || typeof item[field] === 'string'));
+  // Check-ins and charter records are lists; a single value in their place would break the check-in screen.
+  if (key === 'INNERVERSE_CHECKINS_V1') return Array.isArray(value);
+  if (key === 'INNERVERSE_CHARTER_V1') return Array.isArray(value) && value.every((item) => object(item));
   // Sealed notes resurface on open: each needs a numeric due time and its text.
   if (key === 'ifs.sealed') return Array.isArray(value) && value.length <= 500
     && value.every((item) => object(item) && typeof item.until === 'number' && Number.isFinite(item.until) && typeof item.text === 'string' && item.text.length <= 20_000);

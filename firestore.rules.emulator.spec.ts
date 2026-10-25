@@ -408,6 +408,25 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
   });
 
   describe('therapist and booking relationships', () => {
+    it('a booked therapist cannot read raw answers kept in an older assessment or history record', async () => {
+      await createValidBooking();
+      await seed(async (db) => {
+        await setDoc(doc(db, 'users', UIDS.client, 'assessment', 'current'), {
+          responses: Array(64).fill(3), createdAt: '2025-01-01T00:00:00.000Z',
+        });
+        await setDoc(doc(db, 'users', UIDS.client, 'history', 'legacy'), {
+          schema: 'parts-cartographer.v1', responses: Array(64).fill(4), profile: {}, parts: [], createdAt: '2025-01-01T00:00:00.000Z',
+        });
+        await setDoc(doc(db, 'users', UIDS.client, 'assessment', 'summary'), {
+          parts: [{ id: 'p1' }], createdAt: '2026-10-01T00:00:00.000Z',
+        });
+      });
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      await assertFails(getDoc(doc(therapist, 'users', UIDS.client, 'assessment', 'current')));
+      await assertFails(getDoc(doc(therapist, 'users', UIDS.client, 'history', 'legacy')));
+      await assertSucceeds(getDoc(doc(therapist, 'users', UIDS.client, 'assessment', 'summary')));
+    });
+
     it('denies fake booking shares and therapist roster rows', async () => {
       const client = asUser(UIDS.client, 'client@example.com');
       await assertFails(setDoc(doc(client, 'clientShares', `${UIDS.therapist}_${UIDS.client}`), {

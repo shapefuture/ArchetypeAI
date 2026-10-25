@@ -73,6 +73,15 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     await testEnv.withSecurityRulesDisabled(async (context) => fn(context.firestore()));
   }
 
+  /** Only therapists may join the email directory; these accounts have a therapist profile. */
+  async function seedDirectoryTherapists(): Promise<void> {
+    await seed(async (db) => {
+      for (const uid of [UIDS.victim, UIDS.therapist, 'uid_mixed']) {
+        await setDoc(doc(db, 'therapists', uid), { email: null, availability: [] });
+      }
+    });
+  }
+
   async function seedVictimRecords(uid = UIDS.victim): Promise<void> {
     await seed(async (db) => {
       await setDoc(doc(db, 'users', uid, 'assessment', 'current'), {
@@ -307,6 +316,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     });
 
     it('keeps public profile writes owner-only and available to signed-in therapist lookup', async () => {
+      await seedDirectoryTherapists();
       const victim = asUser(UIDS.victim, 'victim@example.com');
       await assertSucceeds(setDoc(doc(victim, 'publicProfiles', UIDS.victim), {
         emailLower: 'victim@example.com', email: 'victim@example.com', displayName: 'Vic', updatedAt: 'now',
@@ -321,6 +331,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     });
 
     it('never lets anyone list the directory, so emails cannot be harvested', async () => {
+      await seedDirectoryTherapists();
       await assertSucceeds(setDoc(doc(asUser(UIDS.victim, 'victim@example.com'), 'publicProfiles', UIDS.victim), {
         emailLower: 'victim@example.com', email: 'victim@example.com', displayName: 'Vic', updatedAt: 'now',
       }));
@@ -331,6 +342,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     });
 
     it('resolves a known email through the index, which only the email owner can write', async () => {
+      await seedDirectoryTherapists();
       const victim = asUser(UIDS.victim, 'victim@example.com');
       await assertSucceeds(setDoc(doc(victim, 'directoryEmails', 'victim@example.com'), { uid: UIDS.victim, updatedAt: 'now' }));
       // A known address resolves for any signed-in user, one document at a time.
@@ -346,6 +358,7 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     });
 
     it('refuses an index entry for an unverified address, so no one can squat a therapist email', async () => {
+      await seedDirectoryTherapists();
       const squatter = asUser(UIDS.attacker, 'therapist@example.com', false);
       await assertFails(setDoc(doc(squatter, 'directoryEmails', 'therapist@example.com'), { uid: UIDS.attacker, updatedAt: 'now' }));
       const verified = asUser(UIDS.therapist, 'therapist@example.com', true);
@@ -353,13 +366,23 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     });
 
     it('accepts a public profile for a verified address with capital letters', async () => {
+      await seedDirectoryTherapists();
       const mixed = asUser('uid_mixed', 'Bob@Example.test', true);
       await assertSucceeds(setDoc(doc(mixed, 'publicProfiles', 'uid_mixed'), {
         emailLower: 'bob@example.test', email: 'Bob@Example.test', displayName: null, updatedAt: 'now',
       }));
     });
 
+    it('keeps accounts that are not therapists out of the directory', async () => {
+      const member = asUser(UIDS.client, 'client@example.com');
+      await assertFails(setDoc(doc(member, 'publicProfiles', UIDS.client), {
+        emailLower: 'client@example.com', email: 'client@example.com', displayName: 'Client', updatedAt: 'now',
+      }));
+      await assertFails(setDoc(doc(member, 'directoryEmails', 'client@example.com'), { uid: UIDS.client, updatedAt: 'now' }));
+    });
+
     it('refuses a public profile for an unverified address', async () => {
+      await seedDirectoryTherapists();
       const profile = { emailLower: 'therapist@example.com', email: 'therapist@example.com', displayName: 'Dr Vale', updatedAt: 'now' };
       await assertFails(setDoc(doc(asUser(UIDS.attacker, 'therapist@example.com', false), 'publicProfiles', UIDS.attacker), profile));
       await assertSucceeds(setDoc(doc(asUser(UIDS.therapist, 'therapist@example.com', true), 'publicProfiles', UIDS.therapist), profile));
@@ -526,6 +549,13 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(bookWithTime(`${UIDS.client}_3103`, { ...valid, approvedBy: UIDS.client }, '2099-10-06T13:00', '2099-10-06T14:00'));
       await assertFails(bookWithTime(`${UIDS.client}_3104`, { ...valid, timeZone: 'x'.repeat(65) }, '2099-10-06T14:00', '2099-10-06T15:00'));
       await assertFails(bookWithTime(`${UIDS.client}_3105`, { ...valid, durationMinutes: 'sixty' }, '2099-10-06T15:00', '2099-10-06T16:00'));
+      // The zone time must describe the slot it reserves.
+      const at = (hour: string) => ({ ...valid, wallStart: `2099-10-07T${hour}:00` });
+      await assertSucceeds(bookWithTime(`${UIDS.client}_3200`, at('09'), '2099-10-07T09:00', '2099-10-07T10:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3201`, { ...at('10'), wallStart: '2099-10-07T03:00' }, '2099-10-07T10:00', '2099-10-07T11:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3202`, { ...at('11'), durationMinutes: -5 }, '2099-10-07T11:00', '2099-10-07T12:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3203`, { ...at('12'), endUtc: '2020-01-01T00:00:00.000Z' }, '2099-10-07T12:00', '2099-10-07T13:00'));
+      await assertFails(bookWithTime(`${UIDS.client}_3204`, { ...at('13'), timeZone: 'Not a zone!' }, '2099-10-07T13:00', '2099-10-07T14:00'));
     });
 
     it('rejects appointment field injection and invalid status transitions', async () => {
@@ -607,6 +637,21 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertFails(claimInvite(asAnon(), 'anon', code));
       // The client cannot claim their own code.
       await assertFails(updateDoc(doc(asUser(UIDS.client, 'client@example.com'), 'therapistLinks', code), { claimedBy: UIDS.client }));
+    });
+
+    it('does not let a booking turn an invite link into a booking link', async () => {
+      const code = 'KEEPIN2345';
+      await seedInvite(code);
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      const client = asUser(UIDS.client, 'client@example.com');
+      await assertSucceeds(claimInvite(therapist, UIDS.therapist, code));
+      await createValidBooking('appt_I').catch(() => undefined);
+      // The booking's roster merge must not flip source: the invite keeps its trust.
+      await assertFails(setDoc(doc(client, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`),
+        { source: 'booking', appointmentId: 'appt_I', clientEmail: 'client@example.com', linkedAt: 'x' }, { merge: true }));
+      await assertSucceeds(setDoc(doc(therapist, 'assignments', 'a-invite'), {
+        id: 'a-invite', therapistUid: UIDS.therapist, clientUid: UIDS.client, exerciseId: 'e1', frequency: 'once', assignedAt: 'now',
+      }));
     });
 
     it('lets the client find and delete codes nobody has claimed yet', async () => {

@@ -62,13 +62,16 @@ const OVERLAY_LABEL_KEYS = {
 const overlayLabelKey = (kind) => OVERLAY_LABEL_KEYS[kind] ?? kind;
 
 /**
- * Fetches the deferred screens right after the first render. Downloads run off
- * the main thread, so starting early costs the first paint nothing, and a tap
- * on Cabinet does not wait for the felt thumbnails' rendering to finish first.
+ * Fetches the deferred screens as soon as the page has loaded: after the first
+ * screen's own files (so they never compete with it), but without waiting for
+ * an idle moment, so a tap on Cabinet does not wait behind the felt
+ * thumbnails' rendering.
  */
 function warmDeferredScreens() {
   if (typeof window === 'undefined') return;
-  setTimeout(() => { for (const load of [loadCabinet, loadAssessment, loadOverlays, loadInnerverse]) load().catch(() => {}); }, 0);
+  const warm = () => setTimeout(() => { for (const load of [loadCabinet, loadAssessment, loadOverlays, loadInnerverse]) load().catch(() => {}); }, 0);
+  if (document.readyState === 'complete') warm();
+  else window.addEventListener('load', warm, { once: true });
 }
 import { RouteBoundary, RouteFrame } from './ui/route-boundary.jsx';
 import { homeScreen, resolveBootRoute, withoutDeepLink } from './core/boot.ts';
@@ -415,7 +418,9 @@ export default function App() {
 
   /* ── sealed verdict resurfacing (JITAI) ── */
   useEffect(() => {
-    const sealed = store.load('ifs.sealed', []);
+    // Stored data may come from an older build or a restore: never trust its shape.
+    const stored = store.load('ifs.sealed', []);
+    const sealed = Array.isArray(stored) ? stored.filter((s) => s && typeof s.until === 'number' && typeof s.text === 'string') : [];
     const due = sealed.filter((s) => s.until <= Date.now());
     // Quiet hours and a skip for today hold the resurfacing. It is an in-app note shown on open, so it needs no opt-in.
     const held = reminderDecision(readReminderSettings(store.load(REMINDERS_KEY, null)), new Date());

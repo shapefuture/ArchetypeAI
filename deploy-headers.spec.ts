@@ -44,3 +44,12 @@ describe('deploy security headers', () => {
     expect(REQUIRED['Permissions-Policy']).toContain('xr-spatial-tracking=(self)');
   });
 });
+
+describe('missing build files', () => {
+  it('answers 404 for a missing /assets file instead of the app shell (checked in the Hosting emulator)', () => {
+    const hosting = JSON.parse(readFileSync('firebase.json', 'utf8')).hosting as Array<{ site: string; rewrites: Array<{ source: string; destination: string }> }>;
+    for (const site of hosting) {
+      expect(site.rewrites, site.site).toEqual([{ source: '!/assets/**', destination: '/index.html' }]);
+    }
+  });
+});

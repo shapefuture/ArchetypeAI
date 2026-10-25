@@ -18,8 +18,8 @@ const LABELS = {
   },
   ru: {
     'invite-declined': 'Не сейчас',
-    'attempt-recalled': 'Я вспомнил',
-    'attempt-cannot': 'Не смог вспомнить',
+    'attempt-recalled': 'Вспомнилось',
+    'attempt-cannot': 'Не вспомнилось',
     'cue-requested': 'Подсказка',
     'reveal-requested': 'Показать',
   },

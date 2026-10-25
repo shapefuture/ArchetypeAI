@@ -80,6 +80,26 @@ export const DEFAULT_AVAILABILITY: AvailabilityWindow[] = [
 export const ZONE_TIME_WRITES_ENABLED = true;
 
 /**
+ * The therapist's view of an appointment: their own wall clock (never shifted
+ * by the device's zone), the zone it is in, and, for the hour that repeats when
+ * clocks go back, which of the two passes was booked.
+ */
+export function therapistWallLabel(
+  appointment: Pick<Appointment, 'start'> & { time?: AppointmentTimeV2 | null },
+  lang: string,
+): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(appointment.start ?? ''));
+  if (!match) return String(appointment.start ?? '');
+  const wall = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5])));
+  const ru = lang === 'ru';
+  let text = wall.toLocaleString(ru ? 'ru-RU' : 'en-US', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+  if (appointment.time?.timeZone) text += ` · ${appointment.time.timeZone}`;
+  const fold = appointment.time?.repeatedWallTime?.choice;
+  if (fold) text += ru ? (fold === 'later' ? ' · второй из двух повторов часа' : ' · первый из двух повторов часа') : (fold === 'later' ? ' · second of the repeated hour' : ' · first of the repeated hour');
+  return text;
+}
+
+/**
  * How an appointment's time reads to the person viewing it. A zone-aware record
  * is shown in the viewer's own zone. A legacy record has only the therapist's
  * wall clock, so it is shown as that and flagged, never passed off as local.
@@ -714,8 +734,13 @@ export async function createBooking(input: {
     },
     { merge: true },
   );
+  // A therapist already linked by invite keeps that link (and its trust); the
+  // booking share above is enough for the booking itself.
+  const rosterRef = doc(db, 'therapistClients', `${input.therapistUid}_${input.clientUid}`);
+  const existingRoster = await getDoc(rosterRef).catch(() => null);
+  if (existingRoster?.exists() && existingRoster.data().source === 'invite') return id;
   await setDoc(
-    doc(db, 'therapistClients', `${input.therapistUid}_${input.clientUid}`),
+    rosterRef,
     {
       therapistUid: input.therapistUid,
       clientUid: input.clientUid,

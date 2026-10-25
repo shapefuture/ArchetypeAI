@@ -12,6 +12,7 @@ import '@fontsource/nunito/900.css';
 import './styles.css';
 
 import App from './app.jsx';
+import { AppErrorBoundary } from './ui/app-error-boundary.jsx';
 
 /* A deploy replaces the hashed chunks, so a tab still on the previous build can
    fail to load a lazy screen. Reload once to pick up the new build; the flag
@@ -30,7 +31,9 @@ window.addEventListener('load', () => {
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <AppErrorBoundary>
+      <App />
+    </AppErrorBoundary>
   </React.StrictMode>
 );
 

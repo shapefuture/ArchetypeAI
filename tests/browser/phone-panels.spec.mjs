@@ -12,7 +12,20 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-const noHorizontalScroll = (page) => expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+// On failure, name the elements that stick out, so an overflow can be fixed rather than guessed at.
+const noHorizontalScroll = async (page) => {
+  try {
+    // Software WebGL here can hold the main thread for seconds (felt thumbnails), delaying
+    // each evaluate; a slow answer is not an overflow, so allow the same 15 s as other waits.
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), { timeout: 15_000 }).toBe(true);
+  } catch (error) {
+    const offenders = await page.evaluate(() => [...document.querySelectorAll('body *')]
+      .filter((el) => el.getBoundingClientRect().right > window.innerWidth + 1)
+      .slice(0, 8)
+      .map((el) => `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 50)} right=${Math.round(el.getBoundingClientRect().right)}`));
+    throw new Error(`Horizontal overflow at ${await page.evaluate(() => `${document.documentElement.scrollWidth}>${window.innerWidth}`)}: ${offenders.join(' | ')}`, { cause: error });
+  }
+};
 
 test('the Cabinet fits a phone width and has no axe violations with the new panels', async ({ page }) => {
   await page.goto('/');

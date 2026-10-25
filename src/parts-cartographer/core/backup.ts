@@ -57,6 +57,9 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === 'INNERVERSE_GOAL_V1') return readGoalRecord(value).status !== 'rejected';
   if (key === DESCENT_DRAFT_KEY) return isDescentDraft(value);
   if (key === LEGACY_DESCENT_DRAFT_KEY) return object(value) && ratings(value.answers, 147, true);
+  // Sealed notes resurface on open: each needs a numeric due time and its text.
+  if (key === 'ifs.sealed') return Array.isArray(value) && value.length <= 500
+    && value.every((item) => object(item) && typeof item.until === 'number' && Number.isFinite(item.until) && typeof item.text === 'string' && item.text.length <= 20_000);
   if (key === 'INNERVERSE_FUTURE_SELF_V1') return Array.isArray(value) && value.length === 3 && value.every((item) => typeof item === 'string' && item.length <= 20_000);
   if (key === 'ARCHETYPE_ASSESSMENT_RESPONSES') return ratings(value, 64, true);
   if (key === 'ARCHETYPE_ASSESSMENT_INDEX') return Number.isInteger(value) && Number(value) >= 0 && Number(value) < 64;

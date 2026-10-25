@@ -6,7 +6,7 @@ import {
   appointmentTimeFromRecord, bookableDays, bookingTimeMismatch, endOfSlot, freeSlots, normalizeAvailability,
   parseHM, slotEnd, slotOccurrences, slotTime, slotsForDate, stampWindowZones, therapistTimeZone, weekdayOf,
   type AvailabilityWindow,
-  appointmentDisplayTime, nextActiveAppointmentId, ZONE_TIME_WRITES_ENABLED,
+  appointmentDisplayTime, nextActiveAppointmentId, therapistWallLabel, ZONE_TIME_WRITES_ENABLED,
 } from './booking';
 import { formatInstantInZone } from './appointment-time';
 
@@ -243,5 +243,24 @@ describe('nextActiveAppointmentId', () => {
     ] as const;
     expect(nextActiveAppointmentId(list as any, 't', 'b')).toBe('a');
     expect(nextActiveAppointmentId(list as any, 't', 'a')).toBeNull();
+  });
+});
+
+describe('therapistWallLabel', () => {
+  const repeated = {
+    schemaVersion: 2, startUtc: '2026-10-25T00:30:00.000Z', endUtc: '2026-10-25T01:30:00.000Z', durationMinutes: 60,
+    timeZone: 'Europe/London', wallStart: '2026-10-25T01:30',
+    repeatedWallTime: { choice: 'later', otherUtc: '2026-10-25T00:30:00.000Z' }, source: { kind: 'availability-slot' },
+  } as any;
+
+  it('shows the therapist wall clock unshifted, with zone and repeated-hour pass', () => {
+    const label = therapistWallLabel({ start: '2026-10-25T01:30', time: repeated }, 'ru');
+    expect(label).toContain('01:30');
+    expect(label).toContain('Europe/London');
+    expect(label).toContain('второй из двух');
+  });
+
+  it('keeps a legacy wall clock as written', () => {
+    expect(therapistWallLabel({ start: '2027-03-28T02:30', time: null }, 'en')).toContain('02:30');
   });
 });

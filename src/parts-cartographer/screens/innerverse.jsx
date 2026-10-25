@@ -7,7 +7,7 @@ import { t as tr, EXERCISE_COPY, UNIVERSE_DIMENSIONS_COPY } from '../i18n/string
 import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapter.ts';
 import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
-import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus } from '../core/booking.ts';
+import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus, therapistWallLabel } from '../core/booking.ts';
 import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates, setAxisChoice } from '../services/universe-lens';
 import { ModalLayer } from '../ui/modal-layer.jsx';
 import { ReplayStudio } from './replay.jsx';
@@ -617,12 +617,8 @@ export function SpecialistView() {
     }
   };
 
-  const appointmentDate = (value) => {
-    const date = new Date(`${value}:00`);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', {
-      weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-    });
-  };
+  // The therapist's own wall clock and zone, never shifted by this device's zone.
+  const appointmentDate = (appointment) => therapistWallLabel(appointment, lang);
 
   const clientCard = (client, archived = false) => (
     <div key={client.clientUid} className="card flat mt12">
@@ -825,7 +821,7 @@ export function SpecialistView() {
                   <b className="grow">{appointment.clientEmail || appointment.clientUid.slice(0, 12)}</b>
                   <span className="chip">{t(`status${appointment.status[0].toUpperCase()}${appointment.status.slice(1)}`)}</span>
                 </div>
-                <div className="faint mt8" style={{ fontSize: 12 }}>{appointmentDate(appointment.start)}</div>
+                <div className="faint mt8" style={{ fontSize: 12 }}>{appointmentDate(appointment)}</div>
                 {appointment.status === 'pending' && (
                   <div className="row mt10" style={{ gap: 8 }}>
                     <button className="btn primary grow" disabled={appointmentBusy === appointment.id} onClick={() => decideAppointment(appointment.id, 'approved')}>

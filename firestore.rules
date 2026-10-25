@@ -171,8 +171,10 @@ service cloud.firestore {
         );
     }
 
+    // A therapist who stepped back (no profile) loses booking-based reads too.
     function hasTherapistReadGrant(userId) {
       return isSignedIn()
+        && exists(/databases/$(database)/documents/therapists/$(request.auth.uid))
         && hasValidBookingShare(userId, request.auth.uid,
           get(/databases/$(database)/documents/clientShares/$(request.auth.uid + '_' + userId)).data.appointmentId);
     }
@@ -287,7 +289,8 @@ service cloud.firestore {
       allow get: if isSignedIn() && code.matches('^[A-Z0-9]{6,10}$')
         && (resource == null
           || resource.data.get('claimedBy', null) == null
-          || resource.data.claimedBy == request.auth.uid
+          || (resource.data.claimedBy == request.auth.uid
+            && exists(/databases/$(database)/documents/therapists/$(request.auth.uid)))
           || resource.data.clientUid == request.auth.uid);
       allow list: if isSignedIn() && resource.data.clientUid == request.auth.uid;
       allow create: if isOwner(request.resource.data.clientUid)

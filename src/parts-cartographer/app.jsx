@@ -14,6 +14,9 @@ import { SEED_PARTS } from './pal/traits.ts';
 import { localizeParts, storedParts } from './pal/seed-copy.ts';
 import { validMapParts } from './core/backup';
 
+/* A stored report of the wrong shape (not an object with its parts) is treated as no report, not drawn. */
+const usableProfile = (saved) => (saved && typeof saved === 'object' && !Array.isArray(saved) && Array.isArray(saved.parts) ? saved : null);
+
 /* Stored parts may come from an older build, a restore or another tab: keep
    only parts every screen can draw, so one bad entry cannot break them all. */
 function usableParts(saved) {
@@ -137,7 +140,7 @@ export default function App() {
   const [parts, setPartsRaw] = useState(() => {
     return usableParts(store.load(KEYS.parts, null));
   });
-  const [profile, setProfileRaw] = useState(() => store.load(KEYS.profile, null));
+  const [profile, setProfileRaw] = useState(() => usableProfile(store.load(KEYS.profile, null)));
   const [overlay, setOverlay] = useState(null); // string | {kind, ...payload}
   const [sheet, setSheet] = useState(null);      // {type, ...}
   const [toastMsg, setToastMsg] = useState(null);
@@ -168,7 +171,7 @@ export default function App() {
   useEffect(() => {
     const refresh = () => {
       setPartsRaw(usableParts(store.load(KEYS.parts, null)));
-      setProfileRaw(store.load(KEYS.profile, null));
+      setProfileRaw(usableProfile(store.load(KEYS.profile, null)));
       setLang(store.load('ifs.lang', 'ru') === 'en' ? 'en' : 'ru');
       setTheme(store.load('ifs.theme', 'light'));
       setState('intro');

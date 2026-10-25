@@ -47,7 +47,7 @@ export function PresentationPanel() {
   const [listChosen, setListChosen] = useState(() => store.load(PRESENTATION_KEY, { list: false }).list === true);
   const [selectedId, setSelectedId] = useState(null);
 
-  const parts = localizeParts(Array.isArray(store.load(KEYS.parts, [])) ? store.load(KEYS.parts, []) : [], lang);
+  const parts = localizeParts((Array.isArray(store.load(KEYS.parts, [])) ? store.load(KEYS.parts, []) : []).filter((part) => part && typeof part === 'object' && typeof part.id === 'string'), lang);
   const items = parts.map((part) => ({ id: part.id, label: partLabel(part, lk), source: copy.source, action: copy.selected }));
 
   const win = typeof window === 'undefined' ? null : window;

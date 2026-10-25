@@ -33,6 +33,8 @@ export function isPortableKey(key: string): boolean {
   return APP_KEY.test(base) && !NOT_PORTABLE.has(base);
 }
 export const PORTABLE_KEYS = { has: isPortableKey };
+/** Keys the app stores as a bare string rather than JSON; they are exported and restored as written. */
+const RAW_STRING_KEYS = new Set(['archetype_scoring_method']);
 /** Device preferences a "replace" restore keeps when the backup does not carry them. */
 const DEVICE_PREFERENCES = new Set(['ifs.lang', 'ifs.theme', 'ifs.onboarded', 'ifs.help.seen', 'ifs.install.seen']);
 void BASE_KEYS;
@@ -88,11 +90,9 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === 'ifs.lang') return value === 'en' || value === 'ru';
   if (key === 'ifs.theme') return value === 'light' || value === 'dark';
   if (key === 'ifs.onboarded') return typeof value === 'boolean';
-  // Simple flags and timestamps some screens store as plain values.
-  if (key === 'ifs.attested' || key === 'ifs.mapgate.done' || key === 'ifs.install.nudge' || key === 'ifs.help.seen' || key === 'ifs.install.seen') {
-    return ['string', 'number', 'boolean'].includes(typeof value);
-  }
-  return object(value) || Array.isArray(value);
+  // Other keys may hold an object, a list, or a plain flag, preference or timestamp
+  // (for example the capacity preference is the string 'low', 'medium' or 'high').
+  return object(value) || Array.isArray(value) || ['string', 'number', 'boolean'].includes(typeof value);
 }
 
 /** `skipped` lists keys whose stored value had the wrong shape; the rest restores. */
@@ -181,7 +181,7 @@ export function applyBackup(backup: PreparedBackup, storage: Storage = localStor
   const before = new Map(keys.map((key) => [key, storage.getItem(key)]));
   try {
     for (const key of keys) {
-      if (Object.hasOwn(backup.entries, key)) storage.setItem(key, key === 'ARCHETYPE_ASSESSMENT_INDEX'
+      if (Object.hasOwn(backup.entries, key)) storage.setItem(key, key === 'ARCHETYPE_ASSESSMENT_INDEX' || RAW_STRING_KEYS.has(key)
         ? String(backup.entries[key]) : JSON.stringify(backup.entries[key]));
       else if (mode === 'replace') storage.removeItem(key);
     }
@@ -197,6 +197,7 @@ export function exportBackup(storage: Storage = localStorage) {
   for (const key of storageKeys(storage).filter(isPortableKey).sort()) {
     const raw = storage.getItem(key);
     if (raw === null) continue;
+    if (RAW_STRING_KEYS.has(key)) { data[key] = raw; continue; }
     try { data[key] = JSON.parse(raw); } catch { /* skip malformed records */ }
   }
   return { schema: 'parts-cartographer.backup.v2', exportedAt: new Date().toISOString(), data };

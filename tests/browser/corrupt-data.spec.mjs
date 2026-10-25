@@ -68,3 +68,25 @@ test('a stored part of the wrong shape does not break the home screen', async ({
   await expect(page.getByText('This screen did not open')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+// Sixth pass, finding 1: adding one memory made the Cabinet fail on every later visit.
+test('the Cabinet still opens after a memory is added', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(String(error)));
+  await page.addInitScript(() => {
+    localStorage.setItem('ifs.lang', '"en"');
+    localStorage.setItem('ifs.onboarded', 'true');
+    localStorage.setItem('ifs.help.seen', 'true');
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Cabinet/ }).first().click();
+  const field = page.getByLabel(/Add a memory you want kept/);
+  await expect(field).toBeVisible({ timeout: 15_000 });
+  await field.fill('a memory to keep');
+  await page.getByRole('button', { name: 'Add memory' }).click();
+  await page.reload();
+  await page.getByRole('button', { name: /Cabinet/ }).first().click();
+  await expect(page.locator('section[aria-labelledby="e17-title"]')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('This screen did not open')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

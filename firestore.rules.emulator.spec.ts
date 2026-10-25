@@ -695,6 +695,21 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       await assertSucceeds(getDoc(doc(asUser(UIDS.client, 'client@example.com'), 'therapistClients', `${UIDS.therapist}_${UIDS.client}`)));
     });
 
+    it('ends summary and assessment reads when the therapist steps back', async () => {
+      // A booking grants assessment reads; a claimed invite grants the summary.
+      await createValidBooking('appt_SB');
+      await seedVictimRecords(UIDS.client);
+      await seedInvite('SUMMARY234');
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      await assertSucceeds(claimInvite(therapist, UIDS.therapist, 'SUMMARY234'));
+      await assertSucceeds(getDoc(doc(therapist, 'therapistLinks', 'SUMMARY234')));
+      await assertSucceeds(getDoc(doc(therapist, 'users', UIDS.client, 'assessment', 'current')));
+      await assertSucceeds(deleteDoc(doc(therapist, 'therapists', UIDS.therapist)));
+      await assertFails(getDoc(doc(therapist, 'therapistLinks', 'SUMMARY234')));
+      await assertFails(getDoc(doc(therapist, 'users', UIDS.client, 'assessment', 'current')));
+      await assertFails(getDoc(doc(therapist, 'users', UIDS.client, 'history', 'h1')));
+    });
+
     it('lets the client find and delete codes nobody has claimed yet', async () => {
       await seedInvite('UNUSED2345');
       const client = asUser(UIDS.client, 'client@example.com');

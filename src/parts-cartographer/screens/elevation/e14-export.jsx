@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../app.jsx';
 import { store } from '../../core/local-store';
 import { downloadText } from '../../core/file-download';
-import { MEMORY_KEY } from '../memory-panel.jsx';
+import { loadMemories } from '../memory-panel.jsx';
 import { deriveArtifact, memorySource, previewExport } from '../../elevation/e14-export.ts';
 
 const COPY = {
@@ -37,7 +37,7 @@ export function PocketCardPanel() {
   const { lang } = useApp() ?? {};
   const lk = lang === 'ru' ? 'ru' : 'en';
   const copy = COPY[lk];
-  const saved = (store.load(MEMORY_KEY, []) ?? []).filter((memory) => memory.saved);
+  const saved = loadMemories().filter((memory) => memory.saved);
   const [chosen, setChosen] = useState(null);
   const [includeText, setIncludeText] = useState(false);
   const [message, setMessage] = useState('');

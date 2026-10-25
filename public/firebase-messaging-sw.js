@@ -13,15 +13,20 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 messaging.onBackgroundMessage(payload => {
   self.registration.showNotification(payload.notification?.title || 'Innerverse', {
-    body: payload.notification?.body || 'Which part drove today?',
-    icon: '/favicon.ico',
+    body: payload.notification?.body || fallbackBody(),
+    icon: '/icons/icon-192.png',
     tag: 'innerverse-daily',
   });
 });
+// Used only when a push arrives without text. The worker cannot read the app's
+// language setting, so it follows the browser language.
+function fallbackBody() {
+  return /^ru\b/i.test(self.navigator?.language || '') ? 'Какая часть вела сегодня?' : 'Which part drove today?';
+}
 self.addEventListener('push', event => {
   const data = event.data ? event.data.json() : {};
   event.waitUntil(self.registration.showNotification(
     data.notification?.title || 'Innerverse',
-    { body: data.notification?.body || 'Which part drove today?', tag: 'innerverse-daily' },
+    { body: data.notification?.body || fallbackBody(), icon: '/icons/icon-192.png', tag: 'innerverse-daily' },
   ));
 });

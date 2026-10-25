@@ -18,7 +18,7 @@ import {
   therapistBusyIntervals, therapistTimeZone, ZONE_TIME_WRITES_ENABLED, therapistWallLabel } from './core/booking.ts';
 import { confirmLegacyNaiveRecord, formatInstantInZone, resolveWallClock } from './core/appointment-time.ts';
 import { SuggestionReview, queueCoachReply } from './screens/suggestion-review.jsx';
-import { lookupByEmail, syncPublicProfile } from './core/user-directory.ts';
+import { lookupByEmail, stopBeingTherapist, syncPublicProfile } from './core/user-directory.ts';
 import { checkFacilitatorStatement, STATEMENT_MAX_CHARS } from './core/facilitator-profile.ts';
 import { createTherapistLink, revokeTherapistAccess } from './core/therapist-link.ts';
 import { LegacySynastryDetails } from './screens/legacy-synastry-report.jsx';
@@ -1362,6 +1362,19 @@ export function Therapist() {
             </div>
 
             <button className="btn block mt16" onClick={() => setOverlay('booking')}>📅 {t('bookSession')}</button>
+            {/* Being listed as a therapist must be reversible: remove the profile and the email-directory entry. */}
+            <button className="btn ghost block mt12" onClick={async () => {
+              if (!window.confirm(t('therapistStopConfirm'))) return;
+              try {
+                if (user?.linked && user.uid) await stopBeingTherapist(user);
+                try { localStorage.removeItem('ifs.attested'); } catch { /* */ }
+                setAttested(false);
+                toast('✓ ' + t('therapistStopped'));
+              } catch (err) {
+                console.error('Stopping therapist mode failed', err);
+                toast('⚠ ' + t('therapistSaveFailed'));
+              }
+            }}>{t('therapistStop')}</button>
           </div>
         )}
       </div>
@@ -1553,9 +1566,20 @@ export function Journal() {
   const { t, lang, setOverlay, toast } = useApp();
   // Each label names its field, so screen readers announce what to write.
   const fieldId = useId();
-  const [entries, setEntries] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('ifs.journal') ?? '[]'); } catch { return []; }
-  });
+  // Read the stored journal each time: a value of the wrong shape is ignored,
+  // and a save in another tab is never overwritten by this tab's older copy.
+  const readJournal = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('ifs.journal') ?? '[]');
+      return Array.isArray(stored) ? stored.filter((entry) => entry && typeof entry === 'object' && typeof entry.what === 'string') : [];
+    } catch { return []; }
+  };
+  const [entries, setEntries] = useState(readJournal);
+  useEffect(() => {
+    const onStorage = (event) => { if (event.key === 'ifs.journal') setEntries(readJournal()); };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
   const KINDS = ['jTrigger', 'jSensation', 'jThought', 'jPattern'];
   const KIND_ICON = { jTrigger: '⚡', jSensation: '🫀', jThought: '💭', jPattern: '🔁' };
   const [kind, setKind] = useState('jTrigger');
@@ -1571,12 +1595,12 @@ export function Journal() {
   const save = () => {
     if (!what.trim()) { toast('⚠ ' + t('jWhat')); return; }
     const e = { id: Date.now(), at: Date.now(), kind, what: what.trim(), where: where.trim(), part: part.trim(), note: note.trim() };
-    persist([e, ...entries]);
+    persist([e, ...readJournal()]);
     setWhat(''); setWhere(''); setPart(''); setNote('');
     try { import('./pal/sfx.ts').then((m) => m.sfx.pop()).catch(() => {}); } catch { /* */ }
     toast('✓ ' + t('save'));
   };
-  const del = (id) => persist(entries.filter((x) => x.id !== id));
+  const del = (id) => persist(readJournal().filter((x) => x.id !== id));
 
   return (
     <div className="overlay">

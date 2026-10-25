@@ -52,14 +52,19 @@ service cloud.firestore {
         && value.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]$');
     }
 
-    // A booking starts and ends on the same calendar day, and not before
-    // yesterday (one day of slack covers zones ahead of UTC).
+    function slotDay(value) {
+      return timestamp.date(int(value[0:4]), int(value[5:7]), int(value[8:10]));
+    }
+
+    // A booking starts and ends on the same calendar day, not before yesterday
+    // (one day of slack covers zones ahead of UTC) and within two years.
     function validSlotRange(start, end) {
       return validSlotTime(start)
         && validSlotTime(end)
         && end > start
         && start[0:10] == end[0:10]
-        && timestamp.date(int(start[0:4]), int(start[5:7]), int(start[8:10])) >= request.time.date() - duration.value(1, 'd');
+        && slotDay(start) >= request.time.date() - duration.value(1, 'd')
+        && slotDay(start) <= request.time.date() + duration.value(730, 'd');
     }
 
     function therapistBusySlotPath(therapistUid, start) {
@@ -291,7 +296,9 @@ service cloud.firestore {
         && validTherapistSummary(request.resource.data.summary);
       // A therapist claims a code once by recording their UID; nobody can
       // reclaim it or change anything else. The client revokes by deleting it.
-      allow update: if isSignedIn()
+      // Only a verified therapist (one with a therapist profile) can claim a code.
+      allow update: if hasVerifiedEmail()
+        && exists(/databases/$(database)/documents/therapists/$(request.auth.uid))
         && request.auth.uid != resource.data.clientUid
         && !('claimedBy' in resource.data)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimedBy'])
@@ -418,7 +425,8 @@ service cloud.firestore {
         && request.resource.data.availability.size() <= 14
         // Optional public statement. Empty string means none; the client checks the content first.
         && (!('statement' in request.resource.data) || (request.resource.data.statement is string && request.resource.data.statement.size() <= 600));
-      allow delete: if false;
+      // Stepping back as a therapist removes the profile (and, on next sign-in, the directory entry).
+      allow delete: if isOwner(uid);
     }
 
     // Busy-slot projection exposes only scheduling fields, never client email
@@ -494,6 +502,10 @@ service cloud.firestore {
           && request.resource.data.time.durationMinutes <= 1440
           && request.resource.data.time.endUtc > request.resource.data.time.startUtc
           && request.resource.data.time.timeZone.matches('^[A-Za-z_]+(/[A-Za-z0-9_+-]+)*$')
+          // The UTC instant falls within a day of the slot's own date (zones span +-14 h).
+          && request.resource.data.time.startUtc.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}T.*')
+          && slotDay(request.resource.data.time.startUtc) >= slotDay(request.resource.data.start) - duration.value(1, 'd')
+          && slotDay(request.resource.data.time.startUtc) <= slotDay(request.resource.data.start) + duration.value(1, 'd')
         ))
         && hasMatchingBusySlotAfter(
           request.resource.data.therapistUid,
@@ -612,7 +624,8 @@ service cloud.firestore {
             request.resource.data.source == 'invite'
             && request.resource.data.therapistUid == request.auth.uid
             && request.resource.data.keys().hasAll(['therapistUid', 'clientUid', 'linkedAt', 'source', 'linkCode', 'summary'])
-            && request.resource.data.keys().hasOnly(['therapistUid', 'clientUid', 'clientEmail', 'linkedAt', 'archived', 'source', 'appointmentId', 'linkCode', 'summary'])
+            // An invite row carries no booking fields a therapist could invent.
+            && request.resource.data.keys().hasOnly(['therapistUid', 'clientUid', 'linkedAt', 'archived', 'source', 'linkCode', 'summary'])
             && request.resource.data.linkedAt is string
             && validTherapistSummary(request.resource.data.summary)
             && hasValidInviteLink(request.auth.uid, request.resource.data.clientUid, request.resource.data.linkCode)
@@ -659,7 +672,9 @@ service cloud.firestore {
         && request.resource.data.assignedAt is string
         && request.resource.data.assignedAt.size() <= 40
         && (!('note' in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 1000));
-      allow update, delete: if false;
+      allow update: if false;
+      // The client can remove practices assigned to them, for example after unlinking.
+      allow delete: if isSignedIn() && resource.data.clientUid == request.auth.uid;
     }
   }
 }

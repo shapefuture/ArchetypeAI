@@ -140,7 +140,9 @@ describe('React Practice and CheckIn parity', () => {
     const container = mount(CheckIn);
     clickButton(container, 'In my window');
     clickButton(container, STRINGS.checkin.ui.en.skip);
-    clickButton(container, STRINGS.checkin.ui.en.no);
+    // Without a map the person can name a part or log without one; the answer to "is there a part?" is no longer a lone "No".
+    expect(container.textContent).not.toContain(STRINGS.checkin.ui.en.no);
+    clickButton(container, 'Log without a part');
 
     const rows = JSON.parse(localStorage.getItem('INNERVERSE_CHECKINS_V1') ?? '[]');
     expect(rows).toHaveLength(1);

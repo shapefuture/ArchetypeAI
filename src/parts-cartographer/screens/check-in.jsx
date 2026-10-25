@@ -137,7 +137,8 @@ export function CheckIn() {
       ...(predicted ? { predictedPart: predicted } : {}),
       confirmedPart: confirmedPart ?? null,
     };
-    const nextHistory = [...history, checkIn];
+    // Re-read the stored history so a check-in saved in another tab is kept.
+    const nextHistory = [...safeArray(CHECKIN_KEY).filter(isCheckIn), checkIn];
     saveHistory(nextHistory);
 
     if (clinical) {
@@ -280,7 +281,11 @@ export function CheckIn() {
               <>
                 <div className="h2">{lang === 'ru' ? 'Есть ли часть, которую вы хотите отметить?' : 'Is there a part you want to name?'}</div>
                 <p className="sub mt8">{lang === 'ru' ? 'Полная карта нужна для персонального прогноза. Сверку можно записать и без него.' : 'A completed map is needed for a personalized prediction. You can still log this check-in without one.'}</p>
-                <button className="btn primary block mt16" onClick={() => recordCheckIn(null)}>{ui.no}</button>
+                {/* Without a map there is no prediction, but the person can still name a part, or log without one. */}
+                <div className="row wrap mt12" style={{ justifyContent: 'center', gap: 8 }}>
+                  {partsByT.map((part) => <button key={part} className="chip" onClick={() => recordCheckIn(part)}>{partName(part)}</button>)}
+                </div>
+                <button className="btn block mt16" onClick={() => recordCheckIn(null)}>{lang === 'ru' ? 'Записать без части' : 'Log without a part'}</button>
               </>
             )}
           </div>

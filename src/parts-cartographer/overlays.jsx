@@ -15,8 +15,7 @@ import { store, KEYS } from './core/local-store';
 import {
   bookableDays, createBooking, deviceTimeZone, endOfSlot, ensureTherapistBusySlots, freeSlots,
   getTherapistProfile, saveTherapistAvailability, setAppointmentStatus, slotOccurrences, slotTime, therapistAppointments,
-  therapistBusyIntervals, therapistTimeZone, ZONE_TIME_WRITES_ENABLED,
-} from './core/booking.ts';
+  therapistBusyIntervals, therapistTimeZone, ZONE_TIME_WRITES_ENABLED, therapistWallLabel } from './core/booking.ts';
 import { confirmLegacyNaiveRecord, formatInstantInZone, resolveWallClock } from './core/appointment-time.ts';
 import { SuggestionReview, queueCoachReply } from './screens/suggestion-review.jsx';
 import { lookupByEmail, syncPublicProfile } from './core/user-directory.ts';
@@ -985,16 +984,6 @@ function loadAvail() {
     return AVAIL_DEFAULT;
   } catch { return AVAIL_DEFAULT; }
 }
-/** Wall-clock label for a stored YYYY-MM-DDTHH:mm, shown as written (no shift to the device zone). */
-function wallLabel(wall, lang) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(wall ?? ''));
-  if (!match) return String(wall ?? '');
-  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5])));
-  return date.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', {
-    weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
-  });
-}
-
 /** Zones offered when confirming a legacy time. There is no default: the person picks one. */
 function zoneChoices() {
   try {
@@ -1211,12 +1200,13 @@ export function Therapist() {
     setAvailabilitySaving(true);
     setAvailabilityError('');
     try {
-      await syncPublicProfile(user);
       const windows = enabled.map(([index, value]) => ({
         days: [Number(index) + 1], start: value.from, end: value.to, minutes: 60, timeZone: zone,
       }));
       // The rules accept a published email only once it is verified; until then the schedule saves without it.
       await saveTherapistAvailability(user.uid, windows, user.emailVerified === true ? user.email : null, trimmedStatement);
+      // Only therapists are listed in the email directory, so publish after the profile exists.
+      await syncPublicProfile(user).catch((err) => console.warn('Directory entry not published yet', err));
       setZoneNeedsConfirm(false);
       try { localStorage.setItem('ifs.avail', JSON.stringify(avail)); } catch { /* */ }
       toast('✓ ' + t('save'));
@@ -1326,11 +1316,11 @@ export function Therapist() {
               ) : appointments.filter((item) => item.status === 'pending' || item.status === 'approved').length === 0 ? (
                 <p className="sub mt8">{t('therapistNoAppointments')}</p>
               ) : appointments.filter((item) => item.status === 'pending' || item.status === 'approved').map((item) => {
-                const label = wallLabel(item.start, lang);
+                const label = therapistWallLabel(item, lang);
                 return (
                   <div key={item.id} className="card flat mt10">
                     <b>{item.clientEmail || item.clientUid.slice(0, 10)}</b>
-                    <div className="faint mt6" style={{ fontSize: 12 }}>{label}{item.time ? ` · ${item.time.timeZone}` : ''}</div>
+                    <div className="faint mt6" style={{ fontSize: 12 }}>{label}</div>
                     {item.timeClass?.kind === 'legacy-naive' && (
                       <>
                         <div className="row mt8" style={{ gap: 8, alignItems: 'center' }}>

@@ -129,3 +129,14 @@ describe('cross-version local backup and cloud boundaries', () => {
     expect(historical?.parts.length).toBeGreaterThan(0);
   });
 });
+
+describe('sealed notes in a backup', () => {
+  it('refuses a malformed ifs.sealed instead of storing a value that breaks start-up', async () => {
+    for (const bad of [{}, [null], [{ until: 'soon', text: 'x' }]]) {
+      await expect(prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.sealed': bad } }), 'en'))
+        .rejects.toThrow();
+    }
+    const ok = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.sealed': [{ until: 1, text: 'note' }] } }), 'en');
+    expect(ok.entries['ifs.sealed']).toEqual([{ until: 1, text: 'note' }]);
+  });
+});

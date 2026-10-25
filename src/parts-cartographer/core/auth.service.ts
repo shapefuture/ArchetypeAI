@@ -42,7 +42,7 @@ function persistUser(user: AuthUser): AuthUser {
   store.save(KEYS.auth, user);
   if (user.linked && user.email) {
     void import('./user-directory')
-      .then(({ syncPublicProfile }) => syncPublicProfile(user))
+      .then(({ refreshDirectoryEntry }) => refreshDirectoryEntry(user))
       .catch((error) => console.warn('Public identity profile sync failed; sign-in remains available.', error));
   }
   return user;

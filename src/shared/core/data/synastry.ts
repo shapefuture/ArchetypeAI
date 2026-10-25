@@ -242,7 +242,7 @@ function describeResonance(
 ): { en: string; ru: string } {
   const labels = DIM_LABELS[dim];
   const absDelta = Math.abs(v1 - v2);
-  const pct = Math.min(100, Math.round(absDelta * 100));
+  const pct = Math.round(absDelta * 50); // share of the -1..1 axis
   const who1 = v1 < -0.2 ? labels.poleNeg : v1 > 0.2 ? labels.polePos : { en: 'balanced', ru: 'сбалансированный' };
   const who2 = v2 < -0.2 ? labels.poleNeg : v2 > 0.2 ? labels.polePos : { en: 'balanced', ru: 'сбалансированный' };
 
@@ -250,13 +250,13 @@ function describeResonance(
     case 'harmonic': {
       const qual = absDelta < 0.15 ? { en: 'nearly identical', ru: 'вы почти совпадаете' } : { en: 'closely matched', ru: 'вы близки' };
       return {
-        en: `Your ${labels.en} is ${qual.en} (${pct}% apart). Both of you are ${who1.en} in how you engage — a shared rhythm that creates instant understanding.`,
+        en: `Your ${labels.en} is ${qual.en} (${pct}% apart). The two of you share a rhythm on this line, which creates instant understanding.`,
         ru: `По линии «${labels.ru}» разница ${pct}%: ${qual.ru}. Общий ритм в обоих создаёт мгновенное взаимопонимание.`,
       };
     }
     case 'complementary': {
       return {
-        en: `Your ${labels.en} differs by ${pct}% — Person 1 leans ${who1.en}, Person 2 leans ${who2.en}. This creates a natural dynamic where each brings what the other lacks.`,
+        en: `Your ${labels.en} differs by ${pct}% — Person 1 is ${who1.en}, Person 2 is ${who2.en}. This creates a natural dynamic where each brings what the other lacks.`,
         ru: `По линии «${labels.ru}» различие ${pct}%: первый — ${who1.ru}, второй — ${who2.ru}. Это создаёт естественную динамику, где каждый привносит то, чего не хватает другому.`,
       };
     }

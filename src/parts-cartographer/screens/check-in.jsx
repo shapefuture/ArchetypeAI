@@ -15,6 +15,7 @@ import {
   unburdeningInWindows,
   verdictLockActive,
   weatherLayer,
+  ALL_PART_IDS,
 } from '../../shared/core/data/state-v2';
 import { COMPLEXES, SHADOW_PARTS } from '../../shared/core/data/parts';
 import { COMPLEX_COPY_RU, STRINGS as SOURCE_STRINGS } from '../../shared/i18n/strings';
@@ -40,7 +41,9 @@ function safeArray(key) {
 function isCheckIn(value) {
   return value && typeof value.date === 'string' && Number.isFinite(Date.parse(value.date))
     && Number.isInteger(value.arousal) && value.arousal >= -2 && value.arousal <= 2
-    && (value.eventType === undefined || EVENT_VALUES.includes(value.eventType));
+    && (value.eventType === undefined || EVENT_VALUES.includes(value.eventType))
+    && (value.confirmedPart == null || ALL_PART_IDS.includes(value.confirmedPart))
+    && (value.predictedPart == null || ALL_PART_IDS.includes(value.predictedPart));
 }
 
 function isSealedVerdict(value) {
@@ -97,9 +100,9 @@ export function CheckIn() {
   const unburdened = useMemo(() => unburdeningInWindows(history, new Date()).filter((part) => !unburdenedBefore.has(part)), [history, unburdenedBefore]);
   // Written only once the card is on screen (the done stage). A visit that never gets there keeps the card for later.
   useEffect(() => {
-    if (stage !== 'done' || !unburdened.length) return;
+    if (stage !== 'done' || dueVerdict || !unburdened.length) return;
     store.save(UNBURDENED_KEY, [...new Set([...safeArray(UNBURDENED_KEY), ...unburdened])]);
-  }, [stage, unburdened]);
+  }, [stage, dueVerdict, unburdened]);
   const partName = (id) => {
     const index = SHADOW_PARTS.indexOf(id);
     const adaptedSubtype = lang === 'ru' ? profile?.subtypesRu?.[index] : profile?.subtypesEn?.[index];

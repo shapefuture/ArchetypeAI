@@ -1,5 +1,5 @@
 import { RESOURCES, SHADOW_PARTS } from '../../shared/core/data/parts';
-import { CRISIS_TRIGGERS } from '../../shared/core/data/state-v2';
+import { ALL_PART_IDS, CRISIS_TRIGGERS } from '../../shared/core/data/state-v2';
 import type { AssessmentInput } from '../../shared/core/data/scoring-v2';
 import type { Lang } from '../i18n/strings';
 import { KEYS } from './local-store';
@@ -101,7 +101,9 @@ function readableCheckIn(row: unknown): boolean {
   const item = row as Record<string, unknown> | null;
   return object(item) && typeof item.date === 'string' && Number.isFinite(Date.parse(item.date))
     && Number.isInteger(item.arousal) && (item.arousal as number) >= -2 && (item.arousal as number) <= 2
-    && (item.eventType === undefined || (typeof item.eventType === 'string' && Object.hasOwn(CRISIS_TRIGGERS, item.eventType)));
+    && (item.eventType === undefined || (typeof item.eventType === 'string' && Object.hasOwn(CRISIS_TRIGGERS, item.eventType)))
+    && (item.confirmedPart == null || ALL_PART_IDS.includes(item.confirmedPart as never))
+    && (item.predictedPart == null || ALL_PART_IDS.includes(item.predictedPart as never));
 }
 
 /** `skipped` lists keys whose stored value had the wrong shape; the rest restores. */
@@ -156,7 +158,11 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
     const map = validMapParts(entries[KEYS.parts]) ? entries[KEYS.parts] as Part[] : existingParts;
     const ids = new Set(rebuilt.parts.map((part) => part.id));
     // Saved edits (traits, need, star, ...) win; canonical placement and provenance are rebuilt from the assessment.
-    entries[KEYS.parts] = [...rebuilt.parts.map((part) => ({ ...part, ...map.find((old) => old.id === part.id), archetype: part.archetype, name: part.name })),
+    entries[KEYS.parts] = [...rebuilt.parts.map((part) => {
+      const old = map.find((item) => item.id === part.id);
+      // A name the person typed wins; the canonical name is only the fallback.
+      return { ...part, ...old, archetype: part.archetype, name: old?.name ?? part.name };
+    }),
       ...map.filter((part) => !ids.has(part.id) && !part.id.startsWith('seed-'))];
     entries[KEYS.profile] = { ...rebuilt.profile, createdAt: (entries[KEYS.profile] as any)?.createdAt ?? rebuilt.profile.createdAt };
   }

@@ -62,6 +62,7 @@ export const STRINGS = {
   assessmentMetrics: s('Scoring details', 'Детали расчёта'),
   strongestResource: s('Strongest resource', 'Ведущий ресурс'),
   validityFlags: s('Response checks', 'Проверки ответов'),
+  sealedNoteJournal: s('A sealed note came due. It is in your journal now.', 'Запечатанная заметка пришла. Теперь она в вашем дневнике.'),
   validityAttentionFlag: s('Attention check did not match the requested response.', 'Ответ на проверку внимания отличается от заданного.'),
   validityInfrequencyFlag: s('An infrequency item was endorsed; review the result with care.', 'Отмечен необычный ответ; отнеситесь к результату с осторожностью.'),
   noValidityFlags: s('No response flags were raised.', 'Проверки ответов не выявили замечаний.'),

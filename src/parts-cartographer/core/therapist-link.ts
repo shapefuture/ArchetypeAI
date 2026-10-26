@@ -131,6 +131,8 @@ export async function claimTherapistLink(
       linkCode,
       summary,
     },
+    // Merge: a row the therapist already holds keeps its archive flag and any other field this write does not carry.
+    { merge: true },
   );
   await batch.commit();
   return summary;

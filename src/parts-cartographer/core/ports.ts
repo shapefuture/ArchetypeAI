@@ -14,7 +14,7 @@ export interface AUTH_PORT {
 
 export interface STORAGE_PORT {
   load<T>(key: string, fallback: T): T;
-  save<T>(key: string, value: T): void;             // "latest"
+  save<T>(key: string, value: T): boolean;          // "latest"; false when it did not fit
   archive<T>(key: string, value: T): void;          // history archive
   history<T>(key: string): T[];
   remove(key: string): void;

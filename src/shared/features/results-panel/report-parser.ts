@@ -21,6 +21,12 @@ import DOMPurify from 'dompurify';
  *
  * The result is sanitised via DOMPurify before being returned.
  */
+/** Only text formatting survives in a report: no attributes, forms, inputs, styles or frames. */
+const REPORT_HTML = {
+  ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'hr', 'code', 'pre'],
+  ALLOWED_ATTR: [] as string[],
+};
+
 export function parseReportMarkdown(content: string): string {
   if (!content) return '';
 
@@ -49,8 +55,8 @@ export function parseReportMarkdown(content: string): string {
   try {
     const html = marked.parse(normalised, { async: false }) as string;
     const cleaned = html.replace(/(<h[1-6][^>]*)\s+id="[^"]*"/g, '$1');
-    return DOMPurify.sanitize(cleaned);
+    return DOMPurify.sanitize(cleaned, REPORT_HTML);
   } catch {
-    return DOMPurify.sanitize(normalised);
+    return DOMPurify.sanitize(normalised, REPORT_HTML);
   }
 }

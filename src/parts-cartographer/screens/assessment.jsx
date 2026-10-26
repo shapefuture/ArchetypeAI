@@ -502,7 +502,7 @@ export function QuickResults() {
     : prof.copingStack;
   const resultResourceLeaks = prof.testModel === 'angular-v2' && prof.clinical
     ? prof.clinical.resourceLeaks.map(({ resource, spillPart }) => ({ name: clinicalPartName(resource, lang), leak: clinicalPartName(spillPart, lang) }))
-    : prof.resourceLeaks;
+    : (Array.isArray(prof.resourceLeaks) ? prof.resourceLeaks : []);
   const resultPolarizations = prof.testModel === 'angular-v2' && prof.clinical
     ? prof.clinical.polarizations.map(({ pair, name }) => ({
       a: pair[0], b: pair[1], name: clinicalPolarizationName(name, lang),

@@ -688,6 +688,9 @@ service cloud.firestore {
 
     // Exercise assignments may be authored only by a therapist with a trusted
     // roster relationship. The linked client and therapist may read the result.
+    // RED exercises (exile contact, §3E.3) are never assignable here: the container that unlocks them is
+    // client-side state the rules cannot read. The list mirrors the RED exercises of
+    // src/shared/core/data/exercises.ts; firestore.rules.round21.emulator.spec.ts keeps the two equal.
     match /assignments/{id} {
       allow read: if isSignedIn()
         && (resource.data.clientUid == request.auth.uid || resource.data.therapistUid == request.auth.uid);
@@ -699,6 +702,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['id', 'therapistUid', 'clientUid', 'exerciseId', 'frequency', 'assignedAt', 'note'])
         && request.resource.data.exerciseId is string
         && request.resource.data.exerciseId.size() <= 120
+        && !(request.resource.data.exerciseId in ['letter-younger-self', 'witnessing-notes'])
         && (request.resource.data.frequency == 'once'
           || request.resource.data.frequency == 'daily'
           || request.resource.data.frequency == 'weekly'

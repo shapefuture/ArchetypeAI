@@ -8,6 +8,7 @@ import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, isDescentDraft } from './a
 import { sanitizeLegacyAiAnalysis } from './legacy-ai-analysis';
 import { SHAPES, EYES, MOUTHS, HEADS, FACES, type Part } from '../pal/traits';
 import { readGoalRecord } from '../elevation/e01-goal';
+import { ladderRung } from '../../shared/core/data/exercises';
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.syn,
@@ -280,15 +281,32 @@ const archiveTime = (packed: unknown): number => {
 };
 const ARCHIVE_LIST: MergedList = { idOf: (item) => item, sort: (a, b) => archiveTime(a) - archiveTime(b), cap: 30 };
 
-/** Objects a merge combines field by field: their lists are merged by the rules given here. */
+/** Objects a merge combines field by field: their lists are merged by the rules given here; `combine` sets other fields by a rule. */
 interface MergedObject {
   fields?: Record<string, MergedList>;
   everyField?: MergedList;
+  combine?: Record<string, (device: any, incoming: any) => unknown>;
 }
+/** The furthest practice rung reached for each exercise, on this device or in the file: a merge never moves a skill back. */
+function furthestLadders(device: any, incoming: any): unknown {
+  if (!isPlainObject(incoming)) return device;
+  if (!isPlainObject(device)) return incoming;
+  const rung = (state: unknown): number => (isPlainObject(state) ? ladderRung(state) : -1);
+  const out: Record<string, unknown> = { ...device };
+  for (const [id, state] of Object.entries(incoming)) out[id] = rung(device[id]) > rung(state) ? device[id] : state;
+  return out;
+}
+/** The later of this device's time and the file's: a merge keeps the most recent suggestion. */
+const laterTime = (device: any, incoming: any): unknown => (incoming === undefined || timeOf(incoming) < timeOf(device) ? device : incoming);
 const MERGED_OBJECTS: Record<string, MergedObject> = {
   INNERVERSE_MEMORY_V1: { fields: { memories: { idOf: (memory) => memory?.id }, corrections: { idOf: contentKey } } },
   // Part edit history: one list of versions per part.
   INNERVERSE_PART_VERSIONS_V1: { everyField: { idOf: contentKey, sort: (a, b) => timeOf(a?.at) - timeOf(b?.at) } },
+  // Practice: completed practices are kept from both sides, each ladder keeps its furthest rung, and the latest suggestion wins.
+  INNERVERSE_PRACTICE_V1: {
+    fields: { completed: { idOf: (id) => id } },
+    combine: { ladder: furthestLadders, lastSuggestedAt: laterTime },
+  },
 };
 const isPlainObject = (value: unknown): value is Record<string, any> => !!value && typeof value === 'object' && !Array.isArray(value);
 
@@ -306,6 +324,9 @@ function mergeObjects(incoming: Record<string, any>, existing: Record<string, an
     const list = spec.fields?.[field] ?? spec.everyField;
     if (!list || (!Array.isArray(incoming[field]) && !Array.isArray(existing[field]))) continue;
     out[field] = mergeLists(Array.isArray(incoming[field]) ? incoming[field] : [], Array.isArray(existing[field]) ? existing[field] : [], list);
+  }
+  for (const [field, combine] of Object.entries(spec.combine ?? {})) {
+    if (incoming[field] !== undefined || existing[field] !== undefined) out[field] = combine(existing[field], incoming[field]);
   }
   return out;
 }

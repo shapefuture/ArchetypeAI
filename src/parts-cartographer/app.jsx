@@ -280,9 +280,10 @@ export default function App() {
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);
-  const setProfile = useCallback((next) => {
+  // A restored report is not a new report: `archive: false` keeps the History archive as it is.
+  const setProfile = useCallback((next, options) => {
     setProfileRaw(next);
-    if (next) { store.save(KEYS.profile, next); store.archive(KEYS.history, next); }
+    if (next) { store.save(KEYS.profile, next); if (options?.archive !== false) store.archive(KEYS.history, next); }
     else store.remove(KEYS.profile);
   }, []);
   // Presentation choices only: they never touch parts, profile, scores, or assessment drafts.

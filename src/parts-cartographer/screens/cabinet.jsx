@@ -439,7 +439,7 @@ export function Chemistry({ from }) {
     setBusy(true);
     setTimeout(() => {
       const [a, b] = sel.map((id) => parts.find((p) => p.id === id));
-      const tension = Math.round(((a.energy + b.energy) / 2) * (a.family === b.family ? 0.7 : 1.15)) % 100;
+      const tension = Math.round(((a.energy + b.energy) / 2) * (a.family === b.family ? 0.7 : 1.15));
       const sameFam = a.family === b.family;
       setResult({
         tension: Math.min(97, tension + 8),

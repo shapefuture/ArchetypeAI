@@ -39,7 +39,12 @@ export function ClinicalReport({ profile: supplied, readOnly = false, embedded =
   const restoreHistory = (entry) => {
     const rebuilt = adaptClinicalProfile(entry.clinical, lang);
     const ids = new Set(rebuilt.parts.map((part) => part.id));
-    setParts([...rebuilt.parts, ...parts.filter((part) => !ids.has(part.id) && !String(part.id).startsWith('seed-'))]);
+    // Names and edits the person made to a part win over the archived copy, as they do in a backup restore.
+    const kept = rebuilt.parts.map((part) => {
+      const current = parts.find((item) => item.id === part.id);
+      return current ? { ...part, ...current, archetype: part.archetype, name: current.name ?? part.name } : part;
+    });
+    setParts([...kept, ...parts.filter((part) => !ids.has(part.id) && !String(part.id).startsWith('seed-'))]);
     setProfile({ ...rebuilt.profile, createdAt: entry.createdAt });
     setPreview(null);
   };

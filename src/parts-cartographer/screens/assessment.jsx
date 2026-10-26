@@ -592,7 +592,7 @@ export function QuickResults() {
                     : <span style={{ fontSize: 30, lineHeight: '70px' }}>{FAMILY_LABELS[p.family].icon}</span>}
                 </div>
                 <div className="pc-name">{lang === 'ru' ? p.nameRu ?? p.name : p.nameEn ?? p.name}</div>
-                <div className="pc-role">{t('intensity')} · {Math.min(p.somatic, 5)}/5</div>
+                <div className="pc-role">{t('intensity')}{typeof p.somatic === 'number' ? ` · ${Math.min(p.somatic, 5)}/5` : ''}</div>
                 <div className="energy-strip"><i style={{ width: `${Math.round(p.energy * 100)}%`, background: familyColor(p.family) }} /></div>
               </div>
             ))}

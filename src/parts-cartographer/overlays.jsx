@@ -20,7 +20,7 @@ import { confirmLegacyNaiveRecord, formatInstantInZone, resolveWallClock } from 
 import { SuggestionReview, queueCoachReply } from './screens/suggestion-review.jsx';
 import { lookupByEmail, stopBeingTherapist, syncPublicProfile } from './core/user-directory.ts';
 import { checkFacilitatorStatement, STATEMENT_MAX_CHARS } from './core/facilitator-profile.ts';
-import { createTherapistLink, revokeTherapistAccess } from './core/therapist-link.ts';
+import { createTherapistLink, revokeTherapistAccess, therapistSummaryFor } from './core/therapist-link.ts';
 import { LegacySynastryDetails } from './screens/legacy-synastry-report.jsx';
 import { ScoredProfileSynastryDetails } from './screens/scored-profile-synastry-report.jsx';
 import { EmailVerifyNotice } from './ui/email-verify-notice.jsx';
@@ -1756,31 +1756,6 @@ function drawPartsMap(profile, lang) {
   return cv;
 }
 
-function therapistShareSummary(profile) {
-  const toScore = (value) => Math.round(Math.max(0, Math.min(1, Number(value) || 0)) * 100);
-  const parts = Object.fromEntries((profile.parts ?? []).map((part) => {
-    const score = toScore(part.energy);
-    return [part.id, { T: score, tier: score >= 70 ? 'dominant' : score >= 45 ? 'active' : 'quiet' }];
-  }));
-  const coping = Array.isArray(profile.copingStack) ? profile.copingStack.slice(0, 4) : [];
-  const radar = Object.values(profile.selfEnergyRadar ?? {});
-  const selfEnergy = radar.length ? toScore(radar.reduce((sum, value) => sum + (Number(value) || 0), 0) / radar.length) : 0;
-  return {
-    headline: String(profile.headlineConstellation ?? '').slice(0, 160),
-    burden: toScore(profile.burden),
-    selfEnergy,
-    parts,
-    activeComplexes: (profile.complexes ?? []).slice(0, 50).map((id) => ({ id: String(id), activation: 1, tier: 'active' })),
-    copingStack: {
-      l1: String(coping[0] ?? 'none'),
-      ...(coping[1] ? { l2: String(coping[1]) } : {}),
-      ...(coping[2] ? { l3: String(coping[2]) } : {}),
-      floor: String(coping[3] ?? 'self'),
-    },
-    adherence: { done: 0, skipped: 0 },
-  };
-}
-
 export function Share() {
   const { t, lang, profile, user, setOverlay, toast } = useApp();
   const [img, setImg] = useState('');
@@ -1829,10 +1804,12 @@ export function Share() {
 
   const createShareCode = async () => {
     if (!profile || !user?.linked || !user.uid || !shareConfirmed || linkBusy) return;
+    const summary = therapistSummaryFor(profile);
+    if (!summary) { setLinkError(t('therapistShareFailed')); return; }
     setLinkBusy(true);
     setLinkError('');
     try {
-      const code = await createTherapistLink(user.uid, therapistShareSummary(profile));
+      const code = await createTherapistLink(user.uid, summary);
       setTherapistCode(code);
     } catch (err) {
       console.error('Therapist sharing code creation failed', err);

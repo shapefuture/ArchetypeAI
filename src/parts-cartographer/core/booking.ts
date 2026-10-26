@@ -703,8 +703,7 @@ async function keepBookingAccess(actor: 'client' | 'therapist', clientUid: strin
     if (!next) return;
     const now = new Date().toISOString();
     await setDoc(shareRef, { appointmentId: next, grantedAt: now }, { merge: true });
-    // Only the client may change the roster row; the share alone carries the therapist's read access.
-    if (actor !== 'client') return;
+    // The roster row names the same booking: the therapist's assignments check it against the share.
     const rosterRef = doc(db, 'therapistClients', `${therapistUid}_${clientUid}`);
     const roster = await getDoc(rosterRef);
     if (roster.exists() && roster.data().source === 'booking') {

@@ -46,6 +46,14 @@ service cloud.firestore {
         );
     }
 
+    // An open booking the therapist may move a grant to: pending or approved, and not dated before yesterday. An approved
+    // booking never closes by itself, so a long-past one must not re-grant access the client revoked.
+    function hasOpenBooking(clientUid, therapistUid, appointmentId) {
+      let appointmentPath = /databases/$(database)/documents/appointments/$(appointmentId);
+      return hasActiveAppointment(clientUid, therapistUid, appointmentId)
+        && slotDay(get(appointmentPath).data.start) >= request.time.date() - duration.value(1, 'd');
+    }
+
     // A real calendar minute: YYYY-MM-DDTHH:MM with a valid month, day, hour and minute.
     function validSlotTime(value) {
       return value is string
@@ -619,7 +627,7 @@ service cloud.firestore {
         && request.resource.data.source == 'booking'
         && request.resource.data.grantedAt is string
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['appointmentId', 'grantedAt'])
-        && hasActiveAppointment(resource.data.clientUid, request.auth.uid, request.resource.data.appointmentId);
+        && hasOpenBooking(resource.data.clientUid, request.auth.uid, request.resource.data.appointmentId);
       allow delete: if isSignedIn() && (resource == null || isOwner(resource.data.clientUid));
     }
 
@@ -659,6 +667,16 @@ service cloud.firestore {
             && getAfter(/databases/$(database)/documents/therapistLinks/$(request.resource.data.linkCode)).data.summary == request.resource.data.summary
           )
         );
+      // The therapist moves the roster row to the same open booking the share moved to: only the appointment and its time change.
+      allow update: if isSignedIn()
+        && resource.data.therapistUid == request.auth.uid
+        && request.resource.data.therapistUid == resource.data.therapistUid
+        && request.resource.data.clientUid == resource.data.clientUid
+        && docId == resource.data.therapistUid + '_' + resource.data.clientUid
+        && resource.data.source == 'booking'
+        && request.resource.data.source == 'booking'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['appointmentId', 'linkedAt'])
+        && hasOpenBooking(resource.data.clientUid, request.auth.uid, request.resource.data.appointmentId);
       allow update: if isSignedIn()
         && resource.data.therapistUid == request.resource.data.therapistUid
         && resource.data.clientUid == request.resource.data.clientUid

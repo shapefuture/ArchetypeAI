@@ -28,7 +28,7 @@ test('restoring a report from History does not duplicate it in the archive', asy
   await expect(page.locator('#clinical-history')).toBeVisible();
 
   const archived = () => page.evaluate(() => JSON.parse(localStorage.getItem('ifs.history.hist') ?? '[]').length);
-  const restoreRows = page.getByRole('button', { name: 'Restore backup', exact: true });
+  const restoreRows = page.getByRole('button', { name: /^Restore backup:/ });
   await expect(restoreRows).toHaveCount(2);
   const archiveBefore = await archived();
 

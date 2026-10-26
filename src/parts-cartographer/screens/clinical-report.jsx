@@ -4,7 +4,7 @@ import { Character } from '../pal/Character';
 import { familyColor } from '../ui/ui.jsx';
 import { store, KEYS } from '../core/local-store';
 import { buildClinicalMarkdown, clinicalAttachmentStyle, clinicalSubtype, downloadText, shownNeed, sortedClinicalParts } from '../core/clinical-report';
-import { adaptClinicalProfile } from '../core/clinical-profile-adapter';
+import { adaptClinicalProfile, withPersonEdits } from '../core/clinical-profile-adapter';
 import { validClinicalScore } from '../core/profile-contract';
 import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY } from '../core/assessment-draft';
 import { STRINGS } from '../../shared/i18n/strings';
@@ -39,11 +39,8 @@ export function ClinicalReport({ profile: supplied, readOnly = false, embedded =
   const restoreHistory = (entry) => {
     const rebuilt = adaptClinicalProfile(entry.clinical, lang);
     const ids = new Set(rebuilt.parts.map((part) => part.id));
-    // Names and edits the person made to a part win over the archived copy, as they do in a backup restore.
-    const kept = rebuilt.parts.map((part) => {
-      const current = parts.find((item) => item.id === part.id);
-      return current ? { ...part, ...current, archetype: part.archetype, name: current.name ?? part.name } : part;
-    });
+    // The archived report's scores are the restored ones; what the person did to a part (typed name, role, family, look, star) stays.
+    const kept = rebuilt.parts.map((part) => withPersonEdits(part, parts.find((item) => item.id === part.id)));
     setParts([...kept, ...parts.filter((part) => !ids.has(part.id) && !String(part.id).startsWith('seed-'))]);
     setProfile({ ...rebuilt.profile, createdAt: entry.createdAt }, { archive: false });
     setPreview(null);
@@ -85,7 +82,12 @@ export function ClinicalReport({ profile: supplied, readOnly = false, embedded =
     {futureSelf.some((a) => a.trim()) && section('future', lang === 'ru' ? 'Будущее «я»' : 'Future Self', futureSelf.map((answer, i) => <p className="sub mt8" key={i}>{answer}</p>))}
     {!readOnly && <>
       {section('continue', ui.continueTitle, <><button className="btn primary block mt12" onClick={() => go('universe')}>🌌 {t('seeUniverse')}</button><button className="btn block mt12" onClick={downloadBackup}>{ui.localCta}</button>{user?.linked ? <><button className="btn block mt12" onClick={() => go('cabinet')}>{ui.cabinetCta}</button><button className="btn block mt12" onClick={() => setOverlay('practice')}>{ui.practiceCta}</button><button className="btn block mt12" onClick={() => setOverlay('share')}>{ui.specialistCta}</button></> : <button className="btn block mt12" onClick={() => setOverlay('login')}>{ui.saveCta}</button>}<button className="btn ghost block mt12" onClick={retake}>{t('retake')}</button></>)}
-      {section('history', t('history'), store.history(KEYS.history).filter((entry) => validClinicalScore(entry?.clinical)).reverse().slice(0, 10).map((entry, i) => <div className="row mt12" key={i}><span className="grow">{constellationName(entry.clinical.headline, lang)}<small className="sub"> · {new Date(entry.createdAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')}</small></span><button className="btn small" onClick={() => setPreview(entry)}>{t('viewReport')}</button><button className="btn small" onClick={() => restoreHistory(entry)}>{t('restore')}</button></div>))}
+      {section('history', t('history'), store.history(KEYS.history).filter((entry) => validClinicalScore(entry?.clinical)).reverse().slice(0, 10).map((entry, i) => {
+        const reportName = constellationName(entry.clinical.headline, lang);
+        const when = new Date(entry.createdAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US');
+        // The buttons name the report they act on, so two rows never read the same to a screen reader.
+        return <div className="row mt12" key={i}><span className="grow">{reportName}<small className="sub"> · {when}</small></span><button className="btn small" aria-label={`${t('viewReport')}: ${reportName} · ${when}`} onClick={() => setPreview(entry)}>{t('viewReport')}</button><button className="btn small" aria-label={`${t('restore')}: ${reportName} · ${when}`} onClick={() => restoreHistory(entry)}>{t('restore')}</button></div>;
+      }))}
     </>}
     <footer className="sub mt24">{ui.ethics}</footer>
   </div></div>;

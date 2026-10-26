@@ -89,7 +89,7 @@ export function Cabinet() {
     setCancelling(appointmentId);
     setAppointmentsError('');
     try {
-      await setAppointmentStatus(appointmentId, 'cancelled');
+      await setAppointmentStatus(appointmentId, 'cancelled', 'client');
       const refreshed = await myAppointments(user.uid);
       if (currentAccount.current !== user.uid) return;
       setAppointments(refreshed);

@@ -9,12 +9,20 @@ const TRAIT_NAMES = {
     shape: { cloud: 'Cloud', frog: 'Frog', triangle: 'Triangle', heart: 'Heart', bean: 'Bean', drop: 'Drop', crescent: 'Crescent', square: 'Square', flower: 'Flower', mochi: 'Mochi', pentagon: 'Pentagon', pill: 'Pill', egg: 'Egg' },
     eyes: { ovals: 'Oval eyes', googly: 'Googly eyes', closed: 'Closed eyes', wink: 'Wink', tiny: 'Tiny eyes' },
     mouth: { none: 'No mouth', smile: 'Smile', o: 'Open mouth', flat: 'Flat mouth', grin: 'Grin' },
+    face: { none: 'No glasses', glasses: 'Glasses', shades: 'Sunglasses' },
   },
   ru: {
     shape: { cloud: 'Облако', frog: 'Лягушка', triangle: 'Треугольник', heart: 'Сердце', bean: 'Фасолина', drop: 'Капля', crescent: 'Полумесяц', square: 'Квадрат', flower: 'Цветок', mochi: 'Моти', pentagon: 'Пятиугольник', pill: 'Таблетка', egg: 'Яйцо' },
     eyes: { ovals: 'Овальные глаза', googly: 'Глаза навыкате', closed: 'Закрытые глаза', wink: 'Подмигивание', tiny: 'Маленькие глаза' },
     mouth: { none: 'Без рта', smile: 'Улыбка', o: 'Открытый рот', flat: 'Ровный рот', grin: 'Широкая улыбка' },
+    face: { none: 'Без очков', glasses: 'Очки', shades: 'Солнцезащитные очки' },
   },
+};
+
+/* Russian names of the colours (pal/traits.ts names them in English only), for screen readers in the Russian UI. */
+const COLOUR_NAMES_RU = {
+  Azure: 'Лазурный', Lime: 'Лаймовый', Yolk: 'Желток', Magenta: 'Пурпурный', Tomato: 'Томатный', Tang: 'Мандариновый',
+  Mint: 'Мятный', Grape: 'Виноградный', Sky: 'Небесный', Cocoa: 'Шоколадный', Ink: 'Чернильный', Chalk: 'Меловой',
 };
 
 /* Cute chunky option buttons — style DNA from cutebuttons Customizer */
@@ -48,6 +56,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
   const { t, lang } = useApp();
   const headLabels = lang === 'ru' ? { none: 'Без украшения', beret: 'Лунный гребень', halo: 'Кольцо Сатурна', horns: 'Планета', party: 'Звёздный росток' } : { none: 'No topper', beret: 'Moon crest', halo: 'Saturn ring', horns: 'Planet stalk', party: 'Star sprout' };
   const names = TRAIT_NAMES[lang === 'ru' ? 'ru' : 'en'];
+  const colourName = (colour) => (lang === 'ru' ? COLOUR_NAMES_RU[colour.name] ?? colour.name : colour.name);
   const b = (on) => (on ? ON : BTN);
   return (
     <div>
@@ -61,7 +70,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
 
       <Section title={t('edFleece')} kicker={t('edDye')}>
         {COLORS.map((c) => (
-          <button key={c.value} title={c.name} aria-label={c.name} aria-pressed={traits.color === c.value} disabled={disabled}
+          <button key={c.value} title={colourName(c)} aria-label={colourName(c)} aria-pressed={traits.color === c.value} disabled={disabled}
             style={{
               width: 40, height: 40, borderRadius: '50%', background: c.value,
               border: '2px solid rgba(0,0,0,.35)',
@@ -103,7 +112,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
         <div className="grow">
           <Section title={t('edFace')} kicker={t('edOptic')}>
             {FACES.map((f) => (
-              <button key={f} title={f} aria-label={f} aria-pressed={traits.face === f} disabled={disabled} style={b(traits.face === f)} onClick={() => onChange({ face: f })}>
+              <button key={f} title={names.face[f]} aria-label={names.face[f]} aria-pressed={traits.face === f} disabled={disabled} style={b(traits.face === f)} onClick={() => onChange({ face: f })}>
                 <FaceIcon style={f} />
               </button>
             ))}

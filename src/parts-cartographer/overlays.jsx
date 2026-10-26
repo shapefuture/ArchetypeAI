@@ -1164,7 +1164,7 @@ export function Therapist() {
     setAppointmentBusy(appointmentId);
     setAppointmentError('');
     try {
-      await setAppointmentStatus(appointmentId, status);
+      await setAppointmentStatus(appointmentId, status, 'therapist');
       await refreshAppointments();
       toast('✓ ' + t(status === 'approved' ? 'appointmentApproved' : status === 'cancelled' ? 'statusCancelled' : 'appointmentDeclined'));
     } catch (err) {

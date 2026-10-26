@@ -586,12 +586,26 @@ function calendarDay(now: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
 }
 
-/** Whether the busy-slot rule accepts the appointment's slot: canonical times, end after start, one day, not before today. */
+/** A day that exists in the calendar: 2027-02-30 matches the shape but the rule cannot evaluate it. */
+function isRealDay(day: string): boolean {
+  const [year, month, date] = day.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, date));
+  return parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === date;
+}
+
+/** Whether the busy-slot rule accepts the appointment's slot: canonical times, end after start, one real day, not before today. */
 function slotAccepted(appointment: Appointment, today: string): boolean {
   const start = appointment.start ?? '';
   const end = appointment.end ?? '';
   return SLOT_TIME.test(start) && SLOT_TIME.test(end) && end > start
-    && start.slice(0, 10) === end.slice(0, 10) && start.slice(0, 10) >= today;
+    && start.slice(0, 10) === end.slice(0, 10) && isRealDay(start.slice(0, 10)) && start.slice(0, 10) >= today;
+}
+
+/** The zone the therapist's availability is entered in, or this device's zone when none is saved. */
+async function therapistZone(therapistUid: string): Promise<string> {
+  const profile = await getTherapistProfile(therapistUid).catch(() => null);
+  const zone = profile?.availability.map((window) => window.timeZone).find((value) => isValidIanaZone(value));
+  return zone ?? deviceTimeZone() ?? 'UTC';
 }
 
 /**
@@ -599,10 +613,11 @@ function slotAccepted(appointment: Appointment, today: string): boolean {
  * are sent: a finished appointment needs no slot to block a booking, and a refused batch would fail the whole backfill.
  */
 export async function ensureTherapistBusySlots(
-  therapistUid: string, appointments: Appointment[], timeZone = deviceTimeZone() ?? 'UTC',
+  therapistUid: string, appointments: Appointment[], timeZone?: string,
 ): Promise<void> {
   const db = getFirestoreDb();
-  const today = calendarDay(new Date(), timeZone);
+  // Appointment times are wall-clock in the therapist's zone, so "today" is decided there unless a zone is given.
+  const today = calendarDay(new Date(), timeZone ?? await therapistZone(therapistUid));
   const activeByStart = new Map<string, Appointment>();
   for (const appointment of appointments) {
     if (appointment.therapistUid !== therapistUid || !['pending', 'approved'].includes(appointment.status)) continue;
@@ -629,7 +644,8 @@ export async function ensureTherapistBusySlots(
   if (writes) await batch.commit();
 }
 
-export async function setAppointmentStatus(id: string, status: AppointmentStatus): Promise<void> {
+/** Set an appointment's status. `actor` is the side making the change: it decides which share the access follows. */
+export async function setAppointmentStatus(id: string, status: AppointmentStatus, actor: 'client' | 'therapist'): Promise<void> {
   const db = getFirestoreDb();
   const appointmentRef = doc(db, 'appointments', id);
   let closed: { clientUid: string; therapistUid: string } | null = null;
@@ -648,45 +664,54 @@ export async function setAppointmentStatus(id: string, status: AppointmentStatus
     if (busySnap?.exists() && busySnap.data().appointmentId === id) transaction.delete(busyRef);
     closed = releasing ? { clientUid: String(data.clientUid), therapistUid: String(data.therapistUid) } : null;
   });
-  if (closed && status === 'cancelled') await keepBookingAccess(closed.clientUid, closed.therapistUid, id);
+  if (closed) await keepBookingAccess(actor, closed.clientUid, closed.therapistUid, id);
 }
 
-/** The client's other still-active appointment with this therapist, if any. */
+/** The client's other still-open appointment with this therapist, if any: pending or approved, and not before `since` when given. */
 export function nextActiveAppointmentId(
-  appointments: ReadonlyArray<Pick<Appointment, 'id' | 'therapistUid' | 'status'>>,
+  appointments: ReadonlyArray<Pick<Appointment, 'id' | 'therapistUid' | 'status' | 'start'>>,
   therapistUid: string,
   closedId: string,
+  since?: string,
 ): string | null {
   const active = appointments.find((appointment) => appointment.id !== closedId
     && appointment.therapistUid === therapistUid
-    && (appointment.status === 'approved' || appointment.status === 'pending'));
+    && (appointment.status === 'approved' || appointment.status === 'pending')
+    && (since === undefined || (appointment.start ?? '').slice(0, 10) >= since));
   return active?.id ?? null;
 }
 
 /**
- * The booking share and roster row point at one appointment. When the client
- * cancels that one while another with the same therapist is still active,
- * point them at the active one, so the therapist keeps the access it grants.
- * Best effort: only the client may update the share, and a failure leaves the
- * cancellation itself in place.
+ * The booking share points at the appointment that carries the therapist's access. When that one closes (the client
+ * cancels it, or the therapist declines or cancels it) and another open appointment with the same therapist exists,
+ * point the share at that one, so the access the consent copy describes is the access that remains. An approved
+ * appointment never closes by itself, so one long past does not count as open. Best effort: a failure leaves the
+ * status change itself in place.
  */
-async function keepBookingAccess(clientUid: string, therapistUid: string, closedId: string): Promise<void> {
+async function keepBookingAccess(actor: 'client' | 'therapist', clientUid: string, therapistUid: string, closedId: string): Promise<void> {
   try {
     const db = getFirestoreDb();
     const shareRef = doc(db, 'clientShares', `${therapistUid}_${clientUid}`);
     const share = await getDoc(shareRef);
     if (!share.exists() || share.data().appointmentId !== closedId) return;
-    const next = nextActiveAppointmentId(await myAppointments(clientUid), therapistUid, closedId);
+    // One day of slack covers appointment times in a zone ahead of this device's.
+    const since = calendarDay(new Date(Date.now() - 86_400_000), deviceTimeZone() ?? 'UTC');
+    const appointments = actor === 'client'
+      ? await myAppointments(clientUid)
+      : (await therapistAppointments(therapistUid)).filter((appointment) => appointment.clientUid === clientUid);
+    const next = nextActiveAppointmentId(appointments, therapistUid, closedId, since);
     if (!next) return;
     const now = new Date().toISOString();
     await setDoc(shareRef, { appointmentId: next, grantedAt: now }, { merge: true });
+    // Only the client may change the roster row; the share alone carries the therapist's read access.
+    if (actor !== 'client') return;
     const rosterRef = doc(db, 'therapistClients', `${therapistUid}_${clientUid}`);
     const roster = await getDoc(rosterRef);
     if (roster.exists() && roster.data().source === 'booking') {
       await setDoc(rosterRef, { appointmentId: next, linkedAt: now }, { merge: true });
     }
   } catch (error) {
-    console.error('Keeping booking access after cancellation failed', error);
+    console.error('Keeping booking access after the status change failed', error);
   }
 }
 

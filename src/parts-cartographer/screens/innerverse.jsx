@@ -592,7 +592,7 @@ export function SpecialistView() {
     setAppointmentBusy(appointmentId);
     setError('');
     try {
-      await setAppointmentStatus(appointmentId, status);
+      await setAppointmentStatus(appointmentId, status, 'therapist');
       toast('✓ ' + t(status === 'approved' ? 'appointmentApproved' : 'appointmentDeclined'));
       refresh();
     } catch (err) {

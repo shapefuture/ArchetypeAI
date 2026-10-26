@@ -582,9 +582,12 @@ export function therapistBusySlotId(therapistUid: string, start: string): string
 export async function ensureTherapistBusySlots(therapistUid: string, appointments: Appointment[]): Promise<void> {
   const db = getFirestoreDb();
   const activeByStart = new Map<string, Appointment>();
+  // Only a slot from today (UTC) on is backfilled. The busy-slot rule accepts from yesterday, so this is stricter and never
+  // sends a refused write, and a finished appointment needs no slot to block a booking.
+  const today = new Date().toISOString().slice(0, 10);
   for (const appointment of appointments) {
     if (appointment.therapistUid !== therapistUid || !['pending', 'approved'].includes(appointment.status)) continue;
-    if (appointment.start && appointment.end && !activeByStart.has(appointment.start)) {
+    if (appointment.start && appointment.end && appointment.start.slice(0, 10) >= today && !activeByStart.has(appointment.start)) {
       activeByStart.set(appointment.start, appointment);
     }
   }

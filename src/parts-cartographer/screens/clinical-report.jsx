@@ -85,8 +85,9 @@ export function ClinicalReport({ profile: supplied, readOnly = false, embedded =
       {section('history', t('history'), store.history(KEYS.history).filter((entry) => validClinicalScore(entry?.clinical)).reverse().slice(0, 10).map((entry, i) => {
         const reportName = constellationName(entry.clinical.headline, lang);
         const when = new Date(entry.createdAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US');
+        const stamp = new Date(entry.createdAt).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', { dateStyle: 'medium', timeStyle: 'medium' });
         // The buttons name the report they act on, so two rows never read the same to a screen reader.
-        return <div className="row mt12" key={i}><span className="grow">{reportName}<small className="sub"> · {when}</small></span><button className="btn small" aria-label={`${t('viewReport')}: ${reportName} · ${when}`} onClick={() => setPreview(entry)}>{t('viewReport')}</button><button className="btn small" aria-label={`${t('restore')}: ${reportName} · ${when}`} onClick={() => restoreHistory(entry)}>{t('restore')}</button></div>;
+        return <div className="row mt12" key={i}><span className="grow">{reportName}<small className="sub"> · {when}</small></span><button className="btn small" aria-label={`${t('viewReport')}: ${reportName} · ${stamp}`} onClick={() => setPreview(entry)}>{t('viewReport')}</button><button className="btn small" aria-label={`${t('restore')}: ${reportName} · ${stamp}`} onClick={() => restoreHistory(entry)}>{t('restore')}</button></div>;
       }))}
     </>}
     <footer className="sub mt24">{ui.ethics}</footer>

@@ -28,6 +28,8 @@ const APP_KEY = /^(ifs\.|INNERVERSE_|ARCHETYPE_|archetype_)/;
 const NOT_PORTABLE = new Set([
   'ifs.auth', 'ifs.billing', 'ifs.billing.verified.v2', 'ifs.billing.pending', 'ifs.telemetry', 'ifs.chunk-reload', 'ifs.share.codes', 'ifs.state',
   'ifs.sensory.v1', 'INNERVERSE_PUSH_TOKEN_V1', 'INNERVERSE_PUSH_LAST_NUDGE_V1', 'INNERVERSE_DEVICE_ENVELOPE_V1',
+  // Holds the partner code of each synastry run: a bearer code that must not leave the device.
+  'INNERVERSE_SYNASTRY_RUNS_V1',
 ]);
 export function isPortableKey(key: string): boolean {
   const base = key.endsWith('.hist') ? key.slice(0, -5) : key;
@@ -204,8 +206,16 @@ interface MergedList {
   keep?: (item: any) => boolean;
   sort?: (a: any, b: any) => number;
 }
+/** A stored time: an ISO string or a number of milliseconds. Unreadable times sort first. */
+const timeOf = (value: unknown): number => (typeof value === 'number' ? value : Date.parse(String(value))) || 0;
 const MERGED_LISTS: Record<string, MergedList> = {
   'ifs.journal': { idOf: (item) => item?.id, sort: (a, b) => (Number(b?.at) || 0) - (Number(a?.at) || 0) },
+  // Records without an id are matched by their content: the same record is kept once, a different one is kept too.
+  'ifs.charter': { idOf: (item) => JSON.stringify(item) },
+  'ifs.sealed': { idOf: (item) => JSON.stringify(item) },
+  INNERVERSE_CHARTER_V1: { idOf: (item) => JSON.stringify(item), sort: (a, b) => timeOf(a?.at) - timeOf(b?.at) },
+  INNERVERSE_EVENTS_V1: { idOf: (item) => JSON.stringify(item), sort: (a, b) => timeOf(a?.at) - timeOf(b?.at) },
+  INNERVERSE_SEALED_VERDICTS_V1: { idOf: (item) => item?.createdAt ?? JSON.stringify(item), sort: (a, b) => timeOf(a?.createdAt) - timeOf(b?.createdAt) },
   [KEYS.parts]: { idOf: (item) => item?.id, keep: (item) => !String(item?.id ?? '').startsWith('seed-') },
   INNERVERSE_CHECKINS_V1: { idOf: (item) => item?.date, sort: (a, b) => (Date.parse(a?.date) || 0) - (Date.parse(b?.date) || 0) },
 };

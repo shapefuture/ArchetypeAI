@@ -18,7 +18,7 @@ import {
 } from '../../shared/core/data/constellation-copy';
 import { PART_COPY as CLINICAL_PART_COPY, COMPLEX_COPY_RU, STRINGS as SHARED_STRINGS } from '../../shared/i18n/strings';
 import { hashStr } from './ports';
-import { FAMILY_LABELS, SEED_PARTS, type Family, type Part } from '../pal/traits';
+import { FAMILY_LABELS, SEED_PARTS, type ArchetypeMapData, type Family, type Part } from '../pal/traits';
 import { SCORING_NAME_POOLS, type Lang } from '../i18n/strings';
 import { IV_PARTS } from '../../shared/features/landing/stickers';
 
@@ -148,6 +148,18 @@ const FAMILY_ARCHETYPE: Record<Family, { cluster: string; size: number }> = {
 /** An archetype with the cluster and size of its family, whichever family it was last drawn with. */
 export function archetypeOf<T extends { cluster: string; size: number }>(family: Family, archetype: T): T {
   return { ...archetype, ...FAMILY_ARCHETYPE[family] };
+}
+
+/** The archetype a part gets when the person places it in a family: studio-made, centred, with that family's cluster and size. */
+export function studioArchetypeFor(family: Family): ArchetypeMapData {
+  const base: ArchetypeMapData = { schema: 'archetype-map.v1', sourceAssessment: 'studio', coordinates: [0, 0, 0, 0], prominence: 55, cluster: '', size: 0 };
+  return archetypeOf(family, base);
+}
+
+/** A part whose archetype names another family's cluster (stored before a family change kept it) takes its family's cluster and size. */
+export function withFamilyCluster<P extends { family: Family; archetype?: ArchetypeMapData }>(part: P): P {
+  if (!part.archetype || part.archetype.cluster === FAMILY_ARCHETYPE[part.family]?.cluster) return part;
+  return { ...part, archetype: archetypeOf(part.family, part.archetype) };
 }
 
 function familyFor(id: PartId): Family {

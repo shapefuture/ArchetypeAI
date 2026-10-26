@@ -578,16 +578,35 @@ export function therapistBusySlotId(therapistUid: string, start: string): string
   return `${therapistUid}_${start}`;
 }
 
-/** Backfill the public slot projection for active appointments made pre-migration. */
-export async function ensureTherapistBusySlots(therapistUid: string, appointments: Appointment[]): Promise<void> {
+/** The busy-slot rule's time shape (firestore.rules validSlotTime): YYYY-MM-DDTHH:MM, a real calendar minute. */
+const SLOT_TIME = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d$/;
+
+/** The calendar day (YYYY-MM-DD) that `now` falls on in `timeZone`. A slot's wall-clock start is in the therapist's zone. */
+function calendarDay(now: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+}
+
+/** Whether the busy-slot rule accepts the appointment's slot: canonical times, end after start, one day, not before today. */
+function slotAccepted(appointment: Appointment, today: string): boolean {
+  const start = appointment.start ?? '';
+  const end = appointment.end ?? '';
+  return SLOT_TIME.test(start) && SLOT_TIME.test(end) && end > start
+    && start.slice(0, 10) === end.slice(0, 10) && start.slice(0, 10) >= today;
+}
+
+/**
+ * Backfill the public slot projection for active appointments made pre-migration. Only slots the busy-slot rule accepts
+ * are sent: a finished appointment needs no slot to block a booking, and a refused batch would fail the whole backfill.
+ */
+export async function ensureTherapistBusySlots(
+  therapistUid: string, appointments: Appointment[], timeZone = deviceTimeZone() ?? 'UTC',
+): Promise<void> {
   const db = getFirestoreDb();
+  const today = calendarDay(new Date(), timeZone);
   const activeByStart = new Map<string, Appointment>();
-  // Only a slot from today (UTC) on is backfilled. The busy-slot rule accepts from yesterday, so this is stricter and never
-  // sends a refused write, and a finished appointment needs no slot to block a booking.
-  const today = new Date().toISOString().slice(0, 10);
   for (const appointment of appointments) {
     if (appointment.therapistUid !== therapistUid || !['pending', 'approved'].includes(appointment.status)) continue;
-    if (appointment.start && appointment.end && appointment.start.slice(0, 10) >= today && !activeByStart.has(appointment.start)) {
+    if (slotAccepted(appointment, today) && !activeByStart.has(appointment.start)) {
       activeByStart.set(appointment.start, appointment);
     }
   }

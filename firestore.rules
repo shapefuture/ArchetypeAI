@@ -94,6 +94,13 @@ service cloud.firestore {
         && getAfter(busyPath).data.end == end;
     }
 
+    // Releasing an appointment (cancel or decline) needs no lock naming it after the write. A lock another booking holds
+    // at the same start stays: that booking's lock is not this appointment's to remove.
+    function releasesOwnBusySlot(therapistUid, start, appointmentId) {
+      let busyPath = therapistBusySlotPath(therapistUid, start);
+      return !existsAfter(busyPath) || getAfter(busyPath).data.appointmentId != appointmentId;
+    }
+
     function hasValidBookingShare(clientUid, therapistUid, appointmentId) {
       let sharePath = /databases/$(database)/documents/clientShares/$(therapistUid + '_' + clientUid);
       return exists(sharePath)
@@ -333,7 +340,8 @@ service cloud.firestore {
         && request.resource.data.claimedBy == request.auth.uid
         // The claim and the roster row are one batch, so a client's revoke finds both.
         && existsAfter(/databases/$(database)/documents/therapistClients/$(request.auth.uid + '_' + resource.data.clientUid));
-      allow delete: if isOwner(resource.data.clientUid);
+      // A record another device already removed is a no-op to delete again, so one missing record does not refuse a whole revoke.
+      allow delete: if isSignedIn() && (resource == null || isOwner(resource.data.clientUid));
     }
 
     // Admin allowlist: only an already-authorized, verified admin can manage
@@ -551,13 +559,13 @@ service cloud.firestore {
               || (
                 resource.data.status == 'pending'
                 && request.resource.data.status == 'declined'
-                && !existsAfter(therapistBusySlotPath(resource.data.therapistUid, resource.data.start))
+                && releasesOwnBusySlot(resource.data.therapistUid, resource.data.start, id)
               )
               // A therapist can also call off an approved session, freeing its slot.
               || (
                 resource.data.status == 'approved'
                 && request.resource.data.status == 'cancelled'
-                && !existsAfter(therapistBusySlotPath(resource.data.therapistUid, resource.data.start))
+                && releasesOwnBusySlot(resource.data.therapistUid, resource.data.start, id)
               )
             )
           )
@@ -567,7 +575,7 @@ service cloud.firestore {
             && (resource.data.status == 'pending' || resource.data.status == 'approved')
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
             && request.resource.data.status == 'cancelled'
-            && !existsAfter(therapistBusySlotPath(resource.data.therapistUid, resource.data.start))
+            && releasesOwnBusySlot(resource.data.therapistUid, resource.data.start, id)
           )
         );
       allow delete: if false;
@@ -603,7 +611,7 @@ service cloud.firestore {
         && request.resource.data.grantedAt is string
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clientEmail', 'grantedAt', 'source', 'appointmentId'])
         && hasActiveAppointment(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId);
-      allow delete: if isOwner(resource.data.clientUid);
+      allow delete: if isSignedIn() && (resource == null || isOwner(resource.data.clientUid));
     }
 
     // A therapist/client roster row is valid only when backed by a booking share
@@ -684,7 +692,7 @@ service cloud.firestore {
       // Either party can end the relationship: the consent screen promises the
       // client can unlink at any moment.
       allow delete: if isSignedIn()
-        && (resource.data.therapistUid == request.auth.uid || resource.data.clientUid == request.auth.uid);
+        && (resource == null || resource.data.therapistUid == request.auth.uid || resource.data.clientUid == request.auth.uid);
     }
 
     // Exercise assignments may be authored only by a therapist with a trusted
@@ -713,7 +721,7 @@ service cloud.firestore {
         && (!('note' in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 1000));
       allow update: if false;
       // The client can remove practices assigned to them, for example after unlinking.
-      allow delete: if isSignedIn() && resource.data.clientUid == request.auth.uid;
+      allow delete: if isSignedIn() && (resource == null || resource.data.clientUid == request.auth.uid);
     }
   }
 }

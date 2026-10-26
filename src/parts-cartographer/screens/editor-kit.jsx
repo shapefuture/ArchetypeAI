@@ -3,6 +3,20 @@ import { useApp } from '../app.jsx';
 import { COLORS, EYES, FACES, HEADS, MOUTHS, SHAPES } from '../pal/traits.ts';
 import { EyesIcon, FaceIcon, HeadIcon, MouthIcon, ShapeIcon } from '../pal/Character.tsx';
 
+/* Names of the shapes, eyes and mouths the customizer offers, for tooltips and screen readers, in the active language. */
+const TRAIT_NAMES = {
+  en: {
+    shape: { cloud: 'Cloud', frog: 'Frog', triangle: 'Triangle', heart: 'Heart', bean: 'Bean', drop: 'Drop', crescent: 'Crescent', square: 'Square', flower: 'Flower', mochi: 'Mochi', pentagon: 'Pentagon', pill: 'Pill', egg: 'Egg' },
+    eyes: { ovals: 'Oval eyes', googly: 'Googly eyes', closed: 'Closed eyes', wink: 'Wink', tiny: 'Tiny eyes' },
+    mouth: { none: 'No mouth', smile: 'Smile', o: 'Open mouth', flat: 'Flat mouth', grin: 'Grin' },
+  },
+  ru: {
+    shape: { cloud: 'Облако', frog: 'Лягушка', triangle: 'Треугольник', heart: 'Сердце', bean: 'Фасолина', drop: 'Капля', crescent: 'Полумесяц', square: 'Квадрат', flower: 'Цветок', mochi: 'Моти', pentagon: 'Пятиугольник', pill: 'Таблетка', egg: 'Яйцо' },
+    eyes: { ovals: 'Овальные глаза', googly: 'Глаза навыкате', closed: 'Закрытые глаза', wink: 'Подмигивание', tiny: 'Маленькие глаза' },
+    mouth: { none: 'Без рта', smile: 'Улыбка', o: 'Открытый рот', flat: 'Ровный рот', grin: 'Широкая улыбка' },
+  },
+};
+
 /* Cute chunky option buttons — style DNA from cutebuttons Customizer */
 const BTN = {
   width: 46, height: 46, borderRadius: 16,
@@ -33,12 +47,13 @@ function Section({ title, kicker, children }) {
 export function CustomizerLike({ traits, onChange, disabled }) {
   const { t, lang } = useApp();
   const headLabels = lang === 'ru' ? { none: 'Без украшения', beret: 'Лунный гребень', halo: 'Кольцо Сатурна', horns: 'Планета', party: 'Звёздный росток' } : { none: 'No topper', beret: 'Moon crest', halo: 'Saturn ring', horns: 'Planet stalk', party: 'Star sprout' };
+  const names = TRAIT_NAMES[lang === 'ru' ? 'ru' : 'en'];
   const b = (on) => (on ? ON : BTN);
   return (
     <div>
       <Section title={t('edSil')} kicker={t('edAnat')}>
         {SHAPES.map((s) => (
-          <button key={s} title={s} aria-label={s} aria-pressed={traits.shape === s} disabled={disabled} style={b(traits.shape === s)} onClick={() => onChange({ shape: s })}>
+          <button key={s} title={names.shape[s]} aria-label={names.shape[s]} aria-pressed={traits.shape === s} disabled={disabled} style={b(traits.shape === s)} onClick={() => onChange({ shape: s })}>
             <ShapeIcon shape={s} className="" />
           </button>
         ))}
@@ -61,7 +76,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
 
       <Section title={t('edGaze')} kicker={t('edWindows')}>
         {EYES.map((e) => (
-          <button key={e} title={e} aria-label={e} aria-pressed={traits.eyes === e} disabled={disabled} style={b(traits.eyes === e)} onClick={() => onChange({ eyes: e })}>
+          <button key={e} title={names.eyes[e]} aria-label={names.eyes[e]} aria-pressed={traits.eyes === e} disabled={disabled} style={b(traits.eyes === e)} onClick={() => onChange({ eyes: e })}>
             <EyesIcon style={e} />
           </button>
         ))}
@@ -69,7 +84,7 @@ export function CustomizerLike({ traits, onChange, disabled }) {
 
       <Section title={t('edMug')} kicker={t('edOpt')}>
         {MOUTHS.map((m) => (
-          <button key={m} title={m} aria-label={m} aria-pressed={traits.mouth === m} disabled={disabled} style={b(traits.mouth === m)} onClick={() => onChange({ mouth: m })}>
+          <button key={m} title={names.mouth[m]} aria-label={names.mouth[m]} aria-pressed={traits.mouth === m} disabled={disabled} style={b(traits.mouth === m)} onClick={() => onChange({ mouth: m })}>
             <MouthIcon style={m} />
           </button>
         ))}

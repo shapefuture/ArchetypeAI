@@ -10,22 +10,13 @@ import { telemetry } from './core/telemetry.ts';
 import { loadSensoryPreferences, saveSensoryPreferences, selectSensoryPreset, updateSensoryPreference } from './core/sensory-preferences.ts';
 import { ambience, bindAmbienceSignals } from './services/ambience-gate.ts';
 import { navEntry, navOverlay, navSheet, planNavigation, readNavEntry, sameSheet } from './core/navigation-history.ts';
-import { SEED_PARTS } from './pal/traits.ts';
 import { localizeParts, storedParts } from './pal/seed-copy.ts';
-import { validMapParts } from './core/backup';
-import { canonicalEnergyPart } from './core/universe-controls.ts';
 
 /* A stored report of the wrong shape (not an object with its parts) is treated as no report, not drawn. */
 const usableProfile = (saved) => (saved && typeof saved === 'object' && !Array.isArray(saved) && Array.isArray(saved.parts) ? saved : null);
 
-/* Stored parts may come from an older build, a restore or another tab: keep
-   only parts every screen can draw, so one bad entry cannot break them all. */
-function usableParts(saved) {
-  if (!Array.isArray(saved)) return SEED_PARTS;
-  const kept = saved.filter((part) => validMapParts([part])).map(canonicalEnergyPart);
-  return kept.length || !saved.length ? kept : SEED_PARTS;
-}
 import { t as translate, STRINGS } from './i18n/strings.ts';
+import { usableParts } from './core/usable-parts.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
 const AdminDashboard = lazy(() => import('./screens/admin.jsx').then((module) => ({ default: module.AdminDashboard })));
 const FullAssessment = lazy(() => import('./screens/full-assessment.jsx').then((module) => ({ default: module.FullAssessment })));

@@ -73,14 +73,29 @@ export interface ClinicalPart extends Part {
   scoreT: number;
 }
 
+/** The role texts the adapter writes for a part, in both languages. Any other role was typed by the person. */
+function canonicalRoles(id: string): string[] {
+  return [...(CLINICAL_PART_COPY[id]?.face ?? []), ...Object.values(FAMILY_LABELS).flatMap((labels) => [labels.en, labels.ru])];
+}
+
 /**
- * A part the person already had, scored again by a retake. The new scores and canonical copy are the result,
- * but a name the person typed, its look and its star stay as the person made them.
+ * A part the person already had, scored again (a retake) or restored from History. The scores and canonical copy come
+ * from the new result; what the person did to the part stays: a typed name, role, family, look and star.
  */
 export function withPersonEdits(scored: ClinicalPart, saved: Partial<ClinicalPart> | undefined): ClinicalPart {
   if (!saved) return scored;
-  const typed = saved.name && ![saved.nameEn, saved.nameRu, scored.nameEn, scored.nameRu].includes(saved.name) ? saved.name : undefined;
-  return { ...scored, name: typed ?? scored.name, traits: saved.traits ?? scored.traits, star: saved.star ?? scored.star };
+  const typedName = saved.name && ![saved.nameEn, saved.nameRu, scored.nameEn, scored.nameRu].includes(saved.name) ? saved.name : undefined;
+  const typedRole = saved.role && !canonicalRoles(scored.id).includes(saved.role) ? saved.role : undefined;
+  const family = saved.family && Object.hasOwn(CLUSTER_OF_FAMILY, saved.family) ? saved.family : scored.family;
+  return {
+    ...scored,
+    name: typedName ?? scored.name,
+    role: typedRole ?? scored.role,
+    family,
+    archetype: { ...scored.archetype, cluster: CLUSTER_OF_FAMILY[family] },
+    traits: saved.traits ?? scored.traits,
+    star: saved.star ?? scored.star,
+  };
 }
 
 export type AdaptedClinicalProfile = {
@@ -121,6 +136,8 @@ function displayPartName(id: PartId | string, lang: Lang): string {
   }
   return lang === 'ru' ? PART_NAME_RU[id] ?? PART_NAME_EN[id] ?? id : PART_NAME_EN[id] ?? id;
 }
+
+const CLUSTER_OF_FAMILY: Record<Family, string> = { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' };
 
 function familyFor(id: PartId): Family {
   return partClass(id) as Family;
@@ -172,7 +189,7 @@ function projectedPart(
       coordinateBasis: 'fixed-reference-147',
       coordinates: [reference.ax.ag, reference.ax.te, reference.ax.fo, reference.ax.at]
         .map((value) => (value - 50) / 50) as [number, number, number, number],
-      cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[family],
+      cluster: CLUSTER_OF_FAMILY[family],
       prominence: Math.max(0, Math.min(100, (score.T - 20) / 60 * 100)),
       size: { manager: 0.75, firefighter: 0.7, exile: 0.6, resource: 0.8 }[family],
       description: localCopy?.face[copyIndex] ?? '',

@@ -293,7 +293,15 @@ function furthestLadders(device: any, incoming: any): unknown {
   if (!isPlainObject(device)) return incoming;
   const rung = (state: unknown): number => (isPlainObject(state) ? ladderRung(state) : -1);
   const out: Record<string, unknown> = { ...device };
-  for (const [id, state] of Object.entries(incoming)) out[id] = rung(device[id]) > rung(state) ? device[id] : state;
+  const planOf = (entry: any): string | undefined => (typeof entry?.ifThen === 'string' && entry.ifThen.trim() ? entry.ifThen : undefined);
+  for (const [id, state] of Object.entries(incoming)) {
+    const deviceFurther = rung(device[id]) > rung(state);
+    const further = deviceFurther ? device[id] : state;
+    const earlier = deviceFurther ? state : device[id];
+    // The furthest entry is the skill's record, but a plan written on the other side is text the file may not carry.
+    const plan = planOf(further) ?? planOf(earlier);
+    out[id] = plan === undefined ? further : { ...further, ifThen: plan };
+  }
   return out;
 }
 /** The later of this device's time and the file's: a merge keeps the most recent suggestion. */

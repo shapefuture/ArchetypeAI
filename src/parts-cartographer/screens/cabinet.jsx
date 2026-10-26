@@ -8,7 +8,7 @@ import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus, appointmentDisplayTime } from '../core/booking.ts';
 import { CLOUD_PART_LIMIT, loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { canonicalEnergyPart } from '../core/universe-controls.ts';
-import { archetypeOf } from '../core/clinical-profile-adapter.ts';
+import { archetypeOf, studioArchetypeFor } from '../core/clinical-profile-adapter.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
 import { EntryPanel } from './elevation/e02-entry.jsx';
@@ -378,6 +378,12 @@ export function PartSheet({ id }) {
 }
 
 /* ═══════════ Part editor (shape/eyes/mouth/color/family) ═══════════ */
+/* The archetype a family change leaves a part with: its new family's cluster and size. A part that had none gets a studio one. */
+function archetypeForFamily(part, family) {
+  if (part.archetype) return archetypeOf(family, part.archetype);
+  return family === part.family ? undefined : studioArchetypeFor(family);
+}
+
 export function PartEditor({ part }) {
   const { t, lang, parts, setParts, setSheet, toast } = useApp();
   // Freeze a legacy record's current seed on open, so editing one trait keeps the same sewn character.
@@ -403,7 +409,7 @@ export function PartEditor({ part }) {
           <div className="field"><label htmlFor={familyId}>{t('familyLabel')}</label>
             {/* A family moves the part to its archetype cluster and node size, so the map and the cluster filter agree. */}
             <select id={familyId} className="drop" value={draft.family}
-              onChange={(e) => patch({ family: e.target.value, traits: { ...draft.traits, color: familyColor(e.target.value) }, archetype: draft.archetype && archetypeOf(e.target.value, draft.archetype) })}>
+              onChange={(e) => patch({ family: e.target.value, traits: { ...draft.traits, color: familyColor(e.target.value) }, archetype: archetypeForFamily(draft, e.target.value) })}>
               {['manager', 'firefighter', 'exile', 'resource'].map((f) => (
                 <option key={f} value={f}>{FAMILY_LABELS[f].icon} {FAMILY_LABELS[f][lang]}</option>
               ))}

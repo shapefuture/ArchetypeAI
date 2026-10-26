@@ -70,7 +70,10 @@ export function validMapParts(value: unknown): value is Part[] {
       && HEADS.includes(traits.head) && FACES.includes(traits.face) && /^#[a-f0-9]{3,8}$/i.test(traits.color)
       && (!part.archetype || object(part.archetype) && Array.isArray(part.archetype.coordinates)
         && part.archetype.coordinates.length === 4 && part.archetype.coordinates.every((n: unknown) => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 1)
-        && (part.archetype.cluster === undefined || typeof part.archetype.cluster === 'string'));
+        && (part.archetype.cluster === undefined || typeof part.archetype.cluster === 'string')
+        // The scene scales each node by these two numbers: a word here would draw the node at NaN.
+        && (part.archetype.size === undefined || Number.isFinite(part.archetype.size))
+        && (part.archetype.prominence === undefined || Number.isFinite(part.archetype.prominence)));
   });
 }
 

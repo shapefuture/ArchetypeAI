@@ -687,7 +687,8 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
     function claimInvite(db: Firestore, therapistUid: string, code: string) {
       const batch = writeBatch(db);
       batch.update(doc(db, 'therapistLinks', code), { claimedBy: therapistUid });
-      batch.set(doc(db, 'therapistClients', `${therapistUid}_${UIDS.client}`), inviteRow(therapistUid, code));
+      // Merge, as claimTherapistLink() does, so a booking row keeps the client email and appointment it already has.
+      batch.set(doc(db, 'therapistClients', `${therapistUid}_${UIDS.client}`), inviteRow(therapistUid, code), { merge: true });
       return batch.commit();
     }
 

@@ -7,6 +7,7 @@ import { t as tr, EXERCISE_COPY, UNIVERSE_DIMENSIONS_COPY } from '../i18n/string
 import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapter.ts';
 import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
+import { EXERCISES, EXERCISE_TYPES } from '../../shared/core/data/exercises';
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus, therapistWallLabel } from '../core/booking.ts';
 import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates, setAxisChoice } from '../services/universe-lens';
 import { ModalLayer } from '../ui/modal-layer.jsx';
@@ -491,7 +492,8 @@ export function SpecialistView() {
   const [exerciseId, setExerciseId] = useState('');
   const [frequency, setFrequency] = useState('once');
   const [refreshKey, setRefreshKey] = useState(0);
-  const exerciseIds = useMemo(() => Object.keys(EXERCISE_COPY), []);
+  // RED exercises are refused without the client's container, which this screen cannot see, so they are not offered here.
+  const exerciseIds = useMemo(() => EXERCISES.filter((item) => EXERCISE_TYPES[item.type].gate !== 'red').map((item) => item.id), []);
   const activeClients = clients.filter((client) => !client.archived);
   const archivedClients = clients.filter((client) => client.archived);
   // Only appointments of linked, non-archived clients are shown (see visibleAppointments).

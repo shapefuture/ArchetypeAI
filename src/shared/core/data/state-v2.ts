@@ -118,8 +118,11 @@ export function weatherLayer(history: CheckIn[], now: Date): Record<string, Part
  * regulated; we compare mean absolute distance from the window).
  */
 export function unburdeningMoments(priorWindow: CheckIn[], recentWindow: CheckIn[]): PartId[] {
+  // The windows span the same 30 days, so the rate is flares per week over that fixed span. Dividing by each
+  // window's check-in count would make a window with more check-ins look calmer.
+  const WINDOW_WEEKS = 30 / 7;
   const rate = (h: CheckIn[], part: PartId) =>
-    h.filter(c => c.confirmedPart === part).length / Math.max(1, h.length / 7); // flares per week
+    h.filter(c => c.confirmedPart === part).length / WINDOW_WEEKS; // flares per week
   const regulation = (h: CheckIn[]) =>
     h.length === 0 ? 0 : 1 - h.reduce((s, c) => s + Math.abs(c.arousal), 0) / (h.length * 2);
   return [...new Set(

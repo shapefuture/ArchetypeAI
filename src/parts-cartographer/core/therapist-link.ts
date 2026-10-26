@@ -16,6 +16,7 @@ import {
 import { getFirestoreDb } from '../../environments/firebase-init';
 import type { ScoredProfile } from '../../shared/core/data/scoring-v2';
 import type { ContainerState } from '../../shared/core/data/exercises';
+import { validClinicalScore } from './profile-contract';
 
 export type AssignmentFrequency = 'once' | 'daily' | 'weekly' | 'after-trigger';
 
@@ -58,6 +59,16 @@ export function toTherapistSummary(
     copingStack: profile.copingStack,
     adherence,
   };
+}
+
+/**
+ * The summary the Share screen sends, built from the client's complete scored result so the therapist sees the
+ * same T-scores, tiers and coping stack the client sees. Null when no complete result is saved.
+ */
+export function therapistSummaryFor(profile: { clinical?: unknown } | null | undefined): TherapistClientSummary | null {
+  const clinical = profile?.clinical;
+  if (!validClinicalScore(clinical)) return null;
+  return toTherapistSummary(clinical, { done: 0, skipped: 0 });
 }
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no confusables
@@ -208,17 +219,20 @@ export async function setClientArchived(
   );
 }
 
-/** Therapist assigns an exercise. RED passes the gate ONLY here (§3B.1). */
+/**
+ * Therapist assigns an exercise. A RED one passes the gate ONLY with the client's container proof (§3B.1):
+ * without it the assignment is refused, because the dashboard cannot see the container.
+ */
 export async function assignExercise(
   therapistUid: string, clientUid: string,
   assignment: Omit<TherapistAssignment, 'id' | 'assignedAt' | 'clientSummary'>,
   opts: { red?: { profile: ScoredProfile; container: ContainerState } } = {},
 ): Promise<boolean> {
-  if (opts.red) {
-    const { redAllowed } = await import('../../shared/core/data/exercises');
-    if (!redAllowed(opts.red.profile, opts.red.container, true)) {
-      return false; // even therapists cannot skip the container (§3E.3)
-    }
+  const { EXERCISES, EXERCISE_TYPES, redAllowed } = await import('../../shared/core/data/exercises');
+  const exercise = EXERCISES.find((item) => item.id === assignment.exerciseId);
+  if (exercise && EXERCISE_TYPES[exercise.type].gate === 'red' && !opts.red) return false;
+  if (opts.red && !redAllowed(opts.red.profile, opts.red.container, true)) {
+    return false; // even therapists cannot skip the container (§3E.3)
   }
   const db = getFirestoreDb();
   const id = `${clientUid}_${assignment.exerciseId}_${Date.now()}`;

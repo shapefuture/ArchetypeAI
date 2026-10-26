@@ -3,7 +3,7 @@ import { ALL_PART_IDS, CRISIS_TRIGGERS } from '../../shared/core/data/state-v2';
 import type { AssessmentInput } from '../../shared/core/data/scoring-v2';
 import type { Lang } from '../i18n/strings';
 import { KEYS } from './local-store';
-import { validProfile } from './profile-contract';
+import { validClinicalScore, validProfile } from './profile-contract';
 import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, isDescentDraft } from './assessment-draft';
 import { sanitizeLegacyAiAnalysis } from './legacy-ai-analysis';
 import { SHAPES, EYES, MOUTHS, HEADS, FACES, type Part } from '../pal/traits';
@@ -73,10 +73,24 @@ export function validMapParts(value: unknown): value is Part[] {
   });
 }
 
-function validEntry(key: string, value: unknown): boolean {
-  if (key.endsWith('.hist')) return Array.isArray(value) && value.length <= 1000 && value.every((item) => {
-    try { return typeof item === 'string' && validEntry(key.slice(0, -5), JSON.parse(item)); } catch { return false; }
+/**
+ * An archive (`<key>.hist`) is a list of packed copies of its key. Each copy is judged alone: one that fails the
+ * key's validator is dropped, and the readable copies beside it are kept.
+ */
+function readableCopies(key: string, value: unknown): string[] | null {
+  if (!Array.isArray(value) || value.length > 1000) return null;
+  const base = key.slice(0, -5);
+  return value.filter((item): item is string => {
+    if (typeof item !== 'string') return false;
+    try {
+      const copy = JSON.parse(item);
+      // History screens read a report copy through its scored result, so an older copy stays while that result is complete.
+      return validEntry(base, copy) || ((base === KEYS.history || base === KEYS.profile) && object(copy) && validClinicalScore(copy.clinical));
+    } catch { return false; }
   });
+}
+
+function validEntry(key: string, value: unknown): boolean {
   if (key === KEYS.parts) return validMapParts(value);
   if (key === KEYS.profile || key === KEYS.history) return value === null || validProfile(value);
   if (key === 'ifs.legacy64.result') return value === null || object(value);
@@ -152,6 +166,12 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
       for (const [key, value] of Object.entries(data)) {
         if (!isPortableKey(key)) continue;
         // One malformed value must not make the rest of a person's backup unrestorable.
+        if (key.endsWith('.hist')) {
+          const copies = readableCopies(key, value);
+          if (copies === null || (copies.length === 0 && value.length > 0)) skipped.push(key);
+          else entries[key] = copies;
+          continue;
+        }
         if (!validEntry(key, value)) { skipped.push(key); continue; }
         entries[key] = key === 'INNERVERSE_CHECKINS_V1' && Array.isArray(value) ? value.filter(readableCheckIn) : value;
       }

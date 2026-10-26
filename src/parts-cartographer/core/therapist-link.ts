@@ -199,18 +199,25 @@ export interface LinkedClient {
 /** Therapist dashboard: all linked clients (newest first, archive flag kept). */
 export async function linkedClients(therapistUid: string): Promise<LinkedClient[]> {
   const db = getFirestoreDb();
-  const q = query(collection(db, 'therapistClients'), where('therapistUid', '==', therapistUid));
-  const snap = await getDocs(q);
-  const clients = snap.docs.map(d => {
-    const data = d.data();
-    return {
-      clientUid: (data['clientUid'] as string) ?? '',
-      clientEmail: (data['clientEmail'] as string) ?? null,
-      linkedAt: (data['linkedAt'] as string) ?? '',
-      archived: (data['archived'] as boolean) ?? false,
-      summary: (data['summary'] as TherapistClientSummary | undefined) ?? null,
-    };
-  });
+  // Booking rows are listed by their source, a constraint the rules can check for the whole list.
+  const bookingSnap = await getDocs(query(collection(db, 'therapistClients'),
+    where('therapistUid', '==', therapistUid), where('source', '==', 'booking')));
+  // Invite rows are read through the live codes this therapist claimed: a row counts only while its code still exists.
+  const codesSnap = await getDocs(query(collection(db, 'therapistLinks'), where('claimedBy', '==', therapistUid)));
+  const inviteRows = await Promise.all(codesSnap.docs.map((code) => getDoc(
+    doc(db, 'therapistClients', `${therapistUid}_${code.data()['clientUid']}`),
+  ).then((row) => (row.exists() && row.data()['source'] === 'invite' && row.data()['linkCode'] === code.id ? row.data() : null))));
+  const rows = [
+    ...bookingSnap.docs.map((d) => d.data()),
+    ...inviteRows.filter((data): data is NonNullable<typeof data> => data != null),
+  ];
+  const clients = rows.map((data) => ({
+    clientUid: (data['clientUid'] as string) ?? '',
+    clientEmail: (data['clientEmail'] as string) ?? null,
+    linkedAt: (data['linkedAt'] as string) ?? '',
+    archived: (data['archived'] as boolean) ?? false,
+    summary: (data['summary'] as TherapistClientSummary | undefined) ?? null,
+  }));
   clients.sort((a, b) => (b.linkedAt || '').localeCompare(a.linkedAt || ''));
   return clients;
 }

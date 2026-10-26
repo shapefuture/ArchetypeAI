@@ -75,8 +75,9 @@ describe('firestore.rules — security boundaries', () => {
     expect(shareCodes).toMatch(/validShareCodePayload\(request\.resource\.data\)/);
     expect(rules).toMatch(/function\s+validShareCodePayload\s*\(/);
     expect(therapistLinks).toMatch(/allow\s+get:\s*if\s+isSignedIn\(\)/);
-    // A client may list only their own codes, so "unlink all" can revoke unclaimed ones.
-    expect(therapistLinks).toMatch(/allow\s+list:\s*if\s+isSignedIn\(\)\s*&&\s*resource\.data\.clientUid\s*==\s*request\.auth\.uid;/);
+    // A client may list only their own codes, so "unlink all" can revoke unclaimed ones. A therapist may list only the
+    // codes they claimed, which they already hold: no unclaimed code is enumerable.
+    expect(therapistLinks).toMatch(/allow\s+list:\s*if\s+isSignedIn\(\)\s*&&\s*\(resource\.data\.clientUid\s*==\s*request\.auth\.uid\s*\|\|\s*\(resource\.data\.claimedBy\s*==\s*request\.auth\.uid\s*&&\s*exists\(/);
   });
 
   it('uses a minimal public busy-slot projection as a booking collision guard', () => {

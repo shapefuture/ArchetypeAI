@@ -397,7 +397,7 @@ export const STRINGS = {
   bookingNoSlots: s('No times are available on this date. Choose another day.', 'На эту дату свободного времени нет. Выберите другой день.'),
   bookingLookupFailed: s('Could not load therapist availability. Please try again.', 'Не удалось загрузить расписание терапевта. Попробуйте ещё раз.'),
   bookingFailed: s('The booking request could not be saved. Please try again.', 'Не удалось сохранить запись. Попробуйте ещё раз.'),
-  bookingShareConsent: s('I consent to this therapist reading any assessment profile and history I have explicitly saved to my account while this appointment is pending or approved. I can cancel to revoke access.', 'Я разрешаю терапевту читать сохранённые мной в аккаунте профиль оценки и историю, пока запись ожидает подтверждения или одобрена. Отмена записи отзывает доступ.'),
+  bookingShareConsent: s('I consent to this therapist reading any assessment profile and history I have explicitly saved to my account while this appointment is pending or approved. Cancelling this appointment revokes that access; if another appointment with this therapist is still open, access continues through it.', 'Я разрешаю терапевту читать сохранённые мной в аккаунте профиль оценки и историю, пока запись ожидает подтверждения или одобрена. Отмена этой записи отзывает этот доступ; если другая запись к этому специалисту ещё открыта, доступ сохраняется через неё.'),
   bookingRequestSent: s('Appointment request sent', 'Запрос на запись отправлен'),
   myAppointmentsSub: s('Your session requests and confirmed appointments.', 'Ваши запросы на сессии и подтверждённые записи.'),
   noAppointments: s('No appointments yet.', 'Пока нет записей.'),

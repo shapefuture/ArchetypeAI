@@ -204,9 +204,14 @@ export async function linkedClients(therapistUid: string): Promise<LinkedClient[
     where('therapistUid', '==', therapistUid), where('source', '==', 'booking')));
   // Invite rows are read through the live codes this therapist claimed: a row counts only while its code still exists.
   const codesSnap = await getDocs(query(collection(db, 'therapistLinks'), where('claimedBy', '==', therapistUid)));
-  const inviteRows = await Promise.all(codesSnap.docs.map((code) => getDoc(
-    doc(db, 'therapistClients', `${therapistUid}_${code.data()['clientUid']}`),
-  ).then((row) => (row.exists() && row.data()['source'] === 'invite' && row.data()['linkCode'] === code.id ? row.data() : null))));
+  const inviteRows = await Promise.all(codesSnap.docs.map(async (code) => {
+    // The rules refuse a row whose code is gone: that client is simply not shown. Any other error still fails the list.
+    const row = await getDoc(doc(db, 'therapistClients', `${therapistUid}_${code.data()['clientUid']}`)).catch((error: { code?: string }) => {
+      if (error?.code === 'permission-denied') return null;
+      throw error;
+    });
+    return row?.exists() && row.data()['source'] === 'invite' && row.data()['linkCode'] === code.id ? row.data() : null;
+  }));
   const rows = [
     ...bookingSnap.docs.map((d) => d.data()),
     ...inviteRows.filter((data): data is NonNullable<typeof data> => data != null),

@@ -71,13 +71,19 @@ describe('visibleAppointments', () => {
     expect(visibleAppointments(appointments, [bookingOnly, linkedWithMap]).map((a) => a.id)).toEqual(['a1', 'a2', 'a3']);
   });
 
-  it('hides appointments of archived clients and of clients not on the roster', () => {
-    const appointments = [appt('a1', 'c1'), appt('a2', 'c3'), appt('a3', 'stranger')];
+  it('hides approved appointments of archived clients and of clients not on the roster', () => {
+    const approved = (id: string, clientUid: string) => ({ ...appt(id, clientUid), status: 'approved' });
+    const appointments = [appt('a1', 'c1'), approved('a2', 'c3'), approved('a3', 'stranger')];
     expect(visibleAppointments(appointments, [linkedWithMap, archivedWithMap]).map((a) => a.id)).toEqual(['a1']);
   });
 
+  it('always shows a pending request, so it can be approved or declined, whatever the roster says', () => {
+    const appointments = [appt('a2', 'c3'), appt('a3', 'stranger')];
+    expect(visibleAppointments(appointments, [archivedWithMap]).map((a) => a.id)).toEqual(['a2', 'a3']);
+  });
+
   it('shows nothing with an empty roster or no appointments', () => {
-    expect(visibleAppointments([appt('a1', 'c1')], [])).toEqual([]);
+    expect(visibleAppointments([{ ...appt('a1', 'c1'), status: 'approved' }], [])).toEqual([]);
     expect(visibleAppointments([], [linkedWithMap])).toEqual([]);
   });
 });

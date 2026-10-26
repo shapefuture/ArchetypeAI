@@ -71,17 +71,18 @@ export function decideClientMap(input: {
 }
 
 /**
- * Keep only the appointments whose client is a linked, non-archived roster entry. Educated
- * guess: a booking needs the link, not a shared report, so a booking-only client still shows,
- * while archived and unknown clients are hidden. Order is preserved. UI gate only; the rules
- * remain the boundary.
+ * Keep the appointments the therapist can act on. A pending request is always kept, whatever the client's roster state:
+ * it holds the slot until it is approved or declined, so hiding it would leave the slot locked with no way to decide.
+ * Other appointments are kept only for a linked, non-archived roster entry. Educated guess: a booking needs the link,
+ * not a shared report, so a booking-only client still shows, while archived and unknown clients are hidden. Order is
+ * preserved. UI gate only; the rules remain the boundary.
  */
-export function visibleAppointments<T extends { clientUid: string }>(
+export function visibleAppointments<T extends { clientUid: string; status?: string }>(
   appointments: readonly T[],
   clients: readonly RosterClientLike[],
 ): T[] {
   const linked = new Set(clients.filter((client) => !client.archived).map((client) => client.clientUid));
-  return appointments.filter((appointment) => linked.has(appointment.clientUid));
+  return appointments.filter((appointment) => appointment.status === 'pending' || linked.has(appointment.clientUid));
 }
 
 /** Keep only the roster entries whose map this therapist may read. Order is preserved. */

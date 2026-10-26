@@ -483,6 +483,7 @@ export function SpecialistView() {
   const [inviteCode, setInviteCode] = useState('');
   const [clients, setClients] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [rosterFailed, setRosterFailed] = useState(false);
   const [availability, setAvailability] = useState(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -497,7 +498,8 @@ export function SpecialistView() {
   const activeClients = clients.filter((client) => !client.archived);
   const archivedClients = clients.filter((client) => client.archived);
   // Only appointments of linked, non-archived clients are shown (see visibleAppointments).
-  const shownAppointments = visibleAppointments(appointments, clients);
+  // With the roster unreadable, every request is shown: an empty list would read as "no requests" while requests exist.
+  const shownAppointments = rosterFailed ? appointments : visibleAppointments(appointments, clients);
   const pendingAppointments = shownAppointments.filter((appointment) => appointment.status === 'pending');
   const summaryClients = readableClientMaps(user?.uid ?? '', user?.uid ?? '', activeClients).filter((client) => client.summary);
   const checkInsDone = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.done) || 0), 0);
@@ -512,6 +514,7 @@ export function SpecialistView() {
     if (!attested || !user?.linked || !user.uid) {
       setClients([]);
       setAppointments([]);
+      setRosterFailed(false);
       setAvailability(null);
       setLoading(false);
       return undefined;
@@ -526,6 +529,7 @@ export function SpecialistView() {
     ]).then((results) => {
       if (!active) return;
       const [clientResult, appointmentResult, availabilityResult] = results;
+      setRosterFailed(clientResult.status === 'rejected');
       if (clientResult.status === 'fulfilled') setClients(clientResult.value);
       else setClients([]);
       if (appointmentResult.status === 'fulfilled') {
@@ -565,7 +569,8 @@ export function SpecialistView() {
       }
     } catch (err) {
       console.error('Therapist invite claim failed', err);
-      setError(t('badCode'));
+      // A refused code is reported by claimTherapistLink returning nothing; an error here is the connection or the server.
+      setError(t('therapistLoadFailed'));
     } finally {
       setBusy(false);
     }
@@ -692,7 +697,7 @@ export function SpecialistView() {
       <div className="screen">
         <div className="scroll">
           <div className="row" style={{ paddingTop: 4 }}>
-            <button className="ibtn" onClick={() => go('assessment-results')}>‹</button>
+            <button className="ibtn" aria-label={t('back')} onClick={() => go('assessment-results')}>‹</button>
             <div className="grow kicker">{t('therapist')}</div>
           </div>
           <div className="card mt24" style={{ borderColor: 'var(--accent)' }}>
@@ -712,10 +717,10 @@ export function SpecialistView() {
     <div className="screen">
       <div className="scroll">
         <div className="row" style={{ paddingTop: 4 }}>
-          <button className="ibtn" onClick={() => go('assessment-results')}>‹</button>
+          <button className="ibtn" aria-label={t('back')} onClick={() => go('assessment-results')}>‹</button>
           <div className="grow kicker">{t('therapist')}</div>
           <button className="ibtn" title={t('availT')} onClick={() => setOverlay('therapist')}>⚙</button>
-          <button className="ibtn" onClick={() => setOverlay('help')}>?</button>
+          <button className="ibtn" aria-label={t('help')} onClick={() => setOverlay('help')}>?</button>
         </div>
 
         {!user?.linked && (
@@ -732,7 +737,7 @@ export function SpecialistView() {
             ['claims', t('claims')], ['avail', t('availability')], ['clients', t('clients')],
             ['metrics', t('metrics')], ['appts', t('appointments')],
           ].map(([value, label]) => (
-            <button key={value} className={tab === value ? 'on' : ''} onClick={() => setTab(value)}>{label}</button>
+            <button key={value} className={tab === value ? 'on' : ''} aria-pressed={tab === value} onClick={() => setTab(value)}>{label}</button>
           ))}
         </div>
 

@@ -298,7 +298,8 @@ service cloud.firestore {
         && request.resource.data.uid == resource.data.uid
         && code.matches('^[a-z0-9]{8,16}$')
         && validShareCodePayload(request.resource.data);
-      allow delete: if isOwner(resource.data.uid);
+      // A code another device already revoked no longer exists: deleting it again is a no-op, not an error.
+      allow delete: if isSignedIn() && (resource == null || isOwner(resource.data.uid));
     }
 
     // Therapist invite codes carry only the summary the client consented to

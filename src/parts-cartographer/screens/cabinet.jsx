@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character.tsx';
 import { CustomizerLike } from './editor-kit.jsx';
@@ -8,6 +8,7 @@ import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus, appointmentDisplayTime } from '../core/booking.ts';
 import { CLOUD_PART_LIMIT, loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { canonicalEnergyPart } from '../core/universe-controls.ts';
+import { archetypeOf } from '../core/clinical-profile-adapter.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
 import { EntryPanel } from './elevation/e02-entry.jsx';
@@ -381,6 +382,8 @@ export function PartEditor({ part }) {
   const { t, lang, parts, setParts, setSheet, toast } = useApp();
   // Freeze a legacy record's current seed on open, so editing one trait keeps the same sewn character.
   const [draft, setDraft] = useState(() => ({ ...part, traits: withCharacterSeed(part.traits) }));
+  const nameId = useId();
+  const familyId = useId();
   const patch = (p) => setDraft((d) => ({ ...d, ...p }));
   const commit = () => {
     setParts(parts.map((x) => (x.id === draft.id ? draft : x)));
@@ -394,12 +397,13 @@ export function PartEditor({ part }) {
           <Character traits={draft.traits} />
         </div>
         <div className="grow">
-          <div className="field"><label>{t('nameLabel')}</label>
-            <input value={draft.name} onChange={(e) => patch({ name: e.target.value })} />
+          <div className="field"><label htmlFor={nameId}>{t('nameLabel')}</label>
+            <input id={nameId} value={draft.name} onChange={(e) => patch({ name: e.target.value })} />
           </div>
-          <div className="field"><label>{t('familyLabel')}</label>
-            <select className="drop" value={draft.family}
-              onChange={(e) => patch({ family: e.target.value, traits: { ...draft.traits, color: familyColor(e.target.value) } })}>
+          <div className="field"><label htmlFor={familyId}>{t('familyLabel')}</label>
+            {/* A family moves the part to its archetype cluster and node size, so the map and the cluster filter agree. */}
+            <select id={familyId} className="drop" value={draft.family}
+              onChange={(e) => patch({ family: e.target.value, traits: { ...draft.traits, color: familyColor(e.target.value) }, archetype: draft.archetype && archetypeOf(e.target.value, draft.archetype) })}>
               {['manager', 'firefighter', 'exile', 'resource'].map((f) => (
                 <option key={f} value={f}>{FAMILY_LABELS[f].icon} {FAMILY_LABELS[f][lang]}</option>
               ))}

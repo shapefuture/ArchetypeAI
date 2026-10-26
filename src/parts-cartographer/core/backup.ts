@@ -184,7 +184,7 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
   // so its own score wins over the raw answers of the last test.
   const savedScore = (entries[KEYS.profile] as any)?.testModel === 'angular-v2' ? (entries[KEYS.profile] as any).clinical : undefined;
   if (savedScore || isCanonicalAssessmentInput(entries.INNERVERSE_PROFILE_V1)) {
-    const [{ scoreProfile }, { adaptClinicalProfile }] = await Promise.all([import('../../shared/core/data/scoring-v2'), import('./clinical-profile-adapter')]);
+    const [{ scoreProfile }, { adaptClinicalProfile, archetypeOf }] = await Promise.all([import('../../shared/core/data/scoring-v2'), import('./clinical-profile-adapter')]);
     const rebuilt = adaptClinicalProfile(savedScore ?? scoreProfile(entries.INNERVERSE_PROFILE_V1 as any), savedLang);
     const map = validMapParts(entries[KEYS.parts]) ? entries[KEYS.parts] as Part[] : existingParts;
     const ids = new Set(rebuilt.parts.map((part) => part.id));
@@ -192,7 +192,7 @@ export async function prepareBackup(text: string, lang: Lang, existingParts: Par
     entries[KEYS.parts] = [...rebuilt.parts.map((part) => {
       const old = map.find((item) => item.id === part.id);
       // A name the person typed wins; the canonical name is only the fallback.
-      return { ...part, ...old, archetype: part.archetype, name: old?.name ?? part.name };
+      return { ...part, ...old, archetype: part.archetype && archetypeOf(old?.family ?? part.family, part.archetype), name: old?.name ?? part.name };
     }),
       ...map.filter((part) => !ids.has(part.id) && !part.id.startsWith('seed-'))];
     entries[KEYS.profile] = { ...rebuilt.profile, createdAt: (entries[KEYS.profile] as any)?.createdAt ?? rebuilt.profile.createdAt };

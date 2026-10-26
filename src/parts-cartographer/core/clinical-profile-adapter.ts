@@ -86,13 +86,13 @@ export function withPersonEdits(scored: ClinicalPart, saved: Partial<ClinicalPar
   if (!saved) return scored;
   const typedName = saved.name && ![saved.nameEn, saved.nameRu, scored.nameEn, scored.nameRu].includes(saved.name) ? saved.name : undefined;
   const typedRole = saved.role && !canonicalRoles(scored.id).includes(saved.role) ? saved.role : undefined;
-  const family = saved.family && Object.hasOwn(CLUSTER_OF_FAMILY, saved.family) ? saved.family : scored.family;
+  const family = saved.family && Object.hasOwn(FAMILY_ARCHETYPE, saved.family) ? saved.family : scored.family;
   return {
     ...scored,
     name: typedName ?? scored.name,
     role: typedRole ?? scored.role,
     family,
-    archetype: { ...scored.archetype, cluster: CLUSTER_OF_FAMILY[family] },
+    archetype: scored.archetype && archetypeOf(family, scored.archetype),
     traits: saved.traits ?? scored.traits,
     star: saved.star ?? scored.star,
   };
@@ -137,7 +137,18 @@ function displayPartName(id: PartId | string, lang: Lang): string {
   return lang === 'ru' ? PART_NAME_RU[id] ?? PART_NAME_EN[id] ?? id : PART_NAME_EN[id] ?? id;
 }
 
-const CLUSTER_OF_FAMILY: Record<Family, string> = { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' };
+/** The archetype cluster and node size each family draws with. The cluster filter and the node scale read them. */
+const FAMILY_ARCHETYPE: Record<Family, { cluster: string; size: number }> = {
+  manager: { cluster: 'managers', size: 0.75 },
+  firefighter: { cluster: 'firefighters', size: 0.7 },
+  exile: { cluster: 'exiles', size: 0.6 },
+  resource: { cluster: 'resources', size: 0.8 },
+};
+
+/** An archetype with the cluster and size of its family, whichever family it was last drawn with. */
+export function archetypeOf<T extends { cluster: string; size: number }>(family: Family, archetype: T): T {
+  return { ...archetype, ...FAMILY_ARCHETYPE[family] };
+}
 
 function familyFor(id: PartId): Family {
   return partClass(id) as Family;
@@ -189,9 +200,9 @@ function projectedPart(
       coordinateBasis: 'fixed-reference-147',
       coordinates: [reference.ax.ag, reference.ax.te, reference.ax.fo, reference.ax.at]
         .map((value) => (value - 50) / 50) as [number, number, number, number],
-      cluster: CLUSTER_OF_FAMILY[family],
+      cluster: FAMILY_ARCHETYPE[family].cluster,
       prominence: Math.max(0, Math.min(100, (score.T - 20) / 60 * 100)),
-      size: { manager: 0.75, firefighter: 0.7, exile: 0.6, resource: 0.8 }[family],
+      size: FAMILY_ARCHETYPE[family].size,
       description: localCopy?.face[copyIndex] ?? '',
       invitation: localCopy?.need[copyIndex] ?? '',
       shadow: localCopy?.shadow[copyIndex] ?? '',

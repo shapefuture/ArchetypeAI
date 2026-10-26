@@ -48,9 +48,11 @@ service cloud.firestore {
 
     // An open booking the therapist may move a grant to: pending or approved, and not dated before yesterday. An approved
     // booking never closes by itself, so a long-past one must not re-grant access the client revoked.
+    // A stepped-back therapist (no therapist profile) moves nothing: their reads and assignments are closed too.
     function hasOpenBooking(clientUid, therapistUid, appointmentId) {
       let appointmentPath = /databases/$(database)/documents/appointments/$(appointmentId);
       return hasActiveAppointment(clientUid, therapistUid, appointmentId)
+        && exists(/databases/$(database)/documents/therapists/$(therapistUid))
         && slotDay(get(appointmentPath).data.start) >= request.time.date() - duration.value(1, 'd');
     }
 
@@ -330,7 +332,9 @@ service cloud.firestore {
           || (resource.data.claimedBy == request.auth.uid
             && exists(/databases/$(database)/documents/therapists/$(request.auth.uid)))
           || resource.data.clientUid == request.auth.uid);
-      allow list: if isSignedIn() && resource.data.clientUid == request.auth.uid;
+      // A therapist lists the codes they claimed: only live codes exist, so their invite rows can be read through them.
+      allow list: if isSignedIn() && (resource.data.clientUid == request.auth.uid
+        || (resource.data.claimedBy == request.auth.uid && exists(/databases/$(database)/documents/therapists/$(request.auth.uid))));
       allow create: if isOwner(request.resource.data.clientUid)
         && code.matches('^[A-Z0-9]{6,10}$')
         && request.resource.data.keys().hasAll(['clientUid', 'createdAt', 'summary'])
@@ -635,13 +639,19 @@ service cloud.firestore {
     // or a client-created invite code. Clients may add their own booking row;
     // therapists may claim a code and maintain archive state.
     match /therapistClients/{docId} {
-      allow read: if isSignedIn()
+      // A single row is readable while its invite code is live: revoking the code ends the therapist's access. A list cannot
+      // check each row that way, so the therapist's list covers booking rows, and invite rows come through their live codes.
+      allow get: if isSignedIn()
         && (resource.data.clientUid == request.auth.uid
           || (resource.data.therapistUid == request.auth.uid
             && exists(/databases/$(database)/documents/therapists/$(request.auth.uid))
-            // An invite row is readable only while the client's code is live: revoking the code ends the therapist's access.
             && (resource.data.source != 'invite'
               || hasLiveInviteLink(request.auth.uid, resource.data.clientUid, resource.data.linkCode))));
+      allow list: if isSignedIn()
+        && (resource.data.clientUid == request.auth.uid
+          || (resource.data.therapistUid == request.auth.uid
+            && exists(/databases/$(database)/documents/therapists/$(request.auth.uid))
+            && resource.data.source == 'booking'));
       allow create: if isSignedIn()
         && docId == request.resource.data.therapistUid + '_' + request.resource.data.clientUid
         && (
@@ -675,6 +685,7 @@ service cloud.firestore {
         && docId == resource.data.therapistUid + '_' + resource.data.clientUid
         && resource.data.source == 'booking'
         && request.resource.data.source == 'booking'
+        && request.resource.data.linkedAt is string
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['appointmentId', 'linkedAt'])
         && hasOpenBooking(resource.data.clientUid, request.auth.uid, request.resource.data.appointmentId);
       allow update: if isSignedIn()

@@ -106,7 +106,7 @@ export const STRINGS = {
       pickSlot: 'Pick a time',
       back: 'Back',
       loginFirst: 'Sign in to book a session.',
-      dataShareConsent: 'I understand that the therapist can view my saved profile and history while this request is pending or approved. Cancelling revokes access.',
+      dataShareConsent: 'I understand that the therapist can view my saved profile and history while this request is pending or approved. Cancelling revokes access, unless another request with this therapist is still open.',
       slotMinutes: 'min',
     },
   },

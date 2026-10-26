@@ -60,9 +60,9 @@ describe.skipIf(!EMULATOR)('round25: a revoke batch tolerates records another de
     state.db = asUser(C);
     const removed = await revokeTherapistAccess(C);
     expect(removed).toBe(3);
-    const rows = await getDocs(query(collection(asUser(T), 'therapistClients'), where('therapistUid', '==', T)))
-      .catch(() => null);
-    expect(rows === null || rows.empty).toBe(true);
+    const rows = await getDocs(query(collection(asUser(T), 'therapistClients'),
+      where('therapistUid', '==', T), where('source', '==', 'booking')));
+    expect(rows.empty).toBe(true);
   });
 
   it('control: a therapist roster delete of a row already gone is a no-op, not a refusal', async () => {

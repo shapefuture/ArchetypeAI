@@ -648,7 +648,7 @@ export function SpecialistView() {
               <span className="chip">{t('activeComplexes')}: {client.summary.activeComplexes?.length ?? 0}</span>
             </div>
             <div className="faint mt8" style={{ fontSize: 11.5 }}>
-              {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {Number(client.summary.adherence?.done) || 0} {t('checkinsDone')}
+              {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {Number(client.summary.adherence?.done) || 0} {t('practicesDone')}
             </div>
           </div>
         </GuardedClientData>

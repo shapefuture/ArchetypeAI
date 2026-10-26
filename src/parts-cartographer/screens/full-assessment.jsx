@@ -223,10 +223,9 @@ export function FullAssessment() {
     setBusy(true);
     try {
       try {
+        // Skipping keeps the letters already saved: they are the person's own writing and show again on the next retake.
         if (saveNorthStar && validFutureSelf(futureSelf)) {
           localStorage.setItem(FUTURE_SELF_KEY, JSON.stringify(futureSelf));
-        } else if (!saveNorthStar) {
-          localStorage.removeItem(FUTURE_SELF_KEY);
         }
       } catch { /* the scored map can still be saved if storage is unavailable */ }
       const assessmentInput = toAssessmentInput(answers);

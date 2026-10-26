@@ -22,7 +22,7 @@ const filled = (shadowFill: number, selfFill: number): AssessmentInput => {
   return { shadow, resources, self: Array(8).fill(selfFill) as number[], validity: { attention: 3, infrequency: [1, 1] } };
 };
 
-const sentFor = (score: ReturnType<typeof scoreProfile>) => therapistSummaryFor(adaptClinicalProfile(score, 'en').profile);
+const sentFor = (score: ReturnType<typeof scoreProfile>) => therapistSummaryFor(adaptClinicalProfile(score, 'en').profile, { done: 0, skipped: 0 });
 
 describe('therapist summary sent by the Share screen (round 19)', () => {
   it('sends every part at the client\'s own T-score, to one decimal', () => {
@@ -62,7 +62,7 @@ describe('therapist summary sent by the Share screen (round 19)', () => {
   });
 
   it('sends nothing when no complete scored result is saved', () => {
-    expect(therapistSummaryFor(undefined)).toBeNull();
-    expect(therapistSummaryFor({ clinical: { parts: {} } })).toBeNull();
+    expect(therapistSummaryFor(undefined, { done: 0, skipped: 0 })).toBeNull();
+    expect(therapistSummaryFor({ clinical: { parts: {} } }, { done: 0, skipped: 0 })).toBeNull();
   });
 });

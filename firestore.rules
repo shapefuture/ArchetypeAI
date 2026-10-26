@@ -116,6 +116,16 @@ service cloud.firestore {
         && getAfter(invitePath).data.get('claimedBy', null) == therapistUid;
     }
 
+    // Read-side twin of hasValidInviteLink: the code still exists, belongs to this client and was claimed by this
+    // therapist. Once the client deletes the code, the roster row it created stops being readable by the therapist.
+    function hasLiveInviteLink(therapistUid, clientUid, linkCode) {
+      let invitePath = /databases/$(database)/documents/therapistLinks/$(linkCode);
+      return linkCode is string
+        && exists(invitePath)
+        && get(invitePath).data.clientUid == clientUid
+        && get(invitePath).data.get('claimedBy', null) == therapistUid;
+    }
+
     function validShareCodePayload(data) {
       return data.keys().hasAll(['uid', 'createdAt'])
         && data.keys().hasOnly(['uid', 'createdAt', 'schema', 'mapSnapshot', 'assessment'])
@@ -602,7 +612,10 @@ service cloud.firestore {
       allow read: if isSignedIn()
         && (resource.data.clientUid == request.auth.uid
           || (resource.data.therapistUid == request.auth.uid
-            && exists(/databases/$(database)/documents/therapists/$(request.auth.uid))));
+            && exists(/databases/$(database)/documents/therapists/$(request.auth.uid))
+            // An invite row is readable only while the client's code is live: revoking the code ends the therapist's access.
+            && (resource.data.source != 'invite'
+              || hasLiveInviteLink(request.auth.uid, resource.data.clientUid, resource.data.linkCode))));
       allow create: if isSignedIn()
         && docId == request.resource.data.therapistUid + '_' + request.resource.data.clientUid
         && (
@@ -643,8 +656,10 @@ service cloud.firestore {
             request.resource.data.source == 'invite'
             && request.resource.data.therapistUid == request.auth.uid
             && request.resource.data.keys().hasAll(['therapistUid', 'clientUid', 'linkedAt', 'source', 'linkCode', 'summary'])
-            // An invite row carries no booking fields a therapist could invent.
-            && request.resource.data.keys().hasOnly(['therapistUid', 'clientUid', 'linkedAt', 'archived', 'source', 'linkCode', 'summary'])
+            // A claim may keep the booking fields the client already wrote on this row, unchanged; a therapist cannot invent or change them.
+            && request.resource.data.keys().hasOnly(['therapistUid', 'clientUid', 'linkedAt', 'archived', 'source', 'linkCode', 'summary', 'clientEmail', 'appointmentId'])
+            && request.resource.data.get('clientEmail', null) == resource.data.get('clientEmail', null)
+            && request.resource.data.get('appointmentId', null) == resource.data.get('appointmentId', null)
             && request.resource.data.linkedAt is string
             && validTherapistSummary(request.resource.data.summary)
             && hasValidInviteLink(request.auth.uid, request.resource.data.clientUid, request.resource.data.linkCode)

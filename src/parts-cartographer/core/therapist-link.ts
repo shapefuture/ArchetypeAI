@@ -56,7 +56,13 @@ export function toTherapistSummary(
     activeComplexes: profile.activeComplexes.map(c => ({
       id: c.id, activation: Math.round(c.activation * 10) / 10, tier: c.tier,
     })),
-    copingStack: profile.copingStack,
+    // An absent protector is left out, not sent as undefined: Firestore refuses undefined field values.
+    copingStack: {
+      l1: profile.copingStack.l1,
+      ...(profile.copingStack.l2 ? { l2: profile.copingStack.l2 } : {}),
+      ...(profile.copingStack.l3 ? { l3: profile.copingStack.l3 } : {}),
+      floor: profile.copingStack.floor,
+    },
     adherence,
   };
 }
@@ -65,10 +71,12 @@ export function toTherapistSummary(
  * The summary the Share screen sends, built from the client's complete scored result so the therapist sees the
  * same T-scores, tiers and coping stack the client sees. Null when no complete result is saved.
  */
-export function therapistSummaryFor(profile: { clinical?: unknown } | null | undefined): TherapistClientSummary | null {
+export function therapistSummaryFor(
+  profile: { clinical?: unknown } | null | undefined, adherence: { done: number; skipped: number },
+): TherapistClientSummary | null {
   const clinical = profile?.clinical;
   if (!validClinicalScore(clinical)) return null;
-  return toTherapistSummary(clinical, { done: 0, skipped: 0 });
+  return toTherapistSummary(clinical, adherence);
 }
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no confusables

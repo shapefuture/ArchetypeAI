@@ -1804,7 +1804,10 @@ export function Share() {
 
   const createShareCode = async () => {
     if (!profile || !user?.linked || !user.uid || !shareConfirmed || linkBusy) return;
-    const summary = therapistSummaryFor(profile);
+    // The therapist sees how many practices the person completed. Skips are not recorded on this device.
+    const completed = store.load('INNERVERSE_PRACTICE_V1', null)?.completed;
+    const done = Array.isArray(completed) ? completed.filter((id) => typeof id === 'string').length : 0;
+    const summary = therapistSummaryFor(profile, { done, skipped: 0 });
     if (!summary) { setLinkError(t('therapistShareFailed')); return; }
     setLinkBusy(true);
     setLinkError('');

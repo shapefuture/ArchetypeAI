@@ -346,11 +346,12 @@ export function SynastryOv() {
     try {
       const c = shareKind === 'legacy64' ? await createCloudLegacy64ShareCode(user.uid, legacyResponses) : await createCloudMapShareCode(user.uid, profile, parts);
       const entry = { c, uid: user.uid, at: Date.now(), source: 'cloud-map', assessment: shareKind, partCount: parts.length };
-      setIssuedCodes((codes) => [entry, ...codes.filter((item) => item.c !== c)].slice(0, 20));
+      // Every live code stays listed until it is revoked: a code that dropped out of the list could not be revoked here.
+      setIssuedCodes((codes) => [entry, ...codes.filter((item) => item.c !== c)]);
       store.save(KEYS.share, [
         ...(store.load(KEYS.share, []) ?? []),
         entry,
-      ].slice(-20));
+      ]);
       setShareConfirmed(false);
       toast('✓ ' + t('shareCodeCreated'));
     } catch (error) {

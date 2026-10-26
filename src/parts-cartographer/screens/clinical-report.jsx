@@ -45,7 +45,7 @@ export function ClinicalReport({ profile: supplied, readOnly = false, embedded =
       return current ? { ...part, ...current, archetype: part.archetype, name: current.name ?? part.name } : part;
     });
     setParts([...kept, ...parts.filter((part) => !ids.has(part.id) && !String(part.id).startsWith('seed-'))]);
-    setProfile({ ...rebuilt.profile, createdAt: entry.createdAt });
+    setProfile({ ...rebuilt.profile, createdAt: entry.createdAt }, { archive: false });
     setPreview(null);
   };
   const retake = () => {

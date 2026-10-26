@@ -73,6 +73,16 @@ export interface ClinicalPart extends Part {
   scoreT: number;
 }
 
+/**
+ * A part the person already had, scored again by a retake. The new scores and canonical copy are the result,
+ * but a name the person typed, its look and its star stay as the person made them.
+ */
+export function withPersonEdits(scored: ClinicalPart, saved: Partial<ClinicalPart> | undefined): ClinicalPart {
+  if (!saved) return scored;
+  const typed = saved.name && ![saved.nameEn, saved.nameRu, scored.nameEn, scored.nameRu].includes(saved.name) ? saved.name : undefined;
+  return { ...scored, name: typed ?? scored.name, traits: saved.traits ?? scored.traits, star: saved.star ?? scored.star };
+}
+
 export type AdaptedClinicalProfile = {
   version: 'angular-v2';
   testModel: 'angular-v2';

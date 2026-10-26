@@ -330,7 +330,7 @@ service cloud.firestore {
     // role check; collection listing is admin-only.
     match /adminAllowlist/{email} {
       allow get: if isAdmin()
-        || (isSignedIn() && request.auth.token.email is string && request.auth.token.email == email);
+        || (hasVerifiedEmail() && request.auth.token.email == email);
       allow list: if isAdmin();
       allow create: if isAdmin()
         && request.resource.data.email == email

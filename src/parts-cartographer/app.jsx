@@ -464,7 +464,8 @@ export default function App() {
     if (due.length) {
       const next = sealed.filter((s) => s.until > Date.now());
       store.save('ifs.sealed', next);
-      setTimeout(() => toast(`⏳ ${due[0].text}`), 1500);
+      // Every note that came due is shown together; the list keeps only the notes still waiting.
+      setTimeout(() => toast(`⏳ ${due.map((note) => note.text).join(' · ')}`), 1500);
     }
   }, [toast]);
 

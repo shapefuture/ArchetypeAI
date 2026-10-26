@@ -416,6 +416,33 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
   });
 
   describe('therapist and booking relationships', () => {
+    it('re-claiming an invite code keeps the archive flag a therapist set on the client row', async () => {
+      await seedTherapistProfile();
+      const client = asUser(UIDS.client, 'client@example.com');
+      const therapist = asUser(UIDS.therapist, 'therapist@example.com');
+      const code = 'ABCDEFGH23';
+      const summary = { headline: 'Grounded', burden: 36, selfEnergy: 62, parts: {}, activeComplexes: [], copingStack: {}, adherence: {} };
+      const rosterRef = () => doc(therapist, 'therapistClients', `${UIDS.therapist}_${UIDS.client}`);
+      await assertSucceeds(setDoc(doc(client, 'therapistLinks', code), {
+        clientUid: UIDS.client, createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, summary,
+      }));
+      // The first claim marks the code and writes the roster row; the app's claim write merges.
+      const claim = (first: boolean, linkedAt: string) => {
+        const batch = writeBatch(therapist);
+        if (first) batch.update(doc(therapist, 'therapistLinks', code), { claimedBy: UIDS.therapist });
+        batch.set(rosterRef(), {
+          therapistUid: UIDS.therapist, clientUid: UIDS.client, linkedAt, source: 'invite', linkCode: code, summary,
+        }, { merge: true });
+        return batch.commit();
+      };
+      await assertSucceeds(claim(true, `${NEXT_YEAR}-10-01T00:00:00.000Z`));
+      await assertSucceeds(setDoc(rosterRef(), { archived: true }, { merge: true }));
+      // The same therapist enters the same code again.
+      await assertSucceeds(claim(false, `${NEXT_YEAR}-10-02T00:00:00.000Z`));
+      const row = await getDoc(rosterRef());
+      expect(row.data()?.archived).toBe(true);
+    });
+
     it('a booked therapist cannot read raw answers kept in an older assessment or history record', async () => {
       await createValidBooking();
       await seed(async (db) => {

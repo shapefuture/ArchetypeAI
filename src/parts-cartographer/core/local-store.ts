@@ -38,14 +38,15 @@ export const store: STORAGE_PORT = {
       return raw ? (JSON.parse(raw) as T) : fallback;
     } catch { return fallback; }
   },
-  save<T>(key: string, value: T) {
+  save<T>(key: string, value: T): boolean {
     const packed = JSON.stringify(value);
-    try { localStorage.setItem(key, packed); } catch { reportStorageFull(key); return; }
+    try { localStorage.setItem(key, packed); } catch { reportStorageFull(key); return false; }
     // Keep a bounded local archive alongside the latest value.
     try {
       const h = packedHistory(key);
       if (h[h.length - 1] !== packed) writeHistory(key, [...h, packed]);
     } catch { /* the archive is optional */ }
+    return true;
   },
   archive<T>(key: string, value: T) {
     try { writeHistory(key, [...packedHistory(key), JSON.stringify(value)]); } catch { /* the archive is optional */ }

@@ -207,6 +207,8 @@ interface MergedList {
   /** When this device holds the same record, whether its copy beats the file's (for example a re-rating made here). */
   keepDevice?: (device: any, incoming: any) => boolean;
   sort?: (a: any, b: any) => number;
+  /** Keep only the newest this many (the list is in order by then). */
+  cap?: number;
 }
 /** A record's content as a key: the same record matches however its keys were ordered when written. */
 const contentKey = (value: unknown): string => JSON.stringify(value, (_key, item) => (item && typeof item === 'object' && !Array.isArray(item)
@@ -248,7 +250,44 @@ function mergeLists(incoming: unknown[], existing: unknown[], list: MergedList):
   const kept = existing.filter((item) => (!list.keep || list.keep(item))
     && (list.idOf(item) === undefined || !incomingIds.has(list.idOf(item))));
   const merged = [...taken, ...kept];
-  return list.sort ? merged.sort(list.sort) : merged;
+  const ordered = list.sort ? merged.sort(list.sort) : merged;
+  return list.cap ? ordered.slice(-list.cap) : ordered;
+}
+
+/** A report archive (`<key>.hist`) holds packed copies, oldest first. A merge keeps both sides' copies, newest last. */
+const archiveTime = (packed: unknown): number => {
+  try { const value = JSON.parse(String(packed)); return timeOf(value?.createdAt ?? value?.at); } catch { return 0; }
+};
+const ARCHIVE_LIST: MergedList = { idOf: (item) => item, sort: (a, b) => archiveTime(a) - archiveTime(b), cap: 30 };
+
+/** Objects a merge combines field by field: their lists are merged by the rules given here. */
+interface MergedObject {
+  fields?: Record<string, MergedList>;
+  everyField?: MergedList;
+}
+const MERGED_OBJECTS: Record<string, MergedObject> = {
+  INNERVERSE_MEMORY_V1: { fields: { memories: { idOf: (memory) => memory?.id }, corrections: { idOf: contentKey } } },
+  // Part edit history: one list of versions per part.
+  INNERVERSE_PART_VERSIONS_V1: { everyField: { idOf: contentKey, sort: (a, b) => timeOf(a?.at) - timeOf(b?.at) } },
+};
+const isPlainObject = (value: unknown): value is Record<string, any> => !!value && typeof value === 'object' && !Array.isArray(value);
+
+function readObject(storage: Storage, key: string): Record<string, any> {
+  try {
+    const value = JSON.parse(storage.getItem(key) ?? 'null');
+    return isPlainObject(value) ? value : {};
+  } catch { return {}; }
+}
+
+/** The file's object with each merged field combined with this device's copy of it. */
+function mergeObjects(incoming: Record<string, any>, existing: Record<string, any>, spec: MergedObject): Record<string, any> {
+  const out: Record<string, any> = { ...existing, ...incoming };
+  for (const field of new Set([...Object.keys(incoming), ...Object.keys(existing)])) {
+    const list = spec.fields?.[field] ?? spec.everyField;
+    if (!list || (!Array.isArray(incoming[field]) && !Array.isArray(existing[field]))) continue;
+    out[field] = mergeLists(Array.isArray(incoming[field]) ? incoming[field] : [], Array.isArray(existing[field]) ? existing[field] : [], list);
+  }
+  return out;
 }
 
 export function applyBackup(backup: PreparedBackup, storage: Storage = localStorage, mode: 'merge' | 'replace' = 'merge'): void {
@@ -262,10 +301,12 @@ export function applyBackup(backup: PreparedBackup, storage: Storage = localStor
   try {
     for (const key of keys) {
       if (Object.hasOwn(backup.entries, key)) {
-        const list = mode === 'merge' ? MERGED_LISTS[key] : undefined;
+        const list = mode === 'merge' ? (MERGED_LISTS[key] ?? (key.endsWith('.hist') ? ARCHIVE_LIST : undefined)) : undefined;
+        const objectSpec = mode === 'merge' ? MERGED_OBJECTS[key] : undefined;
         const incoming = backup.entries[key];
-        // A merge keeps this device's own journal entries, parts and check-ins that the file does not carry.
+        // A merge keeps this device's own copies that the file does not carry: journal, parts, check-ins, archives, memories.
         if (list && Array.isArray(incoming)) storage.setItem(key, JSON.stringify(mergeLists(incoming, readList(storage, key), list)));
+        else if (objectSpec && isPlainObject(incoming)) storage.setItem(key, JSON.stringify(mergeObjects(incoming, readObject(storage, key), objectSpec)));
         else storage.setItem(key, key === 'ARCHETYPE_ASSESSMENT_INDEX' || RAW_STRING_KEYS.has(key)
           ? String(incoming) : JSON.stringify(incoming));
       }

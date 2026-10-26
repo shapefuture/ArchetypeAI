@@ -181,8 +181,9 @@ export function CheckIn() {
     const text = verdictDraft.trim();
     if (!text || !locked) return;
     const next = [...safeArray(VERDICT_KEY).filter(isSealedVerdict), sealVerdict(text, new Date())];
+    // A seal that did not fit is not claimed: the storage warning stays and the text stays in the box.
+    if (!store.save(VERDICT_KEY, next)) return;
     setVerdicts(next);
-    store.save(VERDICT_KEY, next);
     setVerdictDraft('');
     toast('✓ ' + t('sealed'));
   };

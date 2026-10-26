@@ -463,11 +463,15 @@ export default function App() {
     if (held.reason === 'quiet-hours' || held.reason === 'skipped-today') return;
     if (due.length) {
       const next = sealed.filter((s) => s.until > Date.now());
+      // The due notes move into the journal, which keeps them on screen and in storage: a toast is too brief for a note.
+      const journal = store.load('ifs.journal', []);
+      const now = Date.now();
+      const moved = due.map((note, index) => ({ id: now + index, at: now, kind: 'jThought', what: note.text.slice(0, 20_000), where: '', part: '', note: '' }));
+      if (!store.save('ifs.journal', [...moved, ...(Array.isArray(journal) ? journal : [])])) return;
       store.save('ifs.sealed', next);
-      // Every note that came due is shown together; the list keeps only the notes still waiting.
-      setTimeout(() => toast(`⏳ ${due.map((note) => note.text).join(' · ')}`), 1500);
+      setTimeout(() => toast(`⏳ ${t('sealedNoteJournal')}`), 1500);
     }
-  }, [toast]);
+  }, [toast, t]);
 
   /* ── THE @switch ── */
   const screen = (() => {

@@ -37,12 +37,13 @@ test('A: every due sealed note is shown or kept, not only the first', async ({ c
   });
   const page = await context.newPage();
   await page.goto('/');
-  await expect.poll(() => page.evaluate(() => window.__seen.some((line) => line.includes('FIRST due note'))), { timeout: 20_000 }).toBe(true);
+  // Both due notes move into the journal on open; the toast is a short pointer to it.
+  await expect.poll(() => page.evaluate(() => (localStorage.getItem('ifs.journal') ?? '').includes('FIRST due note')), { timeout: 20_000 }).toBe(true);
   await page.waitForTimeout(2500);
-  const stored = await page.evaluate(() => localStorage.getItem('ifs.sealed'));
+  const stored = await page.evaluate(() => localStorage.getItem('ifs.journal'));
   const seen = await page.evaluate(() => window.__seen);
   mkdirSync(OUT, { recursive: true });
-  // Expected: the second note is displayed or still stored. Observed: neither.
+  // Expected: the second note is kept in the journal (or was displayed). Observed before the fix: neither.
   expect(seen.some((line) => line.includes('SECOND due note')) || (stored ?? '').includes('SECOND due note')).toBe(true);
 });
 

@@ -26,8 +26,11 @@ export function validClinicalScore(v: unknown): v is ScoredProfile {
     && record(v.validity) && typeof v.validity.ok === 'boolean' && Array.isArray(v.validity.flags) && v.validity.flags.every((s: unknown) => typeof s === 'string') && typeof v.crisis === 'boolean';
 }
 
+const FAMILIES = ['manager', 'firefighter', 'exile', 'resource'];
+
 export function validProfile(v: unknown): boolean {
-  return record(v) && Array.isArray(v.parts) && typeof v.headlineConstellation === 'string' && record(v.selfEnergyRadar)
+  return record(v) && Array.isArray(v.parts) && v.parts.every((part: unknown) => record(part) && FAMILIES.includes(part.family as string))
+    && typeof v.headlineConstellation === 'string' && record(v.selfEnergyRadar)
     && record(v.needHunger) && Array.isArray(v.polarizations) && Array.isArray(v.copingStack) && Array.isArray(v.complexes)
     && (v.testModel !== 'angular-v2' || validClinicalScore(v.clinical));
 }

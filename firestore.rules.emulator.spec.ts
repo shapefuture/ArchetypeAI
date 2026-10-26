@@ -157,6 +157,14 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
   }
 
   describe('admin privilege boundaries', () => {
+    it('an unverified account cannot read the admin allowlist entry for its own address', async () => {
+      await seedAllowlistedAdmin('ops-admin@example.com');
+      const unverified = asUser('uid_probe', 'ops-admin@example.com', false);
+      await assertFails(getDoc(doc(unverified, 'adminAllowlist', 'ops-admin@example.com')));
+      const verified = asUser('uid_probe2', 'ops-admin@example.com', true);
+      await assertSucceeds(getDoc(doc(verified, 'adminAllowlist', 'ops-admin@example.com')));
+    });
+
     it('blocks a normal user from creating an adminClients relationship', async () => {
       const attacker = asUser(UIDS.attacker, 'attacker@example.com');
       await assertFails(setDoc(doc(attacker, 'adminClients', `${UIDS.attacker}_${UIDS.victim}`), {

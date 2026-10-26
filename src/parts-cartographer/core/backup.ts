@@ -204,18 +204,28 @@ interface MergedList {
   idOf: (item: any) => unknown;
   /** Which of this device's own items the merge keeps. */
   keep?: (item: any) => boolean;
+  /** When this device holds the same record, whether its copy beats the file's (for example a re-rating made here). */
+  keepDevice?: (device: any, incoming: any) => boolean;
   sort?: (a: any, b: any) => number;
 }
+/** A record's content as a key: the same record matches however its keys were ordered when written. */
+const contentKey = (value: unknown): string => JSON.stringify(value, (_key, item) => (item && typeof item === 'object' && !Array.isArray(item)
+  ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]])) : item));
 /** A stored time: an ISO string or a number of milliseconds. Unreadable times sort first. */
 const timeOf = (value: unknown): number => (typeof value === 'number' ? value : Date.parse(String(value))) || 0;
 const MERGED_LISTS: Record<string, MergedList> = {
   'ifs.journal': { idOf: (item) => item?.id, sort: (a, b) => (Number(b?.at) || 0) - (Number(a?.at) || 0) },
   // Records without an id are matched by their content: the same record is kept once, a different one is kept too.
-  'ifs.charter': { idOf: (item) => JSON.stringify(item) },
-  'ifs.sealed': { idOf: (item) => JSON.stringify(item) },
-  INNERVERSE_CHARTER_V1: { idOf: (item) => JSON.stringify(item), sort: (a, b) => timeOf(a?.at) - timeOf(b?.at) },
-  INNERVERSE_EVENTS_V1: { idOf: (item) => JSON.stringify(item), sort: (a, b) => timeOf(a?.at) - timeOf(b?.at) },
-  INNERVERSE_SEALED_VERDICTS_V1: { idOf: (item) => item?.createdAt ?? JSON.stringify(item), sort: (a, b) => timeOf(a?.createdAt) - timeOf(b?.createdAt) },
+  'ifs.charter': { idOf: contentKey },
+  'ifs.sealed': { idOf: contentKey },
+  INNERVERSE_CHARTER_V1: { idOf: contentKey, sort: (a, b) => timeOf(a?.at) - timeOf(b?.at) },
+  INNERVERSE_EVENTS_V1: { idOf: contentKey, sort: (a, b) => timeOf(a?.at) - timeOf(b?.at) },
+  INNERVERSE_SEALED_VERDICTS_V1: {
+    idOf: (item) => item?.createdAt ?? contentKey(item),
+    // A re-rating made on this device is newer than the file's copy of the same verdict.
+    keepDevice: (device, incoming) => Boolean(device?.reRating) && !incoming?.reRating,
+    sort: (a, b) => timeOf(a?.createdAt) - timeOf(b?.createdAt),
+  },
   [KEYS.parts]: { idOf: (item) => item?.id, keep: (item) => !String(item?.id ?? '').startsWith('seed-') },
   INNERVERSE_CHECKINS_V1: { idOf: (item) => item?.date, sort: (a, b) => (Date.parse(a?.date) || 0) - (Date.parse(b?.date) || 0) },
 };
@@ -229,10 +239,15 @@ function readList(storage: Storage, key: string): unknown[] {
 
 /** The incoming items plus this device's items the file does not carry, in the list's own order. */
 function mergeLists(incoming: unknown[], existing: unknown[], list: MergedList): unknown[] {
+  const deviceById = new Map(existing.filter((item) => list.idOf(item) !== undefined).map((item) => [list.idOf(item), item]));
   const incomingIds = new Set(incoming.map(list.idOf).filter((id) => id !== undefined));
+  const taken = incoming.map((item) => {
+    const device = deviceById.get(list.idOf(item));
+    return device !== undefined && list.keepDevice?.(device, item) ? device : item;
+  });
   const kept = existing.filter((item) => (!list.keep || list.keep(item))
     && (list.idOf(item) === undefined || !incomingIds.has(list.idOf(item))));
-  const merged = [...incoming, ...kept];
+  const merged = [...taken, ...kept];
   return list.sort ? merged.sort(list.sort) : merged;
 }
 

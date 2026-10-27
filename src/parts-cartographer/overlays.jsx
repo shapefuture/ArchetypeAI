@@ -1170,6 +1170,8 @@ export function Therapist() {
     } catch (err) {
       console.error('Appointment status update failed', err);
       setAppointmentError(t('therapistSaveFailed'));
+      // The refused write may mean the client closed the request meanwhile: reload, so the list shows its real state.
+      refreshAppointments();
     } finally {
       setAppointmentBusy('');
     }

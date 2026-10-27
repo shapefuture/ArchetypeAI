@@ -32,6 +32,11 @@ const NOT_PORTABLE = new Set([
   // Holds the partner code of each synastry run: a bearer code that must not leave the device.
   'INNERVERSE_SYNASTRY_RUNS_V1',
 ]);
+/** A key the backup file leaves out for privacy or device reasons, whatever its prefix (the crash screen's save leaves these out too). */
+export function isNonPortableKey(key: string): boolean {
+  const base = key.endsWith('.hist') ? key.slice(0, -5) : key;
+  return NOT_PORTABLE.has(base);
+}
 export function isPortableKey(key: string): boolean {
   const base = key.endsWith('.hist') ? key.slice(0, -5) : key;
   return APP_KEY.test(base) && !NOT_PORTABLE.has(base);

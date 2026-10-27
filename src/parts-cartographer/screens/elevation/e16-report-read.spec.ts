@@ -41,8 +41,8 @@ describe('E16 report read status', () => {
     expect(host?.textContent).toContain('The client has not shared a report with you.');
   });
 
-  it('says the comparison is not built, so the status line is not mistaken for it', () => {
+  it('shows only the access status, with no developer note about unbuilt features', () => {
     render({ clientUid: 'c1', archived: false, summary: { headline: 'Shared' } });
-    expect(host?.textContent).toContain('Side-by-side comparison and the 3+1 view are not built yet');
+    expect(host?.textContent).not.toContain('not built yet');
   });
 });

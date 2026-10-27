@@ -136,15 +136,14 @@ async function authorizeWorkerRequest(
 
   // Apply the IP bucket before JWT verification so unauthenticated traffic is
   // bounded too; then apply the per-user bucket after the token is verified.
-  const ip = request.headers.get('CF-Connecting-IP');
-  if (ipLimiter && ip) {
-    const ipLimit = await checkRateLimit(ipLimiter, `${endpoint}:ip:${ip}`);
-    if (ipLimit === 'unavailable') {
-      return { response: jsonResponse({ error: 'Request protection is temporarily unavailable' }, 503, headers) };
-    }
-    if (ipLimit === 'limited') {
-      return { response: jsonResponse({ error: 'Too many requests. Please try again shortly.' }, 429, { ...headers, 'Retry-After': '60' }) };
-    }
+  // A missing binding fails closed (503), as the user bucket does. Requests without a client IP share one bucket.
+  const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+  const ipLimit = await checkRateLimit(ipLimiter, `${endpoint}:ip:${ip}`);
+  if (ipLimit === 'unavailable') {
+    return { response: jsonResponse({ error: 'Request protection is temporarily unavailable' }, 503, headers) };
+  }
+  if (ipLimit === 'limited') {
+    return { response: jsonResponse({ error: 'Too many requests. Please try again shortly.' }, 429, { ...headers, 'Retry-After': '60' }) };
   }
 
   const identity = await authenticateFirebaseRequest(request, env.FIREBASE_PROJECT_ID);
@@ -355,6 +354,12 @@ export default {
         headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
         signal: controller.signal,
       });
+      // Only Stripe saying the session does not exist is a 404. A rate limit or an outage is temporary: the client keeps
+      // its pending session and asks again.
+      if (!stripeRes.ok) {
+        if (stripeRes.status === 404) return jsonResponse({ error: 'Checkout Session not found' }, 404, cors);
+        return jsonResponse({ error: 'Stripe verification service is temporarily unavailable' }, 502, cors);
+      }
       const session = await stripeRes.json() as {
         status?: string;
         mode?: string;
@@ -363,7 +368,7 @@ export default {
         payment_status?: string;
         subscription?: unknown;
       };
-      if (!stripeRes.ok || session.mode !== 'subscription') {
+      if (session.mode !== 'subscription') {
         return jsonResponse({ error: 'Checkout Session not found' }, 404, cors);
       }
 

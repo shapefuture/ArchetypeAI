@@ -1,4 +1,5 @@
 import React from 'react';
+import { isNonPortableKey } from '../core/backup';
 
 // Last line of defence: a render or effect crash at the root must never leave
 // a blank page. The person can reload, save everything stored on this device,
@@ -27,12 +28,15 @@ function language() {
   try { return JSON.parse(localStorage.getItem('ifs.lang') ?? '"ru"') === 'en' ? 'en' : 'ru'; } catch { return 'ru'; }
 }
 
-/** Everything in local storage, as a backup file the Restore screen accepts. */
+/**
+ * Everything stored on this device, as a backup file the Restore screen accepts. Sign-in, billing and bearer share codes are
+ * left out, as in the Backup screen's file. Malformed records are kept as written, so a crash never loses them.
+ */
 export function localDataSnapshot() {
   const data = {};
   for (let i = 0; i < localStorage.length; i += 1) {
     const key = localStorage.key(i);
-    if (!key) continue;
+    if (!key || isNonPortableKey(key)) continue;
     const raw = localStorage.getItem(key);
     try { data[key] = JSON.parse(raw); } catch { data[key] = raw; }
   }

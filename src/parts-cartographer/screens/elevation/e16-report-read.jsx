@@ -14,7 +14,6 @@ const COPY = {
     none: 'There is no active link with this client.',
     expired: 'The shared report has expired.',
     other: 'Not available right now.',
-    note: 'Side-by-side comparison and the 3+1 view are not built yet.',
   },
   ru: {
     allowed: 'Вы можете читать опубликованный клиентом отчёт.',
@@ -23,7 +22,6 @@ const COPY = {
     none: 'Активной связи с этим клиентом нет.',
     expired: 'Срок действия отчёта истёк.',
     other: 'Сейчас недоступно.',
-    note: 'Сравнение рядом и вид 3+1 пока не реализованы.',
   },
 };
 
@@ -47,7 +45,7 @@ export function ReportReadStatus({ client }) {
   });
   return (
     <p className="faint mt8" role="status" style={{ fontSize: 12 }}>
-      {decision.allowed ? copy.allowed : copy[reasonKey[decision.reason] ?? 'other']} {copy.note}
+      {decision.allowed ? copy.allowed : copy[reasonKey[decision.reason] ?? 'other']}
     </p>
   );
 }

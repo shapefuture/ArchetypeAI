@@ -180,7 +180,8 @@ export const auth: AUTH_PORT = {
   async signOut() {
     const { sdk, auth: firebaseAuth } = await client();
     const { disablePushReminder } = await import('./push');
-    await disablePushReminder();
+    // Best effort: a push token the server no longer has must not keep the account signed in.
+    await disablePushReminder().catch((error) => console.warn('Push reminder cleanup failed during sign-out.', error));
     await sdk.signOut(firebaseAuth);
     store.remove(KEYS.auth);
   },

@@ -331,6 +331,8 @@ export const STRINGS = {
   dataPrivacy: s('Data & privacy', 'Данные и приватность'),
   telemetry: s('Item telemetry (local)', 'Телеметрия (локально)'),
   signOut: s('Sign out', 'Выйти'),
+  signedOut: s('Signed out on this device.', 'Вы вышли из аккаунта на этом устройстве.'),
+  signOutFailed: s('Could not sign out. Please try again.', 'Не удалось выйти. Попробуйте ещё раз.'),
   exportAll: s('Export everything', 'Экспорт всего'),
   version: s('v1.0 · local-first', 'v1.0 · данные хранятся на устройстве'),
   /* ── extension (assessment / descent / innerverse / overlays) ── */

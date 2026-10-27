@@ -8,6 +8,7 @@ import { uid8 } from '../core/ports.ts';
 import { homeScreen, SLOW_BOOT_AFTER_MS } from '../core/boot.ts';
 import { store, KEYS } from '../core/local-store';
 import { exportBackup } from '../core/backup';
+import { auth } from '../core/auth.service.ts';
 import { downloadText } from '../core/file-download';
 import { isExamplePart, isSampleProfile, primaryRoutes, secondaryRoutes } from '../core/assessment-routes.ts';
 import { requestFocus } from '../core/focus-request.ts';
@@ -131,7 +132,7 @@ function PageHead({ kicker, title, right }) {
 
 /* ── Base ── */
 function BaseTab() {
-  const { t, go, setOverlay, setSheet, profile, parts, premium, theme, setTheme, lang, setLang, user, toast } = useApp();
+  const { t, go, setOverlay, setSheet, profile, parts, premium, theme, setTheme, lang, setLang, user, setUser, toast } = useApp();
   const recent = parts.slice(0, 6);
   const sample = isSampleProfile(profile);
   // Assessment entries live in RouteChooser and support in SupportSection; this grid is everyday tools.
@@ -143,6 +144,19 @@ function BaseTab() {
     { k: 'universe', ico: '🌌', label: t('universe'), on: () => go('universe') },
     { k: 'cabinet', ico: '🗄️', label: t('cabinet'), on: () => go('cabinet') },
   ];
+  // Signing out returns this device to a fresh guest account, as a first start does. Local data stays on the device.
+  const signOutNow = async () => {
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.error('Sign-out failed', error);
+      toast(t('signOutFailed'));
+      return;
+    }
+    setUser(null);
+    toast('✓ ' + t('signedOut'));
+    setUser(await auth.anonymousBootstrap());
+  };
   const menu = [
     { ico: '💎', label: premium ? t('premiumOn') : t('subscribe'), sub: premium ? t('manage') : t('pwSub'), on: () => setOverlay('paywall') },
     { ico: '📲', label: t('install'), sub: t('installB'), on: () => setOverlay('install') },
@@ -150,7 +164,7 @@ function BaseTab() {
     { ico: '🧑‍⚕️', label: t('therapist'), sub: t('appointments'), on: () => setOverlay('therapist') },
     { ico: '🌗', label: t('theme'), sub: theme === 'dark' ? t('dark') : t('light'), on: () => setTheme(theme === 'dark' ? 'light' : 'dark') },
     { ico: '🌐', label: t('language'), sub: lang === 'en' ? 'English' : 'Русский', on: () => setLang(lang === 'en' ? 'ru' : 'en') },
-    { ico: '🔐', label: user?.linked ? t('signOut') : t('signin'), sub: user?.email ?? t('anon') + ' · ' + (user?.uid ?? '').slice(0, 10), on: () => setOverlay('login') },
+    { ico: '🔐', label: user?.linked ? t('signOut') : t('signin'), sub: user?.email ?? t('anon') + ' · ' + (user?.uid ?? '').slice(0, 10), on: () => (user?.linked ? signOutNow() : setOverlay('login')) },
   ];
 
   return (

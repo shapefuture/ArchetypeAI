@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-import { getMissingApiKeys } from './worker-helpers';
+import { getMissingApiKeys, hasAnyApiKey } from './worker-helpers';
 import {
   authenticateFirebaseRequest,
   checkRateLimit,
@@ -208,9 +208,10 @@ export default {
     if ('response' in authorization) return authorization.response;
 
     const missingKeys = getMissingApiKeys(env);
-    if (missingKeys.length > 0) {
+    if (!hasAnyApiKey(env)) {
       return notConfigured(missingKeys, cors);
     }
+    if (missingKeys.length > 0) console.warn(`AI providers without a key (their requests will fail over): ${missingKeys.join(', ')}`);
 
     const parsed = await parseJsonBody(request, MAX_AI_BODY_BYTES);
     if ('error' in parsed) return jsonResponse({ error: parsed.error }, parsed.status, cors);
@@ -384,8 +385,11 @@ export default {
       const subscriptionStatus = typeof subscription === 'object' && subscription ? subscription.status : undefined;
       const hasPaidSubscription = (subscriptionStatus === 'active' || subscriptionStatus === 'trialing')
         && (session.payment_status === 'paid' || session.payment_status === 'no_payment_required');
+      // An `incomplete` subscription is waiting on its first payment (Stripe ends it after 23 hours). The session may still
+      // become paid, so it stays open: the client keeps its pending session and asks again.
+      const awaitingPayment = subscriptionStatus === 'incomplete';
       const status = session.status === 'complete'
-        ? (hasPaidSubscription ? 'complete' : 'inactive')
+        ? (hasPaidSubscription ? 'complete' : awaitingPayment ? 'open' : 'inactive')
         : session.status === 'expired' ? 'expired' : 'open';
       return jsonResponse({ status }, 200, cors);
     } catch {

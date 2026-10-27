@@ -131,8 +131,12 @@ export async function claimTherapistLink(
   const db = getFirestoreDb();
   const linkCode = code.trim().toUpperCase();
   const linkRef = doc(db, 'therapistLinks', linkCode);
-  const snap = await getDoc(linkRef);
-  if (!snap.exists()) return null;
+  const snap = await getDoc(linkRef).catch((error: { code?: string }) => {
+    // The rules refuse reading a code another therapist already claimed: for this therapist that is an unusable code.
+    if (error?.code === 'permission-denied') return null;
+    throw error;
+  });
+  if (!snap?.exists()) return null;
   const data = snap.data();
   const claimedBy = data['claimedBy'] as string | undefined;
   if (claimedBy && claimedBy !== therapistUid) return null;

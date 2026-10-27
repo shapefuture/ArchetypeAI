@@ -498,12 +498,12 @@ export function SpecialistView() {
   const activeClients = clients.filter((client) => !client.archived);
   const archivedClients = clients.filter((client) => client.archived);
   // Only appointments of linked, non-archived clients are shown (see visibleAppointments).
-  // With the roster unreadable, every request is shown: an empty list would read as "no requests" while requests exist.
-  const shownAppointments = rosterFailed ? appointments : visibleAppointments(appointments, clients);
+  // With the roster unreadable, only pending requests are shown: they are the ones to decide, and the closed appointments
+  // of clients the therapist archived or unlinked stay hidden.
+  const shownAppointments = visibleAppointments(appointments, rosterFailed ? [] : clients);
   const pendingAppointments = shownAppointments.filter((appointment) => appointment.status === 'pending');
   const summaryClients = readableClientMaps(user?.uid ?? '', user?.uid ?? '', activeClients).filter((client) => client.summary);
   const checkInsDone = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.done) || 0), 0);
-  const checkInsSkipped = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.skipped) || 0), 0);
   const selfEnergyValues = summaryClients.map((client) => Number(client.summary?.selfEnergy)).filter(Number.isFinite);
   const meanSelfEnergy = selfEnergyValues.length
     ? Math.round(selfEnergyValues.reduce((sum, value) => sum + value, 0) / selfEnergyValues.length)
@@ -569,8 +569,8 @@ export function SpecialistView() {
       }
     } catch (err) {
       console.error('Therapist invite claim failed', err);
-      // A refused code is reported by claimTherapistLink returning nothing; an error here is the connection or the server.
-      setError(t('therapistLoadFailed'));
+      // A code another therapist claimed is refused by the rules: that is a bad code. Any other error is the connection or the server.
+      setError(err?.code === 'permission-denied' ? t('badCode') : t('therapistLoadFailed'));
     } finally {
       setBusy(false);
     }
@@ -603,6 +603,8 @@ export function SpecialistView() {
     } catch (err) {
       console.error('Appointment update failed', err);
       setError(t('therapistSaveFailed'));
+      // The refused write may mean the client closed the request meanwhile: reload, so the list shows its real state.
+      refresh();
     } finally {
       setAppointmentBusy('');
     }
@@ -810,8 +812,7 @@ export function SpecialistView() {
               <div className="kicker">{t('metrics')}</div>
               {[
                 [tr('sw36', lang), activeClients.length],
-                [tr('sw37', lang), checkInsDone],
-                [tr('sw38', lang), checkInsDone + checkInsSkipped ? `${Math.round(checkInsDone * 100 / (checkInsDone + checkInsSkipped))}%` : '—'],
+                [t('practicesDone'), checkInsDone],
                 [tr('sw39', lang), meanSelfEnergy == null ? '—' : `${meanSelfEnergy}%`],
                 [t('pendingAppointments'), pendingAppointments.length],
               ].map(([label, value]) => (

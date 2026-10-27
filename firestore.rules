@@ -121,6 +121,30 @@ service cloud.firestore {
         && hasActiveAppointment(clientUid, therapistUid, appointmentId);
     }
 
+    // A booking commits its appointment, slot, share and roster row in one batch, so these read the batch's result:
+    // get() cannot see a document the same batch creates. Unwritten documents read as they are now.
+    function hasActiveAppointmentAfter(clientUid, therapistUid, appointmentId) {
+      let appointmentPath = /databases/$(database)/documents/appointments/$(appointmentId);
+      return appointmentId is string
+        && existsAfter(appointmentPath)
+        && getAfter(appointmentPath).data.clientUid == clientUid
+        && getAfter(appointmentPath).data.therapistUid == therapistUid
+        && (
+          getAfter(appointmentPath).data.status == 'pending'
+          || getAfter(appointmentPath).data.status == 'approved'
+        );
+    }
+
+    function hasValidBookingShareAfter(clientUid, therapistUid, appointmentId) {
+      let sharePath = /databases/$(database)/documents/clientShares/$(therapistUid + '_' + clientUid);
+      return existsAfter(sharePath)
+        && getAfter(sharePath).data.clientUid == clientUid
+        && getAfter(sharePath).data.therapistUid == therapistUid
+        && getAfter(sharePath).data.source == 'booking'
+        && getAfter(sharePath).data.appointmentId == appointmentId
+        && hasActiveAppointmentAfter(clientUid, therapistUid, appointmentId);
+    }
+
     // An invite code is valid for the one therapist who claimed it, and only
     // while the client keeps it: deleting the code revokes that therapist's
     // trust (only used from write rules, so getAfter sees a same-batch claim).
@@ -609,7 +633,7 @@ service cloud.firestore {
         && docId == request.resource.data.therapistUid + '_' + request.resource.data.clientUid
         && request.resource.data.source == 'booking'
         && request.resource.data.grantedAt is string
-        && hasActiveAppointment(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId);
+        && hasActiveAppointmentAfter(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId);
       allow update: if isSignedIn()
         && resource.data.clientUid == request.auth.uid
         && request.resource.data.clientUid == resource.data.clientUid
@@ -622,7 +646,7 @@ service cloud.firestore {
         && request.resource.data.source == 'booking'
         && request.resource.data.grantedAt is string
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clientEmail', 'grantedAt', 'source', 'appointmentId'])
-        && hasActiveAppointment(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId);
+        && hasActiveAppointmentAfter(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId);
       // The therapist moves the grant to another open booking of theirs with this client: only the appointment and its time change.
       allow update: if isSignedIn()
         && resource.data.therapistUid == request.auth.uid
@@ -663,7 +687,7 @@ service cloud.firestore {
             && hasVerifiedEmail()
             && request.resource.data.clientEmail == request.auth.token.email
             && request.resource.data.linkedAt is string
-            && hasValidBookingShare(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId)
+            && hasValidBookingShareAfter(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId)
           )
           ||
           (
@@ -723,7 +747,7 @@ service cloud.firestore {
             && hasVerifiedEmail()
             && request.resource.data.clientEmail == request.auth.token.email
             && request.resource.data.linkedAt is string
-            && hasValidBookingShare(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId)
+            && hasValidBookingShareAfter(request.auth.uid, request.resource.data.therapistUid, request.resource.data.appointmentId)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clientEmail', 'linkedAt', 'source', 'appointmentId'])
           )
         );

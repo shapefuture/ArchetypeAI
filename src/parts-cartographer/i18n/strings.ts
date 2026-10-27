@@ -456,7 +456,7 @@ export const STRINGS = {
   activeComplexes: s('Active themes', 'Активные темы'),
   parts: s('parts', 'частей'),
   checkinsDone: s('check-ins completed', 'чек-инов'),
-  practicesDone: s('practices completed', 'практик выполнено'),
+  practicesDone: s('practices completed', 'выполнено практик'),
   chooseExercise: s('Exercise', 'Практика'),
   frequency: s('Frequency', 'Частота'),
   frequencyOnce: s('Once', 'Один раз'),

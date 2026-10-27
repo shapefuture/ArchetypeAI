@@ -29,6 +29,7 @@
  */
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -239,6 +240,17 @@ export function therapistTimeZone(availability: AvailabilityWindow[]): string | 
     zone = w.timeZone;
   }
   return zone;
+}
+
+/**
+ * The zone clients may book in. Legacy hours carry the reader's device zone
+ * (zoneFallback), which is not the therapist's zone, so they confirm nothing
+ * here until the therapist saves the hours again. No client is offered slots in
+ * a zone the therapist did not enter.
+ */
+export function bookingTimeZone(availability: AvailabilityWindow[]): string | null {
+  if (availability.some((w) => w?.zoneFallback)) return null;
+  return therapistTimeZone(availability);
 }
 
 /**
@@ -700,7 +712,15 @@ async function keepBookingAccess(actor: 'client' | 'therapist', clientUid: strin
       ? await myAppointments(clientUid)
       : (await therapistAppointments(therapistUid)).filter((appointment) => appointment.clientUid === clientUid);
     const next = nextActiveAppointmentId(appointments, therapistUid, closedId, since);
-    if (!next) return;
+    if (!next) {
+      // No other open booking: the roster row that named the closed one would still list the client and their email.
+      const rosterRef = doc(db, 'therapistClients', `${therapistUid}_${clientUid}`);
+      const roster = await getDoc(rosterRef);
+      if (roster.exists() && roster.data().source === 'booking' && roster.data().appointmentId === closedId) {
+        await deleteDoc(rosterRef);
+      }
+      return;
+    }
     const now = new Date().toISOString();
     await setDoc(shareRef, { appointmentId: next, grantedAt: now }, { merge: true });
     // The roster row names the same booking: the therapist's assignments check it against the share.

@@ -242,11 +242,8 @@ export function FullAssessment() {
         // The draft is removed only after the raw backup is written; otherwise it stays recoverable.
         removeDescentDraft();
       } catch { /* the scored profile remains available even if raw backup storage fails */ }
-      telemetry.record('result', {
-        model: 'angular-v2',
-        crisis: scored.crisis,
-        validity: scored.validity.ok,
-      });
+      telemetry.record('result.crisis', scored.crisis ? 'yes' : 'no');
+      telemetry.record('result.validity', scored.validity.ok ? 'ok' : 'flagged');
       go('assessment-results');
     } catch (error) {
       console.error('147-item assessment scoring failed', error);

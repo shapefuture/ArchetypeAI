@@ -15,7 +15,7 @@ import { store, KEYS } from './core/local-store';
 import {
   bookableDays, createBooking, deviceTimeZone, endOfSlot, ensureTherapistBusySlots, freeSlots,
   getTherapistProfile, saveTherapistAvailability, setAppointmentStatus, slotOccurrences, slotTime, therapistAppointments,
-  therapistBusyIntervals, therapistTimeZone, ZONE_TIME_WRITES_ENABLED, therapistWallLabel } from './core/booking.ts';
+  therapistBusyIntervals, therapistTimeZone, bookingTimeZone, ZONE_TIME_WRITES_ENABLED, therapistWallLabel } from './core/booking.ts';
 import { confirmLegacyNaiveRecord, formatInstantInZone, resolveWallClock } from './core/appointment-time.ts';
 import { SuggestionReview, queueCoachReply } from './screens/suggestion-review.jsx';
 import { lookupByEmail, stopBeingTherapist, syncPublicProfile } from './core/user-directory.ts';
@@ -759,8 +759,9 @@ export function Booking() {
       // Read a privacy-safe schedule projection; do not silently fall back to
       // an empty schedule if the occupied-slot lookup is denied or unavailable.
       const booked = await therapistBusyIntervals(match.uid);
-      // Hours saved before zones existed take the device zone of the device that reads them (see normalizeAvailability).
-      const zone = therapistTimeZone(therapistProfile.availability);
+      // Hours saved before zones existed take the device zone of the device that reads them (see normalizeAvailability), so
+      // they are not offered for booking until the therapist saves them.
+      const zone = bookingTimeZone(therapistProfile.availability);
       const bookDays = zone ? bookableDays(therapistProfile.availability, new Date(), 14, { timeZone: zone }) : [];
       // `email` is for display; `profileEmail` is what the rules compare a booking against (it may be null).
       setTherapist({ uid: match.uid, email: therapistProfile.email || match.email || email, profileEmail: therapistProfile.email ?? null, displayName: match.displayName });

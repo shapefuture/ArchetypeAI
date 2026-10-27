@@ -110,7 +110,8 @@ export function Assessment() {
     setAnswers((a) => ({ ...a, [partId]: { intensity: 3, felt: 'mid', ...a[partId], ...patch } }));
 
   const nextPart = () => {
-    try { telemetry.record('assessment_item', { partId: current?.id, ...answers[current?.id] }); } catch { /* */ }
+    // The felt bucket (low, mid, high) of each part, counted under that part's id; an unanswered part is not counted.
+    try { if (current && answers[current.id]?.felt) telemetry.record(`assessment.${current.id}`, answers[current.id].felt); } catch { /* */ }
     if (idx < pool.length - 1) setIdx(idx + 1);
     else { setStep(2); setParty(true); }
   };
@@ -125,7 +126,10 @@ export function Assessment() {
     // The eight generated parts are an illustration. They are labelled as a sample and are not
     // written into the cabinet, so they cannot pass for the user's own parts.
     const result = markSample(scoreSystem({ somatic, statements: stmts, parts: pool }));
-    try { telemetry.record('result', { c: result.headlineConstellation, v: result.validity, sample: true }); } catch { /* */ }
+    try {
+      telemetry.record('sample.validity', result.validity.ok ? 'ok' : 'flagged');
+      telemetry.record('sample.constellation', result.headlineConstellation);
+    } catch { /* */ }
     if (sampleSavePlan(profile) === 'archive-only') {
       store.archive(KEYS.history, result);
       toast(t('sampleKeptInHistory'));

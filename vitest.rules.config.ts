@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    include: ['firestore.rules.emulator.spec.ts', 'firestore.rules.round20.emulator.spec.ts', 'firestore.rules.round21.emulator.spec.ts', 'firestore.rules.round23.emulator.spec.ts', 'firestore.rules.round24.emulator.spec.ts', 'src/parts-cartographer/core/round25-*.rules.spec.ts', 'src/parts-cartographer/core/round26-*.rules.spec.ts', 'src/parts-cartographer/core/round27-*.rules.spec.ts', 'src/parts-cartographer/core/round28-*.rules.spec.ts', 'src/parts-cartographer/core/round29-*.rules.spec.ts', 'src/parts-cartographer/core/round30-*.rules.spec.ts'],
+    include: ['firestore.rules.emulator.spec.ts', 'firestore.rules.round20.emulator.spec.ts', 'firestore.rules.round21.emulator.spec.ts', 'firestore.rules.round23.emulator.spec.ts', 'firestore.rules.round24.emulator.spec.ts', 'src/parts-cartographer/core/round25-*.rules.spec.ts', 'src/parts-cartographer/core/round26-*.rules.spec.ts', 'src/parts-cartographer/core/round27-*.rules.spec.ts', 'src/parts-cartographer/core/round28-*.rules.spec.ts', 'src/parts-cartographer/core/round29-*.rules.spec.ts', 'src/parts-cartographer/core/round30-*.rules.spec.ts', 'src/parts-cartographer/core/round31-*.rules.spec.ts'],
     testTimeout: 30_000,
     hookTimeout: 60_000,
   },

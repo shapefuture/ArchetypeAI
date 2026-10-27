@@ -745,6 +745,11 @@ export async function createBooking(input: {
   const id = appointmentRef.id;
   const now = new Date().toISOString();
   const busyRef = doc(db, 'therapistBusySlots', therapistBusySlotId(input.therapistUid, input.start));
+  const shareRef = doc(db, 'clientShares', `${input.therapistUid}_${input.clientUid}`);
+  const rosterRef = doc(db, 'therapistClients', `${input.therapistUid}_${input.clientUid}`);
+  // A therapist already linked by invite keeps that link (and its trust); the booking share is enough for the booking itself.
+  const existingRoster = await getDoc(rosterRef).catch(() => null);
+  const keepsInviteLink = existingRoster?.exists() && existingRoster.data().source === 'invite';
   const bookingBatch = writeBatch(db);
   bookingBatch.set(appointmentRef, {
     clientUid: input.clientUid,
@@ -767,9 +772,10 @@ export async function createBooking(input: {
     start: input.start,
     end: input.end,
   });
-  await bookingBatch.commit();
-  await setDoc(
-    doc(db, 'clientShares', `${input.therapistUid}_${input.clientUid}`),
+  // The request, its access grant and the roster row commit together: a failed write leaves no pending request
+  // holding the slot behind a booking that reported failure.
+  bookingBatch.set(
+    shareRef,
     {
       clientUid: input.clientUid,
       clientEmail: input.clientEmail,
@@ -780,22 +786,20 @@ export async function createBooking(input: {
     },
     { merge: true },
   );
-  // A therapist already linked by invite keeps that link (and its trust); the
-  // booking share above is enough for the booking itself.
-  const rosterRef = doc(db, 'therapistClients', `${input.therapistUid}_${input.clientUid}`);
-  const existingRoster = await getDoc(rosterRef).catch(() => null);
-  if (existingRoster?.exists() && existingRoster.data().source === 'invite') return id;
-  await setDoc(
-    rosterRef,
-    {
-      therapistUid: input.therapistUid,
-      clientUid: input.clientUid,
-      clientEmail: input.clientEmail,
-      linkedAt: now,
-      source: 'booking',
-      appointmentId: id,
-    },
-    { merge: true },
-  );
+  if (!keepsInviteLink) {
+    bookingBatch.set(
+      rosterRef,
+      {
+        therapistUid: input.therapistUid,
+        clientUid: input.clientUid,
+        clientEmail: input.clientEmail,
+        linkedAt: now,
+        source: 'booking',
+        appointmentId: id,
+      },
+      { merge: true },
+    );
+  }
+  await bookingBatch.commit();
   return id;
 }

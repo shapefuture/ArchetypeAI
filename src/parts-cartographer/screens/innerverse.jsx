@@ -489,6 +489,8 @@ export function SpecialistView() {
   const [busy, setBusy] = useState(false);
   const [appointmentBusy, setAppointmentBusy] = useState('');
   const [error, setError] = useState('');
+  // A refused decision has its own message: the list reload after it clears the load error, not this one.
+  const [decisionError, setDecisionError] = useState('');
   const [assignFor, setAssignFor] = useState('');
   const [exerciseId, setExerciseId] = useState('');
   const [frequency, setFrequency] = useState('once');
@@ -595,14 +597,14 @@ export function SpecialistView() {
   const decideAppointment = async (appointmentId, status) => {
     if (!user?.linked || appointmentBusy) return;
     setAppointmentBusy(appointmentId);
-    setError('');
+    setDecisionError('');
     try {
       await setAppointmentStatus(appointmentId, status, 'therapist');
       toast('✓ ' + t(status === 'approved' ? 'appointmentApproved' : 'appointmentDeclined'));
       refresh();
     } catch (err) {
       console.error('Appointment update failed', err);
-      setError(t('therapistSaveFailed'));
+      setDecisionError(t('therapistSaveFailed'));
       // The refused write may mean the client closed the request meanwhile: reload, so the list shows its real state.
       refresh();
     } finally {
@@ -655,7 +657,7 @@ export function SpecialistView() {
               <span className="chip">{t('activeComplexes')}: {client.summary.activeComplexes?.length ?? 0}</span>
             </div>
             <div className="faint mt8" style={{ fontSize: 11.5 }}>
-              {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {Number(client.summary.adherence?.done) || 0} {t('practicesDone')}
+              {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {t('practicesDone')}: {Number(client.summary.adherence?.done) || 0}
             </div>
           </div>
         </GuardedClientData>
@@ -731,7 +733,7 @@ export function SpecialistView() {
             <button className="btn primary block mt12" onClick={() => setOverlay('login')}>🔐 {t('loginT')}</button>
           </div>
         )}
-        {error && <p className="card flat mt12" role="alert" style={{ color: 'var(--danger, #b54a4a)', fontSize: 12 }}>{error}</p>}
+        {(error || decisionError) && <p className="card flat mt12" role="alert" style={{ color: 'var(--danger, #b54a4a)', fontSize: 12 }}>{error || decisionError}</p>}
         {loading && <p className="faint mt12" role="status">{t('loading')}</p>}
 
         <div className="tabs mt16">

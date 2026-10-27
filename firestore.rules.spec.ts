@@ -93,8 +93,9 @@ describe('firestore.rules — security boundaries', () => {
   it('checks appointment/client-share data before adding a therapist roster row', () => {
     const shares = matchBlock(/match\s+\/clientShares\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
     const roster = matchBlock(/match\s+\/therapistClients\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
-    expect(shares).toMatch(/hasActiveAppointment\(/);
-    expect(roster).toMatch(/hasValidBookingShare\(/);
+    // Booking writes commit with their appointment in one batch, so the share and roster checks read the batch's result.
+    expect(shares).toMatch(/hasActiveAppointmentAfter\(/);
+    expect(roster).toMatch(/hasValidBookingShareAfter\(/);
     expect(roster).toMatch(/hasValidInviteLink\(/);
   });
 });

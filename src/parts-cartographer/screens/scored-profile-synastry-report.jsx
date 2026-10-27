@@ -1,4 +1,5 @@
 import React, { useId } from 'react';
+import { clinicalPartName } from '../core/clinical-display.ts';
 
 const COPY = {
   en: {
@@ -28,11 +29,6 @@ const PARTS = {
     taskmaster: 'Taskmaster', inner_critic: 'Inner Critic', pleaser: 'Pleaser', controller: 'Controller',
     analyst: 'Analyst', hermit: 'Hermit', bypasser: 'Bypasser', numb: 'Numb', rebel: 'Rebel',
     charmer: 'Charmer', abandoned: 'Abandoned', ashamed: 'Ashamed', frightened: 'Frightened', unseen: 'Unseen',
-  },
-  ru: {
-    taskmaster: 'Драйвер', inner_critic: 'Внутренний критик', pleaser: 'Угодник', controller: 'Контролёр',
-    analyst: 'Аналитик', hermit: 'Отшельник', bypasser: 'Обходчик', numb: 'Оцепенение', rebel: 'Бунтарь',
-    charmer: 'Очарователь', abandoned: 'Покинутый', ashamed: 'Стыдящийся', frightened: 'Испуганный', unseen: 'Незамеченный',
   },
 };
 
@@ -66,8 +62,11 @@ const DANCES = {
 };
 
 function humanize(value, language) {
-  const dictionary = language === 'ru' ? PARTS.ru : PARTS.en;
-  return dictionary[value] ?? value?.replaceAll('_', ' ') ?? '';
+  if (language === 'ru') {
+    const named = clinicalPartName(value, 'ru');
+    return named === value ? (value?.replaceAll('_', ' ') ?? '') : named;
+  }
+  return PARTS.en[value] ?? value?.replaceAll('_', ' ') ?? '';
 }
 
 export function ScoredProfileSynastryDetails({ report, lang = 'en', onDownload }) {

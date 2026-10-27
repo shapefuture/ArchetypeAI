@@ -143,3 +143,58 @@ describe('non-API paths', () => {
     expect(await response.text()).toBe('app');
   });
 });
+
+describe('Stripe subscription verification', () => {
+  const stripeEnv = () => ({ ...makeEnv(), STRIPE_SECRET_KEY: 'sk_test_x', STRIPE_PRICE_ID: 'price_x' });
+  const verify = () => worker.handleStripeVerify(new Request('https://worker.example/api/stripe-verify?session_id=cs_live_abc', {
+    headers: { Origin: 'https://app.example.com', 'CF-Connecting-IP': '203.0.113.42', Authorization: 'Bearer t' },
+  }), stripeEnv());
+  const session = (subscription: unknown) => ({
+    status: 'complete', mode: 'subscription', payment_status: 'paid', client_reference_id: 'firebase-user', subscription,
+  });
+
+  beforeEach(() => { authMock.mockResolvedValue({ uid: 'firebase-user', email: null, emailVerified: false }); });
+
+  it('reports a cancelled subscription as inactive, though its Checkout Session stays complete', async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(session({ id: 'sub_1', status: 'canceled' })), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const response = await verify();
+    expect(await response.json()).toEqual({ status: 'inactive' });
+    expect(String(fetchMock.mock.calls[0][0])).toContain('expand%5B%5D=subscription');
+    vi.unstubAllGlobals();
+  });
+
+  it('reports an active or trialing subscription as complete', async () => {
+    for (const status of ['active', 'trialing']) {
+      vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(session({ id: 'sub_1', status })), { status: 200 })));
+      expect(await (await verify()).json()).toEqual({ status: 'complete' });
+    }
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('AI provider fallback', () => {
+  it('does not call Ollama a second time after its first answer is unusable', async () => {
+    authMock.mockResolvedValue({ uid: 'firebase-user', email: null, emailVerified: false });
+    const urls: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (input: string | Request) => {
+      const url = typeof input === 'string' ? input : input.url;
+      urls.push(url);
+      if (url.includes('ollama')) return new Response(JSON.stringify({ message: { content: '' } }), { status: 200 });
+      return new Response('unavailable', { status: 503 });
+    }));
+    await worker.handleAI(makeRequest({}, JSON.stringify({ prompt: 'hello' })), makeEnv());
+    expect(urls.filter((url) => url.includes('ollama')).length).toBe(1);
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('NVIDIA answers', () => {
+  it('never returns the model reasoning as the answer', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+      choices: [{ message: { content: '', reasoning: 'The user said: my secret. I should...' } }],
+    }), { status: 200 })));
+    await expect(worker.fetchNvidiaNIM({ prompt: 'hello' } as any, makeEnv())).rejects.toThrow(/no answer/);
+    vi.unstubAllGlobals();
+  });
+});

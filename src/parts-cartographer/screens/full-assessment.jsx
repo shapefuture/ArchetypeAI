@@ -8,7 +8,7 @@ import { toAssessmentInput } from '../../shared/core/data/assessment-adapter';
 import { scoreProfile } from '../../shared/core/data/scoring-v2';
 import { buildItemSequence, itemText } from '../../shared/i18n/items';
 import { CONSENT_TEXT, DESCENT_UI, FULL_ASSESSMENT_LIKERT_TEXTS } from '../i18n/strings.ts';
-import { adaptClinicalProfile } from '../core/clinical-profile-adapter.ts';
+import { adaptClinicalProfile, withPersonEdits } from '../core/clinical-profile-adapter.ts';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
 import {
   DESCENT_DRAFT_KEY, DESCENT_DRAFT_SCHEMA, DESCENT_ITEM_COUNT, DESCENT_ITEM_IDS, DESCENT_LAST_INDEX,
@@ -223,10 +223,9 @@ export function FullAssessment() {
     setBusy(true);
     try {
       try {
+        // Skipping keeps the letters already saved: they are the person's own writing and show again on the next retake.
         if (saveNorthStar && validFutureSelf(futureSelf)) {
           localStorage.setItem(FUTURE_SELF_KEY, JSON.stringify(futureSelf));
-        } else if (!saveNorthStar) {
-          localStorage.removeItem(FUTURE_SELF_KEY);
         }
       } catch { /* the scored map can still be saved if storage is unavailable */ }
       const assessmentInput = toAssessmentInput(answers);
@@ -234,18 +233,17 @@ export function FullAssessment() {
       const adapted = adaptClinicalProfile(scored, lang);
       const scoredIds = new Set(adapted.parts.map((part) => part.id));
       const preservedParts = currentParts.filter((part) => !scoredIds.has(part.id) && !String(part.id).startsWith('seed-'));
-      setParts([...adapted.parts, ...preservedParts]);
+      // A part the retake scores keeps the person's own edits to it: the name they typed, its look and its star.
+      const scoredParts = adapted.parts.map((part) => withPersonEdits(part, currentParts.find((item) => item.id === part.id)));
+      setParts([...scoredParts, ...preservedParts]);
       setProfile(adapted.profile);
       try {
         localStorage.setItem('INNERVERSE_PROFILE_V1', JSON.stringify(assessmentInput));
         // The draft is removed only after the raw backup is written; otherwise it stays recoverable.
         removeDescentDraft();
       } catch { /* the scored profile remains available even if raw backup storage fails */ }
-      telemetry.record('result', {
-        model: 'angular-v2',
-        crisis: scored.crisis,
-        validity: scored.validity.ok,
-      });
+      telemetry.record('result.crisis', scored.crisis ? 'yes' : 'no');
+      telemetry.record('result.validity', scored.validity.ok ? 'ok' : 'flagged');
       go('assessment-results');
     } catch (error) {
       console.error('147-item assessment scoring failed', error);

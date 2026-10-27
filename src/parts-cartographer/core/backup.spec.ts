@@ -61,7 +61,10 @@ describe('cross-version local backup and cloud boundaries', () => {
     applyBackup(await prepareBackup(JSON.stringify(exported), 'en'));
     expect(JSON.parse(localStorage.getItem('INNERVERSE_GOAL_V1')!)).toEqual(goal);
     localStorage.clear();
-    await expect(prepareBackup(JSON.stringify({ ...exported, data: { ...exported.data, INNERVERSE_GOAL_V1: { schema: 'goal.v1' } } }), 'en')).rejects.toThrow();
+    // A corrupt goal is left out (and listed) while the rest of the backup stays restorable; nothing is written yet.
+    const partial = await prepareBackup(JSON.stringify({ ...exported, data: { ...exported.data, INNERVERSE_GOAL_V1: { schema: 'goal.v1' } } }), 'en');
+    expect(partial.skipped).toEqual(['INNERVERSE_GOAL_V1']);
+    expect(partial.entries.INNERVERSE_GOAL_V1).toBeUndefined();
     expect(localStorage.length).toBe(0);
   });
 
@@ -127,5 +130,108 @@ describe('cross-version local backup and cloud boundaries', () => {
     const historical = await fromDocument('legacy', { responses: Array(64).fill(3), results: { analysis: 'old' } });
     expect(historical?.source?.responses).toHaveLength(64);
     expect(historical?.parts.length).toBeGreaterThan(0);
+  });
+});
+
+describe('sealed notes in a backup', () => {
+  it('refuses a malformed ifs.sealed instead of storing a value that breaks start-up', async () => {
+    for (const bad of [{}, [null], [{ until: 'soon', text: 'x' }]]) {
+      await expect(prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.sealed': bad } }), 'en'))
+        .rejects.toThrow();
+    }
+    const ok = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.sealed': [{ until: 1, text: 'note' }] } }), 'en');
+    expect(ok.entries['ifs.sealed']).toEqual([{ until: 1, text: 'note' }]);
+  });
+});
+
+describe('partly damaged backups', () => {
+  it('restores the good keys and lists the damaged ones', async () => {
+    const prepared = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: {
+      'ifs.lang': 'ru',
+      'ifs.journal': [{ id: 1, at: 1, kind: 'jTrigger', what: 'kept', where: '', part: '', note: '' }],
+      'ifs.sealed': {},
+    } }), 'en');
+    expect(prepared.entries['ifs.journal']).toEqual([{ id: 1, at: 1, kind: 'jTrigger', what: 'kept', where: '', part: '', note: '' }]);
+    expect(prepared.skipped).toEqual(['ifs.sealed']);
+  });
+
+  it('refuses a journal of the wrong shape', async () => {
+    const prepared = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.lang': 'en', 'ifs.journal': {} } }), 'en');
+    expect(prepared.entries['ifs.journal']).toBeUndefined();
+    expect(prepared.skipped).toEqual(['ifs.journal']);
+  });
+});
+
+describe('export everything', () => {
+  it('carries every key the person writes and none of the device secrets', () => {
+    localStorage.clear();
+    for (const key of ['INNERVERSE_TOOLKIT_V1', 'INNERVERSE_MEMORY_V1', 'INNERVERSE_REPLAY_V1', 'INNERVERSE_CUSTOM_PARTS_V1', 'INNERVERSE_REMINDERS_V1']) {
+      localStorage.setItem(key, JSON.stringify({ kept: key }));
+    }
+    for (const key of ['ifs.auth', 'ifs.billing.verified.v2', 'INNERVERSE_PUSH_TOKEN_V1', 'ifs.sensory.v1', 'ifs.share.codes', 'unrelated.token']) {
+      localStorage.setItem(key, JSON.stringify({ secret: true }));
+    }
+    const data = exportBackup().data as Record<string, unknown>;
+    expect(Object.keys(data).sort()).toEqual(['INNERVERSE_CUSTOM_PARTS_V1', 'INNERVERSE_MEMORY_V1', 'INNERVERSE_REMINDERS_V1', 'INNERVERSE_REPLAY_V1', 'INNERVERSE_TOOLKIT_V1']);
+  });
+
+  it('restores those keys from an export', async () => {
+    localStorage.clear();
+    localStorage.setItem('INNERVERSE_TOOLKIT_V1', JSON.stringify({ tools: ['breath'] }));
+    const exported = exportBackup();
+    localStorage.clear();
+    applyBackup(await prepareBackup(JSON.stringify(exported), 'en'));
+    expect(JSON.parse(localStorage.getItem('INNERVERSE_TOOLKIT_V1')!)).toEqual({ tools: ['breath'] });
+  });
+});
+
+describe('replace restore', () => {
+  it('keeps the local copy of a key the backup reported as damaged, and this device\'s language', async () => {
+    localStorage.clear();
+    localStorage.setItem('ifs.lang', JSON.stringify('en'));
+    localStorage.setItem('ifs.journal', JSON.stringify([{ id: 1, what: 'mine' }]));
+    localStorage.setItem('INNERVERSE_MEMORY_V1', JSON.stringify({ old: true }));
+    const prepared = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.theme': 'dark', 'ifs.journal': [{ what: 5 }] } }), 'en');
+    expect(prepared.skipped).toEqual(['ifs.journal']);
+    applyBackup(prepared, localStorage, 'replace');
+    expect(JSON.parse(localStorage.getItem('ifs.journal')!)).toEqual([{ id: 1, what: 'mine' }]);
+    expect(JSON.parse(localStorage.getItem('ifs.lang')!)).toBe('en');
+    expect(JSON.parse(localStorage.getItem('ifs.theme')!)).toBe('dark');
+    // Portable data the backup does not carry is still replaced (cleared).
+    expect(localStorage.getItem('INNERVERSE_MEMORY_V1')).toBeNull();
+  });
+});
+
+describe('plain values round-trip', () => {
+  it('exports and restores the capacity preference and the scoring method as the app stores them', async () => {
+    localStorage.clear();
+    store.save('INNERVERSE_CAPACITY_PREF_V1', 'low');
+    localStorage.setItem('archetype_scoring_method', 'fallback');
+    const exported = exportBackup();
+    const prepared = await prepareBackup(JSON.stringify(exported), 'en');
+    expect(prepared.skipped).toEqual([]);
+    localStorage.clear();
+    applyBackup(prepared);
+    expect(store.load('INNERVERSE_CAPACITY_PREF_V1', null)).toBe('low');
+    expect(localStorage.getItem('archetype_scoring_method')).toBe('fallback');
+  });
+});
+
+describe('a restored profile survives a backup round trip', () => {
+  const answers = (high: string[]) => ({
+    shadow: Object.fromEntries(SHADOW_PARTS.map((id) => { const v = high.includes(id) ? 5 : 1; return [id, [v, v, v, v, v, v, 6 - v, 6 - v]]; })),
+    resources: Object.fromEntries(RESOURCES.map((id) => [id, Array(6).fill(3)])),
+    self: Array(8).fill(3),
+    validity: { attention: 3, infrequency: [1, 1] },
+  }) as any;
+
+  it('keeps the profile chosen from History instead of the last test taken on this device', async () => {
+    const last = answers(['rebel', 'frightened']);
+    const chosen = { ...adaptClinicalProfile(scoreProfile(answers(['pleaser', 'abandoned'])), 'en').profile, createdAt: 1700000000000 };
+    expect(chosen.headlineConstellation).not.toBe(adaptClinicalProfile(scoreProfile(last), 'en').profile.headlineConstellation);
+    const prepared = await prepareBackup(JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.profile': chosen, INNERVERSE_PROFILE_V1: last, 'ifs.lang': 'en' } }), 'en');
+    const profile = prepared.entries['ifs.profile'] as any;
+    expect(profile.headlineConstellation).toBe(chosen.headlineConstellation);
+    expect(profile.createdAt).toBe(chosen.createdAt);
   });
 });

@@ -59,21 +59,23 @@ export function predictFlare(
 
 /**
  * §1.10 adaptive weights — the ONLY adaptive element in the app. Corrections
- * shift the predicted part −0.1 and the confirmed part +0.1 (band 0..1), but
- * only once 14+ check-ins exist; before that every weight is the neutral 1.
+ * shift the predicted part −0.1 and the confirmed part +0.1, but only once 14+
+ * check-ins exist; before that every weight is the neutral 1. The band is 0..2:
+ * a confirmed part must be able to rise above neutral, or it can never win a
+ * prediction over a part it was confused with.
  */
 export function adjustTriggerWeights(history: CheckIn[]): TriggerWeights {
   const w: TriggerWeights = {
     relational: {}, achievement: {}, loss: {}, boundary: {}, change: {}, calm: {},
   };
   if (history.length < 14) return w;
-  const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+  const clamp = (lo: number, hi: number, v: number) => Math.min(hi, Math.max(lo, v));
   for (const ci of history) {
-    if (!ci.eventType || !ci.confirmedPart) continue;
-    if (ci.predictedPart && ci.predictedPart !== ci.confirmedPart) {
+    if (!ci.eventType || !Object.hasOwn(CRISIS_TRIGGERS, ci.eventType) || !ci.confirmedPart || !ALL_PART_IDS.includes(ci.confirmedPart)) continue;
+    if (ci.predictedPart && ci.predictedPart !== ci.confirmedPart && ALL_PART_IDS.includes(ci.predictedPart)) {
       const bucket = w[ci.eventType];
-      bucket[ci.predictedPart] = clamp01((bucket[ci.predictedPart] ?? 1) - 0.1);
-      bucket[ci.confirmedPart] = clamp01((bucket[ci.confirmedPart] ?? 1) + 0.1);
+      bucket[ci.predictedPart] = clamp(0, 2, (bucket[ci.predictedPart] ?? 1) - 0.1);
+      bucket[ci.confirmedPart] = clamp(0, 2, (bucket[ci.confirmedPart] ?? 1) + 0.1);
     }
   }
   return w;
@@ -94,9 +96,10 @@ export interface PartWeather { count: number; meanArousal: number | null; }
 
 /** Trailing-30-day confirmed-flare counts per part (the "weather"). */
 export function weatherLayer(history: CheckIn[], now: Date): Record<string, PartWeather> {
-  const out: Record<string, PartWeather> = {};
+  // No prototype: a stored part id such as "__proto__" must not reach Object.prototype.
+  const out: Record<string, PartWeather> = Object.create(null);
   for (const ci of history) {
-    if (!ci.confirmedPart) continue;
+    if (!ci.confirmedPart || !ALL_PART_IDS.includes(ci.confirmedPart)) continue;
     if (daysBetween(new Date(ci.date), now) > 30) continue;
     const w = (out[ci.confirmedPart] ??= { count: 0, meanArousal: null });
     const n = w.count + 1;
@@ -115,8 +118,11 @@ export function weatherLayer(history: CheckIn[], now: Date): Record<string, Part
  * regulated; we compare mean absolute distance from the window).
  */
 export function unburdeningMoments(priorWindow: CheckIn[], recentWindow: CheckIn[]): PartId[] {
+  // The windows span the same 30 days, so the rate is flares per week over that fixed span. Dividing by each
+  // window's check-in count would make a window with more check-ins look calmer.
+  const WINDOW_WEEKS = 30 / 7;
   const rate = (h: CheckIn[], part: PartId) =>
-    h.filter(c => c.confirmedPart === part).length / Math.max(1, h.length / 7); // flares per week
+    h.filter(c => c.confirmedPart === part).length / WINDOW_WEEKS; // flares per week
   const regulation = (h: CheckIn[]) =>
     h.length === 0 ? 0 : 1 - h.reduce((s, c) => s + Math.abs(c.arousal), 0) / (h.length * 2);
   return [...new Set(
@@ -128,6 +134,18 @@ export function unburdeningMoments(priorWindow: CheckIn[], recentWindow: CheckIn
     const selfRising = regulation(recentWindow) > regulation(priorWindow);
     return drop && selfRising;
   }) as PartId[];
+}
+
+/**
+ * §1.10 as the check-in screen asks it: the last 30 days against the 30 before. Each window needs
+ * a few check-ins, or a single early entry would read as a 100% drop.
+ */
+export function unburdeningInWindows(history: CheckIn[], now: Date, minPerWindow = 4): PartId[] {
+  const age = (c: CheckIn) => daysBetween(new Date(c.date), now);
+  const recent = history.filter(c => age(c) >= 0 && age(c) <= 30);
+  const prior = history.filter(c => age(c) > 30 && age(c) <= 60);
+  if (recent.length < minPerWindow || prior.length < minPerWindow) return [];
+  return unburdeningMoments(prior, recent);
 }
 
 // --- §3C.1 Sealed Verdict ---
@@ -188,7 +206,8 @@ const countTokens = (texts: string[], lexicon: readonly string[], lang: 'en' | '
     for (const token of lexicon) {
       // "i am <adj>" style prefixes match as prefixes; plain words need word boundaries
       if (token.endsWith(' ')) n += text.split(token).length - 1;
-      else n += (text.match(new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g')) ?? []).length;
+      // \b only knows Latin letters, so word edges are any non-letter (Cyrillic included).
+      else n += (text.match(new RegExp(`(?<![\\p{L}\\p{N}_])${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}_])`, 'gu')) ?? []).length;
     }
   }
   return n;
@@ -280,7 +299,8 @@ export interface CharterDelivery { blame: number; license: number; at: string }
  * anti-shame bound is working but the anti-license bound is leaking — flag
  * (therapist) or swap to the stricter per-complex variant (solo).
  */
-export function charterTrend(d: CharterDelivery[]): 'ok' | 'watch' {
+export function charterTrend(entries: CharterDelivery[]): 'ok' | 'watch' {
+  const d = entries.filter((entry) => entry && typeof entry.blame === 'number' && typeof entry.license === 'number');
   if (d.length < 3) return 'ok';
   const last = d[d.length - 1], first = d[0];
   const blameFalling = last.blame < first.blame;
@@ -366,12 +386,12 @@ export function selfServeGate(tier: GateTier, profile: ScoredProfile): GateResul
 
 /** Consecutive shutdown days ending at the most recent check-in (§3B.3 pause rule). */
 export function shutdownStreak(history: CheckIn[]): number {
-  const days = [...history].sort((a, b) => a.date < b.date ? 1 : -1)
-    .filter(c => c.arousal === -2);
-  if (days.length === 0) return 0;
+  const latest = [...history].sort((a, b) => a.date < b.date ? 1 : -1)[0];
+  // A person back in the window today is no longer in a shutdown run.
+  if (!latest || latest.arousal !== -2) return 0;
   const seen = new Set(history.filter(c => c.arousal === -2).map(c => dayOf(c.date)));
   let streak = 0;
-  let cursor = new Date(days[0].date);
+  let cursor = new Date(latest.date);
   for (let i = 0; i < 60; i++) {
     if (seen.has(localDay(cursor))) { streak++; cursor = new Date(cursor.getTime() - DAY_MS); }
     else break;

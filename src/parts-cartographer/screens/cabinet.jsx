@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character.tsx';
 import { CustomizerLike } from './editor-kit.jsx';
 import { SEED_PARTS, FAMILY_LABELS, randomTraits, pid, SHAPES, withCharacterSeed } from '../pal/traits.ts';
 import { Crest, familyColor, Sheet, Confetti } from '../ui/ui.jsx';
 import { t as tr, PART_COPY } from '../i18n/strings.ts';
-import { myAppointments, setAppointmentStatus } from '../core/booking.ts';
-import { loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
+import { myAppointments, setAppointmentStatus, appointmentDisplayTime } from '../core/booking.ts';
+import { CLOUD_PART_LIMIT, loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
+import { canonicalEnergyPart } from '../core/universe-controls.ts';
+import { archetypeOf, studioArchetypeFor } from '../core/clinical-profile-adapter.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
 import { EntryPanel } from './elevation/e02-entry.jsx';
@@ -87,7 +89,7 @@ export function Cabinet() {
     setCancelling(appointmentId);
     setAppointmentsError('');
     try {
-      await setAppointmentStatus(appointmentId, 'cancelled');
+      await setAppointmentStatus(appointmentId, 'cancelled', 'client');
       const refreshed = await myAppointments(user.uid);
       if (currentAccount.current !== user.uid) return;
       setAppointments(refreshed);
@@ -100,15 +102,15 @@ export function Cabinet() {
     }
   };
 
-  const appointmentDate = (value) => {
-    const date = new Date(`${value}:00`);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', {
-      weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-    });
+  // Zone-aware records show in your own time; older ones are labelled as the therapist's time.
+  const appointmentDate = (appointment) => {
+    const shown = appointmentDisplayTime(appointment, lang === 'ru' ? 'ru-RU' : 'en-US');
+    return shown.therapistWallClock ? `${shown.text} (${t('appointmentTherapistTime')})` : shown.text;
   };
 
   const saveToCloud = async () => {
     if (!user?.linked || !user.uid || !profile || cloudBusy) return;
+    if (parts.length > CLOUD_PART_LIMIT) { setCloudMessage(t('cloudSaveTooManyParts')); return; }
     setCloudBusy(true);
     setCloudMessage('');
     try {
@@ -142,7 +144,10 @@ export function Cabinet() {
   };
 
   const restoreCloudSnapshot = async (entry) => {
-    if (entry.source?.schema === 'angular-assessment64') {
+    // A restore replaces what is on this device, so it waits for a clear yes.
+    const legacy = entry.source?.schema === 'angular-assessment64';
+    if (!window.confirm(t(legacy ? 'cloudRestoreLegacyConfirm' : 'cloudRestoreConfirm'))) return;
+    if (legacy) {
       try {
         applyBackup(await prepareBackup(JSON.stringify(entry.source), lang, parts));
         go('legacy-assessment');
@@ -150,7 +155,7 @@ export function Cabinet() {
       return;
     }
     setProfile(entry.profile);
-    setParts(entry.parts);
+    setParts(entry.parts.map(canonicalEnergyPart));
     toast('✓ ' + t('cloudRestoreOk'));
     go('assessment-results');
   };
@@ -238,7 +243,7 @@ export function Cabinet() {
                 <b className="grow">{appointment.therapistEmail || appointment.therapistUid.slice(0, 12)}</b>
                 <span className="chip">{t(`status${appointment.status[0].toUpperCase()}${appointment.status.slice(1)}`)}</span>
               </div>
-              <div className="faint mt8" style={{ fontSize: 12 }}>{appointmentDate(appointment.start)}</div>
+              <div className="faint mt8" style={{ fontSize: 12 }}>{appointmentDate(appointment)}</div>
               {(appointment.status === 'pending' || appointment.status === 'approved') && (
                 <button className="btn ghost block mt10" disabled={cancelling === appointment.id} onClick={() => cancelAppointment(appointment.id)}>
                   {cancelling === appointment.id ? '⏳ …' : t('cancelAppointment')}
@@ -373,10 +378,18 @@ export function PartSheet({ id }) {
 }
 
 /* ═══════════ Part editor (shape/eyes/mouth/color/family) ═══════════ */
+/* The archetype a family change leaves a part with: its new family's cluster and size. A part that had none gets a studio one. */
+function archetypeForFamily(part, family) {
+  if (part.archetype) return archetypeOf(family, part.archetype);
+  return family === part.family ? undefined : studioArchetypeFor(family);
+}
+
 export function PartEditor({ part }) {
   const { t, lang, parts, setParts, setSheet, toast } = useApp();
   // Freeze a legacy record's current seed on open, so editing one trait keeps the same sewn character.
   const [draft, setDraft] = useState(() => ({ ...part, traits: withCharacterSeed(part.traits) }));
+  const nameId = useId();
+  const familyId = useId();
   const patch = (p) => setDraft((d) => ({ ...d, ...p }));
   const commit = () => {
     setParts(parts.map((x) => (x.id === draft.id ? draft : x)));
@@ -390,12 +403,13 @@ export function PartEditor({ part }) {
           <Character traits={draft.traits} />
         </div>
         <div className="grow">
-          <div className="field"><label>{t('nameLabel')}</label>
-            <input value={draft.name} onChange={(e) => patch({ name: e.target.value })} />
+          <div className="field"><label htmlFor={nameId}>{t('nameLabel')}</label>
+            <input id={nameId} value={draft.name} onChange={(e) => patch({ name: e.target.value })} />
           </div>
-          <div className="field"><label>{t('familyLabel')}</label>
-            <select className="drop" value={draft.family}
-              onChange={(e) => patch({ family: e.target.value, traits: { ...draft.traits, color: familyColor(e.target.value) } })}>
+          <div className="field"><label htmlFor={familyId}>{t('familyLabel')}</label>
+            {/* A family moves the part to its archetype cluster and node size, so the map and the cluster filter agree. */}
+            <select id={familyId} className="drop" value={draft.family}
+              onChange={(e) => patch({ family: e.target.value, traits: { ...draft.traits, color: familyColor(e.target.value) }, archetype: archetypeForFamily(draft, e.target.value) })}>
               {['manager', 'firefighter', 'exile', 'resource'].map((f) => (
                 <option key={f} value={f}>{FAMILY_LABELS[f].icon} {FAMILY_LABELS[f][lang]}</option>
               ))}
@@ -435,7 +449,7 @@ export function Chemistry({ from }) {
     setBusy(true);
     setTimeout(() => {
       const [a, b] = sel.map((id) => parts.find((p) => p.id === id));
-      const tension = Math.round(((a.energy + b.energy) / 2) * (a.family === b.family ? 0.7 : 1.15)) % 100;
+      const tension = Math.round(((a.energy + b.energy) / 2) * (a.family === b.family ? 0.7 : 1.15));
       const sameFam = a.family === b.family;
       setResult({
         tension: Math.min(97, tension + 8),

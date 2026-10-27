@@ -4,12 +4,12 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  CRISIS_TRIGGERS, predictFlare, adjustTriggerWeights, weightOf,
+  CRISIS_TRIGGERS, predictFlare, adjustTriggerWeights, weightOf, pauseNonRegulation,
   charterTrend, stricterCharter, resistantMetrics, storeEvent, loadEvents,
   type LoggedEvent,
   type CheckIn,
   weatherLayer, unburdeningMoments, verdictLockActive, sealVerdict, readyToResurface,
-  attributionRatio, attributionWorsening, selectJitaiCard, selfServeGate, shutdownStreak,
+  attributionRatio, attributionWorsening, selectJitaiCard, selfServeGate, shutdownStreak, unburdeningInWindows,
   GLOBALIZING_LEXICON, LOCALIZING_LEXICON,
 } from './state-v2';
 import { SHADOW_PARTS, RESOURCES } from './parts';
@@ -40,7 +40,7 @@ describe('§1.10 crisis→part trigger map', () => {
     // uniform 4s: ashamed 60.8 > inner_critic 54.6 > taskmaster 53.3
     expect(predictFlare(profile, 'achievement', undefined)).toBe('ashamed');
   });
-  it('user trigger weights boost corrected parts (±0.1, bounded 0..1)', () => {
+  it('user trigger weights boost corrected parts (±0.1, bounded 0..2)', () => {
     const neutral = Array.from({ length: 13 }, (_, i) =>
       ci({ eventType: 'loss', predictedPart: 'numb', confirmedPart: 'numb', date: `2026-07-0${(i % 9) + 1}T10:00:00` }));
     const history: CheckIn[] = [
@@ -50,7 +50,7 @@ describe('§1.10 crisis→part trigger map', () => {
     ];
     const w = adjustTriggerWeights(history);
     expect(weightOf(w, 'relational', 'abandoned')).toBeCloseTo(0.8, 5);
-    expect(weightOf(w, 'relational', 'charmer')).toBe(1); // 1 + 0.2 clamped to the 0..1 band
+    expect(weightOf(w, 'relational', 'charmer')).toBeCloseTo(1.2, 5); // 1 + 0.2 within the 0..2 band
   });
   it('weights only apply after 14+ check-ins of history', () => {
     const small = [ci({ eventType: 'relational', predictedPart: 'abandoned', confirmedPart: 'charmer' })];
@@ -241,5 +241,44 @@ describe('§3C.2 charter trend + §3C.6 resistant metrics', () => {
     expect(loadEvents().length).toBe(1);
     expect(loadEvents()[0].kind).toBe('ifthen_written');
     localStorage.removeItem('INNERVERSE_EVENTS_V1');
+  });
+});
+
+describe('gap fixes from the tenth critic pass', () => {
+  it('a confirmed part can overtake the one it was confused with', () => {
+    const profile = scoreProfile(all(3));
+    profile.parts.ashamed.T = 60;
+    profile.parts.inner_critic.T = 59;
+    profile.parts.taskmaster.T = 58;
+    const history = Array.from({ length: 20 }, (_, i) => ci({
+      date: `2026-10-${String(1 + i).padStart(2, '0')}T12:00:00`, eventType: 'achievement',
+      predictedPart: 'ashamed', confirmedPart: 'taskmaster',
+    }));
+    expect(predictFlare(profile, 'achievement')).toBe('ashamed');
+    expect(predictFlare(profile, 'achievement', adjustTriggerWeights(history))).toBe('taskmaster');
+  });
+
+  it('attribution counts Russian words, which \\b never matched', () => {
+    expect(attributionRatio(['Я всегда всё порчу, я никогда не учусь'], 'ru').globalizing).toBe(3);
+    expect(attributionRatio(['В этот раз на работе было трудно'], 'ru').localizing).toBe(2);
+    expect(attributionWorsening(['Я всегда всё порчу'], ['В этот раз было трудно'], 'ru')).toBe(true);
+  });
+
+  it('shutdown streak ends once the person is back in the window', () => {
+    const history = [
+      ci({ date: '2026-10-01T12:00:00', arousal: -2 }),
+      ci({ date: '2026-10-02T12:00:00', arousal: -2 }),
+      ci({ date: '2026-10-03T12:00:00', arousal: -2 }),
+      ci({ date: '2026-10-04T12:00:00', arousal: 0 }),
+      ci({ date: '2026-10-05T12:00:00', arousal: 0 }),
+    ];
+    expect(shutdownStreak(history)).toBe(0);
+    expect(pauseNonRegulation(history)).toBe(false);
+  });
+
+  it('unburdening needs two full windows, not two halves of the whole history', () => {
+    const now = new Date('2026-10-25T12:00:00');
+    const oneCheckIn = [ci({ date: '2026-10-24T09:00:00', arousal: 2, confirmedPart: 'abandoned' })];
+    expect(unburdeningInWindows(oneCheckIn, now)).toEqual([]);
   });
 });

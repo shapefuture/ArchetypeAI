@@ -7,6 +7,9 @@ import { workerApiUrl } from './api';
 import { auth, getFirebaseIdToken, getFirebaseIdentity } from './auth.service';
 
 const VERIFY_URL = workerApiUrl('stripe-verify');
+/** A paid Checkout return waiting for a definite answer from the Worker, kept across reloads. */
+const PENDING_KEY = 'ifs.billing.pending';
+type Pending = { uid: string | null; sessionId: string };
 type Receipt = { uid: string; sessionId: string; verifiedAt: number };
 let receipt = store.load<Receipt | null>(KEYS.billing, null);
 let cachedPremium = !!receipt?.uid && receipt.uid === auth.currentUser()?.uid && Date.now() - receipt.verifiedAt < 24 * 3_600_000;
@@ -31,7 +34,8 @@ export const billing: BILLING_PORT & {
   locale(): 'USD' | 'RUB';
   checkout(planId: string, email?: string): Promise<{ ok: boolean; verified: boolean }>;
 } = {
-  locale() { return store.load<'en' | 'ru'>('ifs.lang', 'en') === 'ru' ? 'RUB' : 'USD'; },
+  // Russian is the app default, so only an explicit English choice means English.
+  locale() { return store.load<'en' | 'ru'>('ifs.lang', 'ru') === 'en' ? 'USD' : 'RUB'; },
   // The current Worker is configured with one Stripe Price ID, so the UI does
   // not advertise local-only monthly/yearly/lifetime prices as purchasable.
   plans() { return []; },
@@ -46,7 +50,7 @@ export const billing: BILLING_PORT & {
       body: JSON.stringify({
         origin: window.location.origin,
         ...(email ? { email } : {}),
-        locale: store.load<'en' | 'ru'>('ifs.lang', 'en') === 'ru' ? 'ru' : 'en',
+        locale: store.load<'en' | 'ru'>('ifs.lang', 'ru') === 'en' ? 'en' : 'ru',
       }),
     });
     const data = await response.json().catch(() => ({})) as { url?: string; error?: string };
@@ -63,25 +67,45 @@ export const billing: BILLING_PORT & {
     const status = params.get('stripe');
     const sessionId = params.get('session_id');
     if (status === 'cancel') clearStripeQuery();
-    const savedSession = receipt?.uid && receipt.uid === auth.currentUser()?.uid ? receipt.sessionId : null;
-    const candidate = status === 'success' && sessionId ? sessionId : savedSession;
-    if (!candidate) { setPremium(false); return false; }
+    const uid = auth.currentUser()?.uid ?? null;
+    // Keep a paid session from the return URL until the Worker answers definitely,
+    // so a network error, rate limit or 5xx on return does not lose the purchase.
+    if (status === 'success' && sessionId && sessionId.length <= 200) {
+      store.save(PENDING_KEY, { uid, sessionId } satisfies Pending);
+    }
+    const stored = store.load<Pending | null>(PENDING_KEY, null);
+    const pending = stored?.sessionId && (!stored.uid || stored.uid === uid) ? stored.sessionId : null;
+    const savedSession = receipt?.uid && receipt.uid === uid ? receipt.sessionId : null;
+    const candidate = pending ?? savedSession;
+    const clearPending = () => store.remove(PENDING_KEY);
+    if (!candidate) { setPremium(false); clearStripeQuery(); return false; }
 
     try {
       const identity = await getFirebaseIdentity();
       const response = await fetch(`${VERIFY_URL}?session_id=${encodeURIComponent(candidate)}`, {
         headers: { Authorization: `Bearer ${identity.token}` },
       });
+      // The server knows this session and it is not ours or not paid: drop the receipt.
+      // A server or network failure keeps the cached state, so offline use still works.
+      // A rejected pending session is dropped; an earlier verified receipt is kept.
+      const reject = () => {
+        if (candidate === pending) { clearPending(); return this.isPremium(); }
+        setPremium(false);
+        return false;
+      };
+      if (response.status === 400 || response.status === 404) return reject();
       if (!response.ok) return this.isPremium();
       const result = await response.json() as { status?: string };
       if (version !== verificationVersion || auth.currentUser()?.uid !== identity.uid) return false;
       if (result.status === 'complete') {
         receipt = { uid: identity.uid, sessionId: candidate, verifiedAt: Date.now() };
         setPremium(true);
+        clearPending();
         return true;
       }
-      if (result.status === 'open' || result.status === 'expired') setPremium(false);
-      return this.isPremium();
+      // An unfinished checkout may still complete; a cancelled or expired one will not.
+      if (result.status === 'open') return this.isPremium();
+      return reject();
     } catch {
       return this.isPremium();
     } finally {

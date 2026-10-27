@@ -15,22 +15,24 @@ import { store, KEYS } from './core/local-store';
 import {
   bookableDays, createBooking, deviceTimeZone, endOfSlot, ensureTherapistBusySlots, freeSlots,
   getTherapistProfile, saveTherapistAvailability, setAppointmentStatus, slotOccurrences, slotTime, therapistAppointments,
-  therapistBusyIntervals, therapistTimeZone, ZONE_TIME_WRITES_ENABLED,
-} from './core/booking.ts';
+  therapistBusyIntervals, therapistTimeZone, bookingTimeZone, ZONE_TIME_WRITES_ENABLED, therapistWallLabel } from './core/booking.ts';
 import { confirmLegacyNaiveRecord, formatInstantInZone, resolveWallClock } from './core/appointment-time.ts';
 import { SuggestionReview, queueCoachReply } from './screens/suggestion-review.jsx';
-import { lookupByEmail, syncPublicProfile } from './core/user-directory.ts';
+import { lookupByEmail, stopBeingTherapist, syncPublicProfile } from './core/user-directory.ts';
 import { checkFacilitatorStatement, STATEMENT_MAX_CHARS } from './core/facilitator-profile.ts';
-import { createTherapistLink } from './core/therapist-link.ts';
+import { createTherapistLink, revokeTherapistAccess, therapistSummaryFor } from './core/therapist-link.ts';
 import { LegacySynastryDetails } from './screens/legacy-synastry-report.jsx';
 import { ScoredProfileSynastryDetails } from './screens/scored-profile-synastry-report.jsx';
 import { EmailVerifyNotice } from './ui/email-verify-notice.jsx';
+import { authErrorKey } from './core/auth-errors.ts';
+import { sendPasswordReset } from './core/auth.service.ts';
 
 const ovHead = (title, onClose, extra) => (
   <div className="ov-head">
     <div className="ov-title">{title}</div>
     {extra}
-    <button className="ibtn" onClick={onClose} aria-label="Close / Закрыть">✕</button>
+    {/* The app keeps <html lang> in step with the chosen language. */}
+    <button className="ibtn" onClick={onClose} aria-label={tr('close', document.documentElement.lang === 'ru' ? 'ru' : 'en')}>✕</button>
   </div>
 );
 
@@ -344,11 +346,12 @@ export function SynastryOv() {
     try {
       const c = shareKind === 'legacy64' ? await createCloudLegacy64ShareCode(user.uid, legacyResponses) : await createCloudMapShareCode(user.uid, profile, parts);
       const entry = { c, uid: user.uid, at: Date.now(), source: 'cloud-map', assessment: shareKind, partCount: parts.length };
-      setIssuedCodes((codes) => [entry, ...codes.filter((item) => item.c !== c)].slice(0, 20));
+      // Every live code stays listed until it is revoked: a code that dropped out of the list could not be revoked here.
+      setIssuedCodes((codes) => [entry, ...codes.filter((item) => item.c !== c)]);
       store.save(KEYS.share, [
         ...(store.load(KEYS.share, []) ?? []),
         entry,
-      ].slice(-20));
+      ]);
       setShareConfirmed(false);
       toast('✓ ' + t('shareCodeCreated'));
     } catch (error) {
@@ -756,10 +759,12 @@ export function Booking() {
       // Read a privacy-safe schedule projection; do not silently fall back to
       // an empty schedule if the occupied-slot lookup is denied or unavailable.
       const booked = await therapistBusyIntervals(match.uid);
-      // Hours saved before zones existed take the device zone of the device that reads them (see normalizeAvailability).
-      const zone = therapistTimeZone(therapistProfile.availability);
+      // Hours saved before zones existed take the device zone of the device that reads them (see normalizeAvailability), so
+      // they are not offered for booking until the therapist saves them.
+      const zone = bookingTimeZone(therapistProfile.availability);
       const bookDays = zone ? bookableDays(therapistProfile.availability, new Date(), 14, { timeZone: zone }) : [];
-      setTherapist({ uid: match.uid, email: therapistProfile.email || match.email || email, displayName: match.displayName });
+      // `email` is for display; `profileEmail` is what the rules compare a booking against (it may be null).
+      setTherapist({ uid: match.uid, email: therapistProfile.email || match.email || email, profileEmail: therapistProfile.email ?? null, displayName: match.displayName });
       setAvailability(therapistProfile.availability);
       setTherapistZone(zone);
       setTherapistStatement(therapistProfile.statement ?? '');
@@ -771,7 +776,7 @@ export function Booking() {
       setStep(1);
       if (!zone && therapistProfile.availability.length) {
         setError(lang === 'ru'
-          ? 'Терапевт ещё не подтвердил часовой пояс своего расписания. Попросите его открыть «Терапевт» и сохранить расписание.'
+          ? 'Часовой пояс в расписании терапевта ещё не подтверждён. Попросите терапевта открыть экран «Терапевт» и сохранить расписание.'
           : 'This therapist has not confirmed the time zone of their hours yet. Ask them to open Therapist, check the zone, and save.');
       } else if (!bookDays.length) setError(t('bookingNoAvailability'));
     } catch (err) {
@@ -784,6 +789,11 @@ export function Booking() {
 
   const confirmBooking = async () => {
     if (!user?.linked || !user.email || !therapist || !slot || !therapistZone || busy) return;
+    // The rules accept a booking only from a verified address; the notice above explains it.
+    if (user.emailVerified !== true) {
+      setError(t('bookingVerifyEmail'));
+      return;
+    }
     const picked = chosenOccurrence(slot, fold);
     if (!picked || !picked.offered) {
       setError(t('bookingFailed'));
@@ -798,7 +808,7 @@ export function Booking() {
         clientUid: user.uid,
         clientEmail: user.email,
         therapistUid: therapist.uid,
-        therapistEmail: therapist.email,
+        therapistEmail: therapist.profileEmail ?? null,
         start: slot,
         end: endOfSlot(slot, availability),
         // Written only when the appointments rule accepts `time` (see ZONE_TIME_WRITES_ENABLED).
@@ -818,19 +828,15 @@ export function Booking() {
     <div className="overlay">
       {ovHead('📅 ' + t('bookSession'), () => setOverlay(null))}
       <div className="ov-body">
+        <EmailVerifyNotice purpose="booking" />
         <div className="steps mt8"><i className={step >= 0 ? 'on' : ''} /><i className={step >= 1 ? 'on' : ''} /><i className={step >= 2 ? 'on' : ''} /></div>
 
+        {/* A local profile hash cannot link a therapist; the real invite code is made in Share. */}
         {profile && step === 0 && (
           <div className="card flat mt16" style={{ width: '100%' }}>
             <div className="kicker" style={{ color: 'var(--accent-text)' }}>{t('codeForTher')}</div>
-            <div className="row mt8" style={{ gap: 10 }}>
-              <div className="grow" style={{ fontFamily: 'var(--font-display)', fontSize: 15.5, letterSpacing: '.1em', fontWeight: 800 }}>
-                {String(profileToCode(profile).slice(0, 8))}
-              </div>
-              <button className="btn small" onClick={() => { navigator.clipboard?.writeText(profileToCode(profile).slice(0, 8)); toast('📋 ' + t('copied')); }}>
-                ⧉ {t('copy')}
-              </button>
-            </div>
+            <p className="sub mt8" style={{ fontSize: 13 }}>{t('codeForTherHint')}</p>
+            <button className="btn small mt8" onClick={() => setOverlay('share')}>📤 {t('therapistShareCreate')}</button>
           </div>
         )}
 
@@ -980,16 +986,6 @@ function loadAvail() {
     return AVAIL_DEFAULT;
   } catch { return AVAIL_DEFAULT; }
 }
-/** Wall-clock label for a stored YYYY-MM-DDTHH:mm, shown as written (no shift to the device zone). */
-function wallLabel(wall, lang) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(wall ?? ''));
-  if (!match) return String(wall ?? '');
-  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5])));
-  return date.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', {
-    weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
-  });
-}
-
 /** Zones offered when confirming a legacy time. There is no default: the person picks one. */
 function zoneChoices() {
   try {
@@ -1121,6 +1117,13 @@ export function Therapist() {
         // Hours saved before zones existed took this device's zone on load. The therapist confirms it by saving.
         setZoneNeedsConfirm(remote.availability.some((window) => window.zoneFallback));
         setStatement(remote.statement ?? '');
+        // Hours saved before the email was verified carry no email. Publish it now
+        // that it is verified, so clients who find this therapist can book.
+        const zonesConfirmed = !remote.availability.some((window) => window.zoneFallback);
+        if (user.emailVerified === true && user.email && remote.email !== user.email && zonesConfirmed) {
+          saveTherapistAvailability(user.uid, remote.availability, user.email, remote.statement ?? '')
+            .catch((err) => console.error('Publishing the verified therapist email failed', err));
+        }
       })
       .catch((err) => {
         console.error('Therapist availability load failed', err);
@@ -1128,7 +1131,7 @@ export function Therapist() {
       })
       .finally(() => { if (active) setAvailabilityLoading(false); });
     return () => { active = false; };
-  }, [user?.uid, user?.linked, t]);
+  }, [user?.uid, user?.linked, user?.emailVerified, user?.email, t]);
 
   const refreshAppointments = async () => {
     if (!user?.linked || !user.uid) return;
@@ -1162,11 +1165,14 @@ export function Therapist() {
     setAppointmentBusy(appointmentId);
     setAppointmentError('');
     try {
-      await setAppointmentStatus(appointmentId, status);
+      await setAppointmentStatus(appointmentId, status, 'therapist');
       await refreshAppointments();
-      toast('✓ ' + t(status === 'approved' ? 'appointmentApproved' : 'appointmentDeclined'));
+      toast('✓ ' + t(status === 'approved' ? 'appointmentApproved' : status === 'cancelled' ? 'statusCancelled' : 'appointmentDeclined'));
     } catch (err) {
       console.error('Appointment status update failed', err);
+      // The refused write may mean the client closed the request meanwhile: reload first, so the list shows its real state.
+      // The message is set after the reload, which clears the error on success.
+      await refreshAppointments();
       setAppointmentError(t('therapistSaveFailed'));
     } finally {
       setAppointmentBusy('');
@@ -1199,11 +1205,13 @@ export function Therapist() {
     setAvailabilitySaving(true);
     setAvailabilityError('');
     try {
-      await syncPublicProfile(user);
       const windows = enabled.map(([index, value]) => ({
         days: [Number(index) + 1], start: value.from, end: value.to, minutes: 60, timeZone: zone,
       }));
-      await saveTherapistAvailability(user.uid, windows, user.email, trimmedStatement);
+      // The rules accept a published email only once it is verified; until then the schedule saves without it.
+      await saveTherapistAvailability(user.uid, windows, user.emailVerified === true ? user.email : null, trimmedStatement);
+      // Only therapists are listed in the email directory, so publish after the profile exists.
+      await syncPublicProfile(user).catch((err) => console.warn('Directory entry not published yet', err));
       setZoneNeedsConfirm(false);
       try { localStorage.setItem('ifs.avail', JSON.stringify(avail)); } catch { /* */ }
       toast('✓ ' + t('save'));
@@ -1310,14 +1318,14 @@ export function Therapist() {
               {appointmentError && <p className="faint mt8" role="alert" style={{ color: 'var(--danger, #b54a4a)', fontSize: 12 }}>{appointmentError}</p>}
               {!user?.linked ? (
                 <p className="sub mt8">{t('therapistLoginRequired')}</p>
-              ) : appointments.filter((item) => item.status === 'pending').length === 0 ? (
+              ) : appointments.filter((item) => item.status === 'pending' || item.status === 'approved').length === 0 ? (
                 <p className="sub mt8">{t('therapistNoAppointments')}</p>
-              ) : appointments.filter((item) => item.status === 'pending').map((item) => {
-                const label = wallLabel(item.start, lang);
+              ) : appointments.filter((item) => item.status === 'pending' || item.status === 'approved').map((item) => {
+                const label = therapistWallLabel(item, lang);
                 return (
                   <div key={item.id} className="card flat mt10">
                     <b>{item.clientEmail || item.clientUid.slice(0, 10)}</b>
-                    <div className="faint mt6" style={{ fontSize: 12 }}>{label}{item.time ? ` · ${item.time.timeZone}` : ''}</div>
+                    <div className="faint mt6" style={{ fontSize: 12 }}>{label}</div>
                     {item.timeClass?.kind === 'legacy-naive' && (
                       <>
                         <div className="row mt8" style={{ gap: 8, alignItems: 'center' }}>
@@ -1336,20 +1344,42 @@ export function Therapist() {
                         {lang === 'ru' ? 'Время этой записи не читается.' : 'This record’s time could not be read.'}
                       </p>
                     )}
-                    <div className="row mt10" style={{ gap: 8 }}>
-                      <button className="btn primary grow" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'approved')}>
-                        {appointmentBusy === item.id ? '⏳ …' : t('appointmentApprove')}
-                      </button>
-                      <button className="btn ghost grow" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'declined')}>
-                        {t('appointmentDecline')}
-                      </button>
-                    </div>
+                    {item.status === 'approved' ? (
+                      <div className="row mt10" style={{ gap: 8, alignItems: 'center' }}>
+                        <span className="chip grow">{t('statusApproved')}</span>
+                        <button className="btn ghost" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'cancelled')}>
+                          {appointmentBusy === item.id ? '⏳ …' : t('cancelAppointment')}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="row mt10" style={{ gap: 8 }}>
+                        <button className="btn primary grow" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'approved')}>
+                          {appointmentBusy === item.id ? '⏳ …' : t('appointmentApprove')}
+                        </button>
+                        <button className="btn ghost grow" disabled={appointmentBusy === item.id} onClick={() => decideAppointment(item.id, 'declined')}>
+                          {t('appointmentDecline')}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
 
             <button className="btn block mt16" onClick={() => setOverlay('booking')}>📅 {t('bookSession')}</button>
+            {/* Being listed as a therapist must be reversible: remove the profile and the email-directory entry. */}
+            <button className="btn ghost block mt12" onClick={async () => {
+              if (!window.confirm(t('therapistStopConfirm'))) return;
+              try {
+                if (user?.linked && user.uid) await stopBeingTherapist(user);
+                try { localStorage.removeItem('ifs.attested'); } catch { /* */ }
+                setAttested(false);
+                toast('✓ ' + t('therapistStopped'));
+              } catch (err) {
+                console.error('Stopping therapist mode failed', err);
+                toast('⚠ ' + t('therapistSaveFailed'));
+              }
+            }}>{t('therapistStop')}</button>
           </div>
         )}
       </div>
@@ -1366,6 +1396,17 @@ export function Login({ onClose }) {
   const [busy, setBusy] = useState(false);
 
   const done = (u) => { setUser(u); toast('✓ ' + t('done')); onClose?.(); };
+  const fail = (error) => {
+    console.error('Sign-in failed', error);
+    const key = authErrorKey(error);
+    if (key) toast('⚠ ' + t(key));
+  };
+  const forgot = async () => {
+    if (!email.includes('@')) { toast(t('loginResetNeedsEmail')); return; }
+    setBusy(true);
+    try { await sendPasswordReset(email); toast('✉️ ' + t('loginResetSent')); } catch (error) { fail(error); }
+    setBusy(false);
+  };
 
   return (
     <div className="overlay">
@@ -1375,7 +1416,7 @@ export function Login({ onClose }) {
 
         <button className="btn primary block mt16" disabled={busy} onClick={async () => {
           setBusy(true);
-          try { done(await auth.signInGoogle()); } catch { toast('⚠ ' + t('loginGoogle')); }
+          try { done(await auth.signInGoogle()); } catch (error) { fail(error); }
           setBusy(false);
         }}>
           G · {t('loginGoogle')}
@@ -1390,21 +1431,25 @@ export function Login({ onClose }) {
         </div>
         <div className="field mt12">
           <div className="field">
-            <input value={email} type="email" placeholder="you@ifs.map"
+            <input value={email} type="email" placeholder="you@ifs.map" aria-label={t('loginEmailLabel')} autoComplete="email"
               onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="field">
-            <input value={pass} type="password" placeholder="••••••••"
+            <input value={pass} type="password" placeholder="••••••••" aria-label={t('loginPasswordLabel')}
+              autoComplete={mode === 'up' ? 'new-password' : 'current-password'}
               onChange={(e) => setPass(e.target.value)} />
           </div>
         </div>
         <button className="btn block" disabled={busy || !email.includes('@') || pass.length < 6} onClick={async () => {
           setBusy(true);
-          try { done(await auth.signInEmail(email, mode, pass)); } catch (e) { toast('⚠ ' + (e?.message || 'email')); }
+          try { done(await auth.signInEmail(email, mode, pass)); } catch (error) { fail(error); }
           setBusy(false);
         }}>
           → {t('continue')}
         </button>
+        {mode === 'in' && (
+          <button className="btn ghost block mt8" disabled={busy} onClick={forgot}>{t('loginForgot')}</button>
+        )}
 
         <button className="btn ghost block mt16" onClick={onClose}>{t('loginSkip')}</button>
         <p className="faint mt12" style={{ fontSize: 11.5, fontWeight: 700 }}>
@@ -1454,7 +1499,9 @@ export function Paywall() {
       // Checkout navigates to Stripe. Do not mark the account premium here;
       // the return route verifies the session with the Worker first.
     } catch (error) {
-      toast('⚠ ' + (error?.message || t('checkout')));
+      // Worker and SDK messages are English and technical; log them, show copy.
+      console.error('Checkout failed', error);
+      toast('⚠ ' + t('checkoutFailed'));
       setBusy(false);
     }
   };
@@ -1488,12 +1535,12 @@ export function Paywall() {
         <button className="btn block mt16" onClick={async () => {
           const r = await billing.restore();
           setPremiumOn(r); setOk(r);
-          toast(r ? '✓ ' + t('verified') : '— ' + t('restorePurchase'));
+          toast(r ? '✓ ' + t('verified') : t('restoreNone'));
         }}>
           ↺ {t('restorePurchase')}
         </button>
         <p className="faint mt12" style={{ fontSize: 11, fontWeight: 700 }}>
-          {t('dataPrivacy')} · Stripe checkout · {t('version')}
+          {t('dataPrivacy')} · {t('stripeCheckoutNote')} · {t('version')}
         </p>
       </div>
     </div>
@@ -1524,9 +1571,21 @@ export function Journal() {
   const { t, lang, setOverlay, toast } = useApp();
   // Each label names its field, so screen readers announce what to write.
   const fieldId = useId();
-  const [entries, setEntries] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('ifs.journal') ?? '[]'); } catch { return []; }
-  });
+  // Read the stored journal each time: a value of the wrong shape is ignored,
+  // and a save in another tab is never overwritten by this tab's older copy.
+  const readJournal = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('ifs.journal') ?? '[]');
+      return Array.isArray(stored) ? stored.filter((entry) => entry && typeof entry === 'object' && typeof entry.what === 'string'
+        && typeof entry.kind === 'string' && ['where', 'part', 'note'].every((field) => entry[field] === undefined || entry[field] === null || typeof entry[field] === 'string')) : [];
+    } catch { return []; }
+  };
+  const [entries, setEntries] = useState(readJournal);
+  useEffect(() => {
+    const onStorage = (event) => { if (event.key === 'ifs.journal') setEntries(readJournal()); };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
   const KINDS = ['jTrigger', 'jSensation', 'jThought', 'jPattern'];
   const KIND_ICON = { jTrigger: '⚡', jSensation: '🫀', jThought: '💭', jPattern: '🔁' };
   const [kind, setKind] = useState('jTrigger');
@@ -1535,19 +1594,22 @@ export function Journal() {
   const [part, setPart] = useState('');
   const [note, setNote] = useState('');
 
+  // Returns whether the write fit in storage; the screen changes only if it did.
   const persist = (next) => {
+    try { localStorage.setItem('ifs.journal', JSON.stringify(next)); } catch { toast('⚠ ' + t('storageFull')); return false; }
     setEntries(next);
-    try { localStorage.setItem('ifs.journal', JSON.stringify(next)); } catch { /* */ }
+    return true;
   };
   const save = () => {
     if (!what.trim()) { toast('⚠ ' + t('jWhat')); return; }
     const e = { id: Date.now(), at: Date.now(), kind, what: what.trim(), where: where.trim(), part: part.trim(), note: note.trim() };
-    persist([e, ...entries]);
+    // A save that did not fit keeps the draft so nothing typed is lost.
+    if (!persist([e, ...readJournal()])) return;
     setWhat(''); setWhere(''); setPart(''); setNote('');
     try { import('./pal/sfx.ts').then((m) => m.sfx.pop()).catch(() => {}); } catch { /* */ }
-    toast('✓ ' + t('save'));
+    toast('✓ ' + t('savedLocally'));
   };
-  const del = (id) => persist(entries.filter((x) => x.id !== id));
+  const del = (id) => persist(readJournal().filter((x) => x.id !== id));
 
   return (
     <div className="overlay">
@@ -1699,31 +1761,6 @@ function drawPartsMap(profile, lang) {
   return cv;
 }
 
-function therapistShareSummary(profile) {
-  const toScore = (value) => Math.round(Math.max(0, Math.min(1, Number(value) || 0)) * 100);
-  const parts = Object.fromEntries((profile.parts ?? []).map((part) => {
-    const score = toScore(part.energy);
-    return [part.id, { T: score, tier: score >= 70 ? 'dominant' : score >= 45 ? 'active' : 'quiet' }];
-  }));
-  const coping = Array.isArray(profile.copingStack) ? profile.copingStack.slice(0, 4) : [];
-  const radar = Object.values(profile.selfEnergyRadar ?? {});
-  const selfEnergy = radar.length ? toScore(radar.reduce((sum, value) => sum + (Number(value) || 0), 0) / radar.length) : 0;
-  return {
-    headline: String(profile.headlineConstellation ?? '').slice(0, 160),
-    burden: toScore(profile.burden),
-    selfEnergy,
-    parts,
-    activeComplexes: (profile.complexes ?? []).slice(0, 50).map((id) => ({ id: String(id), activation: 1, tier: 'active' })),
-    copingStack: {
-      l1: String(coping[0] ?? 'none'),
-      ...(coping[1] ? { l2: String(coping[1]) } : {}),
-      ...(coping[2] ? { l3: String(coping[2]) } : {}),
-      floor: String(coping[3] ?? 'self'),
-    },
-    adherence: { done: 0, skipped: 0 },
-  };
-}
-
 export function Share() {
   const { t, lang, profile, user, setOverlay, toast } = useApp();
   const [img, setImg] = useState('');
@@ -1731,6 +1768,8 @@ export function Share() {
   const [therapistCode, setTherapistCode] = useState('');
   const [linkBusy, setLinkBusy] = useState(false);
   const [linkError, setLinkError] = useState('');
+  const [unlinkAsk, setUnlinkAsk] = useState(false);
+  const [unlinkStatus, setUnlinkStatus] = useState('');
   const headline = profile
     ? (lang === 'ru' && profile.headlineRu ? profile.headlineRu : profile.headlineConstellation)
     : '';
@@ -1770,16 +1809,38 @@ export function Share() {
 
   const createShareCode = async () => {
     if (!profile || !user?.linked || !user.uid || !shareConfirmed || linkBusy) return;
+    // The therapist sees how many practices the person completed. Skips are not recorded on this device.
+    const completed = store.load('INNERVERSE_PRACTICE_V1', null)?.completed;
+    const done = Array.isArray(completed) ? completed.filter((id) => typeof id === 'string').length : 0;
+    const summary = therapistSummaryFor(profile, { done, skipped: 0 });
+    if (!summary) { setLinkError(t('therapistShareFailed')); return; }
     setLinkBusy(true);
     setLinkError('');
     try {
-      const code = await createTherapistLink(user.uid, therapistShareSummary(profile));
+      const code = await createTherapistLink(user.uid, summary);
       setTherapistCode(code);
     } catch (err) {
       console.error('Therapist sharing code creation failed', err);
       setLinkError(t('therapistShareFailed'));
     } finally {
       setLinkBusy(false);
+    }
+  };
+
+  const unlinkAll = async () => {
+    if (!user?.linked || !user.uid || linkBusy) return;
+    setLinkBusy(true);
+    setUnlinkStatus('');
+    try {
+      const ended = await revokeTherapistAccess(user.uid);
+      setTherapistCode('');
+      setUnlinkStatus(t(ended ? 'therapistUnlinked' : 'therapistUnlinkNone'));
+    } catch (err) {
+      console.error('Therapist unlink failed', err);
+      setUnlinkStatus(t('therapistUnlinkFailed'));
+    } finally {
+      setLinkBusy(false);
+      setUnlinkAsk(false);
     }
   };
 
@@ -1822,6 +1883,16 @@ export function Share() {
                   </div>
                 </div>
               )}
+              {unlinkAsk ? (
+                <div className="card mt12" role="alertdialog" aria-labelledby="unlink-ask">
+                  <p id="unlink-ask" className="sub">{t('therapistUnlinkConfirm')}</p>
+                  <button className="btn primary block mt12" disabled={linkBusy} onClick={unlinkAll}>{linkBusy ? '⏳ …' : t('therapistUnlinkConfirmYes')}</button>
+                  <button className="btn ghost block mt8" disabled={linkBusy} onClick={() => setUnlinkAsk(false)}>{t('cancel')}</button>
+                </div>
+              ) : (
+                <button className="btn ghost block mt12" disabled={linkBusy} onClick={() => { setUnlinkStatus(''); setUnlinkAsk(true); }}>{t('therapistUnlink')}</button>
+              )}
+              {unlinkStatus && <p className="sub mt8" role="status">{unlinkStatus}</p>}
             </>
           )}
         </div>

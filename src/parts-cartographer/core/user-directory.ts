@@ -53,6 +53,44 @@ export async function syncPublicProfile(user: AuthUser): Promise<void> {
   cache.delete(`email:${email.toLowerCase()}`);
 }
 
+/**
+ * Sign-in refresh of the directory. Only therapists (accounts with a therapist
+ * profile) are listed: anyone signed in can look an address up, so listing
+ * every account would reveal who uses the app. Anyone else's earlier entry is
+ * removed.
+ */
+export async function refreshDirectoryEntry(user: AuthUser): Promise<void> {
+  if (!user.linked || !user.email) return;
+  const db = getFirestoreDb();
+  const therapist = await getDoc(doc(db, 'therapists', user.uid));
+  if (therapist.exists()) { await syncPublicProfile(user); return; }
+  const emailLower = user.email.trim().toLowerCase();
+  const [profile, entry] = await Promise.all([
+    getDoc(doc(db, 'publicProfiles', user.uid)),
+    getDoc(doc(db, 'directoryEmails', emailLower)),
+  ]);
+  const ownsEntry = entry.exists() && entry.data()?.uid === user.uid;
+  if (!profile.exists() && !ownsEntry) return;
+  const batch = writeBatch(db);
+  if (profile.exists()) batch.delete(doc(db, 'publicProfiles', user.uid));
+  if (ownsEntry) batch.delete(doc(db, 'directoryEmails', emailLower));
+  await batch.commit();
+  cache.delete(`uid:${user.uid}`);
+  cache.delete(`email:${emailLower}`);
+}
+
+/**
+ * Stop working as a therapist: remove the therapist profile, then the
+ * directory entry, so the address can no longer be looked up. Appointments
+ * already made stay in both parties' records.
+ */
+export async function stopBeingTherapist(user: AuthUser): Promise<void> {
+  const db = getFirestoreDb();
+  const { deleteDoc } = await import('firebase/firestore');
+  await deleteDoc(doc(db, 'therapists', user.uid));
+  await refreshDirectoryEntry(user);
+}
+
 export async function lookupByUid(uid: string): Promise<PublicUserProfile | null> {
   const normalized = (uid || '').trim();
   if (!normalized) return null;

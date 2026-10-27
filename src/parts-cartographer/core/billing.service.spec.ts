@@ -53,6 +53,37 @@ describe('account-scoped Stripe verification', () => {
     expect(await restoring).toBe(false);
     expect(localStorage.getItem('ifs.billing.verified.v2')).toBeNull();
   });
+  it('drops a saved receipt the server rejects or reports inactive, but keeps it through a network failure', async () => {
+    const saved = JSON.stringify({ uid: 'owner', sessionId: 'cs_live_forged', verifiedAt: Date.now() });
+    for (const [answer, premium] of [
+      [{ ok: false, status: 404, json: async () => ({}) }, false],
+      [{ ok: true, status: 200, json: async () => ({ status: 'inactive' }) }, false],
+      [{ ok: false, status: 502, json: async () => ({}) }, true],
+    ] as const) {
+      vi.resetModules(); localStorage.clear();
+      localStorage.setItem('ifs.billing.verified.v2', saved);
+      vi.stubGlobal('fetch', vi.fn(async () => answer));
+      const { billing } = await import('./billing.service');
+      expect(await billing.restore()).toBe(premium);
+      expect(billing.isPremium()).toBe(premium);
+    }
+  });
+  it('keeps a paid session through a failed check on return, and verifies it on the next try', async () => {
+    window.history.replaceState(null, '', '/?stripe=success&session_id=cs_test_PAID123');
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 429, json: async () => ({}) })));
+    let module = await import('./billing.service');
+    expect(await module.billing.restore()).toBe(false);
+    expect(window.location.search).toBe('');
+    expect(JSON.parse(localStorage.getItem('ifs.billing.pending')!).sessionId).toBe('cs_test_PAID123');
+
+    vi.resetModules();
+    const fetch = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ status: 'complete' }) }));
+    vi.stubGlobal('fetch', fetch);
+    module = await import('./billing.service');
+    expect(await module.billing.restore()).toBe(true);
+    expect(fetch).toHaveBeenCalledWith('/api/stripe-verify?session_id=cs_test_PAID123', expect.anything());
+    expect(localStorage.getItem('ifs.billing.pending')).toBeNull();
+  });
   it('expires an offline receipt even if the tab stays open', async () => {
     vi.useFakeTimers();
     localStorage.setItem('ifs.billing.verified.v2', JSON.stringify({ uid: 'owner', sessionId: 'cs_old', verifiedAt: Date.now() }));

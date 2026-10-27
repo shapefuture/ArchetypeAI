@@ -3,8 +3,8 @@ import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character';
 import { familyColor } from '../ui/ui.jsx';
 import { store, KEYS } from '../core/local-store';
-import { buildClinicalMarkdown, clinicalAttachmentStyle, clinicalSubtype, downloadText, sortedClinicalParts } from '../core/clinical-report';
-import { adaptClinicalProfile } from '../core/clinical-profile-adapter';
+import { buildClinicalMarkdown, clinicalAttachmentStyle, clinicalSubtype, downloadText, shownNeed, sortedClinicalParts } from '../core/clinical-report';
+import { adaptClinicalProfile, withPersonEdits } from '../core/clinical-profile-adapter';
 import { validClinicalScore } from '../core/profile-contract';
 import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY } from '../core/assessment-draft';
 import { STRINGS } from '../../shared/i18n/strings';
@@ -30,6 +30,7 @@ export function ClinicalReport({ profile: supplied, readOnly = false, embedded =
   const vane = texts.length ? attributionRatio(texts, lang) : null;
   const layout = useMemo(() => buildLayout(p), [p]);
   const sorted = sortedClinicalParts(p);
+  const need = shownNeed(p);
   const displayParts = useMemo(() => supplied ? adaptClinicalProfile(p, lang).parts : parts, [supplied, p, lang, parts]);
   const partName = (id) => clinicalSubtype(p, id, lang);
   const section = (id, title, content, sub) => <section id={`clinical-${id}`} className="card flat mt16" aria-labelledby={`clinical-heading-${id}`}><h2 id={`clinical-heading-${id}`} className="h2" style={{ fontSize: 18 }}>{title}</h2>{sub && <p className="sub mt8">{sub}</p>}{content}</section>;
@@ -38,9 +39,18 @@ export function ClinicalReport({ profile: supplied, readOnly = false, embedded =
   const restoreHistory = (entry) => {
     const rebuilt = adaptClinicalProfile(entry.clinical, lang);
     const ids = new Set(rebuilt.parts.map((part) => part.id));
-    setParts([...rebuilt.parts, ...parts.filter((part) => !ids.has(part.id) && !String(part.id).startsWith('seed-'))]);
-    setProfile({ ...rebuilt.profile, createdAt: entry.createdAt });
+    // The archived report's scores are the restored ones; what the person did to a part (typed name, role, family, look, star) stays.
+    const kept = rebuilt.parts.map((part) => withPersonEdits(part, parts.find((item) => item.id === part.id)));
+    setParts([...kept, ...parts.filter((part) => !ids.has(part.id) && !String(part.id).startsWith('seed-'))]);
+    setProfile({ ...rebuilt.profile, createdAt: entry.createdAt }, { archive: false });
     setPreview(null);
+  };
+  const retake = () => {
+    // An unfinished 147-item test is only deleted with consent.
+    const hasDraft = [DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY].some((key) => { try { return localStorage.getItem(key) !== null; } catch { return false; } });
+    if (hasDraft && !window.confirm(ui.retakeDraftConfirm)) return;
+    store.remove(DESCENT_DRAFT_KEY); store.remove(LEGACY_DESCENT_DRAFT_KEY);
+    go('full-assessment');
   };
   if (preview) return <ClinicalReport profile={preview} readOnly onBack={() => setPreview(null)} />;
 
@@ -61,18 +71,24 @@ export function ClinicalReport({ profile: supplied, readOnly = false, embedded =
       <circle cx={160} cy={160} r={layout.self.radius * 320} fill="#FFD000" /><text x={160} y={164} textAnchor="middle" fontSize={11}>{lang === 'ru' ? 'Я' : 'Self'}</text>
       {futureSelf.some((a) => a.trim()) && <text x={layout.northStar.x * 320} y={layout.northStar.y * 320} fill="#FFD000" fontSize={20}>✦<title>{futureSelf.join(' ')}</title></text>}
     </svg>
-    {section('self', ui.selfEnergy, <><div className="h2 mt8">{p.selfEnergy}/100</div><p className="sub mt8">{ui.burden} · {p.burden}</p><p className="sub mt8">{ui.radar}</p>{SELF_QUALITIES.map((q) => <div key={q} className="mt12"><div className="row"><span className="grow">{lang === 'ru' ? STRINGS.innerverseReport.qualityLabelsRu[q] : q}</span><b>{p.selfRadar[q]}</b></div>{bar(p.selfRadar[q], q)}</div>)}<h3 className="kicker mt16">{ui.vane}</h3>{vane ? <><div className="bar mt8"><i style={{ width: `${100 - Math.min(100, (vane.ratio === Infinity ? 3 : vane.ratio) / 3 * 100)}%` }} /></div><p className="sub mt8">{ui.vaneEssence} ↔ {ui.vaneBehavior}</p></> : <p className="sub mt8">{ui.vaneEmpty}</p>}<p className="sub mt16">{ui.attachment}: <b>{ui.attStyle[clinicalAttachmentStyle(p)]}</b></p></>)}
+    {section('self', ui.selfEnergy, <><div className="h2 mt8">{p.selfEnergy}/100</div><p className="sub mt8">{ui.burden} · {Math.round(p.burden)}</p><p className="sub mt8">{ui.radar}</p>{SELF_QUALITIES.map((q) => <div key={q} className="mt12"><div className="row"><span className="grow">{lang === 'ru' ? STRINGS.innerverseReport.qualityLabelsRu[q] : q}</span><b>{p.selfRadar[q]}</b></div>{bar(p.selfRadar[q], lang === 'ru' ? STRINGS.innerverseReport.qualityLabelsRu[q] : q)}</div>)}<h3 className="kicker mt16">{ui.vane}</h3>{vane ? <><div className="bar mt8"><i style={{ width: `${100 - Math.min(100, (vane.ratio === Infinity ? 3 : vane.ratio) / 3 * 100)}%` }} /></div><p className="sub mt8">{ui.vaneEssence} ↔ {ui.vaneBehavior}</p></> : <p className="sub mt8">{ui.vaneEmpty}</p>}<p className="sub mt16">{ui.attachment}: <b>{ui.attStyle[clinicalAttachmentStyle(p)]}</b></p></>)}
     {section('parts', ui.partsByTier, <div className="part-grid mt12">{sorted.map((id) => { const layer = layers[id] ?? 'face'; const part = displayParts.find((x) => x.id === id); return <button className="part-card" key={id} onClick={() => setLayers((value) => ({ ...value, [id]: LAYERS[(LAYERS.indexOf(layer) + 1) % LAYERS.length] }))}><div className="pc-art">{part?.traits && <Character traits={part.traits} lite showShadow={false} />}</div><b>{partName(id)}</b><p className="faint mt4">{ui.tierNames[p.parts[id].tier]} · T {Math.round(p.parts[id].T)}</p><span className="chip mt8">{STRINGS.innerverseReport.layerLabels[lang][layer]}</span><p className="sub mt8">{PART_COPY[lang][id][layer]}</p></button>; })}</div>, ui.flipHint)}
     {p.polarizations.length > 0 && section('polarizations', ui.polarizations, p.polarizations.map((pol) => <div className="mt12" key={pol.name}><b>{partName(pol.pair[0])} ↔ {partName(pol.pair[1])}</b><p className="sub mt6">{polarizationName(pol.name, lang)}</p></div>), ui.polarizationSub)}
     {section('complexes', ui.complexes, p.activeComplexes.length ? p.activeComplexes.map((c) => { const def = lang === 'ru' ? COMPLEX_COPY_RU[c.id] : COMPLEXES[c.id]; return <div className="mt12" key={c.id}><b>{def.name}</b><span className="chip">{ui.complexTierNames[c.tier]} · {Math.round(c.activation)}</span><p className="sub mt8">{ui.complexBelief}: “{def.belief}”</p><p className="sub mt8">{ui.complexExperiment}: {def.experiment}</p></div>; }) : <p className="sub mt8">{ui.noComplexes}</p>, ui.complexesSub)}
     {section('coping', ui.copingStack, <ol className="mt12">{[p.copingStack.l1, p.copingStack.l2, p.copingStack.l3, p.copingStack.floor].filter(Boolean).map((id, i) => <li className="mt12" key={`${id}-${i}`}><b>{partName(id)}</b>{id === p.copingStack.floor ? <p className="sub">{ui.floorLabel} · {STRINGS.innerverseReport.exileBeliefs[id]?.[lang === 'ru' ? 1 : 0]}</p> : <p className="sub">{ui.whenFails}</p>}</li>)}</ol>)}
-    {p.topHunger && section('needs', ui.needs, <><h3 className="h2 mt8">{lang === 'ru' ? STRINGS.innerverseReport.needLabelsRu[p.topHunger.need] : p.topHunger.need}</h3><p className="sub mt8">{STRINGS.innerverseReport.needPractice[lang][p.topHunger.need]}</p></>, ui.needsSub)}
+    {need ? section('needs', ui.needs, <><h3 className="h2 mt8">{lang === 'ru' ? STRINGS.innerverseReport.needLabelsRu[need.need] : need.need}</h3><p className="sub mt8">{STRINGS.innerverseReport.needPractice[lang][need.need]}</p></>, ui.needsSub) : section('needs', ui.needs, <p className="sub mt8">{ui.needsNone}</p>)}
     {section('resources', ui.resources, RESOURCES.map((id) => <div className="mt12" key={id}><div className="row"><b className="grow">{resourceName(id, lang)}</b><span className="chip">{ui.band[p.resources[id].band]} · T {Math.round(p.resources[id].T)}</span></div>{bar(p.resources[id].T, resourceName(id, lang))}{p.resourceLeaks.some((leak) => leak.resource === id) && <p className="sub mt8">{ui.leak(p.resourceLeaks.filter((leak) => leak.resource === id).map((leak) => partName(leak.spillPart)).join(', '))}</p>}</div>), ui.resourcesSub)}
     {p.validity.flags.length > 0 && section('validity', t('validityFlags'), p.validity.flags.map((flag) => <p key={flag} className="sub mt8">{t(flag === 'attention' ? 'validityAttentionFlag' : 'validityInfrequencyFlag')}</p>))}
     {futureSelf.some((a) => a.trim()) && section('future', lang === 'ru' ? 'Будущее «я»' : 'Future Self', futureSelf.map((answer, i) => <p className="sub mt8" key={i}>{answer}</p>))}
     {!readOnly && <>
-      {section('continue', ui.continueTitle, <><button className="btn primary block mt12" onClick={() => go('universe')}>🌌 {t('seeUniverse')}</button><button className="btn block mt12" onClick={downloadBackup}>{ui.localCta}</button>{user?.linked ? <><button className="btn block mt12" onClick={() => go('cabinet')}>{ui.cabinetCta}</button><button className="btn block mt12" onClick={() => setOverlay('practice')}>{ui.practiceCta}</button><button className="btn block mt12" onClick={() => setOverlay('share')}>{ui.specialistCta}</button></> : <button className="btn block mt12" onClick={() => setOverlay('login')}>{ui.saveCta}</button>}<button className="btn ghost block mt12" onClick={() => { store.remove(DESCENT_DRAFT_KEY); store.remove(LEGACY_DESCENT_DRAFT_KEY); go('full-assessment'); }}>{t('retake')}</button></>)}
-      {section('history', t('history'), store.history(KEYS.history).filter((entry) => validClinicalScore(entry?.clinical)).reverse().slice(0, 10).map((entry, i) => <div className="row mt12" key={i}><span className="grow">{constellationName(entry.clinical.headline, lang)}<small className="sub"> · {new Date(entry.createdAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US')}</small></span><button className="btn small" onClick={() => setPreview(entry)}>{t('viewReport')}</button><button className="btn small" onClick={() => restoreHistory(entry)}>{t('restore')}</button></div>))}
+      {section('continue', ui.continueTitle, <><button className="btn primary block mt12" onClick={() => go('universe')}>🌌 {t('seeUniverse')}</button><button className="btn block mt12" onClick={downloadBackup}>{ui.localCta}</button>{user?.linked ? <><button className="btn block mt12" onClick={() => go('cabinet')}>{ui.cabinetCta}</button><button className="btn block mt12" onClick={() => setOverlay('practice')}>{ui.practiceCta}</button><button className="btn block mt12" onClick={() => setOverlay('share')}>{ui.specialistCta}</button></> : <button className="btn block mt12" onClick={() => setOverlay('login')}>{ui.saveCta}</button>}<button className="btn ghost block mt12" onClick={retake}>{t('retake')}</button></>)}
+      {section('history', t('history'), store.history(KEYS.history).filter((entry) => validClinicalScore(entry?.clinical)).reverse().slice(0, 10).map((entry, i) => {
+        const reportName = constellationName(entry.clinical.headline, lang);
+        const when = new Date(entry.createdAt).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US');
+        const stamp = new Date(entry.createdAt).toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', { dateStyle: 'medium', timeStyle: 'medium' });
+        // The buttons name the report they act on, so two rows never read the same to a screen reader.
+        return <div className="row mt12" key={i}><span className="grow">{reportName}<small className="sub"> · {when}</small></span><button className="btn small" aria-label={`${t('viewReport')}: ${reportName} · ${stamp}`} onClick={() => setPreview(entry)}>{t('viewReport')}</button><button className="btn small" aria-label={`${t('restore')}: ${reportName} · ${stamp}`} onClick={() => restoreHistory(entry)}>{t('restore')}</button></div>;
+      }))}
     </>}
     <footer className="sub mt24">{ui.ethics}</footer>
   </div></div>;

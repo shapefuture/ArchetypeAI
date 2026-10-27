@@ -3,11 +3,13 @@ import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character.tsx';
 import { FAMILY_LABELS, randomTraits, pid, SHAPES, EYES, MOUTHS, HEADS, FACES } from '../pal/traits.ts';
 import { familyColor, Crest, Seg, Bars } from '../ui/ui.jsx';
-import { t as tr, EXERCISE_COPY, UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
+import { t as tr, UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
+import { EXERCISE_COPY } from '../../shared/i18n/strings';
 import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapter.ts';
 import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
-import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus } from '../core/booking.ts';
+import { EXERCISES, EXERCISE_TYPES } from '../../shared/core/data/exercises';
+import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus, therapistWallLabel } from '../core/booking.ts';
 import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates, setAxisChoice } from '../services/universe-lens';
 import { ModalLayer } from '../ui/modal-layer.jsx';
 import { ReplayStudio } from './replay.jsx';
@@ -482,24 +484,29 @@ export function SpecialistView() {
   const [inviteCode, setInviteCode] = useState('');
   const [clients, setClients] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [rosterFailed, setRosterFailed] = useState(false);
   const [availability, setAvailability] = useState(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [appointmentBusy, setAppointmentBusy] = useState('');
   const [error, setError] = useState('');
+  // A refused decision has its own message: the list reload after it clears the load error, not this one.
+  const [decisionError, setDecisionError] = useState('');
   const [assignFor, setAssignFor] = useState('');
   const [exerciseId, setExerciseId] = useState('');
   const [frequency, setFrequency] = useState('once');
   const [refreshKey, setRefreshKey] = useState(0);
-  const exerciseIds = useMemo(() => Object.keys(EXERCISE_COPY), []);
+  // RED exercises are refused without the client's container, which this screen cannot see, so they are not offered here.
+  const exerciseIds = useMemo(() => EXERCISES.filter((item) => EXERCISE_TYPES[item.type].gate !== 'red').map((item) => item.id), []);
   const activeClients = clients.filter((client) => !client.archived);
   const archivedClients = clients.filter((client) => client.archived);
   // Only appointments of linked, non-archived clients are shown (see visibleAppointments).
-  const shownAppointments = visibleAppointments(appointments, clients);
+  // With the roster unreadable, only pending requests are shown: they are the ones to decide, and the closed appointments
+  // of clients the therapist archived or unlinked stay hidden.
+  const shownAppointments = visibleAppointments(appointments, rosterFailed ? [] : clients);
   const pendingAppointments = shownAppointments.filter((appointment) => appointment.status === 'pending');
   const summaryClients = readableClientMaps(user?.uid ?? '', user?.uid ?? '', activeClients).filter((client) => client.summary);
   const checkInsDone = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.done) || 0), 0);
-  const checkInsSkipped = summaryClients.reduce((sum, client) => sum + (Number(client.summary?.adherence?.skipped) || 0), 0);
   const selfEnergyValues = summaryClients.map((client) => Number(client.summary?.selfEnergy)).filter(Number.isFinite);
   const meanSelfEnergy = selfEnergyValues.length
     ? Math.round(selfEnergyValues.reduce((sum, value) => sum + value, 0) / selfEnergyValues.length)
@@ -510,6 +517,7 @@ export function SpecialistView() {
     if (!attested || !user?.linked || !user.uid) {
       setClients([]);
       setAppointments([]);
+      setRosterFailed(false);
       setAvailability(null);
       setLoading(false);
       return undefined;
@@ -524,6 +532,7 @@ export function SpecialistView() {
     ]).then((results) => {
       if (!active) return;
       const [clientResult, appointmentResult, availabilityResult] = results;
+      setRosterFailed(clientResult.status === 'rejected');
       if (clientResult.status === 'fulfilled') setClients(clientResult.value);
       else setClients([]);
       if (appointmentResult.status === 'fulfilled') {
@@ -548,6 +557,11 @@ export function SpecialistView() {
     setBusy(true);
     setError('');
     try {
+      // Claiming a client's code is for verified therapists with a saved profile (the rules enforce it).
+      if (user.emailVerified !== true || !(await getTherapistProfile(user.uid))) {
+        setError(t('claimNeedsProfile'));
+        return;
+      }
       const summary = await claimTherapistLink(user.uid, code);
       if (!summary) setError(t('badCode'));
       else {
@@ -558,7 +572,8 @@ export function SpecialistView() {
       }
     } catch (err) {
       console.error('Therapist invite claim failed', err);
-      setError(t('badCode'));
+      // A code another therapist claimed is refused by the rules: that is a bad code. Any other error is the connection or the server.
+      setError(err?.code === 'permission-denied' ? t('badCode') : t('therapistLoadFailed'));
     } finally {
       setBusy(false);
     }
@@ -583,14 +598,16 @@ export function SpecialistView() {
   const decideAppointment = async (appointmentId, status) => {
     if (!user?.linked || appointmentBusy) return;
     setAppointmentBusy(appointmentId);
-    setError('');
+    setDecisionError('');
     try {
-      await setAppointmentStatus(appointmentId, status);
+      await setAppointmentStatus(appointmentId, status, 'therapist');
       toast('✓ ' + t(status === 'approved' ? 'appointmentApproved' : 'appointmentDeclined'));
       refresh();
     } catch (err) {
       console.error('Appointment update failed', err);
-      setError(t('therapistSaveFailed'));
+      setDecisionError(t('therapistSaveFailed'));
+      // The refused write may mean the client closed the request meanwhile: reload, so the list shows its real state.
+      refresh();
     } finally {
       setAppointmentBusy('');
     }
@@ -617,12 +634,8 @@ export function SpecialistView() {
     }
   };
 
-  const appointmentDate = (value) => {
-    const date = new Date(`${value}:00`);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleString(lang === 'ru' ? 'ru-RU' : 'en-US', {
-      weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-    });
-  };
+  // The therapist's own wall clock and zone, never shifted by this device's zone.
+  const appointmentDate = (appointment) => therapistWallLabel(appointment, lang);
 
   const clientCard = (client, archived = false) => (
     <div key={client.clientUid} className="card flat mt12">
@@ -645,7 +658,7 @@ export function SpecialistView() {
               <span className="chip">{t('activeComplexes')}: {client.summary.activeComplexes?.length ?? 0}</span>
             </div>
             <div className="faint mt8" style={{ fontSize: 11.5 }}>
-              {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {Number(client.summary.adherence?.done) || 0} {t('checkinsDone')}
+              {Object.keys(client.summary.parts ?? {}).length} {t('parts')} · {t('practicesDone')}: {Number(client.summary.adherence?.done) || 0}
             </div>
           </div>
         </GuardedClientData>
@@ -662,7 +675,7 @@ export function SpecialistView() {
                 <span>{t('chooseExercise')}</span>
                 <select className="drop mt6" value={exerciseId} onChange={(event) => setExerciseId(event.target.value)}>
                   <option value="">—</option>
-                  {exerciseIds.map((id) => <option key={id} value={id}>{id.toUpperCase()} · {EXERCISE_COPY[id]?.[lang]}</option>)}
+                  {exerciseIds.map((id) => <option key={id} value={id}>{id.toUpperCase()} · {(EXERCISE_COPY[id]?.[lang] ?? EXERCISE_COPY[id]?.en)?.title}</option>)}
                 </select>
               </label>
               <label className="field mt8">
@@ -689,7 +702,7 @@ export function SpecialistView() {
       <div className="screen">
         <div className="scroll">
           <div className="row" style={{ paddingTop: 4 }}>
-            <button className="ibtn" onClick={() => go('assessment-results')}>‹</button>
+            <button className="ibtn" aria-label={t('back')} onClick={() => go('assessment-results')}>‹</button>
             <div className="grow kicker">{t('therapist')}</div>
           </div>
           <div className="card mt24" style={{ borderColor: 'var(--accent)' }}>
@@ -709,10 +722,10 @@ export function SpecialistView() {
     <div className="screen">
       <div className="scroll">
         <div className="row" style={{ paddingTop: 4 }}>
-          <button className="ibtn" onClick={() => go('assessment-results')}>‹</button>
+          <button className="ibtn" aria-label={t('back')} onClick={() => go('assessment-results')}>‹</button>
           <div className="grow kicker">{t('therapist')}</div>
           <button className="ibtn" title={t('availT')} onClick={() => setOverlay('therapist')}>⚙</button>
-          <button className="ibtn" onClick={() => setOverlay('help')}>?</button>
+          <button className="ibtn" aria-label={t('help')} onClick={() => setOverlay('help')}>?</button>
         </div>
 
         {!user?.linked && (
@@ -721,7 +734,7 @@ export function SpecialistView() {
             <button className="btn primary block mt12" onClick={() => setOverlay('login')}>🔐 {t('loginT')}</button>
           </div>
         )}
-        {error && <p className="card flat mt12" role="alert" style={{ color: 'var(--danger, #b54a4a)', fontSize: 12 }}>{error}</p>}
+        {(error || decisionError) && <p className="card flat mt12" role="alert" style={{ color: 'var(--danger, #b54a4a)', fontSize: 12 }}>{error || decisionError}</p>}
         {loading && <p className="faint mt12" role="status">{t('loading')}</p>}
 
         <div className="tabs mt16">
@@ -729,7 +742,7 @@ export function SpecialistView() {
             ['claims', t('claims')], ['avail', t('availability')], ['clients', t('clients')],
             ['metrics', t('metrics')], ['appts', t('appointments')],
           ].map(([value, label]) => (
-            <button key={value} className={tab === value ? 'on' : ''} onClick={() => setTab(value)}>{label}</button>
+            <button key={value} className={tab === value ? 'on' : ''} aria-pressed={tab === value} onClick={() => setTab(value)}>{label}</button>
           ))}
         </div>
 
@@ -802,8 +815,7 @@ export function SpecialistView() {
               <div className="kicker">{t('metrics')}</div>
               {[
                 [tr('sw36', lang), activeClients.length],
-                [tr('sw37', lang), checkInsDone],
-                [tr('sw38', lang), checkInsDone + checkInsSkipped ? `${Math.round(checkInsDone * 100 / (checkInsDone + checkInsSkipped))}%` : '—'],
+                [t('practicesDone'), checkInsDone],
                 [tr('sw39', lang), meanSelfEnergy == null ? '—' : `${meanSelfEnergy}%`],
                 [t('pendingAppointments'), pendingAppointments.length],
               ].map(([label, value]) => (
@@ -825,7 +837,7 @@ export function SpecialistView() {
                   <b className="grow">{appointment.clientEmail || appointment.clientUid.slice(0, 12)}</b>
                   <span className="chip">{t(`status${appointment.status[0].toUpperCase()}${appointment.status.slice(1)}`)}</span>
                 </div>
-                <div className="faint mt8" style={{ fontSize: 12 }}>{appointmentDate(appointment.start)}</div>
+                <div className="faint mt8" style={{ fontSize: 12 }}>{appointmentDate(appointment)}</div>
                 {appointment.status === 'pending' && (
                   <div className="row mt10" style={{ gap: 8 }}>
                     <button className="btn primary grow" disabled={appointmentBusy === appointment.id} onClick={() => decideAppointment(appointment.id, 'approved')}>

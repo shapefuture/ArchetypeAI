@@ -32,3 +32,15 @@ describe('clinical-profile-adapter', () => {
     expect(parts).toHaveLength(18);
   });
 });
+
+describe('tier labels on part cards', () => {
+  it('names every tier and band in Russian, never the English score keys', () => {
+    for (const fill of [1, 3, 5]) {
+      const score = scoreProfile(toAssessmentInput(Array(147).fill(fill)));
+      const { parts } = adaptClinicalProfile(score, 'ru');
+      for (const part of parts) {
+        expect(part.burden, part.id).not.toMatch(/dormant|present|prominent|dominant|hypo|healthy|hyper/);
+      }
+    }
+  });
+});

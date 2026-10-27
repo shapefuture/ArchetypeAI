@@ -1321,7 +1321,7 @@ export function computeRegulationCapacity(
     },
     shutdown: {
       en: `Emotional shutdown pattern detected. Emotional detachment (cool: ${(coolStrength * 100).toFixed(0)}%) with avoidant tendencies leads to withdrawal under stress. Regulation strategy: gentle somatic reconnection before cognitive processing.`,
-      ru: `Обнаружен паттерн эмоционального отключения. Эмоциональная отстранённость (хлад: ${(coolStrength * 100).toFixed(0)}%) с избегающими тенденциями ведёт к отстранению при стрессе. Стратегия регуляции: мягкая соматическая реконеекция до когнитивной проработки.`,
+      ru: `Обнаружен паттерн эмоционального отключения. Эмоциональная отстранённость (хлад: ${(coolStrength * 100).toFixed(0)}%) с избегающими тенденциями ведёт к отстранению при стрессе. Стратегия регуляции: мягкое телесное возвращение до когнитивной проработки.`,
     },
     oscillation: {
       en: `Oscillation pattern detected. Disorganized attachment creates rapid shifts between flooding and shutdown. Window of tolerance is narrow and unstable. Regulation strategy: establish safety anchors before exploring emotional content.`,
@@ -1421,30 +1421,25 @@ export function computeNarrativeCoherence(
   responses: number[],
   poles: PoleScores
 ): CoherenceIndicator {
-  // Within-section variance: high variance within a section = inconsistent responses
-  const sections = [
-    responses.slice(0, 12),   // Agency
-    responses.slice(12, 24),  // Temperature
-    responses.slice(24, 36),  // Focus
-    responses.slice(36, 52),  // Attachment
-  ];
+  // Inconsistency is disagreement among items that measure the same pole. Opposite poles of a
+  // dimension are expected to differ, so a decisive answerer (agree with one pole, reject the
+  // other) is consistent. Each block's variance on the -1..1 scale runs from 0 (all items agree)
+  // to 1 (half at each extreme).
+  const POLE_BLOCKS: [number, number][] = [[0, 6], [6, 12], [12, 18], [18, 24], [24, 30], [30, 36], [36, 44], [44, 52]];
+  const blockVariances = POLE_BLOCKS
+    .map(([from, to]) => responses.slice(from, to).filter(r => r > 0).map(r => (r - 3) / 2))
+    .filter(block => block.length > 1)
+    .map(variance);
+  const inconsistency = blockVariances.length ? blockVariances.reduce((s, v) => s + v, 0) / blockVariances.length : 0;
+  const consistency = clamp01(1 - inconsistency);
 
-  const sectionVariances = sections.map(s => variance(s.map(r => (r - 3) / 2)));
-  const avgVariance = sectionVariances.reduce((s, v) => s + v, 0) / sectionVariances.length;
-
-  // Cross-section consistency: do the pole scores tell a coherent story?
   // High disorganized = low coherence by definition
   const disorgPenalty = poles.disorganizedAttachment ? 0.25 : 0;
-
-  // Very low variance across ALL sections = overly rigid/defensive responding (not coherent)
-  // Very high variance = chaotic responding (not coherent)
-  // Sweet spot = moderate variance
-  const varianceCoherence = 1 - Math.abs(avgVariance - 0.4) * 2;
 
   // Health score contributes positively
   const healthBonus = poles.healthScore * 0.3;
 
-  const score = clamp01(varianceCoherence * 0.5 + healthBonus - disorgPenalty);
+  const score = clamp01(consistency * 0.7 + healthBonus - disorgPenalty);
 
   const levels: { level: CoherenceIndicator['level']; levelRu: string; threshold: number }[] = [
     { level: 'high', levelRu: 'Высокая', threshold: 0.7 },

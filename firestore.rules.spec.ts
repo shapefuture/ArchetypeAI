@@ -37,8 +37,9 @@ describe('firestore.rules — security boundaries', () => {
     const data = matchBlock(/match\s+\/assessment\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
     const history = matchBlock(/match\s+\/history\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
     for (const block of [data, history]) {
-      expect(block).toMatch(/isOwner\(userId\)\s*\|\|\s*hasAdminReadGrant\(userId\)\s*\|\|\s*hasTherapistReadGrant\(userId\)/);
-      expect(block).toMatch(/allow\s+write:\s*if\s+isOwner\(userId\)/);
+      expect(block).toMatch(/isOwner\(userId\)\s*\|\|\s*hasAdminReadGrant\(userId\)\s*\|\|\s*\(hasTherapistReadGrant\(userId\)\s*&&\s*\(resource == null \|\| resource\.data == null \|\| !holdsRawAnswers\(resource\.data\)\)\)/);
+      expect(block).toMatch(/allow\s+create,\s*update:\s*if\s+isOwner\(userId\)\s*&&\s*ownMapWithinLimit\(\)/);
+      expect(block).toMatch(/allow\s+delete:\s*if\s+isOwner\(userId\)/);
     }
     expect(rules).toMatch(/function\s+hasActiveAppointment\s*\(/);
     expect(rules).toMatch(/function\s+hasValidBookingShare\s*\(/);
@@ -74,7 +75,9 @@ describe('firestore.rules — security boundaries', () => {
     expect(shareCodes).toMatch(/validShareCodePayload\(request\.resource\.data\)/);
     expect(rules).toMatch(/function\s+validShareCodePayload\s*\(/);
     expect(therapistLinks).toMatch(/allow\s+get:\s*if\s+isSignedIn\(\)/);
-    expect(therapistLinks).toMatch(/allow\s+list:\s*if\s+false/);
+    // A client may list only their own codes, so "unlink all" can revoke unclaimed ones. A therapist may list only the
+    // codes they claimed, which they already hold: no unclaimed code is enumerable.
+    expect(therapistLinks).toMatch(/allow\s+list:\s*if\s+isSignedIn\(\)\s*&&\s*\(resource\.data\.clientUid\s*==\s*request\.auth\.uid\s*\|\|\s*\(resource\.data\.claimedBy\s*==\s*request\.auth\.uid\s*&&\s*exists\(/);
   });
 
   it('uses a minimal public busy-slot projection as a booking collision guard', () => {
@@ -90,8 +93,9 @@ describe('firestore.rules — security boundaries', () => {
   it('checks appointment/client-share data before adding a therapist roster row', () => {
     const shares = matchBlock(/match\s+\/clientShares\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
     const roster = matchBlock(/match\s+\/therapistClients\/\{docId\}\s*\{([\s\S]*?)\n\s*\}/);
-    expect(shares).toMatch(/hasActiveAppointment\(/);
-    expect(roster).toMatch(/hasValidBookingShare\(/);
+    // Booking writes commit with their appointment in one batch, so the share and roster checks read the batch's result.
+    expect(shares).toMatch(/hasActiveAppointmentAfter\(/);
+    expect(roster).toMatch(/hasValidBookingShareAfter\(/);
     expect(roster).toMatch(/hasValidInviteLink\(/);
   });
 });

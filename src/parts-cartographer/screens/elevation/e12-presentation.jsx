@@ -2,6 +2,7 @@
 // equivalent of the 3D view. The presentation choice is made by the pure E12 module from the environment, and it never
 // changes what a part means or what is saved. The list is shown when the person asks for it, or when the module picks it.
 import React, { useState } from 'react';
+import { localizeParts } from '../../pal/seed-copy.ts';
 import { useApp } from '../../app.jsx';
 import { store, KEYS } from '../../core/local-store';
 import { SENSORY_PREFERENCES_KEY } from '../../core/sensory-preferences.ts';
@@ -46,7 +47,7 @@ export function PresentationPanel() {
   const [listChosen, setListChosen] = useState(() => store.load(PRESENTATION_KEY, { list: false }).list === true);
   const [selectedId, setSelectedId] = useState(null);
 
-  const parts = Array.isArray(store.load(KEYS.parts, [])) ? store.load(KEYS.parts, []) : [];
+  const parts = localizeParts((Array.isArray(store.load(KEYS.parts, [])) ? store.load(KEYS.parts, []) : []).filter((part) => part && typeof part === 'object' && typeof part.id === 'string'), lang);
   const items = parts.map((part) => ({ id: part.id, label: partLabel(part, lk), source: copy.source, action: copy.selected }));
 
   const win = typeof window === 'undefined' ? null : window;

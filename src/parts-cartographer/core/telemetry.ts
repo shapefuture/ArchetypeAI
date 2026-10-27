@@ -5,6 +5,8 @@ type Dist = Record<string, number>;
 
 export const telemetry = {
   record(itemId: string, value: number | string) {
+    // Values are bucket labels (see elevation/e18-device-envelope.ts). An object would be counted as "[object Object]", so it is not stored.
+    if (typeof value !== 'string' && typeof value !== 'number') return;
     try {
       const all = store.load<Record<string, Dist>>(KEYS.telemetry, {});
       const d = (all[itemId] ??= {});

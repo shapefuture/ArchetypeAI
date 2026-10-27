@@ -182,7 +182,10 @@ export function scoreProfile(input: AssessmentInput, norms: NormOverride = {}): 
     const res = RESOURCES.filter(r => NEED[r] === need).map(r => resources[r].T);
     needHunger[need] = shadow.length === 0 ? 0 : mean(shadow) - (res.length ? mean(res) : 50);
   }
-  const topHunger = NEEDS
+  // Only a measured need that is actually unmet can be the loudest one.
+  const measured = new Set(SHADOW_PARTS.map(p => NEED[p]));
+  const topHunger: NeedHunger | undefined = NEEDS
+    .filter(need => measured.has(need) && needHunger[need] > 0)
     .map(need => ({ need, hunger: needHunger[need] }))
     .sort((a, b) => b.hunger - a.hunger)[0];
 

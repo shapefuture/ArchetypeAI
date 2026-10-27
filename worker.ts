@@ -1,5 +1,5 @@
 /// <reference types="@cloudflare/workers-types" />
-import { getMissingApiKeys } from './worker-helpers';
+import { getMissingApiKeys, hasAnyApiKey } from './worker-helpers';
 import {
   authenticateFirebaseRequest,
   checkRateLimit,
@@ -136,15 +136,14 @@ async function authorizeWorkerRequest(
 
   // Apply the IP bucket before JWT verification so unauthenticated traffic is
   // bounded too; then apply the per-user bucket after the token is verified.
-  const ip = request.headers.get('CF-Connecting-IP');
-  if (ipLimiter && ip) {
-    const ipLimit = await checkRateLimit(ipLimiter, `${endpoint}:ip:${ip}`);
-    if (ipLimit === 'unavailable') {
-      return { response: jsonResponse({ error: 'Request protection is temporarily unavailable' }, 503, headers) };
-    }
-    if (ipLimit === 'limited') {
-      return { response: jsonResponse({ error: 'Too many requests. Please try again shortly.' }, 429, { ...headers, 'Retry-After': '60' }) };
-    }
+  // A missing binding fails closed (503), as the user bucket does. Requests without a client IP share one bucket.
+  const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+  const ipLimit = await checkRateLimit(ipLimiter, `${endpoint}:ip:${ip}`);
+  if (ipLimit === 'unavailable') {
+    return { response: jsonResponse({ error: 'Request protection is temporarily unavailable' }, 503, headers) };
+  }
+  if (ipLimit === 'limited') {
+    return { response: jsonResponse({ error: 'Too many requests. Please try again shortly.' }, 429, { ...headers, 'Retry-After': '60' }) };
   }
 
   const identity = await authenticateFirebaseRequest(request, env.FIREBASE_PROJECT_ID);
@@ -209,9 +208,10 @@ export default {
     if ('response' in authorization) return authorization.response;
 
     const missingKeys = getMissingApiKeys(env);
-    if (missingKeys.length > 0) {
+    if (!hasAnyApiKey(env)) {
       return notConfigured(missingKeys, cors);
     }
+    if (missingKeys.length > 0) console.warn(`AI providers without a key (their requests will fail over): ${missingKeys.join(', ')}`);
 
     const parsed = await parseJsonBody(request, MAX_AI_BODY_BYTES);
     if ('error' in parsed) return jsonResponse({ error: parsed.error }, parsed.status, cors);
@@ -236,7 +236,8 @@ export default {
         // can contain fragments of the user's sensitive prompt.
       }
 
-      const result = await this.raceAI(body, env);
+      // Ollama was just tried above, so the race uses the other providers.
+      const result = await this.raceAI(body, env, ['Ollama/gemma4']);
       return jsonResponse({ text: result.text, provider: result.provider, duration: result.duration }, 200, cors);
     } catch {
       // Do not log prompts, model outputs, provider bodies, or exception text.
@@ -348,10 +349,18 @@ export default {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15_000);
     try {
-      const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, {
+      // The subscription is expanded: a Checkout Session stays `complete` forever,
+      // so only the subscription's own status says whether it is still paid.
+      const stripeRes = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}?expand%5B%5D=subscription`, {
         headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` },
         signal: controller.signal,
       });
+      // Only Stripe saying the session does not exist is a 404. A rate limit or an outage is temporary: the client keeps
+      // its pending session and asks again.
+      if (!stripeRes.ok) {
+        if (stripeRes.status === 404) return jsonResponse({ error: 'Checkout Session not found' }, 404, cors);
+        return jsonResponse({ error: 'Stripe verification service is temporarily unavailable' }, 502, cors);
+      }
       const session = await stripeRes.json() as {
         status?: string;
         mode?: string;
@@ -360,7 +369,7 @@ export default {
         payment_status?: string;
         subscription?: unknown;
       };
-      if (!stripeRes.ok || session.mode !== 'subscription') {
+      if (session.mode !== 'subscription') {
         return jsonResponse({ error: 'Checkout Session not found' }, 404, cors);
       }
 
@@ -372,10 +381,15 @@ export default {
         return jsonResponse({ error: 'Checkout Session not found' }, 404, cors);
       }
 
-      const hasPaidSubscription = !!session.subscription
+      const subscription = session.subscription as { status?: unknown } | string | null | undefined;
+      const subscriptionStatus = typeof subscription === 'object' && subscription ? subscription.status : undefined;
+      const hasPaidSubscription = (subscriptionStatus === 'active' || subscriptionStatus === 'trialing')
         && (session.payment_status === 'paid' || session.payment_status === 'no_payment_required');
-      const status = session.status === 'complete' && hasPaidSubscription
-        ? 'complete'
+      // An `incomplete` subscription is waiting on its first payment (Stripe ends it after 23 hours). The session may still
+      // become paid, so it stays open: the client keeps its pending session and asks again.
+      const awaitingPayment = subscriptionStatus === 'incomplete';
+      const status = session.status === 'complete'
+        ? (hasPaidSubscription ? 'complete' : awaitingPayment ? 'open' : 'inactive')
         : session.status === 'expired' ? 'expired' : 'open';
       return jsonResponse({ status }, 200, cors);
     } catch {
@@ -385,14 +399,14 @@ export default {
     }
   },
 
-  async raceAI(payload: AIRequest, env: Env): Promise<{ text: string; provider: string; duration: number }> {
+  async raceAI(payload: AIRequest, env: Env, skip: ReadonlyArray<string> = []): Promise<{ text: string; provider: string; duration: number }> {
     const providers = [
       { name: 'Ollama/gemma4', fn: () => this.fetchOllama(payload, env, 'gemma4:31b-cloud') },
       { name: 'OpenRouter/NemotronUltra', fn: () => this.fetchOpenRouter(payload, env, env.OPENROUTER_MODEL) },
       { name: 'OpenRouter/AutoFree', fn: () => this.fetchOpenRouter(payload, env, 'openrouter/auto:free') },
       { name: 'NVIDIA/NimNemotronUltra', fn: () => this.fetchNvidiaNIM(payload, env) },
       { name: 'Google/Gemini', fn: () => this.fetchGemini(payload, env) },
-    ];
+    ].filter((provider) => !skip.includes(provider.name));
 
     const tasks = providers.map(async (provider) => {
       const startedAt = Date.now();
@@ -623,10 +637,11 @@ export default {
 
       const data = await response.json() as any;
       const message = data.choices?.[0]?.message;
-      let text = message?.content || message?.reasoning || message?.reasoning_content || '';
-      if (!message?.content && (message?.reasoning || message?.reasoning_content)) {
-        text = message.reasoning || message.reasoning_content;
-      }
+      // Only the model's answer is ever returned. Its reasoning trace is not an
+      // answer (and can echo the prompt), so an empty answer fails this provider
+      // and the race moves on to the next one.
+      let text: string = typeof message?.content === 'string' ? message.content : '';
+      if (!text.trim()) throw new Error('NVIDIA provider returned no answer');
       if (payload.responseSchema && text) {
         const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/s);
         if (jsonMatch) text = jsonMatch[1].trim();

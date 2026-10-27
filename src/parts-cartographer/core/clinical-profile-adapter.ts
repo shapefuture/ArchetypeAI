@@ -16,9 +16,9 @@ import {
   subtypeName,
   PART_NAME_RU,
 } from '../../shared/core/data/constellation-copy';
-import { PART_COPY as CLINICAL_PART_COPY, COMPLEX_COPY_RU } from '../../shared/i18n/strings';
+import { PART_COPY as CLINICAL_PART_COPY, COMPLEX_COPY_RU, STRINGS as SHARED_STRINGS } from '../../shared/i18n/strings';
 import { hashStr } from './ports';
-import { FAMILY_LABELS, SEED_PARTS, type Family, type Part } from '../pal/traits';
+import { FAMILY_LABELS, SEED_PARTS, type ArchetypeMapData, type Family, type Part } from '../pal/traits';
 import { SCORING_NAME_POOLS, type Lang } from '../i18n/strings';
 import { IV_PARTS } from '../../shared/features/landing/stickers';
 
@@ -73,6 +73,31 @@ export interface ClinicalPart extends Part {
   scoreT: number;
 }
 
+/** The role texts the adapter writes for a part, in both languages. Any other role was typed by the person. */
+function canonicalRoles(id: string): string[] {
+  return [...(CLINICAL_PART_COPY[id]?.face ?? []), ...Object.values(FAMILY_LABELS).flatMap((labels) => [labels.en, labels.ru])];
+}
+
+/**
+ * A part the person already had, scored again (a retake) or restored from History. The scores and canonical copy come
+ * from the new result; what the person did to the part stays: a typed name, role, family, look and star.
+ */
+export function withPersonEdits(scored: ClinicalPart, saved: Partial<ClinicalPart> | undefined): ClinicalPart {
+  if (!saved) return scored;
+  const typedName = saved.name && ![saved.nameEn, saved.nameRu, scored.nameEn, scored.nameRu].includes(saved.name) ? saved.name : undefined;
+  const typedRole = saved.role && !canonicalRoles(scored.id).includes(saved.role) ? saved.role : undefined;
+  const family = saved.family && Object.hasOwn(FAMILY_ARCHETYPE, saved.family) ? saved.family : scored.family;
+  return {
+    ...scored,
+    name: typedName ?? scored.name,
+    role: typedRole ?? scored.role,
+    family,
+    archetype: scored.archetype && archetypeOf(family, scored.archetype),
+    traits: saved.traits ?? scored.traits,
+    star: saved.star ?? scored.star,
+  };
+}
+
 export type AdaptedClinicalProfile = {
   version: 'angular-v2';
   testModel: 'angular-v2';
@@ -112,6 +137,31 @@ function displayPartName(id: PartId | string, lang: Lang): string {
   return lang === 'ru' ? PART_NAME_RU[id] ?? PART_NAME_EN[id] ?? id : PART_NAME_EN[id] ?? id;
 }
 
+/** The archetype cluster and node size each family draws with. The cluster filter and the node scale read them. */
+const FAMILY_ARCHETYPE: Record<Family, { cluster: string; size: number }> = {
+  manager: { cluster: 'managers', size: 0.75 },
+  firefighter: { cluster: 'firefighters', size: 0.7 },
+  exile: { cluster: 'exiles', size: 0.6 },
+  resource: { cluster: 'resources', size: 0.8 },
+};
+
+/** An archetype with the cluster and size of its family, whichever family it was last drawn with. */
+export function archetypeOf<T extends { cluster: string; size: number }>(family: Family, archetype: T): T {
+  return { ...archetype, ...FAMILY_ARCHETYPE[family] };
+}
+
+/** The archetype a part gets when the person places it in a family: studio-made, centred, with that family's cluster and size. */
+export function studioArchetypeFor(family: Family): ArchetypeMapData {
+  const base: ArchetypeMapData = { schema: 'archetype-map.v1', sourceAssessment: 'studio', coordinates: [0, 0, 0, 0], prominence: 55, cluster: '', size: 0 };
+  return archetypeOf(family, base);
+}
+
+/** A part whose archetype names another family's cluster (stored before a family change kept it) takes its family's cluster and size. */
+export function withFamilyCluster<P extends { family: Family; archetype?: ArchetypeMapData }>(part: P): P {
+  if (!part.archetype || part.archetype.cluster === FAMILY_ARCHETYPE[part.family]?.cluster) return part;
+  return { ...part, archetype: archetypeOf(part.family, part.archetype) };
+}
+
 function familyFor(id: PartId): Family {
   return partClass(id) as Family;
 }
@@ -134,7 +184,8 @@ function projectedPart(
   const copyIndex = lang === 'ru' ? 1 : 0;
   const intensity = Math.max(1, Math.min(5, Math.round((score.T - 20) / 15 + 1)));
   const felt = score.T < 45 ? 'low' : score.T >= 60 ? 'high' : 'mid';
-  const band = score.band ? ` · ${score.band}` : '';
+  const tierUi = SHARED_STRINGS.innerverseReport.ui[lang === 'ru' ? 'ru' : 'en'];
+  const band = score.band ? ` · ${tierUi.bandNames[score.band] ?? score.band}` : '';
   const reference = IV_PARTS.find((part) => part.id === id)!;
 
   return {
@@ -147,7 +198,7 @@ function projectedPart(
     role: localCopy?.face[copyIndex] ?? FAMILY_LABELS[family][lang],
     blurb: localCopy?.shadow[copyIndex] ?? localCopy?.face[copyIndex] ?? '',
     energy: Math.max(0, Math.min(1, (score.T - 20) / 60)),
-    burden: `T ${Math.round(score.T)} · ${score.tier}${band}`,
+    burden: `T ${Math.round(score.T)} · ${tierUi.tierNames[score.tier as keyof typeof tierUi.tierNames] ?? score.tier}${band}`,
     need: localCopy?.need[copyIndex] ?? '',
     voice: localCopy?.superpower[copyIndex] ?? '',
     star: false,
@@ -161,9 +212,9 @@ function projectedPart(
       coordinateBasis: 'fixed-reference-147',
       coordinates: [reference.ax.ag, reference.ax.te, reference.ax.fo, reference.ax.at]
         .map((value) => (value - 50) / 50) as [number, number, number, number],
-      cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[family],
+      cluster: FAMILY_ARCHETYPE[family].cluster,
       prominence: Math.max(0, Math.min(100, (score.T - 20) / 60 * 100)),
-      size: { manager: 0.75, firefighter: 0.7, exile: 0.6, resource: 0.8 }[family],
+      size: FAMILY_ARCHETYPE[family].size,
       description: localCopy?.face[copyIndex] ?? '',
       invitation: localCopy?.need[copyIndex] ?? '',
       shadow: localCopy?.shadow[copyIndex] ?? '',
@@ -292,7 +343,8 @@ export function adaptClinicalProfile(score: ClinicalScore, lang: Lang): { profil
     clinical: score,
   };
 
-  return { profile, parts };
+  // Stored parts use the canonical 0..100 energy every screen draws; the profile keeps 0..1 for the assessment.
+  return { profile, parts: parts.map((part) => ({ ...part, energy: Math.round(part.energy * 100) })) };
 }
 
 export function clinicalPartName(id: string, lang: Lang): string {

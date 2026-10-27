@@ -29,6 +29,7 @@
  */
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -72,12 +73,53 @@ export const DEFAULT_AVAILABILITY: AvailabilityWindow[] = [
 ];
 
 /**
- * Whether new bookings also write the schemaVersion-2 `time` map. Off by default:
- * firestore.rules (appointments create) accepts only the legacy key set, so
- * turning this on before the rule change would reject every booking. Enable it
- * only after the rule accepts an optional `time` map on create.
+ * Whether new bookings also write the schemaVersion-2 `time` map. On: the
+ * appointments create rule accepts an optional `time` validated by
+ * validZoneTime (firestore.rules), and without it a client in another zone is
+ * shown the therapist's wall clock as their own.
  */
-export const ZONE_TIME_WRITES_ENABLED = false;
+export const ZONE_TIME_WRITES_ENABLED = true;
+
+/**
+ * The therapist's view of an appointment: their own wall clock (never shifted
+ * by the device's zone), the zone it is in, and, for the hour that repeats when
+ * clocks go back, which of the two passes was booked.
+ */
+export function therapistWallLabel(
+  appointment: Pick<Appointment, 'start'> & { time?: AppointmentTimeV2 | null },
+  lang: string,
+): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(appointment.start ?? ''));
+  if (!match) return String(appointment.start ?? '');
+  const wall = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5])));
+  const ru = lang === 'ru';
+  let text = wall.toLocaleString(ru ? 'ru-RU' : 'en-US', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+  if (appointment.time?.timeZone) text += ` · ${appointment.time.timeZone}`;
+  const fold = appointment.time?.repeatedWallTime?.choice;
+  if (fold) text += ru ? (fold === 'later' ? ' · второй из двух повторов часа' : ' · первый из двух повторов часа') : (fold === 'later' ? ' · second of the repeated hour' : ' · first of the repeated hour');
+  return text;
+}
+
+/**
+ * How an appointment's time reads to the person viewing it. A zone-aware record
+ * is shown in the viewer's own zone. A legacy record has only the therapist's
+ * wall clock, so it is shown as that and flagged, never passed off as local.
+ */
+export function appointmentDisplayTime(
+  appointment: Pick<Appointment, 'start'> & { time?: AppointmentTimeV2 | null },
+  locale: string,
+  viewerZone?: string,
+): { text: string; therapistWallClock: boolean } {
+  const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' };
+  const instant = appointment.time?.startUtc ? new Date(appointment.time.startUtc) : null;
+  if (instant && !Number.isNaN(instant.getTime())) {
+    return { text: instant.toLocaleString(locale, viewerZone ? { ...options, timeZone: viewerZone } : options), therapistWallClock: false };
+  }
+  // Read the naive wall clock as-is (UTC formatting adds no shift).
+  const wall = new Date(`${appointment.start}:00Z`);
+  if (Number.isNaN(wall.getTime())) return { text: appointment.start, therapistWallClock: true };
+  return { text: wall.toLocaleString(locale, { ...options, timeZone: 'UTC' }), therapistWallClock: true };
+}
 
 export type AppointmentStatus = 'pending' | 'approved' | 'declined' | 'cancelled';
 
@@ -198,6 +240,17 @@ export function therapistTimeZone(availability: AvailabilityWindow[]): string | 
     zone = w.timeZone;
   }
   return zone;
+}
+
+/**
+ * The zone clients may book in. Legacy hours carry the reader's device zone
+ * (zoneFallback), which is not the therapist's zone, so they confirm nothing
+ * here until the therapist saves the hours again. No client is offered slots in
+ * a zone the therapist did not enter.
+ */
+export function bookingTimeZone(availability: AvailabilityWindow[]): string | null {
+  if (availability.some((w) => w?.zoneFallback)) return null;
+  return therapistTimeZone(availability);
 }
 
 /**
@@ -537,13 +590,50 @@ export function therapistBusySlotId(therapistUid: string, start: string): string
   return `${therapistUid}_${start}`;
 }
 
-/** Backfill the public slot projection for active appointments made pre-migration. */
-export async function ensureTherapistBusySlots(therapistUid: string, appointments: Appointment[]): Promise<void> {
+/** The busy-slot rule's time shape (firestore.rules validSlotTime): YYYY-MM-DDTHH:MM, a real calendar minute. */
+const SLOT_TIME = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])T([01]\d|2[0-3]):[0-5]\d$/;
+
+/** The calendar day (YYYY-MM-DD) that `now` falls on in `timeZone`. A slot's wall-clock start is in the therapist's zone. */
+function calendarDay(now: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+}
+
+/** A day that exists in the calendar: 2027-02-30 matches the shape but the rule cannot evaluate it. */
+function isRealDay(day: string): boolean {
+  const [year, month, date] = day.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, date));
+  return parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === date;
+}
+
+/** Whether the busy-slot rule accepts the appointment's slot: canonical times, end after start, one real day, not before today. */
+function slotAccepted(appointment: Appointment, today: string): boolean {
+  const start = appointment.start ?? '';
+  const end = appointment.end ?? '';
+  return SLOT_TIME.test(start) && SLOT_TIME.test(end) && end > start
+    && start.slice(0, 10) === end.slice(0, 10) && isRealDay(start.slice(0, 10)) && start.slice(0, 10) >= today;
+}
+
+/** The zone the therapist's availability is entered in, or this device's zone when none is saved. */
+async function therapistZone(therapistUid: string): Promise<string> {
+  const profile = await getTherapistProfile(therapistUid).catch(() => null);
+  const zone = profile?.availability.map((window) => window.timeZone).find((value) => isValidIanaZone(value));
+  return zone ?? deviceTimeZone() ?? 'UTC';
+}
+
+/**
+ * Backfill the public slot projection for active appointments made pre-migration. Only slots the busy-slot rule accepts
+ * are sent: a finished appointment needs no slot to block a booking, and a refused batch would fail the whole backfill.
+ */
+export async function ensureTherapistBusySlots(
+  therapistUid: string, appointments: Appointment[], timeZone?: string,
+): Promise<void> {
   const db = getFirestoreDb();
+  // Appointment times are wall-clock in the therapist's zone, so "today" is decided there unless a zone is given.
+  const today = calendarDay(new Date(), timeZone ?? await therapistZone(therapistUid));
   const activeByStart = new Map<string, Appointment>();
   for (const appointment of appointments) {
     if (appointment.therapistUid !== therapistUid || !['pending', 'approved'].includes(appointment.status)) continue;
-    if (appointment.start && appointment.end && !activeByStart.has(appointment.start)) {
+    if (slotAccepted(appointment, today) && !activeByStart.has(appointment.start)) {
       activeByStart.set(appointment.start, appointment);
     }
   }
@@ -566,9 +656,11 @@ export async function ensureTherapistBusySlots(therapistUid: string, appointment
   if (writes) await batch.commit();
 }
 
-export async function setAppointmentStatus(id: string, status: AppointmentStatus): Promise<void> {
+/** Set an appointment's status. `actor` is the side making the change: it decides which share the access follows. */
+export async function setAppointmentStatus(id: string, status: AppointmentStatus, actor: 'client' | 'therapist'): Promise<void> {
   const db = getFirestoreDb();
   const appointmentRef = doc(db, 'appointments', id);
+  let closed: { clientUid: string; therapistUid: string } | null = null;
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(appointmentRef);
     if (!snap.exists()) throw new Error('Appointment not found');
@@ -582,7 +674,64 @@ export async function setAppointmentStatus(id: string, status: AppointmentStatus
     transaction.update(appointmentRef, { status });
     // A retried cancellation must never delete a newer booking's reservation.
     if (busySnap?.exists() && busySnap.data().appointmentId === id) transaction.delete(busyRef);
+    closed = releasing ? { clientUid: String(data.clientUid), therapistUid: String(data.therapistUid) } : null;
   });
+  if (closed) await keepBookingAccess(actor, closed.clientUid, closed.therapistUid, id);
+}
+
+/** The client's other still-open appointment with this therapist, if any: pending or approved, and not before `since` when given. */
+export function nextActiveAppointmentId(
+  appointments: ReadonlyArray<Pick<Appointment, 'id' | 'therapistUid' | 'status' | 'start'>>,
+  therapistUid: string,
+  closedId: string,
+  since?: string,
+): string | null {
+  const active = appointments.find((appointment) => appointment.id !== closedId
+    && appointment.therapistUid === therapistUid
+    && (appointment.status === 'approved' || appointment.status === 'pending')
+    && (since === undefined || (appointment.start ?? '').slice(0, 10) >= since));
+  return active?.id ?? null;
+}
+
+/**
+ * The booking share points at the appointment that carries the therapist's access. When that one closes (the client
+ * cancels it, or the therapist declines or cancels it) and another open appointment with the same therapist exists,
+ * point the share at that one, so the access the consent copy describes is the access that remains. An approved
+ * appointment never closes by itself, so one long past does not count as open. Best effort: a failure leaves the
+ * status change itself in place.
+ */
+async function keepBookingAccess(actor: 'client' | 'therapist', clientUid: string, therapistUid: string, closedId: string): Promise<void> {
+  try {
+    const db = getFirestoreDb();
+    const shareRef = doc(db, 'clientShares', `${therapistUid}_${clientUid}`);
+    const share = await getDoc(shareRef);
+    if (!share.exists() || share.data().appointmentId !== closedId) return;
+    // One day of slack covers appointment times in a zone ahead of this device's.
+    const since = calendarDay(new Date(Date.now() - 86_400_000), deviceTimeZone() ?? 'UTC');
+    const appointments = actor === 'client'
+      ? await myAppointments(clientUid)
+      : (await therapistAppointments(therapistUid)).filter((appointment) => appointment.clientUid === clientUid);
+    const next = nextActiveAppointmentId(appointments, therapistUid, closedId, since);
+    if (!next) {
+      // No other open booking: the roster row that named the closed one would still list the client and their email.
+      const rosterRef = doc(db, 'therapistClients', `${therapistUid}_${clientUid}`);
+      const roster = await getDoc(rosterRef);
+      if (roster.exists() && roster.data().source === 'booking' && roster.data().appointmentId === closedId) {
+        await deleteDoc(rosterRef);
+      }
+      return;
+    }
+    const now = new Date().toISOString();
+    await setDoc(shareRef, { appointmentId: next, grantedAt: now }, { merge: true });
+    // The roster row names the same booking: the therapist's assignments check it against the share.
+    const rosterRef = doc(db, 'therapistClients', `${therapistUid}_${clientUid}`);
+    const roster = await getDoc(rosterRef);
+    if (roster.exists() && roster.data().source === 'booking') {
+      await setDoc(rosterRef, { appointmentId: next, linkedAt: now }, { merge: true });
+    }
+  } catch (error) {
+    console.error('Keeping booking access after the status change failed', error);
+  }
 }
 
 /**
@@ -616,6 +765,11 @@ export async function createBooking(input: {
   const id = appointmentRef.id;
   const now = new Date().toISOString();
   const busyRef = doc(db, 'therapistBusySlots', therapistBusySlotId(input.therapistUid, input.start));
+  const shareRef = doc(db, 'clientShares', `${input.therapistUid}_${input.clientUid}`);
+  const rosterRef = doc(db, 'therapistClients', `${input.therapistUid}_${input.clientUid}`);
+  // A therapist already linked by invite keeps that link (and its trust); the booking share is enough for the booking itself.
+  const existingRoster = await getDoc(rosterRef).catch(() => null);
+  const keepsInviteLink = existingRoster?.exists() && existingRoster.data().source === 'invite';
   const bookingBatch = writeBatch(db);
   bookingBatch.set(appointmentRef, {
     clientUid: input.clientUid,
@@ -638,9 +792,10 @@ export async function createBooking(input: {
     start: input.start,
     end: input.end,
   });
-  await bookingBatch.commit();
-  await setDoc(
-    doc(db, 'clientShares', `${input.therapistUid}_${input.clientUid}`),
+  // The request, its access grant and the roster row commit together: a failed write leaves no pending request
+  // holding the slot behind a booking that reported failure.
+  bookingBatch.set(
+    shareRef,
     {
       clientUid: input.clientUid,
       clientEmail: input.clientEmail,
@@ -651,17 +806,20 @@ export async function createBooking(input: {
     },
     { merge: true },
   );
-  await setDoc(
-    doc(db, 'therapistClients', `${input.therapistUid}_${input.clientUid}`),
-    {
-      therapistUid: input.therapistUid,
-      clientUid: input.clientUid,
-      clientEmail: input.clientEmail,
-      linkedAt: now,
-      source: 'booking',
-      appointmentId: id,
-    },
-    { merge: true },
-  );
+  if (!keepsInviteLink) {
+    bookingBatch.set(
+      rosterRef,
+      {
+        therapistUid: input.therapistUid,
+        clientUid: input.clientUid,
+        clientEmail: input.clientEmail,
+        linkedAt: now,
+        source: 'booking',
+        appointmentId: id,
+      },
+      { merge: true },
+    );
+  }
+  await bookingBatch.commit();
   return id;
 }

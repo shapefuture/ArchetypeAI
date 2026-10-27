@@ -4,6 +4,7 @@ import { Confetti } from '../ui/ui.jsx';
 import { clinicalPartName } from '../core/clinical-display.ts';
 import { KEYS, store } from '../core/local-store';
 import {
+  adjustTriggerWeights,
   charterTrend,
   predictFlare,
   readyToResurface,
@@ -11,9 +12,10 @@ import {
   selectJitaiCard,
   storeEvent,
   stricterCharter,
-  unburdeningMoments,
+  unburdeningInWindows,
   verdictLockActive,
   weatherLayer,
+  ALL_PART_IDS,
 } from '../../shared/core/data/state-v2';
 import { COMPLEXES, SHADOW_PARTS } from '../../shared/core/data/parts';
 import { COMPLEX_COPY_RU, STRINGS as SOURCE_STRINGS } from '../../shared/i18n/strings';
@@ -25,6 +27,8 @@ const CHECKIN_KEY = 'INNERVERSE_CHECKINS_V1';
 const VERDICT_KEY = 'INNERVERSE_SEALED_VERDICTS_V1';
 const JITAI_KEY = 'INNERVERSE_JITAI_V1';
 const CHARTER_KEY = 'INNERVERSE_CHARTER_V1';
+/** Parts whose softening card was already shown. The card appears once per part (§1.10). */
+const UNBURDENED_KEY = 'INNERVERSE_UNBURDENED_V1';
 const AROUSAL_VALUES = [-2, -1, 0, 1, 2];
 const EVENT_VALUES = ['relational', 'achievement', 'loss', 'boundary', 'change', 'calm'];
 const RATING_VALUES = ['still true', 'partly', 'state artifact'];
@@ -36,7 +40,10 @@ function safeArray(key) {
 
 function isCheckIn(value) {
   return value && typeof value.date === 'string' && Number.isFinite(Date.parse(value.date))
-    && Number.isInteger(value.arousal) && value.arousal >= -2 && value.arousal <= 2;
+    && Number.isInteger(value.arousal) && value.arousal >= -2 && value.arousal <= 2
+    && (value.eventType === undefined || EVENT_VALUES.includes(value.eventType))
+    && (value.confirmedPart == null || ALL_PART_IDS.includes(value.confirmedPart))
+    && (value.predictedPart == null || ALL_PART_IDS.includes(value.predictedPart));
 }
 
 function isSealedVerdict(value) {
@@ -88,10 +95,14 @@ export function CheckIn() {
   const locked = verdictLockActive(history, now);
   const weather = weatherLayer(history, now);
   const weatherRows = Object.entries(weather).sort((a, b) => b[1].count - a[1].count).slice(0, 4);
-  const unburdened = useMemo(() => {
-    const middle = Math.floor(history.length / 2);
-    return unburdeningMoments(history.slice(0, middle), history.slice(middle));
-  }, [history]);
+  // Read once per visit, so a card shown now stays on screen until the person leaves.
+  const [unburdenedBefore] = useState(() => new Set(safeArray(UNBURDENED_KEY).filter((id) => typeof id === 'string')));
+  const unburdened = useMemo(() => unburdeningInWindows(history, new Date()).filter((part) => !unburdenedBefore.has(part)), [history, unburdenedBefore]);
+  // Written only once the card is on screen (the done stage). A visit that never gets there keeps the card for later.
+  useEffect(() => {
+    if (stage !== 'done' || dueVerdict || !unburdened.length) return;
+    store.save(UNBURDENED_KEY, [...new Set([...safeArray(UNBURDENED_KEY), ...unburdened])]);
+  }, [stage, dueVerdict, unburdened]);
   const partName = (id) => {
     const index = SHADOW_PARTS.indexOf(id);
     const adaptedSubtype = lang === 'ru' ? profile?.subtypesRu?.[index] : profile?.subtypesEn?.[index];
@@ -111,7 +122,8 @@ export function CheckIn() {
   };
 
   const rateResurfaced = (verdict, rating) => {
-    const next = verdicts.map((item) => item.createdAt === verdict.createdAt ? { ...item, reRating: rating } : item);
+    // Fresh from storage, so a verdict sealed in another tab is kept.
+    const next = safeArray(VERDICT_KEY).filter(isSealedVerdict).map((item) => item.createdAt === verdict.createdAt ? { ...item, reRating: rating } : item);
     setVerdicts(next);
     store.save(VERDICT_KEY, next);
   };
@@ -119,7 +131,7 @@ export function CheckIn() {
   const chooseEvent = (selectedEvent) => {
     setEventType(selectedEvent);
     if (clinical) {
-      setPredicted(selectedEvent ? predictFlare(clinical, selectedEvent) : clinical.copingStack.l1 ?? null);
+      setPredicted(selectedEvent ? predictFlare(clinical, selectedEvent, adjustTriggerWeights(history)) : clinical.copingStack.l1 ?? null);
     } else {
       setPredicted(null);
     }
@@ -137,12 +149,15 @@ export function CheckIn() {
       ...(predicted ? { predictedPart: predicted } : {}),
       confirmedPart: confirmedPart ?? null,
     };
-    const nextHistory = [...history, checkIn];
+    // Re-read the stored history so a check-in saved in another tab is kept.
+    const nextHistory = [...safeArray(CHECKIN_KEY).filter(isCheckIn), checkIn];
     saveHistory(nextHistory);
 
     if (clinical) {
       const lapse = lapseToday(nextHistory, nowAtRecord);
-      if (lapse) storeEvent('lapse');
+      // One lapse event per episode: this check-in starts a lapse only if none was logged in the last day.
+      const startsLapse = ['numb', 'rebel', 'charmer'].includes(checkIn.confirmedPart) && Math.abs(checkIn.arousal) >= 1;
+      if (startsLapse && !lapseToday(nextHistory.slice(0, -1), nowAtRecord)) storeEvent('lapse');
       const lastJitaiAt = store.load(JITAI_KEY, null);
       const stackL1Flared = nextHistory.some((item) => item.confirmedPart === clinical.copingStack.l1
         && (nowAtRecord.getTime() - new Date(item.date).getTime()) / 86400000 <= 1);
@@ -165,15 +180,16 @@ export function CheckIn() {
   const sealCurrentVerdict = () => {
     const text = verdictDraft.trim();
     if (!text || !locked) return;
-    const next = [...verdicts, sealVerdict(text, new Date())];
+    const next = [...safeArray(VERDICT_KEY).filter(isSealedVerdict), sealVerdict(text, new Date())];
+    // A seal that did not fit is not claimed: the storage warning stays and the text stays in the box.
+    if (!store.save(VERDICT_KEY, next)) return;
     setVerdicts(next);
-    store.save(VERDICT_KEY, next);
     setVerdictDraft('');
     toast('✓ ' + t('sealed'));
   };
 
   const recordCharter = (repairLogged, told) => {
-    const next = [...charterDeliveries, { blame, license, at: new Date().toISOString() }];
+    const next = [...safeArray(CHARTER_KEY), { blame, license, at: new Date().toISOString() }];
     setCharterDeliveries(next);
     store.save(CHARTER_KEY, next);
     const legacyCharters = safeArray(KEYS.charter);
@@ -280,7 +296,11 @@ export function CheckIn() {
               <>
                 <div className="h2">{lang === 'ru' ? 'Есть ли часть, которую вы хотите отметить?' : 'Is there a part you want to name?'}</div>
                 <p className="sub mt8">{lang === 'ru' ? 'Полная карта нужна для персонального прогноза. Сверку можно записать и без него.' : 'A completed map is needed for a personalized prediction. You can still log this check-in without one.'}</p>
-                <button className="btn primary block mt16" onClick={() => recordCheckIn(null)}>{ui.no}</button>
+                {/* Without a map there is no prediction, but the person can still name a part, or log without one. */}
+                <div className="row wrap mt12" style={{ justifyContent: 'center', gap: 8 }}>
+                  {partsByT.map((part) => <button key={part} className="chip" onClick={() => recordCheckIn(part)}>{partName(part)}</button>)}
+                </div>
+                <button className="btn block mt16" onClick={() => recordCheckIn(null)}>{lang === 'ru' ? 'Записать без части' : 'Log without a part'}</button>
               </>
             )}
           </div>
@@ -306,7 +326,7 @@ export function CheckIn() {
                       <label className="block mt12" style={{ fontSize: 12, fontWeight: 800 }}>{lang === 'ru' ? 'Вина' : 'Blame'} · {blame}/10
                         <input type="range" min="0" max="10" value={blame} onChange={(event) => setBlame(Number(event.target.value))} style={{ display: 'block', width: '100%', accentColor: '#FF2D8A' }} />
                       </label>
-                      <label className="block mt12" style={{ fontSize: 12, fontWeight: 800 }}>{lang === 'ru' ? 'Ответственность' : 'License'} · {license}/10
+                      <label className="block mt12" style={{ fontSize: 12, fontWeight: 800 }}>{lang === 'ru' ? 'Ощущение «это неважно»' : 'License'} · {license}/10
                         <input type="range" min="0" max="10" value={license} onChange={(event) => setLicense(Number(event.target.value))} style={{ display: 'block', width: '100%', accentColor: '#3EE0B0' }} />
                       </label>
                       <label className="row mt12" style={{ fontSize: 12, gap: 8 }}><input type="checkbox" checked={repairLogged} onChange={(event) => setRepairLogged(event.target.checked)} />{lang === 'ru' ? 'Я сделал(а) действие по исправлению' : 'I took a repair action'}</label>

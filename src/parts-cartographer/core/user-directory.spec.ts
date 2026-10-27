@@ -15,12 +15,16 @@ vi.mock('firebase/firestore', () => ({
     const writes: Array<{ path: string; data: Record<string, unknown> }> = [];
     return {
       set: (ref: { path: string }, data: Record<string, unknown>) => { writes.push({ path: ref.path, data }); },
-      commit: async () => { commits.push(writes); for (const w of writes) store.set(w.path, w.data); },
+      delete: (ref: { path: string }) => { writes.push({ path: ref.path, data: { deleted: true } }); },
+      commit: async () => {
+        commits.push(writes);
+        for (const w of writes) { if (w.data.deleted) store.delete(w.path); else store.set(w.path, w.data); }
+      },
     };
   },
 }));
 
-import { clearUserDirectoryCache, lookupByEmail, syncPublicProfile } from './user-directory';
+import { clearUserDirectoryCache, lookupByEmail, refreshDirectoryEntry, syncPublicProfile } from './user-directory';
 
 const user = (uid: string, email: string, emailVerified = true) => ({ uid, email, displayName: 'Dr Vale', linked: true, emailVerified }) as any;
 
@@ -62,5 +66,29 @@ describe('user directory without a listable collection', () => {
   it('writes nothing for an anonymous session', async () => {
     await syncPublicProfile({ uid: 'anon', email: null, linked: false } as any);
     expect(commits).toHaveLength(0);
+  });
+});
+
+describe('directory refresh on sign-in', () => {
+  it('lists a therapist', async () => {
+    store.set('therapists/uid_t', { email: 'vale@example.com', availability: [] });
+    await refreshDirectoryEntry(user('uid_t', 'vale@example.com'));
+    expect(store.has('directoryEmails/vale@example.com')).toBe(true);
+  });
+
+  it('removes an earlier entry of an account that is not a therapist, so it cannot be looked up', async () => {
+    store.set('publicProfiles/uid_m', { email: 'member@example.com', emailLower: 'member@example.com', displayName: 'M' });
+    store.set('directoryEmails/member@example.com', { uid: 'uid_m', updatedAt: 'x' });
+    await refreshDirectoryEntry(user('uid_m', 'member@example.com'));
+    expect(store.has('publicProfiles/uid_m')).toBe(false);
+    expect(store.has('directoryEmails/member@example.com')).toBe(false);
+    clearUserDirectoryCache();
+    expect(await lookupByEmail('member@example.com')).toBeNull();
+  });
+
+  it('never deletes an index entry that belongs to someone else', async () => {
+    store.set('directoryEmails/shared@example.com', { uid: 'uid_other', updatedAt: 'x' });
+    await refreshDirectoryEntry(user('uid_m', 'shared@example.com'));
+    expect(store.get('directoryEmails/shared@example.com')).toEqual({ uid: 'uid_other', updatedAt: 'x' });
   });
 });

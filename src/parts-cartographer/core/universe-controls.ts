@@ -5,11 +5,17 @@ export type SearchableUniversePart = Part & {
   nameRu?: string;
 };
 
-/** Legacy assessment projections use 0..1; native Parts Cartographer values use 0..100. */
+/** Parts store energy on 0..100. Parts saved before that held a 0..1 fraction; `canonicalEnergyPart` converts them on load. */
 export function normalizedEnergy(part: Pick<Part, 'energy'>): number {
   const value = Number(part.energy);
   if (!Number.isFinite(value)) return 0;
-  return Math.max(0, Math.min(100, value <= 1 ? value * 100 : value));
+  return Math.max(0, Math.min(100, value));
+}
+
+/** A saved fraction is never a whole number except 0 and 1, so a fractional energy below 1 is converted to 0..100. */
+export function canonicalEnergyPart<T extends Pick<Part, 'energy'>>(part: T): T {
+  const value = Number(part.energy);
+  return value > 0 && value < 1 ? { ...part, energy: Math.round(value * 100) } : part;
 }
 
 export function filterUniverseParts<T extends Part>(

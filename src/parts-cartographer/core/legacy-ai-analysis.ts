@@ -176,7 +176,8 @@ export function sanitizeLegacyAiAnalysis(value: unknown): LegacyAiAnalysis {
     assigned += archetype.prominence;
   });
 
-  const analysis = text(input.analysis, 24_000);
+  // Analysis is prose: markup in a restored file is removed, so no stored narrative can carry live HTML.
+  const analysis = text(input.analysis, 24_000).replace(/<[^>]*>/g, '');
   if (analysis.length < 80) throw new Error('AI analysis is empty or too short.');
   return {
     analysis,

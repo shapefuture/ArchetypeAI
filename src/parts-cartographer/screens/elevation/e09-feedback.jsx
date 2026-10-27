@@ -30,11 +30,11 @@ const COPY = {
     ask: 'Сообщите приложению, что вы только что сделали. Ничего не происходит, пока вы не нажмёте.',
     modes: { full: 'Показывать отклик', quiet: 'Тихо', off: 'Выключить' },
     actions: {
-      'plan-revised': 'Я изменил план',
-      'exception-noticed': 'Я заметил исключение',
-      'help-requested': 'Я попросил помощи',
-      'rest-chosen': 'Я выбрал отдых',
-      'recording-declined': 'Я отказался от записи',
+      'plan-revised': 'План изменён',
+      'exception-noticed': 'Замечено исключение',
+      'help-requested': 'Помощь запрошена',
+      'rest-chosen': 'Выбран отдых',
+      'recording-declined': 'Без записи',
     },
     dismiss: 'Скрыть',
     refused: 'Сейчас отклик не показывается.',
@@ -71,7 +71,8 @@ export function FeedbackPanel() {
       setMessage(copy.refused);
       return;
     }
-    const next = markShown(recordSelection(ledger, selection.item), eventId);
+    // Fresh from storage, so another tab's feedback is kept.
+    const next = markShown(recordSelection(normalizeLedger(store.load(FEEDBACK_KEY, [])), selection.item), eventId);
     setLedger(next);
     store.save(FEEDBACK_KEY, next);
     setShown({ eventId, kind, line: CATALOG[kind] ?? null });
@@ -80,7 +81,7 @@ export function FeedbackPanel() {
 
   const hide = () => {
     if (!shown) return;
-    const next = dismiss(ledger, shown.eventId);
+    const next = dismiss(normalizeLedger(store.load(FEEDBACK_KEY, [])), shown.eventId);
     setLedger(next);
     store.save(FEEDBACK_KEY, next);
     setShown(null);

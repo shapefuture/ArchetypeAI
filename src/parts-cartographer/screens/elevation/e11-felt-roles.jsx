@@ -2,6 +2,7 @@
 // their authored choice, never generated, and it can be cleared. The module allows one authored role at a time, so the
 // panel offers one. Expressions are not drawn here: the character renderer is not wired to this module yet.
 import React, { useState } from 'react';
+import { localizeParts } from '../../pal/seed-copy.ts';
 import { useApp } from '../../app.jsx';
 import { store, KEYS } from '../../core/local-store';
 import { FELT_ROLES, authorRole, normalizeAuthoredRole } from '../../elevation/e11-felt-expression.ts';
@@ -42,7 +43,7 @@ export function FeltRolesPanel() {
   const { lang } = useApp() ?? {};
   const lk = lang === 'ru' ? 'ru' : 'en';
   const copy = COPY[lk];
-  const parts = Array.isArray(store.load(KEYS.parts, [])) ? store.load(KEYS.parts, []) : [];
+  const parts = localizeParts((Array.isArray(store.load(KEYS.parts, [])) ? store.load(KEYS.parts, []) : []).filter((part) => part && typeof part === 'object' && typeof part.id === 'string'), lang);
   const [authored, setAuthored] = useState(() => normalizeAuthoredRole(store.load(FELT_ROLE_KEY, null)));
   const [selected, setSelected] = useState(null);
   const [message, setMessage] = useState('');

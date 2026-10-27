@@ -10,7 +10,7 @@ permissions:
 jobs:
   changes:
     # Decides whether the heavy verify job is needed. Documentation-only changes skip it; the guard job always runs.
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
     outputs:
       code: ${{ steps.detect.outputs.code }}
     steps:
@@ -47,7 +47,7 @@ jobs:
           fi
 
   guard:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -73,7 +73,7 @@ jobs:
   verify:
     needs: [changes]
     if: needs.changes.outputs.code == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { localizeParts } from '../pal/seed-copy.ts';
 import { useApp } from '../app.jsx';
 import { store, KEYS } from '../core/local-store.ts';
 import { branch, decline, editMove, negotiate } from '../core/inner-negotiation.ts';
@@ -134,7 +135,7 @@ export function InnerNegotiation() {
   const app = useApp();
   const lang = app?.lang === 'ru' ? 'ru' : 'en';
   const ui = copyFor(app?.lang);
-  const parts = useMemo(() => readNegotiationParts(app?.parts), [app?.parts]);
+  const parts = useMemo(() => localizeParts(readNegotiationParts(app?.parts), app?.lang), [app?.parts, app?.lang]);
   const [record, setRecord] = useState(() => normalizeNegotiation(store.load(NEGOTIATION_KEY, null)));
   const [notice, setNotice] = useState('');
   const [moveDraft, setMoveDraft] = useState(null);

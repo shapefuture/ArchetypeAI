@@ -10,8 +10,13 @@ import { telemetry } from './core/telemetry.ts';
 import { loadSensoryPreferences, saveSensoryPreferences, selectSensoryPreset, updateSensoryPreference } from './core/sensory-preferences.ts';
 import { ambience, bindAmbienceSignals } from './services/ambience-gate.ts';
 import { navEntry, navOverlay, navSheet, planNavigation, readNavEntry, sameSheet } from './core/navigation-history.ts';
-import { SEED_PARTS } from './pal/traits.ts';
+import { localizeParts, storedParts } from './pal/seed-copy.ts';
+
+/* A stored report of the wrong shape (not an object with its parts) is treated as no report, not drawn. */
+const usableProfile = (saved) => (saved && typeof saved === 'object' && !Array.isArray(saved) && Array.isArray(saved.parts) ? saved : null);
+
 import { t as translate, STRINGS } from './i18n/strings.ts';
+import { usableParts } from './core/usable-parts.ts';
 import { Loading, Onboarding, Intro, downloadBackup } from './screens/landing.jsx';
 const AdminDashboard = lazy(() => import('./screens/admin.jsx').then((module) => ({ default: module.AdminDashboard })));
 const FullAssessment = lazy(() => import('./screens/full-assessment.jsx').then((module) => ({ default: module.FullAssessment })));
@@ -53,12 +58,24 @@ const Journal = named(loadOverlays, 'Journal');
 const Share = named(loadOverlays, 'Share');
 const Booking = named(loadOverlays, 'Booking');
 
-/** Fetches the deferred screens in the background after the first render. */
+/* Dialog names for screen readers: the overlay kind is a route id, not copy. */
+const OVERLAY_LABEL_KEYS = {
+  booking: 'bookSession', login: 'loginT', mapgate: 'mapGateT', paywall: 'pwT',
+  'universe-fail': 'uniFailT', admin: 'adminTools', journal: 'journalT', help: 'helpT', install: 'installT',
+};
+const overlayLabelKey = (kind) => OVERLAY_LABEL_KEYS[kind] ?? kind;
+
+/**
+ * Fetches the deferred screens as soon as the page has loaded: after the first
+ * screen's own files (so they never compete with it), but without waiting for
+ * an idle moment, so a tap on Cabinet does not wait behind the felt
+ * thumbnails' rendering.
+ */
 function warmDeferredScreens() {
-  const warm = () => { for (const load of [loadCabinet, loadAssessment, loadOverlays, loadInnerverse]) load().catch(() => {}); };
   if (typeof window === 'undefined') return;
-  if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 4000 });
-  else setTimeout(warm, 2000);
+  const warm = () => setTimeout(() => { for (const load of [loadCabinet, loadAssessment, loadOverlays, loadInnerverse]) load().catch(() => {}); }, 0);
+  if (document.readyState === 'complete') warm();
+  else window.addEventListener('load', warm, { once: true });
 }
 import { RouteBoundary, RouteFrame } from './ui/route-boundary.jsx';
 import { homeScreen, resolveBootRoute, withoutDeepLink } from './core/boot.ts';
@@ -103,7 +120,8 @@ async function restoreCanonicalProfile(lang) {
 
 export default function App() {
   /* ── cross-cutting state ── */
-  const [lang, setLang] = useState(() => store.load('ifs.lang', 'ru'));
+  // Only en and ru exist; any other stored value would blank every label.
+  const [lang, setLang] = useState(() => (store.load('ifs.lang', 'ru') === 'en' ? 'en' : 'ru'));
   const [theme, setTheme] = useState(() => store.load('ifs.theme', 'light'));
   const [sensory, setSensory] = useState(() => loadSensoryPreferences());
   const [sensoryStored, setSensoryStored] = useState(true); // false when the browser refused to save the last choice
@@ -112,10 +130,11 @@ export default function App() {
   const [user, setUser] = useState(() => auth.currentUser());
   const [premium, setPremium] = useState(() => billing.isPremium());
   const [parts, setPartsRaw] = useState(() => {
-    const saved = store.load(KEYS.parts, null);
-    return Array.isArray(saved) ? saved : SEED_PARTS;
+    return usableParts(store.load(KEYS.parts, null));
   });
-  const [profile, setProfileRaw] = useState(() => store.load(KEYS.profile, null));
+  const [profile, setProfileRaw] = useState(() => usableProfile(store.load(KEYS.profile, null)));
+  const [crossTabSync, setCrossTabSync] = useState(0);
+  const persistTranslation = useRef(true);
   const [overlay, setOverlay] = useState(null); // string | {kind, ...payload}
   const [sheet, setSheet] = useState(null);      // {type, ...}
   const [toastMsg, setToastMsg] = useState(null);
@@ -136,15 +155,18 @@ export default function App() {
   }, []);
   /* keep <html lang> + theme in sync (RU font fallback, no theme flash) */
   useEffect(() => { warmDeferredScreens(); }, []);
-  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title = lang === 'ru' ? 'Innerverse · карта ваших частей' : 'Innerverse · your inner system';
+  }, [lang]);
   useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
   // Restore is an explicit local action. Refresh mounted state immediately;
   // it must not require a reload or trigger a cloud upload.
   useEffect(() => {
     const refresh = () => {
-      setPartsRaw(store.load(KEYS.parts, SEED_PARTS));
-      setProfileRaw(store.load(KEYS.profile, null));
-      setLang(store.load('ifs.lang', 'ru'));
+      setPartsRaw(usableParts(store.load(KEYS.parts, null)));
+      setProfileRaw(usableProfile(store.load(KEYS.profile, null)));
+      setLang(store.load('ifs.lang', 'ru') === 'en' ? 'en' : 'ru');
       setTheme(store.load('ifs.theme', 'light'));
       setState('intro');
       setSheet(null);
@@ -154,29 +176,36 @@ export default function App() {
     return () => window.removeEventListener('ifs:local-restored', refresh);
   }, []);
   useEffect(() => {
+    // After adopting data from another tab, translate it for this tab in memory only:
+    // writing it back would make two tabs in different languages overwrite each other.
+    const persist = persistTranslation.current;
+    persistTranslation.current = true;
     if (profile?.testModel !== 'angular-v2' || !profile.clinical) return;
     let active = true;
     import('./core/clinical-profile-adapter.ts').then(({ adaptClinicalProfile }) => {
       if (!active) return;
+      // Another tab may have saved a newer result: adopt it instead of writing this tab's older copy over it.
+      const stored = usableProfile(store.load(KEYS.profile, null));
+      if (stored && stored.createdAt !== profile.createdAt) { setProfileRaw(stored); return; }
       const rebuilt = adaptClinicalProfile(profile.clinical, lang);
       const translated = { ...rebuilt.profile, createdAt: profile.createdAt };
       setProfileRaw(translated);
-      store.save(KEYS.profile, translated);
-      setPartsRaw((current) => {
+      if (persist) store.save(KEYS.profile, translated);
+      setPartsRaw(() => {
         const byId = new Map(rebuilt.parts.map((part) => [part.id, part]));
-        const next = current.map((part) => {
+        const next = usableParts(store.load(KEYS.parts, null)).map((part) => {
           const canonical = byId.get(part.id);
           if (!canonical) return part;
           const autoName = !part.name || [part.nameEn, part.nameRu, canonical.nameEn, canonical.nameRu].includes(part.name);
           return { ...part, name: autoName ? canonical.name : part.name, nameEn: canonical.nameEn, nameRu: canonical.nameRu,
             archetype: { ...canonical.archetype, ...part.archetype } };
         });
-        store.save(KEYS.parts, next);
+        if (persist) store.save(KEYS.parts, next);
         return next;
       });
     });
     return () => { active = false; };
-  }, [lang, profile?.createdAt, profile?.testModel]);
+  }, [lang, profile?.createdAt, profile?.testModel, crossTabSync]);
   useEffect(() => {
     if (profile) return undefined;
     let active = true;
@@ -210,10 +239,42 @@ export default function App() {
     toast._t = setTimeout(() => setToastMsg(null), 2600);
   }, []);
 
-  const setParts = useCallback((next) => { setPartsRaw(next); store.save(KEYS.parts, next); }, []);
-  const setProfile = useCallback((next) => {
+  // Sample-part text is shown in the reader's language but stored in English (pal/seed-copy.ts).
+  const setParts = useCallback((next) => {
+    const stored = storedParts(next);
+    setPartsRaw(stored);
+    store.save(KEYS.parts, stored);
+  }, []);
+  const shownParts = useMemo(() => localizeParts(parts, lang), [parts, lang]);
+
+  // A save that did not fit in this browser's storage is said out loud, not lost silently.
+  useEffect(() => {
+    const onFull = () => toast('⚠ ' + t('storageFull'));
+    window.addEventListener('ifs:storage-full', onFull);
+    return () => window.removeEventListener('ifs:storage-full', onFull);
+  }, [toast, t]);
+
+  // Another tab saved the parts map or a report: adopt it, so an edit here never writes back stale state.
+  useEffect(() => {
+    const onStorage = (event) => {
+      if (event.storageArea !== localStorage) return;
+      if (event.key !== KEYS.profile && event.key !== KEYS.parts) return;
+      if (event.key === KEYS.profile) setProfileRaw(usableProfile(store.load(KEYS.profile, null)));
+      else {
+        const saved = store.load(KEYS.parts, null);
+        if (Array.isArray(saved)) setPartsRaw(usableParts(saved));
+      }
+      // The other tab may use the other language: re-translate here, without saving.
+      persistTranslation.current = false;
+      setCrossTabSync((value) => value + 1);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+  // A restored report is not a new report: `archive: false` keeps the History archive as it is.
+  const setProfile = useCallback((next, options) => {
     setProfileRaw(next);
-    if (next) { store.save(KEYS.profile, next); store.archive(KEYS.history, next); }
+    if (next) { store.save(KEYS.profile, next); if (options?.archive !== false) store.archive(KEYS.history, next); }
     else store.remove(KEYS.profile);
   }, []);
   // Presentation choices only: they never touch parts, profile, scores, or assessment drafts.
@@ -332,7 +393,7 @@ export default function App() {
     sensory, sensoryStored, applySensoryPreset, updateSensory,
     t, state, go, dockTab, setDockTab,
     user, setUser, premium, setPremiumOn: (v) => { setPremium(v); },
-    parts, setParts, profile, setProfile,
+    parts: shownParts, setParts, profile, setProfile,
     overlay, setOverlay, sheet, setSheet, toast,
     downloadBackup,
     billing, AI, telemetry, auth,
@@ -343,7 +404,7 @@ export default function App() {
     openSky,
     universeMode, setUniverseMode,
     retryUniverse: () => { setUniError(false); enterUniverse(); },
-  }), [lang, theme, t, state, go, dockTab, user, premium, parts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode, sensory, sensoryStored, applySensoryPreset, updateSensory]);
+  }), [lang, theme, t, state, go, dockTab, user, premium, shownParts, setParts, profile, setProfile, overlay, sheet, toast, uniReady, uniError, deferredInstall, universeMode, sensory, sensoryStored, applySensoryPreset, updateSensory]);
 
   /* ── universe host: outside the switch; renderer chunk on first entry ── */
   const enterUniverse = useCallback(async (isActive = () => true) => {
@@ -354,7 +415,7 @@ export default function App() {
       if (!isActive() || !host.isConnected) return;
       if (!uniRef.current) uniRef.current = mod.initUniverse(host, theme === 'dark', sensory.motion);
       uniRef.current.setMotionMode(sensory.motion);
-      uniRef.current.setParts(parts);
+      uniRef.current.setParts(shownParts);
       uniRef.current.onPick((id) => setSheet({ type: 'part', id }));
       uniRef.current.wake();
       uniRef.current.resize();
@@ -367,7 +428,7 @@ export default function App() {
       setUniError(true);
       setOverlay('universe-fail');
     }
-  }, [parts, sensory.motion, theme]);
+  }, [shownParts, sensory.motion, theme]);
 
   useEffect(() => {
     let active = true;
@@ -385,17 +446,24 @@ export default function App() {
 
   /* ── sealed verdict resurfacing (JITAI) ── */
   useEffect(() => {
-    const sealed = store.load('ifs.sealed', []);
+    // Stored data may come from an older build or a restore: never trust its shape.
+    const stored = store.load('ifs.sealed', []);
+    const sealed = Array.isArray(stored) ? stored.filter((s) => s && typeof s.until === 'number' && typeof s.text === 'string') : [];
     const due = sealed.filter((s) => s.until <= Date.now());
     // Quiet hours and a skip for today hold the resurfacing. It is an in-app note shown on open, so it needs no opt-in.
     const held = reminderDecision(readReminderSettings(store.load(REMINDERS_KEY, null)), new Date());
     if (held.reason === 'quiet-hours' || held.reason === 'skipped-today') return;
     if (due.length) {
       const next = sealed.filter((s) => s.until > Date.now());
+      // The due notes move into the journal, which keeps them on screen and in storage: a toast is too brief for a note.
+      const journal = store.load('ifs.journal', []);
+      const now = Date.now();
+      const moved = due.map((note, index) => ({ id: now + index, at: now, kind: 'jThought', what: note.text.slice(0, 20_000), where: '', part: '', note: '' }));
+      if (!store.save('ifs.journal', [...moved, ...(Array.isArray(journal) ? journal : [])])) return;
       store.save('ifs.sealed', next);
-      setTimeout(() => toast(`⏳ ${due[0].text}`), 1500);
+      setTimeout(() => toast(`⏳ ${t('sealedNoteJournal')}`), 1500);
     }
-  }, [toast]);
+  }, [toast, t]);
 
   /* ── THE @switch ── */
   const screen = (() => {
@@ -459,7 +527,7 @@ export default function App() {
   return (
     <AppCtx.Provider value={ctx}>
       <div className="stage">
-        <div className="stage-caption">Innerverse · your inner system</div>
+        <div className="stage-caption">{lang === 'ru' ? 'Innerverse · ваша внутренняя система' : 'Innerverse · your inner system'}</div>
         <div className="phone grain" data-theme={theme} data-motion={sensory.motion}
           data-texture={sensory.texture ? 'rich' : 'quiet'} data-density={sensory.density}>
           <StatusBar />
@@ -479,7 +547,7 @@ export default function App() {
           {toastMsg && <div className="toast" role="status">{toastMsg}</div>}
 
           {sheetEl && <ModalLayer label={t('parts')} onClose={() => setSheet(null)}><RouteBoundary resetKey={sheet?.type}><Suspense fallback={<Loading />}>{sheetEl}</Suspense></RouteBoundary></ModalLayer>}
-          {ov && <ModalLayer key={`${user?.uid ?? 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(typeof overlay === 'string' ? overlay : overlay?.kind)} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}><Suspense fallback={<Loading />}>{ov}</Suspense></RouteBoundary></ModalLayer>}
+          {ov && <ModalLayer key={`${user?.linked ? user.uid : 'guest'}:${typeof overlay === 'string' ? overlay : overlay?.kind}`} label={t(overlayLabelKey(typeof overlay === 'string' ? overlay : overlay?.kind))} onClose={() => setOverlay(null)}><RouteBoundary resetKey={typeof overlay === 'string' ? overlay : overlay?.kind}><Suspense fallback={<Loading />}>{ov}</Suspense></RouteBoundary></ModalLayer>}
         </div>
       </div>
     </AppCtx.Provider>

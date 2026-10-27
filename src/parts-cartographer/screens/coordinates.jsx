@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { localizeParts } from '../pal/seed-copy.ts';
 import { useApp } from '../app.jsx';
 import { store, KEYS } from '../core/local-store.ts';
 import { coordinatesFromTuple, project, projectionsAgree } from '../core/analytic-coordinates.ts';
@@ -88,7 +89,7 @@ export function CoordinatesPanel() {
   const app = useApp();
   const lang = app?.lang === 'ru' ? 'ru' : 'en';
   const ui = copyFor(app?.lang);
-  const parts = useMemo(() => readCoordinateParts(app?.parts), [app?.parts]);
+  const parts = useMemo(() => localizeParts(readCoordinateParts(app?.parts), app?.lang), [app?.parts, app?.lang]);
   const [chosenId, setChosenId] = useState('');
   const selected = parts.find((part) => part.id === chosenId) ?? parts.find(hasArchetype) ?? parts[0] ?? null;
 
@@ -147,7 +148,8 @@ export function CoordinatesPanel() {
 
       <details>
         <summary className="iv-panel-note"><strong>{ui.textVersion}</strong></summary>
-        <pre className="iv-pre">{view.staticText}</pre>
+        {/* The same rows as the table, in the reader's language (the core's staticText is the English audit form). */}
+        <pre className="iv-pre">{view.numeric.map((row) => `${ui.axis} ${row.axis + 1} · ${dimensionNames[row.axis]}: ${row.value === null ? ui.unknown : view.table[row.axis][1]} (${ui.status[row.status]})`).join('\n')}</pre>
       </details>
 
       <div className="iv-field-group">

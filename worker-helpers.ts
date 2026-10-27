@@ -13,12 +13,11 @@ export interface AIProviderEnv {
 
 /**
  * Returns the names of the AI provider API keys that are missing from the
- * Worker's environment. The `/api/ai` endpoint depends on ALL of them being
- * present — every provider is tried in turn, and if any single key is set
- * the user can usually still get a result. The most common production
- * failure is "I deployed without running `wrangler secret put`", which
- * makes every provider return 401. Surfacing the missing key names in the
- * 503 error turns a silent failure into a 30-second fix.
+ * Worker's environment. Every provider is tried in turn, so a missing key only
+ * takes its own provider out: the `/api/ai` endpoint refuses requests only when
+ * no key is set (see hasAnyApiKey). The most common production failure is "I
+ * deployed without running `wrangler secret put`", which makes that provider
+ * return 401; the missing names are logged so that becomes a 30-second fix.
  */
 export function getMissingApiKeys(env: AIProviderEnv): string[] {
   const required: Array<[string, string | undefined]> = [
@@ -28,4 +27,9 @@ export function getMissingApiKeys(env: AIProviderEnv): string[] {
     ['OLLAMA_API_KEY', env.OLLAMA_API_KEY],
   ];
   return required.filter(([, v]) => !v).map(([k]) => k);
+}
+
+/** True when at least one provider key is set, so at least one provider can answer. */
+export function hasAnyApiKey(env: AIProviderEnv): boolean {
+  return !!(env.GOOGLE_API_KEY || env.OPENROUTER_API_KEY || env.NVIDIA_API_KEY || env.OLLAMA_API_KEY);
 }

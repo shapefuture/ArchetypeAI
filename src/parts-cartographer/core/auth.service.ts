@@ -42,7 +42,7 @@ function persistUser(user: AuthUser): AuthUser {
   store.save(KEYS.auth, user);
   if (user.linked && user.email) {
     void import('./user-directory')
-      .then(({ syncPublicProfile }) => syncPublicProfile(user))
+      .then(({ refreshDirectoryEntry }) => refreshDirectoryEntry(user))
       .catch((error) => console.warn('Public identity profile sync failed; sign-in remains available.', error));
   }
   return user;
@@ -73,9 +73,30 @@ export async function getFirebaseIdentity(): Promise<{ uid: string; token: strin
   return { uid: user.uid, token: await user.getIdToken() };
 }
 
+/**
+ * Sends Firebase's password-reset email. A missing account is not reported,
+ * so the form cannot be used to find out who has an account.
+ */
+export async function sendPasswordReset(email: string): Promise<void> {
+  const { sdk, auth } = await client();
+  emailLanguage(auth);
+  try {
+    await sdk.sendPasswordResetEmail(auth, email.trim());
+  } catch (error) {
+    if ((error as { code?: string })?.code === 'auth/user-not-found') return;
+    throw error;
+  }
+}
+
+/** Firebase's own emails follow the app language, not the project default. */
+function emailLanguage(auth: { languageCode: string | null }): void {
+  auth.languageCode = store.load<string>('ifs.lang', 'ru') === 'en' ? 'en' : 'ru';
+}
+
 /** Sends Firebase's verification email to the signed-in address. */
 export async function sendVerificationEmail(): Promise<void> {
   const { sdk, auth } = await client();
+  emailLanguage(auth);
   await sdk.sendEmailVerification(requireFirebaseUser(auth.currentUser));
 }
 
@@ -159,7 +180,8 @@ export const auth: AUTH_PORT = {
   async signOut() {
     const { sdk, auth: firebaseAuth } = await client();
     const { disablePushReminder } = await import('./push');
-    await disablePushReminder();
+    // Best effort: a push token the server no longer has must not keep the account signed in.
+    await disablePushReminder().catch((error) => console.warn('Push reminder cleanup failed during sign-out.', error));
     await sdk.signOut(firebaseAuth);
     store.remove(KEYS.auth);
   },

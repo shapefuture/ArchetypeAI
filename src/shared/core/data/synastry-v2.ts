@@ -256,7 +256,7 @@ function nourishHighlights(A: SynastryProfile, B: SynastryProfile):
     for (const h of top2Hungers(receiver)) {
       const weight = clamp01(h.hunger / 20);
       for (const r of resourcesForNeed(h.need)) {
-        const strength = Math.max(0, (giver.resources[r] - 45) / 30) * weight;
+        const strength = clamp01((giver.resources[r] - 45) / 30) * weight;
         if (strength > 0) out.push({ giver: r, need: h.need, strength });
       }
     }

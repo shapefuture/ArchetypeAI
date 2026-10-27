@@ -4,6 +4,7 @@ import { Character } from '../pal/Character.tsx';
 import { Crest, familyColor, Radar, Bars, Confetti, Seg, Steps } from '../ui/ui.jsx';
 import { FAMILY_LABELS, SEED_PARTS, pid, randomTraits } from '../pal/traits.ts';
 import { t as tr, CONSENT_TEXT, LIKERT_TEXTS, PART_COPY, ITEM_TEXTS, SCORING_NAME_POOLS, PART_NAMES } from '../i18n/strings.ts';
+import { STRINGS as SHARED_STRINGS } from '../../shared/i18n/strings.ts';
 import { scoreSystem, profileToCode } from '../core/scoring-v2.ts';
 import { clinicalNeedName, clinicalPartName, clinicalPolarizationName } from '../core/clinical-display.ts';
 import { COMPLEXES } from '../../shared/core/data/parts';
@@ -109,7 +110,8 @@ export function Assessment() {
     setAnswers((a) => ({ ...a, [partId]: { intensity: 3, felt: 'mid', ...a[partId], ...patch } }));
 
   const nextPart = () => {
-    try { telemetry.record('assessment_item', { partId: current?.id, ...answers[current?.id] }); } catch { /* */ }
+    // The felt bucket (low, mid, high) of each part, counted under that part's id; an unanswered part is not counted.
+    try { if (current && answers[current.id]?.felt) telemetry.record(`assessment.${current.id}`, answers[current.id].felt); } catch { /* */ }
     if (idx < pool.length - 1) setIdx(idx + 1);
     else { setStep(2); setParty(true); }
   };
@@ -124,7 +126,10 @@ export function Assessment() {
     // The eight generated parts are an illustration. They are labelled as a sample and are not
     // written into the cabinet, so they cannot pass for the user's own parts.
     const result = markSample(scoreSystem({ somatic, statements: stmts, parts: pool }));
-    try { telemetry.record('result', { c: result.headlineConstellation, v: result.validity, sample: true }); } catch { /* */ }
+    try {
+      telemetry.record('sample.validity', result.validity.ok ? 'ok' : 'flagged');
+      telemetry.record('sample.constellation', result.headlineConstellation);
+    } catch { /* */ }
     if (sampleSavePlan(profile) === 'archive-only') {
       store.archive(KEYS.history, result);
       toast(t('sampleKeptInHistory'));
@@ -354,10 +359,14 @@ export function Descent() {
   };
 
   const save = () => {
-    setSaved(true);
     try {
       localStorage.setItem('ifs.sealed.verdict', JSON.stringify({ sealed: true, at: Date.now(), text: prof?.headlineConstellation ?? '' }));
-    } catch { /* */ }
+    } catch {
+      // Say so when it did not fit, instead of claiming it was saved.
+      toast('⚠ ' + t('storageFull'));
+      return;
+    }
+    setSaved(true);
     toast('✓ ' + t('savedLocally'));
   };
 
@@ -497,7 +506,7 @@ export function QuickResults() {
     : prof.copingStack;
   const resultResourceLeaks = prof.testModel === 'angular-v2' && prof.clinical
     ? prof.clinical.resourceLeaks.map(({ resource, spillPart }) => ({ name: clinicalPartName(resource, lang), leak: clinicalPartName(spillPart, lang) }))
-    : prof.resourceLeaks;
+    : (Array.isArray(prof.resourceLeaks) ? prof.resourceLeaks : []);
   const resultPolarizations = prof.testModel === 'angular-v2' && prof.clinical
     ? prof.clinical.polarizations.map(({ pair, name }) => ({
       a: pair[0], b: pair[1], name: clinicalPolarizationName(name, lang),
@@ -587,7 +596,7 @@ export function QuickResults() {
                     : <span style={{ fontSize: 30, lineHeight: '70px' }}>{FAMILY_LABELS[p.family].icon}</span>}
                 </div>
                 <div className="pc-name">{lang === 'ru' ? p.nameRu ?? p.name : p.nameEn ?? p.name}</div>
-                <div className="pc-role">{t('intensity')} · {Math.min(p.somatic, 5)}/5</div>
+                <div className="pc-role">{t('intensity')}{typeof p.somatic === 'number' ? ` · ${Math.min(p.somatic, 5)}/5` : ''}</div>
                 <div className="energy-strip"><i style={{ width: `${Math.round(p.energy * 100)}%`, background: familyColor(p.family) }} /></div>
               </div>
             ))}
@@ -696,7 +705,7 @@ export function QuickResults() {
               {prof.activeComplexes.length === 0 && <p className="sub mt8">{t('empty')}</p>}
               {prof.activeComplexes.map((complex) => (
                 <div className="mt12" key={complex.id}>
-                  <div className="row"><b className="grow">{lang === 'ru' ? complex.nameRu : complex.name}</b><span className="chip">{Math.round(complex.activation)} · {complex.tier}</span></div>
+                  <div className="row"><b className="grow">{lang === 'ru' ? complex.nameRu : complex.name}</b><span className="chip">{Math.round(complex.activation)} · {SHARED_STRINGS.innerverseReport.ui[lang === 'ru' ? 'ru' : 'en'].complexTierNames[complex.tier] ?? complex.tier}</span></div>
                   <p className="sub mt6">{lang === 'ru' ? complex.beliefRu ?? complex.belief : complex.beliefEn ?? complex.belief}</p>
                   <p className="faint mt6" style={{ fontSize: 12 }}>{lang === 'ru' ? complex.experimentRu ?? complex.experiment : complex.experimentEn ?? complex.experiment}</p>
                 </div>

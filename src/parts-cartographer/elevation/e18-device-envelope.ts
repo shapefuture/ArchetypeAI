@@ -214,7 +214,7 @@ export function renderCostFor(base: RenderCost, pressure: Pressure): { cost: Ren
   switch (pressure) {
     case 'normal': return { cost: base, signal: 'observed' };
     case 'unknown': return { cost: base, signal: 'unavailable' };
-    case 'elevated': return { cost: { pixelRatio: Math.max(1, Math.min(base.pixelRatio, 1.5)), textureScale: Math.min(base.textureScale, 0.75) }, signal: 'observed' };
+    case 'elevated': return { cost: { pixelRatio: Math.min(base.pixelRatio, 1.5), textureScale: Math.min(base.textureScale, 0.75) }, signal: 'observed' };
     case 'critical': return { cost: { pixelRatio: Math.min(base.pixelRatio, 1), textureScale: Math.min(base.textureScale, 0.5) }, signal: 'observed' };
   }
 }

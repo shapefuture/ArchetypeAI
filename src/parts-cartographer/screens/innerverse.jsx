@@ -3,7 +3,8 @@ import { useApp } from '../app.jsx';
 import { Character } from '../pal/Character.tsx';
 import { FAMILY_LABELS, randomTraits, pid, SHAPES, EYES, MOUTHS, HEADS, FACES } from '../pal/traits.ts';
 import { familyColor, Crest, Seg, Bars } from '../ui/ui.jsx';
-import { t as tr, EXERCISE_COPY, UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
+import { t as tr, UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
+import { EXERCISE_COPY } from '../../shared/i18n/strings';
 import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapter.ts';
 import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
@@ -674,7 +675,7 @@ export function SpecialistView() {
                 <span>{t('chooseExercise')}</span>
                 <select className="drop mt6" value={exerciseId} onChange={(event) => setExerciseId(event.target.value)}>
                   <option value="">—</option>
-                  {exerciseIds.map((id) => <option key={id} value={id}>{id.toUpperCase()} · {EXERCISE_COPY[id]?.[lang]}</option>)}
+                  {exerciseIds.map((id) => <option key={id} value={id}>{id.toUpperCase()} · {(EXERCISE_COPY[id]?.[lang] ?? EXERCISE_COPY[id]?.en)?.title}</option>)}
                 </select>
               </label>
               <label className="field mt8">

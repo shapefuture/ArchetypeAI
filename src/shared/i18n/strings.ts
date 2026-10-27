@@ -5984,7 +5984,7 @@ export const SYNASTRY_DIM_LABELS: Record<string, { en: string; ru: string; poleN
 
 // ── THERAPIST CONSENT ── client-facing consent text for specialist linking (moved from therapist-link.ts) ──
 export const CONSENT_TEXT = {
-  en: 'Your therapist sees: your constellation headline, part scores, active repeating scenarios, how you cope, and exercise adherence. They never see: your raw answers, your somatic zones, or your reflections — unless you share a reflection yourself, one at a time. You can unlink at any moment.',
+  en: 'Your therapist sees: your constellation headline, part scores, burden and self-energy scores, active repeating scenarios, how you cope, and exercise adherence. They never see: your raw answers, your somatic zones, or your reflections — unless you share a reflection yourself, one at a time. You can unlink at any moment.',
   ru: 'Ваш терапевт видит: название созвездия, баллы частей, активные повторяющиеся сценарии, способы справляться и выполнение практик. Он никогда не видит: ваши исходные ответы, соматические зоны и размышления — если вы сами не поделитесь конкретным размышлением. Отключить связь можно в любой момент.',
 };
 

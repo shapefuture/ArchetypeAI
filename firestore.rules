@@ -591,7 +591,12 @@ service cloud.firestore {
             resource.data.therapistUid == request.auth.uid
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
             && (
-              (resource.data.status == 'pending' && request.resource.data.status == 'approved')
+              // A stepped-back therapist (no profile) cannot confirm a session; they may still decline or call one off.
+              (
+                resource.data.status == 'pending'
+                && request.resource.data.status == 'approved'
+                && exists(/databases/$(database)/documents/therapists/$(resource.data.therapistUid))
+              )
               || (
                 resource.data.status == 'pending'
                 && request.resource.data.status == 'declined'

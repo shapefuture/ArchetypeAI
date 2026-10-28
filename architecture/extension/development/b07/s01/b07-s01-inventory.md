@@ -1,10 +1,10 @@
 # B07.S01 — Inventory: authored presentation and creative continuity
-<!-- cite-ref: 10d9608 -->
+<!-- cite-ref: 45c24ed -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the continuity search omitted the draft-backup resume. Round 2 at `b36bde2`: FAIL (minor). Round 3 at `930edc1`: FAIL. The copy-aside was described as a refusal, which is wrong: the draft is copied aside, then overwritten. The §4 and §5 rows were generic and now name `src/parts-cartographer/core/assessment-draft.ts`. Base note: `src/shared/core/data/parts.ts@675118c` is a HEAD path; it was `src/app/core/data/parts.ts` at base 10d9608. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the continuity search omitted the draft-backup resume. Round 2 at `b36bde2`: FAIL (minor). Round 3 at `930edc1`: FAIL. The copy-aside was described as a refusal, which is wrong: the draft is copied aside, then overwritten. The §4 and §5 rows were generic and now name `src/parts-cartographer/core/assessment-draft.ts`. Base note: `src/shared/core/data/parts.ts@3683b0f` is a HEAD path; it was `src/app/core/data/parts.ts` at base 45c24ed. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-h13n` (B07.S01).
-- Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
+- Base checked: `git:45c24ed` on `claude/full-plan-handoff-gmgpkq`.
 - Disposition: **candidate inventory; awaiting independent review.** No acceptance is claimed. No application code changed.
 - Write set: `architecture/extension/development/b07/s01/**` (this file only).
 - Contracts: none published. `base_generation: null`. No lease.
@@ -19,7 +19,7 @@ Authored presentation exists in one narrow form: AI-authored text may replace ma
 |---|---|---|
 | AI-authored text replaces matching entries | `src/parts-cartographer/core/legacy-universe-adapter.ts:60` | Existing authored-overlay pattern. Reusable as a precedent. |
 | Anonymous cross-device continuity | `src/app.component.ts:1118` (comment) | Describes cookie-based continuity; no creative state is involved. |
-| Part data (authored character content) | `src/shared/core/data/parts.ts@675118c` | Existing authored content catalogue for parts. Not a creative-work model. |
+| Part data (authored character content) | `src/shared/core/data/parts.ts@3683b0f` | Existing authored content catalogue for parts. Not a creative-work model. |
 | Creative-work state (drafts, versions, presentation choices) | none | Absent. |
 
 **Reuse packages named by the task.** The planning documents define these codes inconsistently across streams (the B01 inventory recorded the same ambiguity). Each code is an unresolved reuse claim until the coordinator confirms its mapping.

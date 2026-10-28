@@ -1,9 +1,9 @@
 # B03.S01 candidate inventory: membership, moderation and recipient authority
-<!-- cite-ref: 09194df -->
+<!-- cite-ref: d17aaa6 -->
 
 > **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because two premises are false at HEAD (the "report" word search and the emailVerified gate) and one test was described as run when it was not. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
 >
-> - Base note: citations to `src/...` paths that moved in the refactor are HEAD paths. The rename map is `09194df..HEAD`.
+> - Base note: citations to `src/...` paths that moved in the refactor are HEAD paths. The rename map is `d17aaa6..HEAD`.
 > - Not corrected in this pass: the §11 note that nine citations match only within one or two lines was not rechecked, and the "block" search was not repeated.
 
 **Status: candidate awaiting independent review. This document is not an acceptance claim.**
@@ -21,7 +21,7 @@
 | Mutation / risk | M0 / R2 (task metadata) |
 | Slot | community.membership (named on platform B03 in the social plan; this task's owned_slots is []) |
 | Reuse packages | C01 -> ArchetypeAI-xs263; C08 -> ArchetypeAI-frd2b (creative-commons plan; see section 3) |
-| Source identity | branch worktree-agent-af15ce94acd86e9e9, HEAD 09194df, worktree clean at inspection |
+| Source identity | branch worktree-agent-af15ce94acd86e9e9, HEAD d17aaa6, worktree clean at inspection |
 | Immutable base generation | null (unresolved; task metadata base_generation). Not an immutable base. |
 | Published contract versions | none (task metadata contract_versions []) |
 | Leases | none held. Proposed write paths are not leases. |
@@ -227,7 +227,7 @@ The social plan asks for six compatibility dimensions for each slot. The AAA ado
 
 ## 9. Source provenance
 
-Git blob identities are from `git ls-files -s` at HEAD 09194df. They identify the exact content read.
+Git blob identities are from `git ls-files -s` at HEAD d17aaa6. They identify the exact content read.
 
 | Source | Blob | Use in this inventory |
 | --- | --- | --- |

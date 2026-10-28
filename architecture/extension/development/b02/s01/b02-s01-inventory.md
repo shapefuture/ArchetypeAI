@@ -1,9 +1,9 @@
 # B02.S01 inventory: current ownership and actual reuse for opt-in explainable matching
-<!-- cite-ref: 09194df -->
+<!-- cite-ref: d17aaa6 -->
 
 > **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL. Round 2 at `b36bde2`: FAIL (minor). The consent-seam and eligibility corrections are accurate. The provenance-store sentence was not base-qualified and is now corrected. Status is still **candidate, not accepted**; re-review is required.
 >
-> - Base note: citations to `src/shared/...` or `src/parts-cartographer/...` paths that moved are HEAD paths (rename map `09194df..HEAD`).
+> - Base note: citations to `src/shared/...` or `src/parts-cartographer/...` paths that moved are HEAD paths (rename map `d17aaa6..HEAD`).
 
 **Status: candidate awaiting independent review. This is not an acceptance claim.**
 No participant, device, live-account, community, practitioner or independent-review evidence exists for this artifact. Those items are listed as pending in section 9.
@@ -30,7 +30,7 @@ No participant, device, live-account, community, practitioner or independent-rev
 - **Booking is the strongest grant precedent.** A booking grant (`clientShares`, `therapistClients`) is tied to a live appointment. A deterministic busy-slot document acts as a concurrency lock. Decline or cancel revokes read access through rules. The create path has a non-atomic write window (F-03).
 - **Bearer codes carry copies.** Map share codes and therapist invite codes contain copies of the data they expose. Neither has an expiry. Neither follows the source when it changes. A code issued by one account cannot be revoked by another (F-02, F-04).
 - **Synastry is the existing "compatibility" feature.** The shipped React path uses the canonical scored-profile and 64-item bridges. A hash-seeded generator (`code-seed-v1`) also exists in `src/parts-cartographer/core/synastry-v2.ts`. It has no React call site in this tree and must not be reused as matching evidence (F-07).
-- **The reuse keys C01 and C08 are ambiguous.** Three planning documents use them for different packages. This inventory adopts the reading supported by the social plan's own graph edges: the elevation plan's slot packages C01 (auth identity, ArchetypeAI-zzmm) and C08 (consent and provenance, ArchetypeAI-v2tj). Only `src/parts-cartographer/core/auth.service.ts` exists as a seam. The consent seam path `src/parts-cartographer/core/personal-memory.ts@675118c` was absent at the base 09194df (F-08, F-11). HEAD adds it in commit 3670a3a; it is not reviewed against this inventory.
+- **The reuse keys C01 and C08 are ambiguous.** Three planning documents use them for different packages. This inventory adopts the reading supported by the social plan's own graph edges: the elevation plan's slot packages C01 (auth identity, ArchetypeAI-zzmm) and C08 (consent and provenance, ArchetypeAI-v2tj). Only `src/parts-cartographer/core/auth.service.ts` exists as a seam. The consent seam path `src/parts-cartographer/core/personal-memory.ts@3683b0f` was absent at the base d17aaa6 (F-08, F-11). HEAD adds it in commit 3670a3a; it is not reviewed against this inventory.
 - **Several required states are absent.** Eligibility, decline and block suppression, revocation propagation, quiet discovery and criteria provenance have no implementation. Section 5 records each with its nearest analogue.
 - **No tests were executed.** Claims marked *static trace* come from reading source and rules. The worktree has no installed dependencies, and installing them would write outside the write set.
 
@@ -48,7 +48,7 @@ Excluded: source-specific research and method packages (linked method tasks), th
 
 | Planning source | C01 | C08 | Relevance to B02.S01 |
 |---|---|---|---|
-| Elevation plan `docs/plans/elevation-aaa-v7-beads-plan.json` (prepared 2026-10-06) | Slot migration: auth identity and account lifecycle. Seam `src/parts-cartographer/core/auth.service.ts`. Live ArchetypeAI-zzmm. | Slot migration: consent, source lineage and corrections. Seam `src/parts-cartographer/core/personal-memory.ts@675118c`. Live ArchetypeAI-v2tj. | **Adopted.** The social graph has `B02` relates_to ArchetypeAI-zzmm and ArchetypeAI-v2tj. Platform reuse lists are consistent with this reading: B01 `[C01, C02, C08]`, B12 `[C08]`. |
+| Elevation plan `docs/plans/elevation-aaa-v7-beads-plan.json` (prepared 2026-10-06) | Slot migration: auth identity and account lifecycle. Seam `src/parts-cartographer/core/auth.service.ts`. Live ArchetypeAI-zzmm. | Slot migration: consent, source lineage and corrections. Seam `src/parts-cartographer/core/personal-memory.ts@3683b0f`. Live ArchetypeAI-v2tj. | **Adopted.** The social graph has `B02` relates_to ArchetypeAI-zzmm and ArchetypeAI-v2tj. Platform reuse lists are consistent with this reading: B01 `[C01, C02, C08]`, B12 `[C08]`. |
 | Social plan `docs/plans/social-creative-practice-beads-plan.json` (prepared 2026-10-06) | Used as a reuse key in platforms B01, B02, B03, B04, B05, B11 | Used as a reuse key in platforms B01 through B12 | Source of this Bead's metadata (`reuse_packages: [C01, C08]`). |
 | Creative-commons plan `docs/plans/creative-commons-beads-plan.json` (prepared 2026-10-10) | Connected public threads. Reuses F01, F04, F15, B03, B04, B12. | Cross-circle expeditions. Reuses F07, F23, F24, F42, F43, F46. | Written after the social plan, in its own key space. Does not name B02 directly (see 3.4). |
 
@@ -57,17 +57,17 @@ The coordinator should confirm the intended referent before S02 is dispatched (F
 ### 3.2 What the adopted packages contain
 
 - **C01 (auth.identity).** The seam exists at `src/parts-cartographer/core/auth.service.ts` (148 lines). It covers anonymous bootstrap, Google and email sign-in, linking an anonymous account while keeping its UID, and sign-out (`src/parts-cartographer/core/auth.service.ts:81-147`). The only contract is `AUTH_PORT` (`src/parts-cartographer/core/ports.ts:6-13`). No versioned contract, compatibility suite or registry entry was found. Server-side identity is Firebase ID-token verification (`worker-security.ts:30-79`), which yields `uid`, `email` and `email_verified`.
-- **C08 (consent.provenance).** The seam path `src/parts-cartographer/core/personal-memory.ts@675118c` was absent at the base 09194df (added at HEAD in 3670a3a). Consent exists only as UI controls and copy:
+- **C08 (consent.provenance).** The seam path `src/parts-cartographer/core/personal-memory.ts@3683b0f` was absent at the base d17aaa6 (added at HEAD in 3670a3a). Consent exists only as UI controls and copy:
   - share-code checkbox (`src/parts-cartographer/overlays.jsx:503`; copy `src/parts-cartographer/i18n/strings.ts:193`);
   - booking checkbox that gates the confirm button (`src/parts-cartographer/overlays.jsx:842-852`; copy `src/parts-cartographer/i18n/strings.ts:351`);
   - therapist consent text (`src/parts-cartographer/core/therapist-link.ts:201`);
   - reminder opt-in (`src/parts-cartographer/core/push.ts:32-84`).
 
-  At base 09194df no consent record type, version, provenance store, withdrawal log or shared consent check was found. At HEAD `src/parts-cartographer/core/personal-memory.ts@675118c` adds memory provenance (`source`, `derivedFrom`) but still no consent record type, withdrawal log or shared consent check. The status is planning-only.
+  At base d17aaa6 no consent record type, version, provenance store, withdrawal log or shared consent check was found. At HEAD `src/parts-cartographer/core/personal-memory.ts@3683b0f` adds memory provenance (`source`, `derivedFrom`) but still no consent record type, withdrawal log or shared consent check. The status is planning-only.
 
 ### 3.3 Creative-commons C01 and C08 are not implemented
 
-Searches for the named feature families (theme spaces, mutual reveals, expeditions, parallel jams, quests, cooperative mini-games) returned no matches in `src/` or `firestore.rules`. Appendix B records the theme-space and expedition searches. The mutual-reveal, parallel-jam, quest and mini-game terms were searched with `git grep -n -i -E "\bquests?\b|mutual reveal|parallel jam|mini-?game" 09194df -- src firestore.rules`, which also returned no matches. Reuse of those packages is therefore planning-only. Their `reuse_beads` IDs (C01: jten, 2lnj, tmuuj, tica, vlfx, nje6; C08: pxk9, 6nzhj, nsrho, ktaon, xwzgu, ot4ky) were not verified. They are not present in `.beads/issues.jsonl`.
+Searches for the named feature families (theme spaces, mutual reveals, expeditions, parallel jams, quests, cooperative mini-games) returned no matches in `src/` or `firestore.rules`. Appendix B records the theme-space and expedition searches. The mutual-reveal, parallel-jam, quest and mini-game terms were searched with `git grep -n -i -E "\bquests?\b|mutual reveal|parallel jam|mini-?game" d17aaa6 -- src firestore.rules`, which also returned no matches. Reuse of those packages is therefore planning-only. Their `reuse_beads` IDs (C01: jten, 2lnj, tmuuj, tica, vlfx, nje6; C08: pxk9, 6nzhj, nsrho, ktaon, xwzgu, ot4ky) were not verified. They are not present in `.beads/issues.jsonl`.
 
 ### 3.4 Creative-commons C04 names B02
 
@@ -280,7 +280,7 @@ No behavior was changed. Severity is for S02 input only.
 - **F-08 (high for planning). Ambiguous reuse keys.** See section 3.1. The adopted reading is supported by graph edges, but the three planning sources must be reconciled before S02 uses `C01` or `C08`.
 - **F-09 (medium). Reuse list may be incomplete.** `C04` (creative commons) names B02; B02.S01 does not list it.
 - **F-10 (low). Write-set mismatch.** The B02 epic metadata lists `docs/plans/extension/b02/**` (node `B02`); B02.S01 lists `architecture/extension/development/b02/s01/**`. This artifact follows the S01 value. No proposed conflicts involve B02.S01 in the 16,341-entry snapshot.
-- **F-11 (medium). Consent seam absent at the base.** `src/parts-cartographer/core/personal-memory.ts@675118c` (the seam for `consent.provenance`) did not exist at 09194df. HEAD adds it (3670a3a), so this finding is superseded pending reconciliation. The C08 audit step (`C08.S01`, elevation plan) is the sibling reconciliation for this inventory.
+- **F-11 (medium). Consent seam absent at the base.** `src/parts-cartographer/core/personal-memory.ts@3683b0f` (the seam for `consent.provenance`) did not exist at d17aaa6. HEAD adds it (3670a3a), so this finding is superseded pending reconciliation. The C08 audit step (`C08.S01`, elevation plan) is the sibling reconciliation for this inventory.
 - **F-12 (medium). No port for consent or matching.** Section 5.8.
 - **F-13 (low). Silent local write failure.** `store.save` swallows quota errors (`src/parts-cartographer/core/local-store.ts:22-23`). Matching state would inherit this unless handled.
 - **F-14 (high). No eligibility or entitlement gate.** No age, adult or minor logic exists in `src/parts-cartographer`, the rules or the worker (grep). Entitlement is a client-side cached receipt (`src/parts-cartographer/core/billing.service.ts:12`, `:58`; `src/parts-cartographer/core/ports.ts:42-44`). The AI handler authenticates and rate-limits but does not check entitlement as read (`worker.ts:185-`). Eligibility must be server-side.
@@ -324,10 +324,10 @@ Checks run, all static, in this worktree:
 
 1. **Read set.** All five declared read-set files were read (`src/parts-cartographer/core/ports.ts` in full; the two plan documents in full; the 80/20 plan in the sections above; the social graph parsed programmatically).
 2. **JSON validity.** The social, elevation and creative-commons graphs were parsed with the Python standard library in isolated mode. The social graph has 1,807 nodes and 4,240 edges; B02.S01 has no predecessor edges and blocks B02.S02.
-3. **Citations.** Line numbers were taken from `grep -n` or `sed -n` at commit `09194df`.
+3. **Citations.** Line numbers were taken from `grep -n` or `sed -n` at commit `d17aaa6`.
 4. **Pinned source.** The AAA snapshot hash matches the pin in the social graph (see section 7).
 5. **Negative searches.** Logged in Appendix B.
-6. **Write set.** Only `architecture/extension/development/b02/s01/b02-s01-inventory.md@675118c` was created. Section 11 gives the check after the write.
+6. **Write set.** Only `architecture/extension/development/b02/s01/b02-s01-inventory.md@3683b0f` was created. Section 11 gives the check after the write.
 
 Checks not run, and why:
 
@@ -412,16 +412,16 @@ Each cell gives the existing behavior and its source, or "none" when no code exi
 
 ## Appendix B. Negative search log
 
-Searches were run in this worktree at commit `09194df`. Word-boundary matches were reviewed by hand. Hits that were media queries, `popup-blocked` handling or unrelated copy are excluded.
+Searches were run in this worktree at commit `d17aaa6`. Word-boundary matches were reviewed by hand. Hits that were media queries, `popup-blocked` handling or unrelated copy are excluded.
 
 | Pattern (scope) | Result | Conclusion |
 |---|---|---|
 | `matching`, `matchmaking`, `discovery`, `discoverable`, `blocked`, `block list`, `decline` (`src/`, non-spec) | Only appointment decline in therapist UI and copy (`src/parts-cartographer/i18n/strings.ts:418`) | No opt-in matching or discovery feature <!-- cite-ids: none --> |
 | `block`, `report`, `mute`, `unfollow`, `purpose` (`firestore.rules`) | 0 hits | No block, report or purpose concept in rules |
 | `expedition`, `shared experience`, `theme space` (`src/`, `firestore.rules`) | 0 hits | Creative-commons feature families not implemented |
-| `personal-memory`, `personalMemory`; filenames matching `personal`, `consent`, `provenance` (`src/`) | 0 source hits at base 09194df; at HEAD `src/parts-cartographer/core/personal-memory.ts@675118c` matches (3670a3a) | Consent and provenance seam absent at base (F-11, superseded) |
+| `personal-memory`, `personalMemory`; filenames matching `personal`, `consent`, `provenance` (`src/`) | 0 source hits at base d17aaa6; at HEAD `src/parts-cartographer/core/personal-memory.ts@3683b0f` matches (3670a3a) | Consent and provenance seam absent at base (F-11, superseded) |
 | `deleteUser`, `delete account`, `deleteAccount`, `deleteAll` (`src/`) | 0 hits | No account deletion path |
-| `adult`, `minor`, `eligib`, `dateOfBirth`, `age verification` (`src/parts-cartographer`, rules, worker) | 0 person-eligibility hits at base 09194df; at HEAD `eligib` matches only action eligibility (`src/parts-cartographer/elevation/e05-uncertainty-action.ts:39-56@675118c`) | No person-eligibility gate (F-14) <!-- cite-ids: none --> |
+| `adult`, `minor`, `eligib`, `dateOfBirth`, `age verification` (`src/parts-cartographer`, rules, worker) | 0 person-eligibility hits at base d17aaa6; at HEAD `eligib` matches only action eligibility (`src/parts-cartographer/elevation/e05-uncertainty-action.ts:39-56@3683b0f`) | No person-eligibility gate (F-14) <!-- cite-ids: none --> |
 | `deleteDoc`, `deleteUser` (`src/parts-cartographer/core/user-directory.ts`, `src/services/user-directory.service.ts`) | 0 hits | No in-app withdrawal of `publicProfiles` (F-01) |
 | `synastry(`, `synFromProfiles` call sites (React tree) | Definitions only; bridge imports the Angular engine under an alias | `code-seed-v1` has no React call site (F-07) |
 | `quiet` (`src/parts-cartographer`) | Sensory texture attribute (`src/parts-cartographer/app.jsx:376`) and copy | No social or discovery quiet mode |

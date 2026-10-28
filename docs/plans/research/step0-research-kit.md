@@ -177,7 +177,11 @@ Show «Ваше небо» from the prototype, or a screenshot, with no explanat
 ## 6. Safety and consent
 
 - **Consent** for recording and for personal data, under 152-ФЗ. Collect only what you need. Store recordings privately, and delete them after synthesis.
-- **If a participant is in distress during the interview:** stop the questions, be with them, and say «Мы можем остановиться — это важнее исследования». Give them crisis contacts. Use the same contacts as the app's crisis rules; fill them in here before the first interview: [контакты].
+- **If a participant is in distress during the interview:** stop the questions, be with them, and say «Мы можем остановиться — это важнее исследования». Give them the same guidance as the app's crisis rules (`crisisSupport` in `src/parts-cartographer/i18n/strings.ts`):
+
+  > «Сделайте паузу и обратитесь к тому, кому доверяете. Если вы в опасности, звоните в экстренные службы: 112 в России и Европе или местный номер экстренных служб в вашей стране.»
+
+  The app names no specific hotline. If you want to give one, check its number and hours yourself on the day, and add it to the app's crisis rules too, so the app and the interviews say the same thing.
 - **Never do therapy in an interview**, and never explore a young, hurt part. If it comes up, acknowledge it gently and move on.
 - **Pay the thank-you** even if the interview stops early.
 
@@ -242,7 +246,7 @@ Surprises:
 ## 10. To fill in before you start
 
 - [ ] The thank-you: an amount (1,000–1,500 ₽ is typical for 30–40 minutes) or a year of Plus.
-- [ ] Crisis contacts, the same as the app's crisis rules.
+- [x] Crisis guidance: the app's wording plus 112 or the local emergency number (§6). Optional: add a verified hotline to both the app and §6.
 - [ ] The screener link.
 - [x] The prototype: [`prototype/`](prototype/) (source and build script), published privately as an artifact. Share it with each participant before the session. It covers the test (8 of the planned 20–25 scenes), «Ваше небо», the daily card, the SOS loop, a «Два неба» example and the «Созвездия» waitlist. State stays in the participant's browser. «Луна» → «Сбросить прототип» clears it between sessions.
 - [ ] The diary channel: prototype, bot or form.

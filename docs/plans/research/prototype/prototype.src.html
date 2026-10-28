@@ -1,0 +1,715 @@
+<title>Innerverse Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;800;900&family=Onest:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap">
+<style>
+/* Layout: one phone-width column, a night-sky scene at the top of each space, felt stickers, a fixed SOS button. Tokens follow the v2 deck. */
+:root {
+  --bg: #FBF4E6; --surface: #FFFFFF; --surface-2: #F3EAD8; --ink: #1C1830; --ink-dim: rgba(28,24,48,.74); --ink-faint: rgba(28,24,48,.56);
+  --line: #1C1830; --soft: rgba(28,24,48,.14); --shadow: #1C1830;
+  --yellow: #FFD43B; --on-yellow: #1C1830; --lilac: #8E6CFF; --lilac-ink: #5A3FD1; --lilac-soft: #E9E2FF; --mint: #3DCB8E; --mint-soft: #DDF6EA;
+  --pink: #FF6FA8; --red: #E5484D; --red-soft: #FDE2E2;
+  --sky-1: #2A2160; --sky-2: #1A1540; --on-sky: #F4ECDE; --on-sky-dim: rgba(244,236,222,.72);
+  --display: 'Rubik', 'Arial Black', system-ui, sans-serif;
+  --body: 'Onest', 'Segoe UI', Roboto, system-ui, sans-serif;
+  --hand: 'Caveat', 'Segoe Print', cursive;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15122B; --surface: #221C42; --surface-2: #2C2553; --ink: #F4ECDE; --ink-dim: rgba(244,236,222,.78); --ink-faint: rgba(244,236,222,.58);
+    --line: rgba(244,236,222,.55); --soft: rgba(244,236,222,.16); --shadow: rgba(0,0,0,.55);
+    --lilac-ink: #B9A6FF; --lilac-soft: #2F2760; --mint-soft: #173A2E; --red-soft: #3A1D2A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15122B; --surface: #221C42; --surface-2: #2C2553; --ink: #F4ECDE; --ink-dim: rgba(244,236,222,.78); --ink-faint: rgba(244,236,222,.58);
+  --line: rgba(244,236,222,.55); --soft: rgba(244,236,222,.16); --shadow: rgba(0,0,0,.55);
+  --lilac-ink: #B9A6FF; --lilac-soft: #2F2760; --mint-soft: #173A2E; --red-soft: #3A1D2A;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--lilac); outline-offset: 3px; border-radius: 8px; }
+img { max-width: 100%; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+
+.app { max-width: 460px; margin: 0 auto; min-height: 100vh; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 calc(96px + env(safe-area-inset-bottom, 0px)); }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-block: 12px 10px; }
+.brand { font: 900 17px/1 var(--display); letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; }
+.brand svg { width: 26px; height: 26px; }
+.proto { font: 700 11px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); border: 1.5px dashed var(--soft); border-radius: 999px; padding: 6px 9px; }
+
+#view { display: grid; gap: 16px; padding-top: 4px; }
+.kicker { font: 800 11.5px/1.2 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--lilac-ink); }
+.h1 { font: 900 clamp(30px, 8vw, 38px)/1.02 var(--display); letter-spacing: -.02em; }
+.h2 { font: 900 22px/1.1 var(--display); letter-spacing: -.01em; }
+.lede { color: var(--ink-dim); font-size: 16px; }
+.muted { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); font-size: 13px; }
+.hand { font: 600 20px/1.15 var(--hand); color: var(--lilac-ink); }
+.stack { display: grid; gap: 10px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.card { background: var(--surface); border: 2px solid var(--line); border-radius: 20px; padding: 16px; box-shadow: 3px 3px 0 var(--shadow); min-width: 0; }
+.card.soft { background: var(--lilac-soft); }
+.card.mint { background: var(--mint-soft); }
+.card.warm { background: color-mix(in srgb, var(--yellow) 26%, var(--surface)); }
+.card.dash { border-style: dashed; box-shadow: none; background: var(--surface-2); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 18px; border: 2.5px solid var(--line); border-radius: 18px; background: var(--yellow); color: var(--on-yellow); font: 900 16px/1 var(--display); box-shadow: 0 5px 0 var(--shadow); transition: transform .08s, box-shadow .08s; width: 100%; }
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--shadow); }
+.btn.ghost { background: var(--surface); color: var(--ink); }
+.btn.lilac { background: var(--lilac); color: #fff; }
+.btn.small { min-height: 40px; font-size: 14px; border-radius: 14px; width: auto; box-shadow: 0 3px 0 var(--shadow); }
+.btn[disabled] { opacity: .5; cursor: default; }
+.link { background: none; border: 0; padding: 6px 0; font: 700 14px/1.2 var(--body); color: var(--lilac-ink); text-decoration: underline; text-underline-offset: 3px; justify-self: start; }
+
+/* sky scene */
+.sky { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / .78; border: 2px solid var(--line); border-radius: 26px; overflow: hidden; background: radial-gradient(80% 70% at 50% 45%, var(--sky-1), var(--sky-2)); box-shadow: 4px 4px 0 var(--shadow); }
+.sky .stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sky .sun { position: absolute; left: 50%; top: 46%; width: 30%; transform: translate(-50%, -50%); transition: filter .6s; }
+.sky .sun svg { width: 100%; height: auto; display: block; }
+.sky .pt { position: absolute; width: 24%; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 2px; background: none; border: 0; padding: 0; color: var(--on-sky); }
+.sky .pt img { width: 100%; filter: drop-shadow(0 6px 6px rgba(0,0,0,.35)); }
+.sky .pt span { font: 800 10.5px/1.15 var(--display); text-align: center; background: rgba(20,16,44,.72); padding: 3px 7px; border-radius: 999px; max-width: 120%; }
+.sky .cover { position: absolute; right: 10px; top: 10px; font: 700 11px/1 var(--body); color: var(--on-sky); border: 1.5px dashed rgba(244,236,222,.6); border-radius: 999px; padding: 6px 9px; }
+.sky .luna { position: absolute; left: 8px; top: 6px; width: 17%; }
+
+/* test */
+.prog { height: 10px; border: 2px solid var(--line); border-radius: 6px; background: var(--surface); overflow: hidden; }
+.prog i { display: block; height: 100%; background: var(--lilac); transition: width .3s; }
+.scene { font-size: 14px; color: var(--ink-dim); }
+.ask { font: 900 22px/1.12 var(--display); margin-top: 6px; }
+.answers { display: grid; gap: 10px; }
+.ans { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: center; text-align: left; background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 8px 12px 8px 8px; box-shadow: 3px 3px 0 var(--shadow); font: 600 14.5px/1.35 var(--body); }
+.ans img { width: 52px; height: 52px; object-fit: contain; }
+.ans:hover { background: var(--surface-2); }
+
+/* lists */
+.plist { display: grid; gap: 8px; }
+.pr { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; text-align: left; background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 6px 10px 6px 6px; box-shadow: 3px 3px 0 var(--shadow); width: 100%; }
+.pr img { width: 52px; height: 52px; object-fit: contain; }
+.pr b { display: block; font: 800 14px/1.2 var(--display); }
+.pr small { display: block; font-size: 12px; color: var(--ink-faint); }
+.stage { font: 800 10.5px/1 var(--body); padding: 5px 8px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface-2); white-space: nowrap; }
+.stage.s2 { background: var(--lilac-soft); } .stage.s3 { background: color-mix(in srgb, var(--yellow) 45%, var(--surface)); } .stage.s4, .stage.s5 { background: var(--mint-soft); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: grid; justify-items: center; gap: 4px; width: calc(33.33% - 6px); min-width: 0; background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 8px 4px; box-shadow: 2px 2px 0 var(--shadow); font: 800 11px/1.15 var(--display); text-align: center; }
+.chip img { width: 54px; height: 54px; object-fit: contain; }
+.chip .q { width: 54px; height: 54px; display: grid; place-items: center; font: 900 24px/1 var(--display); border: 2px dashed var(--line); border-radius: 50%; }
+.chip[aria-pressed="true"] { background: var(--yellow); color: var(--on-yellow); }
+
+.daycard { display: grid; grid-template-columns: 84px 1fr; gap: 14px; align-items: start; }
+.daycard img { width: 84px; }
+.task { font: 800 17px/1.25 var(--display); margin-top: 6px; }
+.moon { display: flex; gap: 6px; justify-content: space-between; margin-top: 8px; }
+.moon span { display: grid; justify-items: center; gap: 4px; font: 700 10.5px/1 var(--body); color: var(--ink-faint); flex: 1; }
+.moon i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface-2); }
+.moon i.on { background: var(--yellow); box-shadow: inset -6px 0 0 color-mix(in srgb, var(--yellow) 55%, #B88A00); }
+
+/* part page */
+.hero { display: grid; place-items: center; height: 170px; border: 2px solid var(--line); border-radius: 24px; background: radial-gradient(70% 70% at 50% 70%, var(--sky-1), var(--sky-2)); box-shadow: 3px 3px 0 var(--shadow); }
+.hero img { width: 128px; filter: drop-shadow(0 10px 8px rgba(0,0,0,.4)); }
+.arc { display: flex; gap: 4px; }
+.arc i { flex: 1; height: 10px; border-radius: 6px; border: 1.5px solid var(--line); background: var(--surface); }
+.arc i.on { background: var(--yellow); }
+.arc-l { display: flex; justify-content: space-between; font: 700 10.5px/1 var(--body); color: var(--ink-faint); margin-top: 5px; }
+.sec b { display: block; font: 800 13px/1.2 var(--display); margin-bottom: 2px; }
+
+/* SOS */
+.steps { display: flex; gap: 6px; flex-wrap: wrap; }
+.steps span { font: 800 11px/1 var(--body); padding: 6px 9px; border-radius: 999px; border: 1.5px solid var(--soft); color: var(--ink-faint); }
+.steps span.on { border-color: var(--line); background: var(--yellow); color: var(--on-yellow); }
+.steps span.done { color: var(--ink); border-color: var(--line); }
+textarea { width: 100%; min-height: 64px; resize: vertical; border: 2px solid var(--line); border-radius: 14px; padding: 10px 12px; background: var(--surface); }
+input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line); border-radius: 14px; padding: 0 12px; background: var(--surface); }
+.rate { display: grid; gap: 6px; }
+.rate input { width: 100%; accent-color: var(--lilac); }
+.rate .ends { display: flex; justify-content: space-between; font: 700 12px/1.2 var(--body); color: var(--ink-dim); }
+.rate output { font: 900 18px/1 var(--display); }
+
+.near { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / .62; border: 2px solid var(--line); border-radius: 24px; overflow: hidden; background: radial-gradient(80% 80% at 50% 40%, var(--sky-1), var(--sky-2)); box-shadow: 3px 3px 0 var(--shadow); }
+.near .stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+.near .sun { position: absolute; left: 50%; top: 50%; width: 34%; transform: translate(-50%, -50%); transition: left .8s cubic-bezier(.3,1.3,.5,1), filter .6s; filter: saturate(.35) brightness(.65); }
+.near .sun svg { width: 100%; display: block; }
+.near .part { position: absolute; left: 50%; top: 50%; width: 36%; transform: translate(-50%, -50%); transition: left .8s cubic-bezier(.3,1.3,.5,1), width .8s; }
+.near .part img { width: 100%; display: block; filter: drop-shadow(0 8px 8px rgba(0,0,0,.4)); }
+.near.apart .sun { left: 34%; filter: none; }
+.near.apart .part { left: 74%; width: 28%; }
+.near .tag { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font: 800 12px/1 var(--display); color: var(--on-sky); background: rgba(20,16,44,.75); padding: 6px 10px; border-radius: 999px; white-space: nowrap; }
+.breaths { display: flex; gap: 8px; justify-content: center; }
+.breaths i { width: 40px; height: 14px; border-radius: 8px; border: 2px solid var(--line); background: var(--surface); transition: background .3s; }
+.breaths i.on { background: var(--yellow); }
+.say { font: 600 21px/1.2 var(--hand); color: var(--lilac-ink); text-align: center; }
+.moves { display: grid; gap: 8px; }
+.mv { text-align: left; background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 12px 14px; box-shadow: 3px 3px 0 var(--shadow); font: 700 14.5px/1.3 var(--body); }
+.mv[aria-pressed="true"] { background: var(--yellow); color: var(--on-yellow); }
+.shift { display: flex; gap: 12px; align-items: center; }
+.shift b { font: 900 34px/1 var(--display); }
+
+/* two skies */
+.dock { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dock .col { display: grid; gap: 8px; align-content: start; }
+.dock .col h3 { font: 800 12px/1.2 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+.dock .it { display: grid; grid-template-columns: 40px 1fr; gap: 8px; align-items: center; background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: 4px 8px 4px 4px; font: 800 11.5px/1.15 var(--display); min-width: 0; }
+.dock .it img { width: 40px; height: 40px; object-fit: contain; }
+.pair { border-left: 6px solid var(--mint); }
+.pair.clash { border-left-color: var(--red); background: var(--red-soft); }
+.pair b { display: block; font: 900 14px/1.25 var(--display); }
+.pair .say2 { margin-top: 6px; font: 600 18px/1.15 var(--hand); color: var(--lilac-ink); }
+.example { font: 800 11px/1 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--red); }
+
+.members { display: flex; }
+.members img { width: 46px; height: 46px; object-fit: contain; margin-right: -8px; }
+
+.toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.sw { position: relative; width: 52px; height: 30px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface-2); flex: none; padding: 0; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); transition: left .2s; }
+.sw[aria-checked="true"] { background: var(--mint); }
+.sw[aria-checked="true"]::after { left: 25px; }
+
+.convo { display: grid; gap: 8px; }
+.cv { max-width: 88%; padding: 9px 12px; border-radius: 16px; border: 2px solid var(--line); font-size: 13.5px; line-height: 1.35; background: var(--surface); }
+.cv.part { justify-self: end; background: var(--lilac-soft); }
+.cv.part small { display: block; font: 800 10px/1.1 var(--body); text-transform: uppercase; letter-spacing: .05em; color: var(--lilac-ink); margin-bottom: 3px; }
+.cv.part span { font: 600 18px/1.15 var(--hand); }
+
+/* fixed chrome */
+#tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 2px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+#tabs .in { max-width: 460px; margin: 0 auto; display: flex; justify-content: space-around; }
+#tabs button { flex: 1; background: none; border: 0; padding: 10px 2px 12px; display: grid; justify-items: center; gap: 4px; font: 800 10.5px/1.1 var(--body); color: var(--ink-faint); }
+#tabs button[aria-current="page"] { color: var(--ink); }
+#tabs button[aria-current="page"] svg { color: var(--lilac-ink); }
+#tabs svg { width: 24px; height: 24px; }
+#sos { position: fixed; z-index: 7; right: max(16px, calc(50% - 214px), env(safe-area-inset-right, 0px)); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); min-height: 52px; padding: 0 18px; border: 2.5px solid var(--line); border-radius: 999px; background: var(--pink); color: #1C1830; font: 900 16px/1 var(--display); box-shadow: 0 5px 0 var(--shadow); }
+#sos:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--shadow); }
+.toast { position: fixed; left: 50%; bottom: calc(140px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 8; background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 12px; font: 700 13px/1.3 var(--body); max-width: calc(100% - 32px); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="g-sunglow"><stop offset="0" stop-color="#FFD978" stop-opacity=".95"/><stop offset=".55" stop-color="#FFB547" stop-opacity=".35"/><stop offset="1" stop-color="#FFB547" stop-opacity="0"/></radialGradient>
+    <symbol id="sym-sun" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="59" fill="url(#g-sunglow)"/>
+      <g fill="#FFB547" stroke="#1C1830" stroke-width="1.6">
+        <ellipse cx="60" cy="26" rx="9.5" ry="14"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(45 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(90 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(135 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(180 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(225 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(270 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(315 60 60)"/>
+      </g>
+      <circle cx="60" cy="60" r="25" fill="#FFC75A" stroke="#1C1830" stroke-width="2"/>
+      <path d="M49 58q3.5 3.5 7 0M64 58q3.5 3.5 7 0" stroke="#1C1830" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="M55 66q5 4 10 0" stroke="#1C1830" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <circle cx="47" cy="65" r="3.4" fill="#F0876A" opacity=".6"/><circle cx="73" cy="65" r="3.4" fill="#F0876A" opacity=".6"/>
+    </symbol>
+    <symbol id="sym-stars" viewBox="0 0 300 230"><g stroke="#F6E7B0" stroke-width="1.6" stroke-linecap="round"><path d="M30 24l4 4M34 24l-4 4"/><path d="M120 16l3 3M123 16l-3 3"/><path d="M220 30l4 4M224 30l-4 4"/><path d="M280 70l3 3M283 70l-3 3"/><path d="M14 120l3 3M17 120l-3 3"/><path d="M170 200l2.5 2.5M172.5 200l-2.5 2.5"/><path d="M70 190l2.5 2.5M72.5 190l-2.5 2.5"/><path d="M260 180l3 3M263 180l-3 3"/><path d="M90 60l2 2M92 60l-2 2"/></g></symbol>
+    <symbol id="ic-sky" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+    <symbol id="ic-two" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5"/></g></symbol>
+    <symbol id="ic-stars" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="7" r="1.6"/><circle cx="12" cy="4" r="1.6"/><circle cx="19" cy="9" r="1.6"/><circle cx="15" cy="18" r="1.6"/><circle cx="7" cy="17" r="1.6"/><path d="M6.4 6.3 10.5 4.7M13.5 4.8l4.1 3.4M18.4 10.5l-2.7 6M13.4 18h-4.8M6.4 15.5 5.4 8.6"/></g></symbol>
+    <symbol id="ic-moon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 3a9 9 0 1 0 7.5 13.6A7.6 7.6 0 0 1 13.5 3Z"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand"><svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sym-sun"/></svg>Innerverse</div>
+    <span class="proto">прототип</span>
+  </header>
+  <main id="view" aria-live="polite"></main>
+</div>
+<button id="sos" type="button" hidden>Накрыло</button>
+<nav id="tabs" aria-label="Разделы" hidden><div class="in"></div></nav>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  var IMG = {
+    p34: '{{S34}}', p29: '{{S29}}', p26: '{{S26}}', p36: '{{S36}}', p18: '{{S18}}', p14: '{{S14}}', p01: '{{S01}}',
+    p28: '{{S28}}', p41: '{{S41}}', p33: '{{S33}}',
+    luna: '{{S15}}', lunaT: '{{S32}}',
+    a24: '{{S24}}', a30: '{{S30}}', a42: '{{S42}}', a10: '{{S10}}', a23: '{{S23}}', a37: '{{S37}}', a12: '{{S12}}',
+    a16: '{{S16}}', a02: '{{S02}}', a21: '{{S21}}', a05: '{{S05}}', a03: '{{S03}}', a06: '{{S06}}', a08: '{{S08}}',
+    a04: '{{S04}}', a20: '{{S20}}', a35: '{{S35}}', a22: '{{S22}}', a38: '{{S38}}', a40: '{{S40}}', a17: '{{S17}}'
+  };
+
+  /* Parts: names honour the protective job; every page opens with the superpower. */
+  var ORDER = ['critic', 'later', 'dreamer', 'whatif', 'pleaser', 'snacks', 'enough'];
+  var PARTS = {
+    critic: { name: 'Отдел контроля качества', short: 'ОТК', sub: 'без выходных с 2009 года', img: 'p34',
+      power: 'Замечает ошибки раньше всех', burden: '«Если пропустить ошибку — всё рухнет»', need: 'Знать, что его слышат до важного дела', ask: '«Сколько проверок тебе на самом деле нужно?»',
+      tasks: ['Дайте ОТК выходной на час: отправьте одно сообщение без перепроверки.', 'Сделайте одно дело на 80% и остановитесь.', 'Спросите ОТК: от чего он вас бережёт? Запишите ответ.'],
+      moves: ['Отправить как есть, без пятой проверки', 'Ответить через 20 минут', 'Выйти на 2 минуты и попить воды'] },
+    later: { name: 'Министр «Потом»', short: 'Министр «Потом»', sub: 'отвечает за «завтра»', img: 'p29',
+      power: 'Бережёт силы и не даёт перегореть', burden: '«Если начнём — вдруг не получится»', need: 'Маленький и понятный первый шаг', ask: '«Чего ты боишься, если мы начнём прямо сейчас?»',
+      tasks: ['Две минуты, не больше: начните одно дело и остановитесь по таймеру.', 'Дайте Министру 10 минут «потом» по таймеру, затем 2 минуты дела.', 'Запишите, что именно откладывается. Только запишите.'],
+      moves: ['Сделать первые 2 минуты прямо сейчас', 'Поставить таймер на 10 минут «потом»', 'Написать, когда сделаю'] },
+    dreamer: { name: 'Мечтатель', short: 'Мечтатель', sub: 'главный по «а что если…»', img: 'p26',
+      power: 'Видит, как может быть', burden: '«Если мечта останется мечтой — всё зря»', need: 'Чтобы мечты принимали всерьёз', ask: '«О чём ты мечтаешь на этой неделе?»',
+      tasks: ['Спросите Мечтателя, чего он хочет на этой неделе. Запишите одно слово.', 'Сделайте самый маленький шаг к одной мечте: найти, написать или спросить.', 'Нарисуйте за 5 минут то, о чём мечтаете. Не красиво, просто нарисуйте.'],
+      moves: ['Записать идею и вернуться к делу', 'Выбрать один маленький шаг', 'Рассказать идею кому-то'] },
+    whatif: { name: 'Начальник отдела «А вдруг?»', short: '«А вдруг?»', sub: 'дежурит по ночам', img: 'p36',
+      power: 'Предвидит риски заранее', burden: '«Если не предусмотреть всё — случится беда»', need: 'Знать, что вы рядом и справитесь', ask: '«Что самое страшное, что ты себе представляешь?»',
+      tasks: ['Выпишите три «а вдруг» и рядом то, что вы сделаете, если это случится.', 'Три медленных выдоха и одно «спасибо, что бережёшь».', 'Вспомните один случай, когда вы уже справились.'],
+      moves: ['Сделать три медленных выдоха', 'Написать, что я сделаю, если это случится', 'Спросить, а не додумывать'] },
+    pleaser: { name: 'Главный по «всем ли удобно?»', short: '«Всем ли удобно?»', sub: 'работает на опережение', img: 'p18',
+      power: 'Чувствует, что нужно другим', burden: '«Если отказать — перестанут любить»', need: 'Чтобы и о вас заботились', ask: '«Что будет, если сегодня мы подумаем о себе?»',
+      tasks: ['Скажите сегодня одно мягкое «нет».', 'Один раз спросите себя: а чего хочу я?', 'Сделайте одну вещь только для себя, без объяснений.'],
+      moves: ['Ответить: «Мне нужно подумать»', 'Сказать мягкое «нет»', 'Спросить себя, чего хочу я'] },
+    snacks: { name: 'Служба утешительных вкусняшек', short: 'Служба вкусняшек', sub: 'быстрая доставка', img: 'p14',
+      power: 'Умеет утешить, когда тяжело', burden: '«Если не заглушить чувство — оно накроет»', need: 'Другие способы утешить, кроме еды и сериалов', ask: '«Какое чувство ты хочешь успокоить?»',
+      tasks: ['Перед перекусом 30 секунд: что я сейчас чувствую?', 'Найдите одно утешение без еды: тёплый чай, плед, песня.', 'Скажите Службе спасибо за заботу.'],
+      moves: ['Выпить тёплого чаю', 'Подождать 10 минут и решить снова', 'Написать близкому человеку'] },
+    enough: { name: 'Профсоюз «Хватит»', short: 'Профсоюз «Хватит»', sub: 'объявляет забастовку', img: 'p01',
+      power: 'Защищает от выгорания', burden: '«Если не остановиться — сломаемся»', need: 'Отдых, который не нужно заслуживать', ask: '«Сколько отдыха тебе правда нужно?»',
+      tasks: ['Устройте 15 минут честного отдыха без телефона.', 'Отмените одно необязательное дело.', 'Отметьте, сколько у вас сегодня сил, от 1 до 10.'],
+      moves: ['Отменить одно дело', 'Полежать 15 минут', 'Попросить о помощи'] }
+  };
+  var GENERIC_MOVES = ['Ответить через 20 минут', 'Выйти на 2 минуты и попить воды', 'Сделать три медленных выдоха'];
+
+  /* Eight scenes for the prototype; the real test has 20–25. A calm answer adds to the Sun (Self), not to a part. */
+  var SCENES = [
+    { scene: 'Подруга отменила встречу за час до неё.', a: [
+      { t: '«Наверное, это из-за меня…»', i: 'a24', w: { pleaser: 2, whatif: 1 } },
+      { t: '«Ну и ладно. Вечер с сериалом и пиццей!»', i: 'a30', w: { snacks: 2, later: 1 } },
+      { t: '«Отлично, успею доделать всё недоделанное»', i: 'a42', w: { critic: 2 } },
+      { t: '«Жаль. Спрошу, всё ли у неё в порядке»', i: 'a10', w: { self: 1 } } ] },
+    { scene: 'Завтра дедлайн, а вы ещё не начинали.', a: [
+      { t: '«Ещё пять минут в телефоне — и сразу начну»', i: 'a23', w: { later: 2 } },
+      { t: '«Буду сидеть до ночи, пока не станет идеально»', i: 'a42', w: { critic: 2, enough: 1 } },
+      { t: '«А вдруг не успею и всё рухнет?»', i: 'a37', w: { whatif: 2 } },
+      { t: '«Разобью на маленькие шаги и начну с одного»', i: 'a12', w: { self: 1 } } ] },
+    { scene: 'Вам прислали голосовое на 4 минуты. Начало: «Нам надо поговорить».', a: [
+      { t: '«Сердце в пятки. Что опять не так?»', i: 'a24', w: { whatif: 2 } },
+      { t: '«Сначала съем что-нибудь вкусное, потом послушаю»', i: 'a16', w: { snacks: 2 } },
+      { t: '«Послушаю потом. Или завтра»', i: 'a02', w: { later: 2 } },
+      { t: '«Послушаю и спокойно спрошу, что случилось»', i: 'a10', w: { self: 1 } } ] },
+    { scene: 'Коллега похвалил вашу работу при всех.', a: [
+      { t: '«Вообще-то там ещё три ошибки…»', i: 'a21', w: { critic: 2 } },
+      { t: '«Неловко! Срочно похвалить его в ответ»', i: 'a05', w: { pleaser: 2 } },
+      { t: '«А вдруг это сарказм?»', i: 'a03', w: { whatif: 2 } },
+      { t: '«Приятно. Скажу спасибо»', i: 'a12', w: { self: 1 } } ] },
+    { scene: 'Выходной без планов.', a: [
+      { t: '«Придумаю проект, который изменит всё!»', i: 'a06', w: { dreamer: 2 } },
+      { t: '«Лежать. Просто лежать. Это заслуженно»', i: 'a08', w: { enough: 2 } },
+      { t: '«Разберу дела, которые копились месяц»', i: 'a42', w: { critic: 2 } },
+      { t: '«Напишу всем: может, кому-то нужна помощь?»', i: 'a04', w: { pleaser: 2 } } ] },
+    { scene: 'В соцсетях видно, что знакомые съездили отдохнуть без вас.', a: [
+      { t: '«Почему не позвали? Со мной что-то не так?»', i: 'a20', w: { whatif: 1, pleaser: 1 } },
+      { t: '«Зато однажды я объеду весь мир. Где мой маршрут?»', i: 'a35', w: { dreamer: 2 } },
+      { t: '«Закрою приложение и закажу что-нибудь вкусное»', i: 'a16', w: { snacks: 2 } },
+      { t: '«Немного грустно. Это нормально»', i: 'a22', w: { self: 1 } } ] },
+    { scene: 'Вечер, сил ноль, а вы обещали помочь другу с переездом.', a: [
+      { t: '«Пойду, конечно. Как можно отказать?»', i: 'a04', w: { pleaser: 2 } },
+      { t: '«Всё. Хватит. Отменяю всё и выключаю телефон»', i: 'a38', w: { enough: 2 } },
+      { t: '«Скажу, что приду, а там что-нибудь придумаю»', i: 'a02', w: { later: 2 } },
+      { t: '«Честно скажу, что сил нет, и предложу помочь завтра»', i: 'a40', w: { self: 1 } } ] },
+    { scene: 'Перед сном в голову приходит идея.', a: [
+      { t: '«Это гениально! Ещё час — и продумаю всё до мелочей»', i: 'a06', w: { dreamer: 2 } },
+      { t: '«А вдруг забуду? А вдруг не получится?»', i: 'a37', w: { whatif: 2 } },
+      { t: '«Запишу и разберу утром. Если вспомню»', i: 'a23', w: { later: 1, dreamer: 1 } },
+      { t: '«Глупая идея. У других давно лучше»', i: 'a17', w: { critic: 2 } } ] }
+  ];
+
+  /* «Два неба» sample: a made-up partner sky, always labelled as an example. */
+  var PARTNER = [
+    { id: 'rebel', name: 'Бунтарь', img: 'p28' },
+    { id: 'jester', name: 'Шутник', img: 'p41' },
+    { id: 'guard', name: 'Защитник', img: 'p33' }
+  ];
+  var LINKS = [
+    { a: 'critic', b: 'rebel', clash: true, text: 'Перед дедлайнами ОТК торопит, а Бунтарь упирается.', say: '«Я не командую. Давай вместе решим, когда.»' },
+    { a: 'critic', b: 'jester', clash: true, text: 'ОТК всерьёз, Шутник нет. Кажется, что над работой смеются.', say: '«Мне важно, что это получилось. Отметишь со мной?»' },
+    { a: 'whatif', b: 'jester', clash: true, text: '«А вдруг?» тревожится, а Шутник отшучивается, и кажется, что не слышит.', say: '«Мне сейчас не до шуток. Побудь со мной минутку.»' },
+    { a: 'pleaser', b: 'rebel', clash: true, text: '«Всем ли удобно?» подстраивается, Бунтарь злится, что вы не говорите прямо.', say: '«Скажу честно: мне хочется вот так.»' },
+    { a: 'later', b: 'rebel', clash: false, text: 'Оба не любят, когда торопят. Вместе отлично отдыхают.' },
+    { a: 'dreamer', b: 'jester', clash: false, text: 'Вместе придумывают самые безумные планы на выходные.' },
+    { a: 'snacks', b: 'guard', clash: false, text: 'Защитник приносит плед, Служба — какао.' },
+    { a: 'enough', b: 'guard', clash: false, text: 'Оба умеют сказать «хватит» вовремя.' },
+    { a: 'pleaser', b: 'guard', clash: false, text: 'Защитник бережёт, и «Всем ли удобно?» наконец может выдохнуть.' },
+    { a: 'whatif', b: 'guard', clash: false, text: 'Защитник рядом, и ночная смена «А вдруг?» проходит спокойнее.' },
+    { a: 'later', b: 'jester', clash: false, text: 'Шутник превращает «потом» в игру, и дело вдруг сдвигается.' },
+    { a: 'dreamer', b: 'rebel', clash: false, text: 'Бунтарь помогает Мечтателю нарушить правила и начать.' },
+    { a: 'critic', b: 'guard', clash: false, text: 'Защитник напоминает ОТК, что вы и так стараетесь.' },
+    { a: 'enough', b: 'rebel', clash: false, text: 'Оба знают, когда пора остановиться.' },
+    { a: 'snacks', b: 'jester', clash: false, text: 'Лучшие вечера: какао и смешное видео.' }
+  ];
+  var STAGES = ['Незнакомец', 'Знакомый', 'Услышан', 'Договор', 'Союзник'];
+  var LEVELS = [0, 1, 3, 6, 10];
+
+  /* State lives only in this browser. */
+  var KEY = 'innerverse-proto-v1';
+  var blank = function () { return { answers: [], cover: '', acts: {}, days: {}, today: null, moments: [], waitlist: false, plain: false }; };
+  var S = blank();
+  try { var raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
+  var save = function () { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  var view = document.getElementById('view');
+  var tabs = document.getElementById('tabs');
+  var sosBtn = document.getElementById('sos');
+  var toastEl = document.getElementById('toast');
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var img = function (k, alt) { return '<img src="' + IMG[k] + '" alt="' + esc(alt || '') + '">'; };
+  var sun = '<svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sym-sun"/></svg>';
+  var stars = '<svg class="stars" viewBox="0 0 300 230" preserveAspectRatio="none" aria-hidden="true"><use href="#sym-stars"/></svg>';
+  var dayKey = function (d) { d = d || new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+  var L = function (key) {
+    var plain = { sky: 'Мои части', two: 'Сравнить с близким', stars: 'Найти своих', luna: 'Помощник', near: 'Шаг назад' };
+    var norm = { sky: 'Небо', two: 'Два неба', stars: 'Созвездия', luna: 'Луна', near: 'Рядом' };
+    return (S.plain ? plain : norm)[key];
+  };
+  var toast = function (msg) {
+    toastEl.textContent = msg; toastEl.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(function () { toastEl.hidden = true; }, 2600);
+  };
+
+  var scores = function () {
+    var sc = { self: 0 }; ORDER.forEach(function (p) { sc[p] = 0; });
+    S.answers.forEach(function (ai, qi) { var w = SCENES[qi].a[ai].w; for (var k in w) sc[k] += w[k]; });
+    return sc;
+  };
+  var top = function () {
+    var sc = scores();
+    return ORDER.slice().sort(function (a, b) { return sc[b] - sc[a] || ORDER.indexOf(a) - ORDER.indexOf(b); }).slice(0, 3);
+  };
+  var hasSky = function () { return S.answers.length === SCENES.length; };
+  var stageOf = function (id) { var n = S.acts[id] || 0, s = 0; LEVELS.forEach(function (lv, i) { if (n >= lv) s = i; }); return s; };
+  var act = function (id) { if (!id || !PARTS[id]) return; S.acts[id] = (S.acts[id] || 0) + 1; };
+
+  var skyScene = function (ids, opts) {
+    opts = opts || {};
+    var slots = [[20, 24], [80, 22], [78, 76], [22, 76]];
+    var glow = Math.min(1, 0.45 + scores().self * 0.12);
+    var h = '<div class="sky" role="img" aria-label="Ваше небо: в центре Солнце, вокруг ' + esc(ids.map(function (p) { return PARTS[p].short; }).join(', ')) + '">' + stars;
+    if (opts.luna) h += '<div class="luna">' + img('lunaT', '') + '</div>';
+    if (S.cover && opts.cover) h += '<span class="cover">' + esc(S.cover) + '</span>';
+    h += '<div class="sun" style="filter:brightness(' + glow.toFixed(2) + ')">' + sun + '</div>';
+    ids.forEach(function (p, i) {
+      var s = slots[i];
+      h += '<button class="pt" type="button" data-act="part" data-id="' + p + '" style="left:' + s[0] + '%;top:' + s[1] + '%">' + img(PARTS[p].img, '') + '<span>' + esc(PARTS[p].short) + '</span></button>';
+    });
+    return h + '</div>';
+  };
+  var partRow = function (p) {
+    var st = stageOf(p);
+    return '<button class="pr" type="button" data-act="part" data-id="' + p + '">' + img(PARTS[p].img, '') + '<span><b>' + esc(PARTS[p].name) + '</b><small>' + esc(PARTS[p].sub) + '</small></span><span class="stage s' + (st + 1) + '">' + STAGES[st] + '</span></button>';
+  };
+
+  /* Screens */
+  var screens = {};
+
+  screens.welcome = function () {
+    return '<div class="sky" style="aspect-ratio:1/.62" role="img" aria-label="Ночное небо, Солнце и Луна">' + stars + '<div class="luna" style="width:24%;left:6%;top:10%">' + img('luna', '') + '</div><div class="sun" style="left:62%;top:52%;width:34%">' + sun + '</div></div>' +
+      '<p class="kicker">7 минут · сцены из жизни</p>' +
+      '<h1 class="h1">Кто живёт внутри?</h1>' +
+      '<p class="lede">Вы — не один тип. Вы — целая вселенная. Ответьте, кто внутри первым берёт слово, и увидите своё внутреннее небо: части, которые чаще всего за вас решают.</p>' +
+      '<button class="btn" type="button" data-act="start">Начать</button>' +
+      (hasSky() ? '<button class="btn ghost" type="button" data-go="sky">У меня уже есть небо</button>' : '') +
+      '<p class="faint">Отражение, а не диагноз. Это прототип: ответы остаются только в этом браузере.</p>';
+  };
+
+  screens.test = function () {
+    var i = S.answers.length;
+    if (i >= SCENES.length) return screens.result();
+    var q = SCENES[i];
+    var h = '<div class="row" style="justify-content:space-between"><span class="faint">Сцена ' + (i + 1) + ' из ' + SCENES.length + '</span><span class="faint">≈ ' + Math.max(1, Math.round((SCENES.length - i) * 0.8)) + ' мин</span></div>' +
+      '<div class="prog"><i style="width:' + Math.round(i / SCENES.length * 100) + '%"></i></div>' +
+      '<div class="card"><p class="scene">' + esc(q.scene) + '</p><p class="ask">Кто внутри первым берёт слово?</p></div><div class="answers">';
+    q.a.forEach(function (a, ai) { h += '<button class="ans" type="button" data-act="answer" data-i="' + ai + '">' + img(a.i, '') + '<span>' + esc(a.t) + '</span></button>'; });
+    h += '</div>';
+    if (i > 0) h += '<button class="link" type="button" data-act="back">Назад</button>';
+    return h;
+  };
+
+  screens.result = function () {
+    var t = top(), first = PARTS[t[0]];
+    var h = '<p class="kicker">Готово</p><h1 class="h1">Ваше небо</h1>' + skyScene(t, { cover: true }) +
+      '<div class="plist">' + t.map(partRow).join('') + '</div>' +
+      '<div class="card"><label for="cover"><b style="font:800 14px/1.2 var(--display)">Обложка (по желанию)</b></label><p class="faint" style="margin:4px 0 8px">Ваш тип или знак, если хочется. Мы его не измеряем, это просто обложка.</p><input type="text" id="cover" maxlength="28" placeholder="Например, INFP · Рыбы" value="' + esc(S.cover) + '"></div>' +
+      '<p class="hand">«Тип — это обложка. Внутри — целая вселенная.»</p>' +
+      '<div class="card warm"><p class="kicker">Первое задание</p><p class="task">' + esc(first.tasks[0]) + '</p><p class="faint" style="margin-top:6px">А если сегодня накроет, нажмите «Накрыло»: это займёт две минуты.</p></div>' +
+      '<div class="row"><button class="btn ghost" type="button" data-act="share" style="flex:1">Поделиться</button><button class="btn lilac" type="button" data-go="two" style="flex:1">Два неба</button></div>' +
+      '<button class="btn" type="button" data-go="sky">На главную</button>' +
+      '<p class="faint">Отражение, а не диагноз. Ответы можно поменять: пройдите тест заново во вкладке «Луна».</p>';
+    return h;
+  };
+
+  screens.share = function () {
+    var t = top();
+    var text = 'Моё внутреннее небо: ' + t.map(function (p) { return PARTS[p].name; }).join(', ') + (S.cover ? ' (обложка: ' + S.cover + ')' : '') + '. А кто живёт внутри у вас? [ссылка на тест]';
+    return '<p class="kicker">Поделиться</p><h1 class="h2">Вот что увидят</h1>' + skyScene(t, { cover: true, luna: true }) +
+      '<p class="muted">Только имена частей и обложка. Ни ответов, ни дневника.</p>' +
+      '<label class="faint" for="invite">Текст приглашения</label><textarea id="invite" readonly>' + esc(text) + '</textarea>' +
+      '<button class="btn" type="button" data-act="copy" data-target="invite">Скопировать приглашение</button>' +
+      '<button class="link" type="button" data-go="result">Назад к небу</button>';
+  };
+
+  screens.sky = function () {
+    if (!hasSky()) return screens.welcome();
+    var t = top(), dk = dayKey(), today = S.today && S.today.day === dk ? S.today : null;
+    var date = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+    var h = '<p class="faint">' + esc(date) + '</p>' + skyScene(t, { cover: true, luna: true });
+    if (!today) {
+      h += '<div class="card"><h2 class="h2">Кто сегодня главный?</h2><p class="faint" style="margin:4px 0 12px">10 секунд. Выберите, кто сегодня громче всех.</p><div class="chips">';
+      t.forEach(function (p) { h += '<button class="chip" type="button" data-act="today" data-id="' + p + '">' + img(PARTS[p].img, '') + esc(PARTS[p].short) + '</button>'; });
+      h += '</div><button class="link" type="button" data-act="more-today">Другая часть</button><div id="more-today" hidden><div class="chips" style="margin-top:8px">';
+      ORDER.filter(function (p) { return t.indexOf(p) < 0; }).forEach(function (p) { h += '<button class="chip" type="button" data-act="today" data-id="' + p + '">' + img(PARTS[p].img, '') + esc(PARTS[p].short) + '</button>'; });
+      h += '</div></div></div>';
+    } else {
+      var P = PARTS[today.part];
+      h += '<div class="card warm"><p class="kicker">Карточка дня</p><div class="daycard" style="margin-top:8px">' + img(P.img, '') + '<div><p class="h2" style="font-size:18px">Сегодня главный — ' + esc(P.short) + '</p><p class="muted" style="font-size:13.5px;margin-top:4px">Суперсила: ' + esc(P.power.toLowerCase()) + '.</p><p class="task">' + esc(P.tasks[today.task % P.tasks.length]) + '</p></div></div>' +
+        (today.done ? '<p class="hand" style="margin-top:10px">Сделано. ' + esc(P.short) + ' это заметил.</p>' :
+          '<div class="row" style="margin-top:12px"><button class="btn small" type="button" data-act="done">Сделано</button><button class="btn small ghost" type="button" data-act="other-task">Другое задание</button></div>') + '</div>';
+    }
+    h += '<div class="card"><p class="kicker">Лунный ритм</p><div class="moon">';
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      h += '<span><i class="' + (S.days[dayKey(d)] ? 'on' : '') + '"></i>' + d.toLocaleDateString('ru-RU', { weekday: 'short' }) + '</span>';
+    }
+    h += '</div><p class="faint" style="margin-top:8px">Без серий: пропущенный день ничего не сжигает.</p></div>';
+    h += '<h2 class="h2">Ваши части</h2><div class="plist">' + t.map(partRow).join('') + '</div>';
+    if (S.moments.length) {
+      h += '<h2 class="h2">Моменты</h2><div class="stack">';
+      S.moments.slice(-3).reverse().forEach(function (m) {
+        h += '<div class="card"><p class="faint">' + esc(m.when) + '</p><p style="margin-top:4px"><b>' + esc(m.part ? PARTS[m.part].short : 'Не знаю') + '</b> · ' + esc(m.move) + '</p><p class="faint">Кто ведёт: было ' + m.before + '/10, стало ' + m.after + '/10</p></div>';
+      });
+      h += '</div>';
+    }
+    return h;
+  };
+
+  screens.part = function (id) {
+    var P = PARTS[id]; if (!P) return screens.sky();
+    var st = stageOf(id);
+    var h = '<button class="link" type="button" data-act="back-sky">← Назад</button><div class="hero">' + img(P.img, P.name) + '</div>' +
+      '<div><h1 class="h2">' + esc(P.name) + '</h1><p class="faint">' + esc(P.sub) + ' · действий: ' + (S.acts[id] || 0) + '</p></div>' +
+      '<div><div class="arc" role="img" aria-label="Путь: ' + STAGES[st] + ', ' + (st + 1) + ' из 5">';
+    for (var i = 0; i < 5; i++) h += '<i class="' + (i <= st ? 'on' : '') + '"></i>';
+    h += '</div><div class="arc-l"><span>Незнакомец</span><span>' + STAGES[st] + '</span><span>Союзник</span></div></div>' +
+      '<div class="card stack"><div class="sec"><b>Суперсила</b>' + esc(P.power) + '</div><div class="sec"><b>Что тяжело</b>' + esc(P.burden) + '</div><div class="sec"><b>Чего просит</b>' + esc(P.need) + '</div><div class="sec"><b>Можно спросить</b>' + esc(P.ask) + '</div></div>' +
+      '<div class="card soft"><p class="kicker">Задания</p><ul style="margin:8px 0 0;padding-left:18px;display:grid;gap:6px">' + P.tasks.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' +
+      '<p class="faint">В прототипе путь считается по действиям: отметки дня и моменты «Накрыло».</p>';
+    return h;
+  };
+
+  /* SOS: «Накрыло» → «Кто это?» → «Рядом» → «Мой шаг» */
+  var sos = null;
+  var stepsBar = function (n) {
+    var names = ['Накрыло', 'Кто это?', L('near'), 'Мой шаг'];
+    return '<div class="steps">' + names.map(function (s, i) { return '<span class="' + (i === n ? 'on' : i < n ? 'done' : '') + '">' + esc(s) + '</span>'; }).join('') + '</div>';
+  };
+  screens.sos = function () {
+    if (!sos) sos = { step: 'who', part: null, before: 3, after: 3, breaths: 0, apart: false, move: null, what: '' };
+    var t = hasSky() ? top() : ORDER.slice(0, 3);
+    var h = '<p class="faint">≈ 2 минуты</p>';
+    if (sos.step === 'who') {
+      h += stepsBar(1) + '<h1 class="h1">Кто это?</h1><p class="muted">Кто сейчас за вас решает? «Не знаю» — тоже ответ.</p><div class="chips">';
+      t.forEach(function (p) { h += '<button class="chip" type="button" data-act="sos-part" data-id="' + p + '">' + img(PARTS[p].img, '') + esc(PARTS[p].short) + '</button>'; });
+      h += '<button class="chip" type="button" data-act="sos-new"><span class="q">+</span>Кто-то новый</button><button class="chip" type="button" data-act="sos-part" data-id=""><span class="q">?</span>Не знаю</button></div>' +
+        '<div id="sos-more" hidden><p class="faint" style="margin:10px 0 6px">На кого похоже?</p><div class="chips">';
+      ORDER.filter(function (p) { return t.indexOf(p) < 0; }).forEach(function (p) { h += '<button class="chip" type="button" data-act="sos-part" data-id="' + p + '">' + img(PARTS[p].img, '') + esc(PARTS[p].short) + '</button>'; });
+      h += '</div></div><label class="faint" for="sos-what">Что случилось? (по желанию)</label><textarea id="sos-what" placeholder="Например: сообщение от руководителя">' + esc(sos.what) + '</textarea>';
+    } else if (sos.step === 'near') {
+      var P = sos.part ? PARTS[sos.part] : null;
+      var who = P ? P.short : 'Эта часть';
+      h += stepsBar(2) + '<h1 class="h1">' + esc(L('near')) + '</h1>' +
+        '<div class="card rate"><label for="before"><b style="font:800 14px/1.2 var(--display)">Кто сейчас ведёт?</b></label><input type="range" id="before" min="0" max="10" value="' + sos.before + '"><div class="ends"><span>ведёт часть</span><output id="before-out">' + sos.before + '</output><span>веду я</span></div></div>' +
+        '<div class="near' + (sos.apart ? ' apart' : '') + '" id="near" role="img" aria-label="' + (sos.apart ? esc(who) + ' рядом, вы в центре' : esc(who) + ' в центре, вместо вас') + '">' + stars +
+        '<div class="sun">' + sun + '</div><div class="part">' + (P ? img(P.img, '') : img('a24', '')) + '</div><span class="tag" id="near-tag">' + (sos.apart ? 'вы в центре, ' + esc(who) + ' рядом' : esc(who) + ' вместо вас') + '</span></div>' +
+        '<p class="say" id="say">' + (sos.apart ? '«Спасибо, что бережёшь меня. Я с тобой — побудь рядом.»' : 'Попросите часть сесть рядом, а не вместо вас') + '</p>';
+      if (!sos.apart) h += '<button class="btn" type="button" data-act="apart">Попросить сесть рядом</button>';
+      else if (sos.breaths < 3) h += '<div class="breaths" aria-hidden="true">' + [0, 1, 2].map(function (i) { return '<i class="' + (i < sos.breaths ? 'on' : '') + '"></i>'; }).join('') + '</div><button class="btn" type="button" data-act="breath">Медленный выдох ' + (sos.breaths + 1) + ' из 3</button>';
+      else h += '<div class="card rate"><label for="after"><b style="font:800 14px/1.2 var(--display)">А теперь кто ведёт?</b></label><input type="range" id="after" min="0" max="10" value="' + sos.after + '"><div class="ends"><span>ведёт часть</span><output id="after-out">' + sos.after + '</output><span>веду я</span></div></div><button class="btn" type="button" data-act="to-move">Дальше</button>';
+    } else if (sos.step === 'move') {
+      var moves = sos.part ? PARTS[sos.part].moves : GENERIC_MOVES;
+      h += stepsBar(3) + '<h1 class="h1">Мой шаг</h1><p class="muted">Один маленький шаг. Можно свой.</p><div class="moves">';
+      moves.forEach(function (m) { h += '<button class="mv" type="button" data-act="move" aria-pressed="' + (sos.move === m) + '">' + esc(m) + '</button>'; });
+      h += '</div><label class="faint" for="own-move">Свой шаг</label><input type="text" id="own-move" maxlength="80" placeholder="Например: написать «отвечу вечером»">' +
+        '<button class="btn" type="button" data-act="save-moment">Сохранить момент</button>';
+    } else {
+      var sh = sos.after - sos.before;
+      h += stepsBar(4) + '<h1 class="h1">Вы снова ведёте</h1><div class="card mint shift"><b>' + (sh > 0 ? '+' : '') + sh + '</b><span>Было ' + sos.before + '/10, стало ' + sos.after + '/10. Шаг: ' + esc(sos.move) + '.</span></div>' +
+        '<p class="muted">' + (sos.part ? 'Поговорить с ' + esc(PARTS[sos.part].short) + ' можно позже, когда будет спокойно.' : 'Когда будет спокойно, можно разобраться, кто это был.') + '</p>' +
+        '<button class="btn" type="button" data-act="sos-close">На главную</button>';
+    }
+    if (sos.step !== 'done') h += '<button class="link" type="button" data-act="sos-close">Выйти</button>';
+    h += '<p class="faint">Если вам сейчас очень тяжело или небезопасно, обратитесь к близкому человеку или на линию помощи. [контакты из crisis-правил приложения]</p>';
+    return h;
+  };
+
+  screens.two = function (sample) {
+    var t = hasSky() ? top() : ORDER.slice(0, 3);
+    var text = 'Давай сравним наши внутренние небеса? Пройди тест «Кто живёт внутри?», и мы увидим, какие части у нас дружат, а какие спорят. [ссылка на тест]';
+    if (!sample) {
+      return '<p class="kicker">' + esc(L('two')) + '</p><h1 class="h1">Ваше небо рядом с небом близкого</h1>' +
+        '<p class="lede">Пригласите партнёра или друга. Человек проходит тот же тест, и вы видите, какие части дружат, какие спорят и что сказать друг другу.</p>' +
+        '<label class="faint" for="invite2">Приглашение</label><textarea id="invite2" readonly>' + esc(text) + '</textarea>' +
+        '<button class="btn" type="button" data-act="copy" data-target="invite2">Скопировать приглашение</button>' +
+        '<button class="btn ghost" type="button" data-go="two-sample">Посмотреть на примере</button>' +
+        '<p class="faint">Видны только карточки неба. Дневник и моменты — никогда. Каждую часть вы открываете сами.</p>';
+    }
+    /* One link per leading part, preferring a partner part not used yet, so the example spans the whole sky. */
+    var found = [], usedB = {};
+    t.forEach(function (p) {
+      var mine = LINKS.filter(function (l) { return l.a === p; });
+      var pick = mine.filter(function (l) { return !usedB[l.b]; })[0] || mine[0];
+      if (pick) { found.push(pick); usedB[pick.b] = true; }
+    });
+    found.sort(function (a, b) { return (b.clash ? 1 : 0) - (a.clash ? 1 : 0); });
+    var h = '<button class="link" type="button" data-go="two">← Назад</button><p class="example">Пример: небо Миши, выдуманные данные</p><h1 class="h2">Два неба</h1><div class="dock"><div class="col"><h3>Вы</h3>';
+    t.forEach(function (p) { h += '<div class="it">' + img(PARTS[p].img, '') + esc(PARTS[p].short) + '</div>'; });
+    h += '</div><div class="col"><h3>Миша</h3>';
+    PARTNER.forEach(function (q) { h += '<div class="it">' + img(q.img, '') + esc(q.name) + '</div>'; });
+    h += '</div></div><div class="stack">';
+    found.forEach(function (l) {
+      var bn = PARTNER.filter(function (q) { return q.id === l.b; })[0].name;
+      h += '<div class="card pair' + (l.clash ? ' clash' : '') + '"><b>' + (l.clash ? 'Спорят: ' : 'Дружат: ') + 'ваш ' + esc(PARTS[l.a].short) + ' и ' + esc(bn) + '</b><p class="muted" style="margin-top:4px">' + esc(l.text) + '</p>' + (l.say ? '<p class="say2">Что сказать: ' + esc(l.say) + '</p>' : '') + '</div>';
+    });
+    h += '</div><div class="card warm"><p class="kicker">Общее задание на неделю</p><p class="task">Каждый вечер — одна фраза друг другу: «Сегодня во мне громче всех был…»</p></div>';
+    return h;
+  };
+
+  screens.stars = function () {
+    var p = hasSky() ? top()[0] : 'later';
+    var P = PARTS[p];
+    var name = 'Созвездие: ' + P.short;
+    return '<p class="kicker">' + esc(L('stars')) + ' · скоро</p><h1 class="h1">Найти своих</h1>' +
+      '<p class="lede">Небольшие круги людей, у которых в небе живёт похожая часть. Раз в неделю — общее задание, без камер и без оценок.</p>' +
+      '<div class="card"><div class="members">' + img(P.img, '') + img('p01', '') + img('p41', '') + img('p18', '') + '</div><h2 class="h2" style="margin-top:10px">' + esc(name) + '</h2>' +
+      '<ul style="margin:8px 0 0;padding-left:18px;display:grid;gap:5px" class="muted"><li>Каждую среду — общее задание на 25 минут</li><li>Здесь все свои: без стыда и сравнений</li><li>Правила круга и модерация</li></ul></div>' +
+      (S.waitlist ? '<div class="card mint"><b>Вы в списке.</b> Мы напишем, если созвездие соберётся.</div>' : '<button class="btn" type="button" data-act="waitlist">Хочу в созвездие</button>') +
+      '<p class="faint">Честно: мы пока проверяем, нужно ли это. Созвездия появятся, если они вам нужны. Ваше небо видно другим только с вашего согласия.</p>';
+  };
+
+  var resetArmed = false;
+  screens.luna = function () {
+    var p = hasSky() ? top()[0] : 'critic';
+    var P = PARTS[p];
+    return '<div class="row">' + '<span style="width:72px">' + img('luna', 'Луна') + '</span><div style="flex:1;min-width:0"><p class="kicker">' + esc(L('luna')) + '</p><h1 class="h2">«Я не свечу сама — я отражаю ваш свет.»</h1></div></div>' +
+      '<div class="card soft"><p class="kicker">Разговор · появится на следующем шаге</p><div class="convo" style="margin-top:10px">' +
+      '<div class="cv">Спросите ' + esc(P.short) + ': что случится, если он перестанет за вас решать?</div>' +
+      '<div class="cv part"><small>вы — за ' + esc(P.short) + '</small><span>' + esc(P.burden.replace(/[«»]/g, '')) + '</span></div>' +
+      '<div class="cv">Чего он на самом деле хочет для вас?</div></div></div>' +
+      '<div class="card stack"><p class="kicker">Комфорт</p>' +
+      '<div class="toggle"><span><b>Говорить проще</b><br><span class="faint">Без метафор: «Мои части» вместо «Небо»</span></span><button class="sw" type="button" role="switch" aria-checked="' + S.plain + '" aria-label="Говорить проще" data-act="plain"></button></div>' +
+      '<div class="toggle"><span><b>Тема</b><br><span class="faint" id="theme-name">' + themeName() + '</span></span><button class="btn small ghost" type="button" data-act="theme">Сменить</button></div></div>' +
+      '<div class="card dash stack"><p class="kicker">Для интервью</p>' +
+      '<button class="btn small ghost" type="button" data-act="retake">Пройти тест заново</button>' +
+      (resetArmed ? '<p class="muted">Стереть ответы, моменты и отметки в этом браузере?</p><div class="row"><button class="btn small" type="button" data-act="reset-yes">Да, стереть</button><button class="btn small ghost" type="button" data-act="reset-no">Отмена</button></div>' : '<button class="btn small ghost" type="button" data-act="reset">Сбросить прототип</button>') +
+      '<p class="faint">Ссылки на экраны: добавьте к адресу #test, #sky, #sos, #two, #stars или #luna.</p></div>';
+  };
+
+  var themeName = function () {
+    var t = document.documentElement.dataset.theme;
+    return t === 'dark' ? 'Тёмная' : t === 'light' ? 'Светлая' : 'Как в системе';
+  };
+
+  /* Router */
+  var current = '';
+  var partId = null;
+  var TABS = [['sky', 'ic-sky'], ['two', 'ic-two'], ['stars', 'ic-stars'], ['luna', 'ic-moon']];
+  var renderTabs = function (name) {
+    var base = name === 'two-sample' ? 'two' : name === 'part' ? 'sky' : name;
+    tabs.querySelector('.in').innerHTML = TABS.map(function (t) {
+      return '<button type="button" data-go="' + t[0] + '"' + (base === t[0] ? ' aria-current="page"' : '') + '><svg aria-hidden="true"><use href="#' + t[1] + '"/></svg>' + esc(L(t[0])) + '</button>';
+    }).join('');
+  };
+  var go = function (name, opts) {
+    opts = opts || {};
+    if (name === 'sky' && !hasSky()) name = 'welcome';
+    if ((name === 'result' || name === 'share') && !hasSky()) name = hasSky() ? name : 'test';
+    current = name;
+    var html = name === 'part' ? screens.part(partId) : name === 'two-sample' ? screens.two(true) : (screens[name] || screens.welcome)();
+    view.innerHTML = html;
+    var inFlow = name === 'welcome' || name === 'test';
+    tabs.hidden = inFlow || name === 'sos';
+    sosBtn.hidden = inFlow || name === 'sos';
+    if (!tabs.hidden) renderTabs(name);
+    if (!opts.keepScroll) window.scrollTo(0, 0);
+    var token = { welcome: '', 'two-sample': 'two', part: 'sky' }[name];
+    token = token === undefined ? name : token;
+    try { if (location.hash.slice(1) !== token) history.replaceState(null, '', token ? '#' + token : location.pathname + location.search); } catch (e) {}
+    bindInputs();
+  };
+
+  var bindInputs = function () {
+    var cover = document.getElementById('cover');
+    if (cover) cover.addEventListener('input', function () { S.cover = cover.value.trim(); save(); });
+    ['before', 'after'].forEach(function (k) {
+      var el = document.getElementById(k);
+      if (el) el.addEventListener('input', function () { sos[k] = +el.value; document.getElementById(k + '-out').textContent = el.value; });
+    });
+    var what = document.getElementById('sos-what');
+    if (what) what.addEventListener('input', function () { sos.what = what.value; });
+  };
+
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act],[data-go]');
+    if (!el) return;
+    if (el.dataset.go) { go(el.dataset.go); return; }
+    var a = el.dataset.act, id = el.dataset.id;
+    if (a === 'start') { if (hasSky()) S.answers = []; save(); go('test'); }
+    else if (a === 'answer') { S.answers.push(+el.dataset.i); save(); go(S.answers.length >= SCENES.length ? 'result' : 'test'); }
+    else if (a === 'back') { S.answers.pop(); save(); go('test'); }
+    else if (a === 'share') go('share');
+    else if (a === 'copy') {
+      var ta = document.getElementById(el.dataset.target);
+      var done = function () { toast('Скопировано'); };
+      var fallback = function () { ta.focus(); ta.select(); toast('Выделено — скопируйте вручную'); };
+      try { navigator.clipboard.writeText(ta.value).then(done, fallback); } catch (err) { fallback(); }
+    }
+    else if (a === 'part') { partId = id; go('part'); }
+    else if (a === 'back-sky') go('sky');
+    else if (a === 'more-today') { var m = document.getElementById('more-today'); m.hidden = !m.hidden; }
+    else if (a === 'today') { S.today = { day: dayKey(), part: id, task: 0, done: false }; S.days[dayKey()] = true; act(id); save(); go('sky', { keepScroll: true }); }
+    else if (a === 'other-task') { S.today.task++; save(); go('sky', { keepScroll: true }); }
+    else if (a === 'done') { S.today.done = true; act(S.today.part); save(); go('sky', { keepScroll: true }); toast('Отмечено'); }
+    else if (a === 'sos-new') { var sm = document.getElementById('sos-more'); sm.hidden = !sm.hidden; }
+    else if (a === 'sos-part') { sos.part = id || null; sos.what = (document.getElementById('sos-what') || {}).value || ''; sos.step = 'near'; go('sos'); }
+    else if (a === 'apart') { sos.apart = true; go('sos', { keepScroll: true }); }
+    else if (a === 'breath') { sos.breaths++; go('sos', { keepScroll: true }); }
+    else if (a === 'to-move') { sos.step = 'move'; go('sos'); }
+    else if (a === 'move') { sos.move = el.textContent; Array.prototype.forEach.call(document.querySelectorAll('.mv'), function (b) { b.setAttribute('aria-pressed', String(b === el)); }); }
+    else if (a === 'save-moment') {
+      var own = (document.getElementById('own-move').value || '').trim();
+      if (own) sos.move = own;
+      if (!sos.move) { toast('Выберите шаг или напишите свой'); return; }
+      S.moments.push({ when: new Date().toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }), part: sos.part, before: sos.before, after: sos.after, move: sos.move, what: sos.what });
+      act(sos.part); save(); sos.step = 'done'; go('sos');
+    }
+    else if (a === 'sos-close') { sos = null; go(hasSky() ? 'sky' : 'welcome'); }
+    else if (a === 'waitlist') { S.waitlist = true; save(); go('stars', { keepScroll: true }); }
+    else if (a === 'plain') { S.plain = !S.plain; save(); go('luna', { keepScroll: true }); }
+    else if (a === 'theme') {
+      var t = document.documentElement.dataset.theme;
+      var next = t === 'dark' ? 'light' : t === 'light' ? '' : 'dark';
+      if (next) document.documentElement.dataset.theme = next; else delete document.documentElement.dataset.theme;
+      document.getElementById('theme-name').textContent = themeName();
+    }
+    else if (a === 'retake') { S.answers = []; save(); go('test'); }
+    else if (a === 'reset') { resetArmed = true; go('luna', { keepScroll: true }); }
+    else if (a === 'reset-no') { resetArmed = false; go('luna', { keepScroll: true }); }
+    else if (a === 'reset-yes') { resetArmed = false; S = blank(); save(); sos = null; go('welcome'); }
+  });
+
+  sosBtn.addEventListener('click', function () { sos = null; go('sos'); });
+
+  var fromHash = function () {
+    var h = location.hash.slice(1);
+    var ok = ['test', 'result', 'share', 'sky', 'sos', 'two', 'stars', 'luna'];
+    if (ok.indexOf(h) >= 0) { if (h === 'sos') sos = null; go(h); }
+    else go(hasSky() ? 'sky' : 'welcome');
+  };
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+})();
+</script>

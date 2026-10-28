@@ -244,5 +244,5 @@ Surprises:
 - [ ] The thank-you: an amount (1,000–1,500 ₽ is typical for 30–40 minutes) or a year of Plus.
 - [ ] Crisis contacts, the same as the app's crisis rules.
 - [ ] The screener link.
-- [ ] The prototype or a screenshot of «Ваше небо» (I can build this next).
+- [x] The prototype: [`prototype/`](prototype/) (source and build script), published privately as an artifact. Share it with each participant before the session. It covers the test (8 of the planned 20–25 scenes), «Ваше небо», the daily card, the SOS loop, a «Два неба» example and the «Созвездия» waitlist. State stays in the participant's browser. «Луна» → «Сбросить прототип» clears it between sessions.
 - [ ] The diary channel: prototype, bot or form.

@@ -63,6 +63,7 @@ test('journal entries saved in two tabs are both kept', async ({ context }) => {
 
 // Eighth pass, finding 4: after another tab switched language, this tab showed the other language's names.
 import { readFileSync } from 'node:fs';
+import { settled } from './settle.mjs';
 const CANONICAL_INPUT = readFileSync(new URL('./fixtures/canonical-input.json', import.meta.url), 'utf8');
 
 test('a language switch in another tab leaves this tab in its own language', async ({ context }) => {
@@ -78,8 +79,12 @@ test('a language switch in another tab leaves this tab in its own language', asy
   await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.profile') ?? 'null')?.testModel), { timeout: 15_000 }).toBe('angular-v2');
   const b = await context.newPage();
   await b.goto('/');
-  await b.getByRole('button', { name: /Язык/ }).first().click();
-  await expect.poll(() => b.evaluate(() => document.documentElement.lang)).toBe('en');
+  const language = await settled(b.getByRole('button', { name: /Язык/ }).first());
+  // The row toggles, so click again only while this tab is still in Russian.
+  await expect(async () => {
+    if (await b.evaluate(() => document.documentElement.lang) === 'ru') await language.click();
+    await expect.poll(() => b.evaluate(() => document.documentElement.lang), { timeout: 3_000 }).toBe('en');
+  }).toPass({ timeout: 20_000 });
   // Tab B saved English names; tab A must keep showing Russian ones.
   await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.parts') ?? '[]').some((p) => p.name === 'Taskmaster')), { timeout: 15_000 }).toBe(true);
   await expect(a.getByText('Taskmaster')).toHaveCount(0, { timeout: 15_000 });

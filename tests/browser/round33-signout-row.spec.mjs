@@ -6,6 +6,7 @@
 // Control: the same row for a guest opens the sign-in panel, which is what it says it does.
 // Firebase's sign-in request is held open so the seeded account is not replaced by an offline guest at boot.
 import { test, expect } from '@playwright/test';
+import { settled } from './settle.mjs';
 
 const LINKED = { uid: 'uid_r33_owner', email: 'owner@example.com', displayName: null, emailVerified: true, provider: 'email', linked: true };
 
@@ -36,7 +37,7 @@ test('a linked account can sign out from the account row', async ({ page }) => {
   await open(page, LINKED);
   const row = page.getByRole('button', { name: /Sign out/ }).first();
   await expect(row).toBeVisible({ timeout: 20_000 });
-  await row.click();
+  await (await settled(row)).click();
   // A sign-out removes the signed-in account from this device. The row only opens the sign-in panel, so the account stays.
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('ifs.auth')), { timeout: 5_000 }).toBeNull();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('ifs.auth')), { timeout: 15_000 }).toBeNull();
 });

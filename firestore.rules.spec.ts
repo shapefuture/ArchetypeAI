@@ -14,11 +14,12 @@ function matchBlock(pattern: RegExp): string {
 }
 
 describe('firestore.rules — security boundaries', () => {
-  it('requires a verified email and bootstrap/allowlist membership for admin status', () => {
+  it('requires a verified email and an admin claim or allowlist membership for admin status', () => {
     const admin = matchBlock(/function\s+isAdmin\s*\(\)\s*\{([\s\S]*?)\n\s*\}/);
     expect(admin).toMatch(/hasVerifiedEmail\(\)/);
     expect(admin).toMatch(/adminAllowlist/);
-    expect(admin).toMatch(/wmobilas@gmail\.com/);
+    expect(admin).toMatch(/request\.auth\.token\.admin == true/);
+    expect(admin).not.toMatch(/@gmail\.com/);
   });
 
   it('gates every adminClients operation on isAdmin and validates the relationship identity', () => {

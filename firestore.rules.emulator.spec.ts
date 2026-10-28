@@ -67,6 +67,10 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       : testEnv.authenticatedContext(uid).firestore();
   }
 
+  function asAdmin(uid: string, email: string, emailVerified = true): Firestore {
+    return testEnv.authenticatedContext(uid, { email, email_verified: emailVerified, admin: true }).firestore();
+  }
+
   function asAnon(): Firestore {
     return testEnv.unauthenticatedContext().firestore();
   }
@@ -202,9 +206,9 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       }));
     });
 
-    it('allows the verified bootstrap admin to manage the allowlist and a linked client', async () => {
+    it('allows the verified admin claim holder to manage the allowlist and a linked client', async () => {
       await seedVictimRecords();
-      const root = asUser('uid_root', 'admin@example.com');
+      const root = asAdmin('uid_root', 'root@example.com');
       await assertSucceeds(setDoc(doc(root, 'adminAllowlist', 'admin@example.com'), {
         email: 'admin@example.com', createdAt: `${NEXT_YEAR}-10-01T00:00:00.000Z`, createdByUid: 'uid_root',
       }));
@@ -228,8 +232,8 @@ describe.skipIf(!EMULATOR)('Firestore security rules (emulator)', () => {
       expect(adminLinks.docs.map((entry) => entry.id)).toEqual([`${UIDS.admin}_${UIDS.victim}`]);
     });
 
-    it('does not treat an unverified bootstrap email as an admin', async () => {
-      const unverified = asUser('uid_unverified', 'admin@example.com', false);
+    it('does not treat an unverified admin claim as an admin', async () => {
+      const unverified = asAdmin('uid_unverified', 'root@example.com', false);
       await assertFails(setDoc(doc(unverified, 'adminClients', `uid_unverified_${UIDS.victim}`), {
         adminUid: 'uid_unverified',
         clientUid: UIDS.victim,

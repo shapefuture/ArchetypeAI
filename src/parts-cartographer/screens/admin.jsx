@@ -241,7 +241,7 @@ export function AdminDashboard() {
                 <div key={entry.email} className="card flat mt10">
                   <div className="row">
                     <div className="grow"><b>{entry.email}</b><div className="faint mt4" style={{ fontSize: 11 }}>{formatTimestamp(entry.createdAt, lang)}</div></div>
-                    <button className="btn ghost small" disabled={busy || entry.email.toLowerCase() === 'admin@example.com'} onClick={() => deleteAdmin(entry.email)}>{t('remove')}</button>
+                    <button className="btn ghost small" disabled={busy} onClick={() => deleteAdmin(entry.email)}>{t('remove')}</button>
                   </div>
                 </div>
               ))}

@@ -53,3 +53,7 @@ __pycache__/
 
 # Browser MCP page snapshots (may contain personal data)
 /.playwright-mcp/
+/.beads/issues.jsonl
+/.beads/interactions.jsonl
+/DNMS Book2020.txt
+/advanced*.txt

@@ -29,7 +29,7 @@ service cloud.firestore {
     function isAdmin() {
       return hasVerifiedEmail()
         && (
-          request.auth.token.email == 'admin@example.com'
+          request.auth.token.admin == true
           || exists(/databases/$(database)/documents/adminAllowlist/$(request.auth.token.email))
         );
     }

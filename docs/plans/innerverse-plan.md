@@ -332,7 +332,7 @@ v1's visual system (felt, colour, motion, sound) applies inside each step as nee
 
 1. **Focus.** Approve the jobs-first focus and the cut list, even though it departs from implementing the entire approved program. *Recommended: yes.*
 2. **Audience.** Adopt your description (test and astrology lovers, Jung readers, intuitive types, ND, creative) as the working audience, validated in Step 0. *Recommended: yes.*
-3. **Names.** «Кто живёт внутри?», «Ваше небо», «Кто сегодня главный?», «Рядом», «Два неба», «Созвездия». *Recommended: yes.*
+3. **Names.** «Кто живёт внутри?», «Ваше небо», «Кто сегодня главный?», «Рядом», «Два неба», «Созвездия». **Approved by the owner on 2026-10-28.**
 4. **Covers.** MBTI, Enneagram and sun sign as optional covers the person types in, never measured. *Recommended: yes.*
 5. **«Вы» or «ты».** Keep «вы» (your earlier decision), or test «ты» for this audience. *Recommended: keep «вы», test in T10.*
 6. **Social scope.** «Два неба» with people you know in Step 1; «Созвездия», then matching, only after T8 and a safety plan. *Recommended: yes.*

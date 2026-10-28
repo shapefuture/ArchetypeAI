@@ -1,5 +1,7 @@
 # Felt Cosmos: the Innerverse redesign plan («Здесь все свои»)
 
+> **Superseded by [innerverse-plan.md](innerverse-plan.md) (v3).** This v1 stays as the reference for the visual system: felt, colour, motion, sound, comfort controls and the asset map. Its information architecture and metaphor set do not carry over.
+
 Status: **proposal for approval. Nothing here is implemented yet.**
 Prepared 2026-10-27 on branch `claude/hopeful-franklin-jkny8n`.
 

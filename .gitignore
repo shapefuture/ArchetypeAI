@@ -50,3 +50,6 @@ dist-ssr
 
 # Python bytecode caches from local test runs
 __pycache__/
+
+# Browser MCP page snapshots (may contain personal data)
+/.playwright-mcp/

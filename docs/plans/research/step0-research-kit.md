@@ -148,7 +148,7 @@ Show «Ваше небо» from the prototype, or a screenshot, with no explanat
 
 ## 5. 14-day diary (after the interview, with the prototype)
 
-**Format:** the clickable prototype. Each participant's data stays in their own browser. On day 7 and day 14 they open «Луна» → «Отчёт для исследования», enter their participant code and send you the copied text in a messenger. The report holds counts, ratings and chosen steps, never what happened in their own words. You send one reminder a day by messenger, at a time the participant chooses.
+**Format:** the clickable prototype. Each participant's data stays in their own browser. On day 7 and day 14 they open «Профиль» → «Отчёт для исследования», enter their participant code and send you the copied text in a messenger. The report holds counts, ratings and chosen steps, never what happened in their own words. You send one reminder a day by messenger, at a time the participant chooses.
 
 **Access:** participants open the prototype by its link, so share it from the page's Share menu, using link access if they don't have Claude accounts. Outside viewers can only read shared data, which is why the diary travels as a copied report and not through a shared database.
 
@@ -157,7 +157,7 @@ Show «Ваше небо» from the prototype, or a screenshot, with no explanat
 2. «Сделали задание дня?» (да / частично / нет / сегодня не до этого)
 
 **When something hits:**
-3. «Накрыло?» → go through the SOS loop → «Насколько вы сейчас ведёте, а не часть? До: 0–10, после: 0–10»
+3. «Накрыло?» → the centre button «Узелок» → «Меня накрыло» → «Кто сейчас ведёт: ты или часть? До: 0–10, после: 0–10». On calmer moments, «Завязать узелок» (30 seconds). The report counts both, never their texts.
 
 **Day 7:**
 4. «Что запомнилось за неделю?»
@@ -171,6 +171,7 @@ Show «Ваше небо» from the prototype, or a screenshot, with no explanat
 - day-7 return (T3);
 - tasks done (T3);
 - the before-and-after shift (T4);
+- knots tied between crises (T11);
 - shares and invites (T1, T2);
 - payment (T6).
 
@@ -250,5 +251,6 @@ Surprises:
 - [ ] The thank-you: an amount (1,000–1,500 ₽ is typical for 30–40 minutes) or a year of Plus.
 - [x] Crisis guidance: the app's wording plus 112 or the local emergency number (§6). Optional: add a verified hotline to both the app and §6.
 - [ ] The screener link.
-- [x] The prototype: [`prototype/`](prototype/) (source and build script), published privately as an artifact. Share it with each participant before the session. It covers the test (8 of the planned 20–25 scenes), «Ваше небо», the daily card, the SOS loop, a «Два неба» example and the «Созвездия» waitlist. State stays in the participant's browser. «Луна» → «Сбросить прототип» clears it between sessions.
+- [x] The prototype: [`prototype/`](prototype/) (source and build script), published privately as an artifact. Share it with each participant before the session. It covers the test (8 of the planned 20–25 scenes), «Твоё небо», the daily card, the centre «Узелок» with «Меня накрыло» and «Твоя нить», parts and a «Два неба» example, practices, the light and «Небо» modes and the «Созвездия» waitlist. State stays in the participant's browser. «Профиль» → «Сбросить прототип» clears it between sessions. Old links ending in #sky or #luna still open home and the profile.
+- [ ] T12, in the session: show six doodles and six plushes from the prototype and ask the participant to pair them. Note how many pairs are right.
 - [ ] The diary channel: prototype, bot or form.

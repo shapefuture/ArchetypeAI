@@ -1,7 +1,7 @@
 # Innerverse: the plan («Вы — не один тип. Вы — целая вселенная.»)
 
 Status: **proposal for approval. Plan only; nothing is implemented.**
-Prepared 2026-10-28 on branch `claude/hopeful-franklin-jkny8n`. Version 3.
+Prepared 2026-10-28 on branch `claude/hopeful-franklin-jkny8n`. Version 4 (2026-10-28), branch `claude/innerverse-v4-direction`.
 
 This plan **supersedes** two earlier drafts:
 
@@ -9,6 +9,16 @@ This plan **supersedes** two earlier drafts:
 - **v2, jobs-first** (shared in chat, not committed): a sharp structure built on jobs, tests and money, but its cockpit and crew language («экипаж», «Стыковка», «Пересадка») sounds technical to this audience.
 
 v3 keeps v2's skeleton and v1's soul, and changes the words to fit the people the product is for. §5 lists exactly what was kept, changed and dropped.
+
+**What changed in v4** (owner decisions of 2026-10-28, after comparing the plan with the doodle references; §12, decisions 10–16):
+
+- **Look.** Every character is a plush from the code. It has a felt look in 3D and a doodle look in 2D, and both are drawn from the same sewing record, so any part a person crafts gets both automatically. The references set the mood only (§3.5).
+- **Words.** Funny titles only. No IFS or therapy words anywhere in the interface (§3.2, §6).
+- **Navigation.** Five slots: Главная · Части · **«Узелок»** · Практики · Профиль. The centre button holds Ariadne's labyrinth and its thread. It is for noticing parts, for the diary of knots and for «Меня накрыло». There is no other SOS button (§4.3).
+- **Home.** Before the test: a hero and a catalogue of parts. After it: today's card first (§4.3).
+- **Voice.** «Ты», Russian only on a Russian screen (§6). «Ваше небо» becomes «Твоё небо».
+- **Theme.** Light by default. «Небо» is the dark mode (§3.1).
+- **References** are saved in [research/references/](research/references/README.md), each with what to take and what to avoid.
 
 **Evidence limit.** v3 rests on the owner's description of the audience, the desk research in v2 (public posts, listings, surveys, prices) and the current code. No interviews were run. Every audience claim is a hypothesis with a named test (§9).
 
@@ -30,11 +40,11 @@ v3 keeps v2's skeleton and v1's soul, and changes the words to fit the people th
 
 | | What | In the person's words |
 |---|---|---|
-| **World** | A hand-sewn night sky. You are the Sun; your parts are felt characters who live there; Луна is your guide | «Моё внутреннее небо» |
-| **Model** | Your parts, each with a funny job title that honours its good intention, and an arc from stranger to ally | «Кто живёт внутри?» |
+| **World** | Your inner sky on a sunny page. You are the Sun; your parts are plush characters you can restyle (felt in 3D, doodles in 2D); Луна is your guide. «Небо» is the night, dark mode | «Моё внутреннее небо» |
+| **Model** | Your parts, each with a funny job title that honours its good intention, its own line in a speech bubble, and an arc from stranger to ally | «Кто живёт внутри?» |
 | **Daily** | «Кто сегодня главный?» (10 s) gives a «Карточка дня» with one small task (2–5 min) | the horoscope habit, made true |
-| **SOS** | «Накрыло» → «Кто это?» → «Рядом» → «Мой шаг», in under two minutes | «Меня накрыло — помогите» |
-| **Я** | The test, «Ваше небо» card, part pages, conversations and deals | understand and grow |
+| **«Узелок»** | The centre button. Tie a knot when a part shows up (30 s), or «Меня накрыло» → «Кто это?» → «Рядом» → «Мой шаг» in under two minutes. Every knot lands on «Твоя нить», the diary | «Меня накрыло — помогите» |
+| **Я** | The test, «Твоё небо» card, part pages, conversations and deals | understand and grow |
 | **Два неба** | Your sky meets a partner's or friend's: which parts get along, which collide, what to say | understand the people I love |
 | **Созвездия** | Small circles of people who share a part, around a weekly shared task | find my people |
 
@@ -50,16 +60,16 @@ v3 keeps v2's skeleton and v1's soul, and changes the words to fit the people th
 
 ### 1.1 Six weeks, one person (illustrative, not research)
 
-- **Day 0.** She sees a friend's «Ваше небо» card in a chat and taps it. Seven minutes later she has her own: «Отдел контроля качества», «Министр "Потом"», «Мечтатель», with "INFP · Рыбы" as the cover she typed herself. She thinks "это вообще про меня" and posts it to her story.
+- **Day 0.** She sees a friend's «Твоё небо» card in a chat and taps it. Seven minutes later she has her own: «Отдел контроля качества», «Министр "Потом"», «Мечтатель», with "INFP · Рыбы" as the cover she typed herself. She thinks "это вообще про меня" and posts it to her story.
 - **Day 2.** Her boyfriend takes the test from her link. **«Два неба»**: her Отдел контроля качества and his Бунтарь collide before deadlines. The card tells each of them what to say to the other's part. They laugh, because it's their Sunday fight.
-- **Week 1.** A sharp message from her manager. **«Накрыло»**. She names the part, lets it sit **рядом** rather than in charge, breathes three times, and chooses to reply in 20 minutes. It takes 1 min 40 s.
+- **Week 1.** A sharp message from her manager. She taps **«Узелок»**, then **«Меня накрыло»**. She names the part, lets it sit **рядом** rather than in charge, breathes three times, and chooses to reply in 20 minutes. It takes 1 min 40 s, and the moment stays as a knot on her thread. On calmer days she ties smaller knots: «тревожно, грудь, «А вдруг?»».
 - **Weeks 2–3.** Each morning: «Кто сегодня главный?», then the «Карточка дня» and one small task. On a calm evening, a «Разговор» with «Министр "Потом"» ends in a «Договор»: ten minutes of "later" on a timer, then two minutes of work.
 - **Week 4.** «Итоги недели»: the deal held three times out of four. She joins **«Созвездие Министров "Потом"»**, a weekly 25-minute co-working task with people who get it.
 - **Week 6.** Отдел контроля качества reaches **«Союзник»**. «Мой ОТК сегодня на смене» is a kind running joke at home.
 
 ### 1.2 What success means
 
-- **North star:** inner moments per person per week. These are check-ins, tasks done, SOS loops completed and «Два неба» replies.
+- **North star:** inner moments per person per week. These are check-ins, knots tied, tasks done, «Меня накрыло» loops completed and «Два неба» replies.
 - **Resonance:** "это про меня", rated 4 or 5 out of 5, on the card.
 - **Shift:** a median of +2 on "the part leads ↔ I lead" after the SOS loop.
 - **Deals held:** checked the next time the part shows up.
@@ -103,8 +113,8 @@ J1 and J2 bring people in, J3 makes them stay, J4 brings their people in, J5 gro
 ### 2.4 Five rules that decide every screen
 
 1. **Every screen serves a job** (§2.2). If it serves none, it goes to the Lab.
-2. **One world.** The sky, felt characters and Луна. No other metaphor gets a screen.
-3. **Speak the audience's language.** Soft, warm, a little mystical in tone; honest in substance. No engineering words on the surface («стыковка», «пересадка», «экипаж», «модуль»).
+2. **One world.** The sky, the plush cast and Луна. The one tool from outside the sky is the thread on the centre button: Ariadne's thread, knotted where you noticed a part. No other metaphor gets a screen.
+3. **Speak the audience's language.** Soft, warm, a little mystical in tone; honest in substance. No engineering words («стыковка», «пересадка», «экипаж», «модуль») and no therapy words anywhere in the interface: no IFS terms, part families or clinical labels (§6).
 4. **Validation before change.** Every part is introduced by its superpower and good intention, never by its problem.
 5. **Never punish rhythm.** Moon phases, not streaks. Rest is a valid, visible choice.
 
@@ -115,12 +125,13 @@ J1 and J2 bring people in, J3 makes them stay, J4 brings their people in, J5 gro
 ### 3.1 One world: the inner sky
 
 - **You are the Sun** (Self), with eight petals: Спокойствие, Ясность, Сострадание, Любопытство, Уверенность, Смелость, Творчество, Связь. The Sun never speaks; it is you.
-- **Your parts are felt characters** who live in your sky, made by the existing Felt Atelier engine. Each has a name you can change and a **job title that reveals its good intention**.
+- **Your parts are plush characters** who live in your sky, sewn by the existing Felt Atelier engine. People craft and restyle them with the editor's options: shape, colour, eyes, mouth, headgear, glasses, bow and cheeks. Each part has a name you can change and a **job title that reveals its good intention**. Each has two looks drawn from one record: felt in 3D and a doodle in 2D (§3.5).
+- **Light by default, «Небо» at night.** The app is a sunny paper page, and the sky is a window on it: the home card, «Твоё небо», a part's page, «Рядом». «Небо» is the dark mode, where the whole app becomes the night sky. It is the app's own setting (Профиль, or the moon button), not the phone's.
 - **Луна is your guide**: a sleepy, witty felt moon. She asks the questions, never diagnoses, and never claims to be your Self. «Я не свечу сама — я отражаю ваш свет.»
 - **«Два неба»**: two skies side by side, like a synastry chart but with parts instead of planets.
 - **«Созвездия»**: small circles of people whose skies share a part.
 
-Everything else from v1's world (threads, knots, quilt, weather window, spools, hoop) is dropped as a metaphor. The felt material and sewing jokes stay as texture.
+Everything else from v1's world (quilt, weather window, spools, hoop) is dropped as a metaphor. The felt material and sewing jokes stay as texture. One thread came back in v4, as a tool rather than a world: Ariadne's thread on the centre button, with a knot for each time you notice a part (§4.3). The app already calls these moments «узелки».
 
 ### 3.2 The parts: funny, kind, a little archetypal
 
@@ -133,6 +144,10 @@ Titles name the protective job and make people laugh with recognition. They are 
 - «Служба утешительных вкусняшек»: comfort eating
 - «Профсоюз "Хватит"»: exhaustion
 
+**Each part has its own line**, in its own voice, shown in a speech bubble: «Ещё разок проверим?», «Начнём с понедельника», «Всё, мы бастуем». The line makes the title funny and the intention audible.
+
+**Never in the interface:** «менеджер», «пожарный», «изгнанник», «экзайл», «защитник» or «ресурс» as a part type, «Self», «раненый ребёнок», «триггер», «паттерн», «отделиться от части». A newcomer must never meet a word they would have to look up. The method is credited once, in plain words, on «Как это работает»: «Идея внутренних частей пришла из психотерапии, из подхода «Внутренние семейные системы».» The app's internal part families stay in the code only.
+
 **No jokes about young, hurt parts or crises.** The humour switches off automatically when the content is heavy.
 
 **Each part has an arc:** Незнакомец → Знакомый → Услышан → Договор → Союзник. Only real acts move it: noticing, a conversation, a deal that held. There are no points.
@@ -142,7 +157,7 @@ Titles name the protective job and make people laugh with recognition. They are 
 | Old name | v3 name | Why |
 |---|---|---|
 | «Тест экипажа» | **«Кто живёт внутри?»** | A question people want answered, and a natural share line |
-| Crew card | **«Ваше небо»** | An inner natal chart; feels like the cards they already share |
+| Crew card | **«Твоё небо»** | An inner natal chart; feels like the cards they already share. Was «Ваше небо» until the switch to «ты» (§6) |
 | «Кто сегодня рулит?» | **«Кто сегодня главный?»** | Plain and playful; no steering wheel |
 | Daily quest | **«Карточка дня»** with one task | The card-of-the-day habit from tarot and astrology apps, filled with your own parts |
 | «Пересадка» | **«Рядом»** | The part sits beside you instead of leading: the IFS move of unblending, in human words |
@@ -150,7 +165,10 @@ Titles name the protective job and make people laugh with recognition. They are 
 | «Разбор полётов» | **«Итоги недели»** | |
 | «Стыковка» | **«Два неба»** | Soft, intimate and astrology-native; v1 already used it |
 | Clubs | **«Созвездия»** | People who share a part form a constellation |
-| Logbook | **«Дневник»** | Everyone knows the word |
+| SOS button | **«Меня накрыло»**, inside «Узелок» | The person's own words; no separate button |
+| Trailhead | **«Узелок»** | The app already uses it; «завязать узелок на память» is a phrase everyone knows |
+| Logbook | **«Твоя нить»** | The diary is the thread your knots sit on. Replaces «Дневник» |
+| Dark theme | **«Небо»** | The night sky the parts live in |
 
 **Motto:** «Здесь все свои.» All parts are welcome, and later, so are your people.
 
@@ -161,6 +179,24 @@ Titles name the protective job and make people laugh with recognition. They are 
 - **Covers:** MBTI, Enneagram and a sun sign may be typed in by the person as a "cover" on their card. The app never measures or asserts them. This welcomes astrology fans without lying to sceptical INTJs.
 - **Honesty line**, on every result: «Отражение, а не диагноз.»
 
+### 3.5 How it looks
+
+**The characters come from the code, never from the references.** A part is a plush sewn by the Felt Atelier engine from editor traits: shape, colour, eyes, mouth, headgear, glasses, bow, cheeks. The app maps those traits to the engine's sewing record (`feltDna`), and the engine sews it (`buildData`). Both looks are drawn from that one record:
+
+| Look | Drawn by | Used for |
+|---|---|---|
+| **Felt, 3D** | The engine's WebGL plush (`feltThumbnail`, the universe) | Keepsakes: the sky, «Твоё небо» and its story card, a part's page, «Рядом», stickers, «Мастерская» |
+| **Doodle, 2D** | The same sewing record, drawn flat: the body in its exact felt colour with an ink outline; the same face, patch and topper; no felt texture or stitches | Everything small: part rows, chips, test answers, feelings, practices, «Твоя нить», «Два неба» lists |
+
+So every part a person crafts or restyles gets its doodle automatically, and the two always match. Nobody draws character art by hand, and no character is traced from a reference. In the app this is one function beside `toSVG` in `felt-atelier/src/flat.js` (`toDoodleSVG`). The prototype's [`doodles.mts`](research/prototype/doodles.mts) is the working draft: it runs the app's own `feltDna` and the engine, and its cast ([`cast.ts`](research/prototype/cast.ts)) uses the code's seed parts where they fit, plus parts crafted from the same editor options. Interface icons that are not parts, such as feelings and test-answer tones, use the same engine with its own expressions.
+
+- **Palette.** Paper `#FBF4E6`, ink `#1C1830`, one sunflower-yellow primary action `#FFD43B`, lilac `#8E6CFF` for secondary actions, and pastel tints for cards. Plush colours come from the editor's palette. «Небо» turns the paper to night `#15122B` with stars, and doodle outlines turn to chalk.
+- **Type.** A heavy rounded display face (Rubik Black in the prototype) for headings, Onest for text, and Caveat for the parts' own lines and handwritten notes.
+- **Shapes.** Ink-outlined cards with a hard offset shadow; a yellow pill button that presses like a key; speech bubbles; part rows (doodle, funny title, job, own line, stage on the path); filter chips; two-way switches.
+- **The centre button.** A yellow disc holding Ariadne's labyrinth: three rings, and a red thread that runs in through every gap to a knot at the centre.
+- **People.** Illustrations of the reader (onboarding, practices) use the same doodle line. They are scenes, never parts.
+- **References** set the mood only: [research/references/](research/references/README.md) lists what to take and what to avoid from each image.
+
 ---
 
 ## 4. The product
@@ -168,16 +204,18 @@ Titles name the protective job and make people laugh with recognition. They are 
 ### 4.1 Step 1: the smallest thing that does all six jobs
 
 1. **«Кто живёт внутри?» (7 min).** 20–25 playful scene cards: «Подруга отменила встречу за час. Кто внутри первым берёт слово?». Answers are sketch-style stickers of common reactions, so nobody feels judged. Scoring is deterministic from the answers, and every result can be edited.
-2. **«Ваше небо».** Your Sun and your three to five leading parts, with their titles and an optional cover. A 1080×1920 story card and a link that invites the viewer to take the test. It always ends with a first task and the SOS move you can use tonight, never with the label alone.
+2. **«Твоё небо».** Your Sun and your three to five leading parts, with their titles and an optional cover. A 1080×1920 story card and a link that invites the viewer to take the test. It always ends with a first task and the SOS move you can use tonight, never with the label alone.
 3. **«Кто сегодня главный?»** Tap the loudest part (10 s) and get a «Карточка дня»: one line about that part and one task matched to it (2–5 min), such as «Дайте ОТК выходной на час» or «Министр "Потом": две минуты, не больше». A starter library of about 30 tasks.
-4. **SOS, under two minutes.**
+4. **«Узелок», the centre button.** Two doors, and every knot lands on «Твоя нить», the diary:
+   - **«Завязать узелок»** (30 s): how it feels (eight feelings as plush faces), where in the body (optional), which part, and a note. Built on the app's existing journal of «узелки», with plain words instead of its clinical types.
+   - **«Меня накрыло»**, under two minutes:
 
    | Step | The person | The app |
    |---|---|---|
-   | **«Накрыло»** | Taps the button, or shares the message that hurt from any messenger | Opens straight to the next step |
+   | **«Меня накрыло»** | Taps «Узелок», then «Меня накрыло», or shares the message that hurt from any messenger | Opens straight to the next step |
    | **«Кто это?»** | Taps a part, «кто-то новый» (three taps) or «не знаю» | «Не знаю» is a complete answer |
    | **«Рядом»** | Drags the part from the centre to sit beside the Sun, then three breaths | Offers a line: «Спасибо, что бережёшь меня. Я с тобой — побудь рядом.» Then the before-and-after rating |
-   | **«Мой шаг»** | Picks one of three concrete next steps, or their own | Saves the moment to the part's page |
+   | **«Мой шаг»** | Picks one of three concrete next steps, or their own | Saves the moment as a big knot on «Твоя нить» and on the part's page |
 
 5. **«Два неба» lite.** Invite by link; the other person takes the test. A map of which parts get along and which collide, what to say to the other person's part, and one shared task for two. Consent per item; only cards are shared, never diary entries.
 
@@ -190,11 +228,19 @@ Titles name the protective job and make people laugh with recognition. They are 
 
 ### 4.3 Navigation
 
-Four tabs: **Небо** (home: today's card, SOS, your parts) · **Два неба** · **Созвездия** · **Луна**. The SOS button is on every screen. The Lab holds everything without a job yet.
+Five slots, the centre one raised:
+
+- **Главная.** Before the test: the hero («Кто живёт внутри?» on a night-sky card), the button to the test, and a catalogue of parts that live in many people. After it: «Кто сегодня главный?» or today's card first, then «Твоё небо», the moon rhythm and the latest knots.
+- **Части.** Your parts (the loudest three, then the rest) and **«Два неба»** as the second tab.
+- **«Узелок»**, in the centre. Noticing, «Меня накрыло» and «Твоя нить». The button is one tap away on every screen outside a flow, and it is the only way into «Меня накрыло»: there is no other SOS button.
+- **Практики.** The task library, filtered by «Успокоиться», «С частью» and «Для двоих», plus «Разговор» when it ships.
+- **Профиль.** The theme (Светлый or «Небо»), comfort, «Созвездия», «Как это работает» and data.
+
+The Lab holds everything without a job yet.
 
 ### 4.4 Comfort, accessibility and ND-first defaults (kept from v1)
 
-- **«Говорить проще»** swaps every metaphor for its literal twin.
+- **«Говорить проще»** swaps every metaphor for its literal twin («Мои части» for «Твоё небо», «Заметить» for «Узелок»).
 - **«По одному»:** one card at a time.
 - **«Выбери за меня»:** Луна picks and says why, against choice paralysis.
 - **Visible time** on every action; a low-energy mode with one-tap answers.
@@ -206,10 +252,11 @@ Four tabs: **Небо** (home: today's card, SOS, your parts) · **Два неб
 
 | Product element | Existing code |
 |---|---|
-| Felt characters, «Мастерская» | Felt engine and Felt Atelier |
+| Plush characters, «Мастерская» | Felt engine and Felt Atelier; the editor's traits and seed parts |
+| Doodles | The 2D sticker record in `felt-atelier/src/flat.js`; add `toDoodleSVG` beside `toSVG` |
 | Sun and eight petals | Existing Self visuals |
 | Intensity rating | Arousal −2…+2 |
-| «Дневник» | The journal |
+| «Узелок», «Твоя нить» | The journal of «узелки» (trailheads), with plain feelings and body places instead of its clinical types |
 | «Разговор», advice | The coach and inner negotiation |
 | «Договор» | Charter and experiment outcomes |
 | Briefings | JITAI |
@@ -220,7 +267,7 @@ Four tabs: **Небо** (home: today's card, SOS, your parts) · **Два неб
 | Psychologist layer | Therapist link and booking |
 | Comfort controls | `sensory-preferences.ts` |
 
-New work: the test, the card, the daily card and task library, the SOS flow, part arcs and the share target.
+New work: the test, the card, the daily card and task library, the «Меня накрыло» flow, part arcs, the doodle renderer and the share target.
 
 ---
 
@@ -231,9 +278,10 @@ New work: the test, the card, the daily card and task library, the SOS flow, par
 | Starting point | | Jobs, not features | Jobs rewritten in the audience's words |
 | World | Night sky, felt, Луна, the Sun as Self | One image only | Sky only; threads, quilt, weather and cockpit dropped |
 | Model | Felt parts orbiting you | Parts with job titles and arcs | Optional archetype "second names" |
-| Entry | | A short playful test instead of 147 items | Named «Кто живёт внутри?», result is «Ваше небо» |
+| Entry | | A short playful test instead of 147 items | Named «Кто живёт внутри?», result is «Твоё небо» |
 | Daily | Moon rhythm, no streaks | 10-second check-in plus one task | Framed as «Карточка дня» |
-| SOS | | Four-step loop under two minutes | «Пересадка» → «Рядом»; no cockpit |
+| SOS | | Four-step loop under two minutes | «Пересадка» → «Рядом»; no cockpit; v4: «Меня накрыло» inside the centre «Узелок», no separate button |
+| Look | Felt characters | | v4: one plush record, felt in 3D and a doodle in 2D; light by default, «Небо» at night |
 | Relationships | «Два неба» | Dynamics, not labels; viral loop | Back to «Два неба» |
 | Community | Motto «Здесь все свои» | Clubs only after a demand test | Named «Созвездия» |
 | Comfort | ND-first controls, plain mode, sound off | | Unchanged |
@@ -246,9 +294,10 @@ New work: the test, the card, the daily card and task library, the SOS flow, par
 ## 6. Voice
 
 - **Warm, a little mystical in tone, honest in substance.** Like a wise friend who reads Jung and laughs at herself, not like a coach or a clinic.
-- **The words people use** on the surface: «накрыло», «триггернуло», «внутренний критик», «прокрастинация». IFS terms live under «Подробнее».
-- **«Вы», not «ты».** This keeps the owner's decision. Astrology apps often use «ты», so this is worth re-testing (§12).
-- **Gender-neutral by construction:** impersonal and plural forms, titles of offices rather than people.
+- **The words people use:** «накрыло», «тревожно», «откладываю», «сил ноль». No IFS or therapy terms anywhere in the interface, not even under «Подробнее» (§3.2).
+- **«Ты».** Changed in v4: the owner asked for an educated guess. The audience, the references and the astrology and test apps they use all speak «ты», and «вы» reads like a clinic to them. T10 checks that «ты» doesn't cost credibility with sceptics.
+- **Russian only on a Russian screen.** English is a separate locale, never mixed into the same screen.
+- **Gender-neutral by construction:** impersonal and plural forms, titles of offices rather than people, and no past-tense verbs about the reader («заметил(а)»). Where a gendered form can't be avoided, the app may ask once, «Как к тебе обращаться?», and never guesses.
 - **Humour reveals good intent** and never mocks the person. It switches off for hurt parts and crises.
 - **Shareable without exposure:** cards, stickers («мой ОТК сегодня на смене») and «Два неба» cards. Every share shows «Вот что увидят» first.
 
@@ -262,7 +311,7 @@ New work: the test, the card, the daily card and task library, the SOS flow, par
 | **Pairs** | One partner or both | Couples already read The Pattern's Bonds together | **Plus for two:** the full «Два неба» map, shared tasks, a guide to your recurring fight | Included in Plus; test a pair price |
 | **Psychologists** | Private practice doing parts work | IFS training at 58–105k ₽; a retained client is worth about 16k ₽ a month | Client invites, assigned tasks, consented sharing, a session digest | 990–1,990 ₽ a month for up to 15 clients |
 
-**Free forever:** the test, «Ваше небо», the daily card, the SOS loop and a first «Два неба». Identity, habit and the safety net are never paywalled.
+**Free forever:** the test, «Твоё небо», the daily card, «Узелок» with «Меня накрыло» and «Твоя нить», and a first «Два неба». Identity, habit and the safety net are never paywalled.
 
 **Payments must change first.** The market is Russia and the diaspora (§12), so both paths are needed. Russian acquiring runs as самозанятый, switching to ИП before the income cap. Stripe stays for users outside Russia. In Russia, the options are Russian acquiring (ЮKassa, CloudPayments, T-Bank, Prodamus; needs an ИП, самозанятый or ООО) or Telegram Stars, which carries platform risk.
 
@@ -292,7 +341,9 @@ New work: the test, the card, the daily card and task library, the SOS flow, par
 | T7 | Psychologists pay | 30 parts-work psychologists offered a paid pilot | ≥5 prepay 990 ₽; ≥3 invite ≥5 clients | Consumer only |
 | T8 | People want «Созвездия» | Fake door and waitlist; willingness to show the card to strangers | ≥20% of weekly actives join; ≥50% of them would show the card | Keep it to people you know |
 | T9 | It is safe | Distress before and after, crisis routing, clinician review | Not worse after any loop; every signal routed | Stop and revise |
-| T10 | The soft, astrology-adjacent voice doesn't cost credibility | A/B the card copy with type-lovers vs. INTJ-heavy groups | Resonance within 10 points across groups | Add a «строже» voice option |
+| T10 | The soft, astrology-adjacent voice and «ты» don't cost credibility | A/B the card copy with type-lovers vs. INTJ-heavy groups | Resonance within 10 points across groups | Add a «строже» voice option |
+| T11 | Noticing becomes a habit between crises | «Узелок» counts in the diary study | ≥40% of week-2 actives tie ≥3 knots a week | Fold noticing into the daily card |
+| T12 | The doodle and the plush read as the same character | In interviews, match six doodles to their plushes | ≥90% matched | Carry more of the plush into the doodle (patch, topper, colour) |
 
 **Interview guide (30 minutes, never pitch).** Ask about the last test or horoscope they took and what they did with it; whether a result ever changed what they did; the last time a reaction took over and what they tried in the next hour; the last time they didn't understand a partner or friend; how they found the people who get them; and what they pay for now and what they stopped paying for. Record episodes, not opinions.
 
@@ -302,13 +353,13 @@ New work: the test, the card, the daily card and task library, the SOS flow, par
 
 | Step | What | Gate to continue |
 |---|---|---|
-| **0. Learn** (2 weeks) | 15 interviews; a clickable prototype of the test, card, daily card and SOS behind a flag; psychologist outreach with a paid pilot; payment and legal options | T1 signal, T7 interest, payments decided |
-| **1. Core** (3–4 weeks) | Test and card, daily card and tasks, SOS loop, «Два неба» lite, share target, opt-in metrics, safety rails | T1–T4, T9, T10 |
+| **0. Learn** (2 weeks) | 15 interviews; a clickable prototype of the test, card, daily card and «Узелок» behind a flag; psychologist outreach with a paid pilot; payment and legal options | T1 signal, T7 interest, T12, payments decided |
+| **1. Core** (3–4 weeks) | Test and card, daily card and tasks, «Узелок» with «Меня накрыло» and «Твоя нить», the doodle renderer, «Два неба» lite, share target, opt-in metrics, safety rails | T1–T4, T9–T11 |
 | **2. Depth** | «Разговор», «Договор», «Итоги недели», briefings, «Глубокая карта», Plus payments, stickers | T5, T6 |
 | **3. Psychologists** | Invites, assigned tasks, consented sharing, session digest | T7 |
 | **4. «Созвездия»** | Fake door, then circles, then matching | T8 and the safety plan |
 
-v1's visual system (felt, colour, motion, sound) applies inside each step as needed. It is not a separate redesign phase.
+The look in §3.5 applies inside each step as needed. It is not a separate redesign phase.
 
 ---
 
@@ -325,6 +376,8 @@ v1's visual system (felt, colour, motion, sound) applies inside each step as nee
 | Payments and platforms in Russia | The PWA is canonical, the share target works with any messenger, payments are an owner decision |
 | Conflict with the `AGENTS.md` mission (implement the entire approved program) | Owner decision (§12) |
 | Licensing of the 42 provided stickers in a public repo | Resolved 2026-10-28: the stickers are the owner's own work |
+| Doodles drift from the plush people craft | One renderer from the sewing record; no hand-drawn character art; T12 |
+| Therapy words leak into the interface (today's app shows «Менеджеры», «Пожарные», «Изгнанники») | Rename on the surface in Step 1 and keep the families internal; a copy check for the banned list in §3.2 |
 
 ---
 
@@ -332,12 +385,19 @@ v1's visual system (felt, colour, motion, sound) applies inside each step as nee
 
 1. **Focus.** Approve the jobs-first focus and the cut list, even though it departs from implementing the entire approved program. **Approved by the owner on 2026-10-28.**
 2. **Audience.** Adopt your description (test and astrology lovers, Jung readers, intuitive types, ND, creative) as the working audience, validated in Step 0. **Approved by the owner on 2026-10-28.**
-3. **Names.** «Кто живёт внутри?», «Ваше небо», «Кто сегодня главный?», «Рядом», «Два неба», «Созвездия». **Approved by the owner on 2026-10-28.**
+3. **Names.** «Кто живёт внутри?», «Ваше небо» (now «Твоё небо», see 14), «Кто сегодня главный?», «Рядом», «Два неба», «Созвездия». **Approved by the owner on 2026-10-28.**
 4. **Covers.** MBTI, Enneagram and sun sign as optional covers the person types in, never measured. **Approved by the owner on 2026-10-28.**
-5. **«Вы» or «ты».** Keep «вы» (your earlier decision), or test «ты» for this audience. **Approved by the owner on 2026-10-28: keep «вы», test «ты» in T10.**
+5. **«Вы» or «ты».** Keep «вы» (your earlier decision), or test «ты» for this audience. **Approved by the owner on 2026-10-28: keep «вы», test «ты» in T10.** Superseded by 14.
 6. **Social scope.** «Два неба» with people you know in Step 1; «Созвездия», then matching, only after T8 and a safety plan. **Approved by the owner on 2026-10-28.**
 7. **Market and payments.** **Market approved by the owner on 2026-10-28: Russia and the Russian-speaking diaspora.** So payments need two paths: Russian acquiring for cards issued in Russia, and Stripe for everyone else. **Legal form approved on 2026-10-28: самозанятый** for Russian acquiring. Before Step 2 (Plus payments): confirm which acquirers accept самозанятых for recurring subscriptions, and plan a switch to ИП before income nears the НПД annual cap (2.4M ₽ at the time of writing; check the current limit). Telegram Stars stays optional.
 8. **Research.** **Approved by the owner on 2026-10-28: the owner recruits and runs the interviews**, using the drafts in [research/step0-research-kit.md](research/step0-research-kit.md) (screener, outreach copy, interview guide, diary flow, note and synthesis templates).
 9. **Safety.** A clinician reviews the flows, and a moderation plan exists before any circle. **Approved by the owner on 2026-10-28.**
+10. **Look.** Felt is the 3D look and the doodle is the same shape in 2D. Both are drawn from the plush in the code, never from the references, because people craft and restyle their own parts (§3.5). **Decided by the owner on 2026-10-28.**
+11. **Words.** Funny titles; no IFS or therapy terms in the interface, so newcomers are never confused or put off (§3.2). **Decided by the owner on 2026-10-28.**
+12. **Navigation.** Главная · Части · «Узелок» · Практики · Профиль. The centre button holds Ariadne's labyrinth and thread, and covers noticing parts (trailheads), the diary and «Меня накрыло». No other SOS buttons (§4.3). **Decided by the owner on 2026-10-28.**
+13. **Home.** The hero and a catalogue of parts before the test; today's card first after it. **Approved by the owner on 2026-10-28.**
+14. **Voice.** «Ты», gender-neutral, Russian only on a Russian screen (§6). **Chosen on 2026-10-28 on the owner's instruction to make an educated guess; T10 checks it.**
+15. **Theme.** Light by default; «Небо» is the dark mode. **Decided by the owner on 2026-10-28.**
+16. **References.** All references saved with notes in [research/references/](research/references/README.md). **Done on 2026-10-28.**
 
 Nothing is implemented until you approve. After approval, the steps become Beads under `ArchetypeAI-d6d`.

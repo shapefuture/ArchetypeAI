@@ -172,6 +172,7 @@ Show «Ваше небо» from the prototype, or a screenshot, with no explanat
 - tasks done (T3);
 - the before-and-after shift (T4);
 - knots tied between crises (T11);
+- pokes on the parts, as a rough sign that the cast feels alive (T13, T14);
 - shares and invites (T1, T2);
 - payment (T6).
 
@@ -253,4 +254,7 @@ Surprises:
 - [ ] The screener link.
 - [x] The prototype: [`prototype/`](prototype/) (source and build script), published privately as an artifact. Share it with each participant before the session. It covers the test (8 of the planned 20–25 scenes), «Твоё небо», the daily card, the centre «Узелок» with «Меня накрыло» and «Твоя нить», parts and a «Два неба» example, practices, the light and «Небо» modes and the «Созвездия» waitlist. State stays in the participant's browser. «Профиль» → «Сбросить прототип» clears it between sessions. Old links ending in #sky or #luna still open home and the profile.
 - [ ] T12, in the session: show six doodles and six plushes from the prototype and ask the participant to pair them. Note how many pairs are right.
+- [ ] T13, in the session: after the participant has tied a knot, reopen «Главная» and read Луна's line together. Ask «Как вам то, что она это помнит?», then show «Почему я это знаю?». Note the words they use: "приятно", "полезно", "жутковато".
+- [ ] T14, in the session: let the participant poke the parts for a minute. Ask which line made them smile, and whether any felt confusing or hurtful. Note whether they turn on «Говорить проще».
+- [ ] The prototype also has a therapist demo (Профиль → «Для психолога · пример», or the link ending in #therapist). Show it only to psychologists in the T7 outreach.
 - [ ] The diary channel: prototype, bot or form.

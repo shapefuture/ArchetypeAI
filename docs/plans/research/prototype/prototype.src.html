@@ -4,16 +4,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;800;900&family=Onest:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap">
 <style>
-/* Layout: one phone-width column on sunny paper; ink-outlined doodles in the interface, felt for keepsakes;
-   a five-slot tab bar whose centre button («Узелок») holds the labyrinth and its thread.
+/* Layout: one phone-width column on grainy paper; a living cast (plush that breathe and answer a poke), Луна who talks first,
+   ink-outlined doodles in the interface, felt for keepsakes, 3D soft icons; five-slot tab bar with «Узелок» in the centre.
    Light is the default. «Небо» (sky mode) is the product's dark mode, chosen in the app, so it uses data-mode, not the host theme. */
 :root {
   --bg: #FBF4E6; --surface: #FFFFFF; --surface-2: #F3EAD8; --ink: #1C1830; --ink-dim: rgba(28,24,48,.74); --ink-faint: rgba(28,24,48,.56);
   --line: #1C1830; --soft: rgba(28,24,48,.14); --shadow: #1C1830; --dl: #1C1830;
-  --yellow: #FFD43B; --on-yellow: #1C1830; --lilac: #8E6CFF; --lilac-ink: #5A3FD1; --mint: #3DCB8E; --pink: #FF6FA8; --red: #E5484D; --thread: #E5484D;
+  --yellow: #FFD43B; --yellow-hi: #FFE680; --yellow-lo: #F2BC14; --on-yellow: #1C1830;
+  --lilac: #8E6CFF; --lilac-ink: #5A3FD1; --mint: #3DCB8E; --pink: #FF6FA8; --red: #E5484D; --thread: #E5484D;
   --t-pink: #FFE3EE; --t-blue: #E3EEFF; --t-yellow: #FFF1C2; --t-mint: #DDF6EA; --t-lilac: #ECE6FF; --t-red: #FDE2E2;
   --sky-1: #2A2160; --sky-2: #1A1540; --on-sky: #F4ECDE; --star: #F6E7B0;
+  --bubble-bg: #FFFFFF; --bubble-ink: #1C1830;
   --stars: none;
+  --paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .11 0 0 0 0 .09 0 0 0 0 .19 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --nebula: radial-gradient(55% 45% at 18% 20%, rgba(255,111,168,.22), transparent 70%), radial-gradient(50% 45% at 86% 80%, rgba(110,214,255,.2), transparent 70%);
   --display: 'Rubik', 'Arial Black', system-ui, sans-serif;
   --body: 'Onest', 'Segoe UI', Roboto, system-ui, sans-serif;
   --hand: 'Caveat', 'Segoe Print', cursive;
@@ -23,24 +27,27 @@
   --line: rgba(244,236,222,.55); --soft: rgba(244,236,222,.16); --shadow: rgba(0,0,0,.6); --dl: #F4ECDE;
   --lilac-ink: #C2B2FF;
   --t-pink: #3A2141; --t-blue: #1E2B4F; --t-yellow: #3B3320; --t-mint: #173A2E; --t-lilac: #2F2760; --t-red: #3A1D2A;
+  --paper: none;
   --stars: radial-gradient(1.4px 1.4px at 12% 18%, var(--star) 60%, transparent 62%), radial-gradient(1.2px 1.2px at 78% 9%, var(--star) 60%, transparent 62%),
     radial-gradient(1px 1px at 45% 32%, var(--star) 60%, transparent 62%), radial-gradient(1.6px 1.6px at 88% 44%, var(--star) 60%, transparent 62%),
     radial-gradient(1px 1px at 22% 63%, var(--star) 60%, transparent 62%), radial-gradient(1.3px 1.3px at 64% 77%, var(--star) 60%, transparent 62%),
-    radial-gradient(1px 1px at 35% 92%, var(--star) 60%, transparent 62%), radial-gradient(1.2px 1.2px at 92% 86%, var(--star) 60%, transparent 62%);
+    radial-gradient(1px 1px at 35% 92%, var(--star) 60%, transparent 62%), radial-gradient(1.2px 1.2px at 92% 86%, var(--star) 60%, transparent 62%),
+    radial-gradient(60% 40% at 80% 10%, rgba(142,108,255,.16), transparent 70%), radial-gradient(50% 35% at 10% 70%, rgba(255,111,168,.1), transparent 70%);
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html, body { min-height: 100%; }
-body { background-color: var(--bg); background-image: var(--stars); background-size: 420px 520px; background-attachment: fixed; color: var(--ink); font: 400 15px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+body { background-color: var(--bg); background-image: var(--stars), var(--paper); background-size: 420px 520px; background-attachment: fixed; color: var(--ink); font: 400 15px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
-button, input, textarea { font: inherit; color: inherit; }
+button, input, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--lilac); outline-offset: 3px; border-radius: 8px; }
 img { max-width: 100%; }
 h1, h2, h3, p { margin: 0; }
 h1, h2, h3 { text-wrap: balance; }
 svg.dd { display: block; width: 52px; height: 52px; overflow: visible; flex: none; }
+.ico3d { display: block; width: 56px; height: 56px; object-fit: contain; filter: drop-shadow(0 4px 4px rgba(0,0,0,.18)); flex: none; }
 
 .app { max-width: 460px; margin: 0 auto; min-height: 100vh; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 calc(112px + env(safe-area-inset-bottom, 0px)); }
 .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-block: 12px 10px; }
@@ -69,34 +76,89 @@ svg.dd { display: block; width: 52px; height: 52px; overflow: visible; flex: non
 .card.lilac { background: var(--t-lilac); } .card.mint { background: var(--t-mint); } .card.yellow { background: var(--t-yellow); }
 .card.pink { background: var(--t-pink); } .card.blue { background: var(--t-blue); }
 .card.dash { border-style: dashed; box-shadow: none; background: var(--surface-2); }
+.card.ico { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 12px; align-items: center; text-align: left; width: 100%; }
+.card.ico .ico3d { width: 64px; height: 64px; }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px; padding: 0 18px; border: 2.5px solid var(--line); border-radius: 20px; background: var(--yellow); color: var(--on-yellow); font: 900 17px/1 var(--display); box-shadow: 0 5px 0 var(--shadow); transition: transform .08s, box-shadow .08s; width: 100%; text-decoration: none; }
-.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--shadow); }
-.btn.ghost { background: var(--surface); color: var(--ink); }
-.btn.lilac { background: var(--lilac); color: #FFFFFF; }
-.btn.small { min-height: 42px; font-size: 14.5px; border-radius: 14px; width: auto; box-shadow: 0 3px 0 var(--shadow); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px; padding: 0 18px; border: 2.5px solid var(--line); border-radius: 20px; background: linear-gradient(180deg, var(--yellow-hi), var(--yellow) 55%, var(--yellow-lo)); color: var(--on-yellow); font: 900 17px/1 var(--display); box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 5px 0 var(--shadow); transition: transform .08s, box-shadow .08s; width: 100%; text-decoration: none; }
+.btn:active { transform: translateY(4px); box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 1px 0 var(--shadow); }
+.btn.ghost { background: var(--surface); color: var(--ink); box-shadow: 0 5px 0 var(--shadow); }
+.btn.lilac { background: var(--lilac); color: #FFFFFF; box-shadow: 0 5px 0 var(--shadow); }
+.btn.small { min-height: 42px; font-size: 14.5px; border-radius: 14px; width: auto; }
+.btn.small:not(.ghost):not(.lilac) { box-shadow: inset 0 2px 0 rgba(255,255,255,.55), 0 3px 0 var(--shadow); }
+.btn.small.ghost, .btn.small.lilac { box-shadow: 0 3px 0 var(--shadow); }
 .btn[disabled] { opacity: .45; cursor: default; }
 .link { background: none; border: 0; padding: 6px 0; font: 700 14px/1.2 var(--body); color: var(--lilac-ink); text-decoration: underline; text-underline-offset: 3px; justify-self: start; }
 .meta { display: flex; flex-wrap: wrap; gap: 6px; }
 .meta span, .tag { font: 700 12px/1 var(--body); padding: 6px 10px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); }
 
 /* speech bubble: the part's own line, in its voice */
-.says { position: relative; display: inline-block; justify-self: start; max-width: 100%; font: 700 19px/1.1 var(--hand); color: var(--ink); background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 6px 12px 7px; }
-.says::after { content: ""; position: absolute; left: 18px; bottom: -8px; width: 12px; height: 12px; background: inherit; border-right: 2px solid var(--line); border-bottom: 2px solid var(--line); transform: rotate(45deg); }
+.says { position: relative; display: inline-block; justify-self: start; max-width: 100%; font: 700 19px/1.1 var(--hand); color: var(--bubble-ink); background: var(--bubble-bg); border: 2px solid #1C1830; border-radius: 16px; padding: 6px 12px 7px; }
+.says::after { content: ""; position: absolute; left: 18px; bottom: -8px; width: 12px; height: 12px; background: inherit; border-right: 2px solid #1C1830; border-bottom: 2px solid #1C1830; transform: rotate(45deg); }
+
+/* Луна talks first */
+.luna-chat { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 10px; align-items: start; }
+.luna-av { width: 58px; height: 58px; border-radius: 50%; border: 2px solid var(--line); background: var(--nebula), radial-gradient(70% 70% at 50% 40%, var(--sky-1), var(--sky-2)); display: grid; place-items: center; padding: 6px; box-shadow: 2px 2px 0 var(--shadow); }
+.luna-av img { width: 100%; display: block; }
+.lc-body { display: grid; gap: 8px; min-width: 0; }
+.bubble { position: relative; justify-self: start; max-width: 100%; background: var(--surface); border: 2px solid var(--line); border-radius: 4px 18px 18px 18px; padding: 10px 12px; box-shadow: 3px 3px 0 var(--shadow); font-size: 15px; line-height: 1.4; }
+.bubble.me { justify-self: end; background: var(--t-lilac); border-radius: 18px 4px 18px 18px; font-weight: 700; }
+.bubble .dots { display: none; gap: 5px; padding: 4px 2px; }
+.bubble.typing .dots { display: inline-flex; }
+.bubble.typing .txt { display: none; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); animation: blink 1s infinite; }
+.dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
+.replies { display: flex; flex-wrap: wrap; gap: 6px; }
+.replies button { border: 2px solid var(--line); background: var(--surface); border-radius: 999px; padding: 9px 13px; font: 800 13.5px/1 var(--display); box-shadow: 0 2px 0 var(--shadow); }
+.replies button.go { background: var(--yellow); color: var(--on-yellow); }
+.why { justify-self: start; border: 0; background: none; padding: 0; font: 700 12.5px/1.2 var(--body); color: var(--lilac-ink); text-decoration: underline dotted; text-underline-offset: 3px; }
+.why-txt { font-size: 12.5px; color: var(--ink-faint); }
 
 /* night sky card (light mode keeps it as a window; sky mode is the whole page) */
-.sky { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / .8; border: 2px solid var(--line); border-radius: 28px; overflow: hidden; background: radial-gradient(80% 70% at 50% 45%, var(--sky-1), var(--sky-2)); box-shadow: 4px 4px 0 var(--shadow); color: var(--on-sky); }
-.sky .stars { position: absolute; inset: 0; width: 100%; height: 100%; }
-.sky .orbit { position: absolute; left: 50%; top: 47%; transform: translate(-50%, -50%); border: 1.5px dashed rgba(244,236,222,.28); border-radius: 50%; }
-.sky .sun { position: absolute; left: 50%; top: 47%; width: 28%; transform: translate(-50%, -50%); transition: filter .6s; }
+.sky { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / .8; border: 2px solid var(--line); border-radius: 28px; overflow: hidden; background: var(--nebula), radial-gradient(80% 70% at 50% 45%, var(--sky-1), var(--sky-2)); box-shadow: 4px 4px 0 var(--shadow); color: var(--on-sky); }
+.sky .stars { position: absolute; inset: 0; width: 100%; height: 100%; animation: twinkle 3.6s ease-in-out infinite; pointer-events: none; }
+.sky::after { content: ""; position: absolute; left: 0; top: 12%; width: 84px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, rgba(246,231,176,0), var(--star)); opacity: 0; transform: translateX(-120px) rotate(18deg); animation: shoot 12s linear 2.5s infinite; pointer-events: none; }
+.sky .orbit { position: absolute; left: 50%; top: 47%; transform: translate(-50%, -50%); border: 1.5px dashed rgba(244,236,222,.28); border-radius: 50%; pointer-events: none; }
+.sky .sun { position: absolute; left: 50%; top: 47%; width: 28%; transform: translate(-50%, -50%); transition: filter .6s; border: 0; background: none; padding: 0; }
 .sky .sun svg { width: 100%; height: auto; display: block; }
 .sky .pt { position: absolute; width: 23%; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 4px; background: none; border: 0; padding: 0; color: var(--on-sky); }
-.sky .pt img { width: 100%; max-height: 88px; object-fit: contain; filter: drop-shadow(0 6px 6px rgba(0,0,0,.35)); }
-.sky .pt svg.dd { width: 64%; height: auto; aspect-ratio: 1; --dl: #1C1830; }
-.sky .pt span { font: 800 10.5px/1.15 var(--display); text-align: center; background: rgba(20,16,44,.72); padding: 3px 7px; border-radius: 999px; max-width: 130%; }
-.sky .pt.lbl span { background: #FFFFFF; color: #1C1830; border: 1.5px solid #1C1830; font: 700 14px/1 var(--hand); padding: 3px 8px 4px; white-space: nowrap; }
+.sky .pt .lk, .sky .sun .lk, .sky .luna .lk { width: 100%; }
+.sky .pt img { display: block; width: 100%; max-height: 88px; object-fit: contain; filter: drop-shadow(0 6px 6px rgba(0,0,0,.35)); }
+.sky .pt svg.dd { width: 64%; height: auto; aspect-ratio: 1; margin: 0 auto; --dl: #1C1830; }
+.sky .pt .nm { font: 800 10.5px/1.15 var(--display); text-align: center; background: rgba(20,16,44,.72); padding: 3px 7px; border-radius: 999px; max-width: 130%; }
+.sky .pt.lbl .nm { background: var(--bubble-bg); color: var(--bubble-ink); border: 1.5px solid #1C1830; font: 700 14px/1 var(--hand); padding: 3px 8px 4px; white-space: nowrap; }
 .sky .cover { position: absolute; right: 10px; top: 10px; font: 700 11px/1 var(--body); color: var(--on-sky); border: 1.5px dashed rgba(244,236,222,.6); border-radius: 999px; padding: 6px 9px; }
-.sky .luna { position: absolute; left: 5%; bottom: 5%; width: 14%; }
+.sky .luna { position: absolute; left: 5%; bottom: 5%; width: 14%; border: 0; background: none; padding: 0; }
+.lk { display: block; transform: perspective(320px) rotateY(calc(var(--lx, 0) * 16deg)) rotateX(calc(var(--ly, 0) * -12deg)); transition: transform .3s ease-out; }
+.qb { position: absolute; z-index: 3; transform: translate(-50%, -100%); width: max-content; max-width: 62%; background: var(--bubble-bg); color: var(--bubble-ink); border: 2px solid #1C1830; border-radius: 16px; padding: 6px 11px 8px; font: 700 17px/1.08 var(--hand); box-shadow: 2px 2px 0 rgba(0,0,0,.35); display: grid; gap: 4px; animation: pop .32s cubic-bezier(.3,1.6,.5,1) backwards; text-align: left; }
+.qb.below { transform: translate(-50%, 0); }
+.qb button { justify-self: start; border: 0; background: none; padding: 0; font: 800 12.5px/1.2 var(--body); color: #5A3FD1; text-decoration: underline; text-underline-offset: 2px; }
+.spark { position: absolute; z-index: 2; width: 22px; height: 22px; transform: translate(-50%, -50%); pointer-events: none; animation: spark .7s ease-out forwards; }
+.spark svg { width: 100%; height: 100%; display: block; }
+.sky.reveal .pt { animation: fly .8s cubic-bezier(.2,1.5,.4,1) backwards; animation-delay: calc(var(--k, 0) * 220ms + 300ms); }
+.sky.reveal .sun { animation: sunrise 1s ease-out backwards; }
+
+/* motion */
+.idle { display: block; animation: breathe 4.4s ease-in-out infinite; animation-delay: var(--d, 0s); transform-origin: 50% 90%; }
+.poked { animation: poke .52s cubic-bezier(.3,1.5,.5,1) !important; }
+#view.enter > * { animation: rise .42s cubic-bezier(.2,.9,.3,1.15) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes breathe { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-4%) scale(1.03, .97); } }
+@keyframes poke { 0% { transform: scale(1, 1); } 22% { transform: scale(1.22, .8); } 48% { transform: scale(.88, 1.14); } 70% { transform: scale(1.05, .96); } 100% { transform: scale(1, 1); } }
+@keyframes twinkle { 0%, 100% { opacity: .95; } 50% { opacity: .45; } }
+@keyframes shoot { 0%, 85% { opacity: 0; transform: translateX(-120px) translateY(0) rotate(18deg); } 87% { opacity: 1; } 95% { opacity: 0; transform: translateX(520px) translateY(170px) rotate(18deg); } 100% { opacity: 0; } }
+@keyframes rise { from { transform: translateY(12px); } }
+@keyframes pop { from { opacity: 0; scale: .6; } }
+@keyframes spark { from { opacity: 1; transform: translate(-50%, -50%) scale(.3) rotate(0); } to { opacity: 0; transform: translate(-50%, -50%) scale(1.5) rotate(90deg); } }
+@keyframes fly { from { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(-25deg); } }
+@keyframes sunrise { from { opacity: 0; transform: translate(-50%, -50%) scale(.4); } }
+@keyframes blink { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+@keyframes fall { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes knotpop { from { transform: scale(0); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 4px 0 var(--shadow), 0 0 0 0 rgba(255,212,59,0); } 50% { box-shadow: 0 4px 0 var(--shadow), 0 0 0 8px rgba(255,212,59,.28); } }
+.felt { position: fixed; z-index: 9; width: 10px; height: 10px; border-radius: 3px; pointer-events: none; animation: fall 1.3s cubic-bezier(.3,.7,.6,1) forwards; }
+.knotfx { position: fixed; left: 50%; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 9; width: 170px; height: 120px; pointer-events: none; }
+.knotfx path { stroke-dasharray: 340; stroke-dashoffset: 340; animation: draw .8s ease-out forwards; }
+.knotfx circle { transform-box: fill-box; transform-origin: center; animation: knotpop .45s .7s cubic-bezier(.3,1.8,.5,1) backwards; }
 
 /* welcome */
 .hero-head { display: grid; gap: 10px; }
@@ -117,8 +179,9 @@ svg.dd { display: block; width: 52px; height: 52px; overflow: visible; flex: non
 .scene { font-size: 14.5px; color: var(--ink-dim); }
 .ask { font: 900 22px/1.12 var(--display); margin-top: 6px; }
 .answers { display: grid; gap: 10px; }
-.ans { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: center; text-align: left; background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 8px 12px 8px 8px; box-shadow: 3px 3px 0 var(--shadow); font: 600 14.5px/1.35 var(--body); }
+.ans { display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: center; text-align: left; background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 8px 12px 8px 8px; box-shadow: 3px 3px 0 var(--shadow); font: 600 14.5px/1.35 var(--body); transition: transform .12s; }
 .ans:hover { background: var(--surface-2); }
+.ans.picked { background: var(--yellow); color: var(--on-yellow); transform: translateX(6px); }
 
 /* part rows */
 .plist { display: grid; gap: 10px; }
@@ -137,7 +200,9 @@ svg.dd { display: block; width: 52px; height: 52px; overflow: visible; flex: non
 .seg button svg { width: 16px; height: 16px; }
 .seg button[aria-pressed="true"] { background: var(--yellow); color: var(--on-yellow); }
 .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
-.filters button { flex: none; border: 2px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 13px; font: 800 13px/1 var(--display); }
+.filters button { flex: none; display: inline-flex; align-items: center; gap: 6px; border: 2px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 13px 5px 6px; font: 800 13px/1 var(--display); }
+.filters button img { width: 26px; height: 26px; object-fit: contain; }
+.filters button.noimg { padding-left: 13px; }
 .filters button[aria-pressed="true"] { background: var(--yellow); color: var(--on-yellow); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -158,12 +223,18 @@ svg.dd { display: block; width: 52px; height: 52px; overflow: visible; flex: non
 .moon span { display: grid; justify-items: center; gap: 4px; font: 700 10.5px/1 var(--body); color: var(--ink-faint); flex: 1; }
 .moon i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface-2); }
 .moon i.on { background: var(--yellow); box-shadow: inset -6px 0 0 color-mix(in srgb, var(--yellow) 55%, #B88A00); }
+.letter { position: relative; background: var(--surface); border: 2px solid var(--line); border-radius: 6px 22px 22px 22px; padding: 16px 16px 14px; box-shadow: 3px 3px 0 var(--shadow); display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; }
+.letter svg.dd { width: 56px; height: 56px; }
+.letter p { font: 700 19px/1.2 var(--hand); color: var(--ink); }
+.letter p.kicker { font: 800 11.5px/1.2 var(--body); color: var(--lilac-ink); }
 
 /* part page */
-.hero { position: relative; display: grid; place-items: center; height: 200px; border: 2px solid var(--line); border-radius: 26px; background: radial-gradient(70% 70% at 50% 70%, var(--sky-1), var(--sky-2)); box-shadow: 3px 3px 0 var(--shadow); overflow: hidden; }
-.hero .stars { position: absolute; inset: 0; width: 100%; height: 100%; }
-.hero img { position: relative; width: auto; height: auto; max-width: 150px; max-height: 128px; filter: drop-shadow(0 10px 8px rgba(0,0,0,.4)); margin-top: 30px; }
-.hero .says { position: absolute; left: 16px; top: 14px; max-width: 62%; }
+.hero { position: relative; display: grid; place-items: center; height: 210px; border: 2px solid var(--line); border-radius: 26px; background: var(--nebula), radial-gradient(70% 70% at 50% 70%, var(--sky-1), var(--sky-2)); box-shadow: 3px 3px 0 var(--shadow); overflow: hidden; }
+.hero .stars { position: absolute; inset: 0; width: 100%; height: 100%; animation: twinkle 3.6s ease-in-out infinite; pointer-events: none; }
+.hero .plush { position: relative; border: 0; background: none; padding: 0; margin-top: 34px; }
+.hero .plush img { display: block; width: auto; height: auto; max-width: 150px; max-height: 128px; filter: drop-shadow(0 10px 8px rgba(0,0,0,.4)); }
+.hero .says { position: absolute; left: 16px; top: 14px; max-width: 70%; }
+.hero .says.pop { animation: pop .32s cubic-bezier(.3,1.6,.5,1); }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .arc { display: flex; gap: 4px; }
 .arc i { flex: 1; height: 10px; border-radius: 6px; border: 1.5px solid var(--line); background: var(--surface); }
@@ -189,7 +260,9 @@ svg.dd { display: block; width: 52px; height: 52px; overflow: visible; flex: non
 .kn b { font: 800 14px/1.2 var(--display); }
 .kn p { font-size: 13px; color: var(--ink-dim); overflow-wrap: anywhere; }
 .kn .t { font: 700 11.5px/1 var(--body); color: var(--ink-faint); }
-.sosmark { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--t-pink); border: 2px solid var(--line); font: 900 18px/1 var(--display); }
+.sosmark { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--t-pink); border: 2px solid var(--line); font: 900 18px/1 var(--display); flex: none; }
+.empty { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center; }
+.empty .ico3d { width: 72px; height: 72px; }
 
 /* SOS */
 .steps { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -198,11 +271,12 @@ svg.dd { display: block; width: 52px; height: 52px; overflow: visible; flex: non
 .steps span.done { color: var(--ink); border-color: var(--line); }
 textarea { width: 100%; min-height: 64px; resize: vertical; border: 2px solid var(--line); border-radius: 14px; padding: 10px 12px; background: var(--surface); }
 input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line); border-radius: 14px; padding: 0 12px; background: var(--surface); }
+select { width: 100%; min-height: 40px; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); padding: 0 8px; font: 600 13px/1 var(--body); color: var(--ink); }
 .rate { display: grid; gap: 6px; }
 .rate input { width: 100%; accent-color: var(--lilac); }
 .rate .ends { display: flex; justify-content: space-between; font: 700 12px/1.2 var(--body); color: var(--ink-dim); }
 .rate output { font: 900 18px/1 var(--display); }
-.near { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / .62; border: 2px solid var(--line); border-radius: 24px; overflow: hidden; background: radial-gradient(80% 80% at 50% 40%, var(--sky-1), var(--sky-2)); box-shadow: 3px 3px 0 var(--shadow); }
+.near { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / .62; border: 2px solid var(--line); border-radius: 24px; overflow: hidden; background: var(--nebula), radial-gradient(80% 80% at 50% 40%, var(--sky-1), var(--sky-2)); box-shadow: 3px 3px 0 var(--shadow); }
 .near .stars { position: absolute; inset: 0; width: 100%; height: 100%; }
 .near .sun { position: absolute; left: 50%; top: 50%; width: 34%; transform: translate(-50%, -50%); transition: left .8s cubic-bezier(.3,1.3,.5,1), filter .6s; filter: saturate(.35) brightness(.65); }
 .near .sun svg { width: 100%; display: block; }
@@ -245,7 +319,7 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
 .prc ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 .prc.cat-calm { background: var(--t-mint); } .prc.cat-part { background: var(--t-lilac); } .prc.cat-two { background: var(--t-pink); } .prc.cat-soon { background: var(--t-yellow); }
 .knotico { width: 64px; height: 64px; border-radius: 50%; background: var(--yellow); border: 2.5px solid var(--line); display: grid; place-items: center; }
-.knotico svg { width: 38px; height: 38px; }
+.knotico svg { width: 38px; height: 38px; color: #1C1830; }
 
 .toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .sw { position: relative; width: 52px; height: 30px; border-radius: 999px; border: 2px solid var(--line); background: var(--surface-2); flex: none; padding: 0; }
@@ -254,12 +328,29 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
 .sw[aria-checked="true"]::after { left: 25px; }
 .me { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: center; }
 .me svg { width: 56px; height: 56px; }
+.mem { display: grid; gap: 8px; }
+.mem div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 14px; }
+.mem b { font-weight: 700; }
+.mem button { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 10px; font: 700 12px/1 var(--body); }
 
 .convo { display: grid; gap: 8px; }
 .cv { max-width: 88%; padding: 9px 12px; border-radius: 16px; border: 2px solid var(--line); font-size: 13.5px; line-height: 1.35; background: var(--surface); }
 .cv.part { justify-self: end; background: var(--t-lilac); }
 .cv.part small { display: block; font: 800 10px/1.1 var(--body); text-transform: uppercase; letter-spacing: .05em; color: var(--lilac-ink); margin-bottom: 3px; }
 .cv.part span { font: 700 19px/1.15 var(--hand); }
+
+/* the therapist's 3+1 sky */
+.t3d { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / 1; border: 2px solid var(--line); border-radius: 24px; overflow: hidden; background: var(--nebula), radial-gradient(80% 70% at 50% 45%, var(--sky-1), var(--sky-2)); box-shadow: 3px 3px 0 var(--shadow); touch-action: none; }
+.t3d canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.t3d .msg { position: absolute; inset: 0; display: grid; place-items: center; color: var(--on-sky); text-align: center; padding: 20px; font: 700 14px/1.4 var(--body); pointer-events: none; }
+.axes-sel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.axes-sel label { display: grid; gap: 4px; font: 800 12px/1 var(--display); min-width: 0; }
+.legend { height: 12px; border-radius: 6px; background: linear-gradient(90deg, #6ED6FF, #F4ECDE 50%, #FF6FA8); border: 1.5px solid var(--line); }
+.tline { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.tline input { width: 100%; accent-color: var(--lilac); }
+.tablewrap { overflow-x: auto; }
+.ptable { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.ptable th, .ptable td { text-align: left; padding: 6px; border-bottom: 1px solid var(--soft); white-space: nowrap; }
 
 /* tab bar: five slots, the centre one raised */
 #tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 2px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
@@ -269,14 +360,19 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
 #tabs button[aria-current="page"] > svg { color: var(--lilac-ink); }
 #tabs svg { width: 24px; height: 24px; }
 #tabs .knotbtn { padding-top: 0; color: var(--ink); }
-#tabs .knotbtn .disc { width: 66px; height: 66px; margin-top: -26px; border-radius: 50%; background: var(--yellow); border: 2.5px solid var(--line); box-shadow: 0 4px 0 var(--shadow); display: grid; place-items: center; transition: transform .08s, box-shadow .08s; }
-#tabs .knotbtn:active .disc { transform: translateY(3px); box-shadow: 0 1px 0 var(--shadow); }
+#tabs .knotbtn .disc { width: 66px; height: 66px; margin-top: -26px; border-radius: 50%; background: linear-gradient(180deg, var(--yellow-hi), var(--yellow) 55%, var(--yellow-lo)); border: 2.5px solid var(--line); box-shadow: 0 4px 0 var(--shadow); display: grid; place-items: center; transition: transform .08s; animation: glow 3.4s ease-in-out infinite; }
+#tabs .knotbtn:active .disc { transform: translateY(3px); }
 #tabs .knotbtn .disc svg { width: 40px; height: 40px; color: #1C1830; }
-#tabs .knotbtn[aria-current="page"] .disc { box-shadow: 0 4px 0 var(--shadow), 0 0 0 4px var(--t-lilac); }
+#tabs .knotbtn[aria-current="page"] .disc { box-shadow: 0 4px 0 var(--shadow), 0 0 0 4px var(--t-lilac); animation: none; }
 .toast { position: fixed; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 8; background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 12px; font: 700 13px/1.3 var(--body); max-width: calc(100% - 32px); }
 
+/* calm mode and reduced motion: everything still answers, but with fades instead of bounces */
+:root[data-calm] .idle, :root[data-calm] .sky .stars, :root[data-calm] .hero .stars, :root[data-calm] .sky::after, :root[data-calm] #tabs .knotbtn .disc,
+:root[data-calm] .poked, :root[data-calm] #view.enter > *, :root[data-calm] .sky.reveal .pt, :root[data-calm] .sky.reveal .sun { animation: none !important; }
+:root[data-calm] .lk { transform: none; }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+  .lk { transform: none !important; }
 }
 </style>
 
@@ -294,7 +390,8 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       <path d="M55 66q5 4 10 0" stroke="#1C1830" stroke-width="2.2" fill="none" stroke-linecap="round"/>
       <circle cx="47" cy="65" r="3.4" fill="#F0876A" opacity=".6"/><circle cx="73" cy="65" r="3.4" fill="#F0876A" opacity=".6"/>
     </symbol>
-    <symbol id="sym-stars" viewBox="0 0 300 230"><g stroke="#F6E7B0" stroke-width="1.6" stroke-linecap="round"><path d="M30 24l4 4M34 24l-4 4"/><path d="M120 16l3 3M123 16l-3 3"/><path d="M220 30l4 4M224 30l-4 4"/><path d="M280 70l3 3M283 70l-3 3"/><path d="M14 120l3 3M17 120l-3 3"/><path d="M170 200l2.5 2.5M172.5 200l-2.5 2.5"/><path d="M70 190l2.5 2.5M72.5 190l-2.5 2.5"/><path d="M260 180l3 3M263 180l-3 3"/><path d="M90 60l2 2M92 60l-2 2"/></g><path d="M196 52l38-14" stroke="#F6E7B0" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></symbol>
+    <symbol id="sym-stars" viewBox="0 0 300 230"><g stroke="#F6E7B0" stroke-width="1.6" stroke-linecap="round"><path d="M30 24l4 4M34 24l-4 4"/><path d="M120 16l3 3M123 16l-3 3"/><path d="M220 30l4 4M224 30l-4 4"/><path d="M280 70l3 3M283 70l-3 3"/><path d="M14 120l3 3M17 120l-3 3"/><path d="M170 200l2.5 2.5M172.5 200l-2.5 2.5"/><path d="M70 190l2.5 2.5M72.5 190l-2.5 2.5"/><path d="M260 180l3 3M263 180l-3 3"/><path d="M90 60l2 2M92 60l-2 2"/></g></symbol>
+    <symbol id="sym-spark" viewBox="0 0 24 24"><path d="M12 1.5 14 10l8.5 2-8.5 2-2 8.5-2-8.5L1.5 12 10 10Z" fill="#F6E7B0"/></symbol>
     <!-- Ariadne's labyrinth: three rings with alternating gaps; the red thread runs in through every gap to a knot at the centre. -->
     <symbol id="ic-knot" viewBox="0 0 32 32">
       <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -330,6 +427,11 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     critic: '{{P:critic}}', later: '{{P:later}}', dreamer: '{{P:dreamer}}', whatif: '{{P:whatif}}', pleaser: '{{P:pleaser}}',
     snacks: '{{P:snacks}}', enough: '{{P:enough}}', rebel: '{{P:rebel}}', jester: '{{P:jester}}', guard: '{{P:guard}}', luna: '{{P:luna}}'
   };
+  /* Content icons: the owner's 3D soft object stickers. Never parts. */
+  var ICON = {
+    palette: '{{S:06}}', lock: '{{S:07}}', compass: '{{S:09}}', hearts: '{{S:11}}', sprout: '{{S:12}}', diamond: '{{S:13}}',
+    phone: '{{S:23}}', book: '{{S:27}}', lunaThread: '{{S:32}}', planet: '{{S:35}}', battery: '{{S:38}}', hill: '{{S:40}}'
+  };
 
   /* Parts: funny titles that honour the protective job; each has its own line and opens with the superpower. */
   var ORDER = ['critic', 'later', 'dreamer', 'whatif', 'pleaser', 'snacks', 'enough'];
@@ -364,6 +466,34 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       moves: ['Отменить одно дело', 'Полежать 15 минут', 'Попросить о помощи'] }
   };
   var GENERIC_MOVES = ['Ответить через 20 минут', 'Выйти на 2 минуты и попить воды', 'Сделать три медленных выдоха'];
+
+  /* Quips: what a part says when poked. Puns and quirks for curious, neurodivergent and plural minds; never at the person's expense. */
+  var QUIPS = {
+    critic: ['Эту шутку я проверил трижды. Смешная на 80%.', 'Не отвлекай, я ищу запятую, которой нет.', 'Ошибок не найдено. Подозрительно.', 'Я не придираюсь. Я забочусь. Очень громко.', 'Отдел контроля качества на связи. Без выходных с 2009 года.'],
+    later: ['Отвечу на это касание позже. Может, завтра.', 'Сегодня — день планирования планов.', 'Указ №1: всё важное — после чая.', 'Ещё пять минуточек. Это стратегия.', 'Я не ленюсь. Я экономлю ложки.'],
+    dreamer: ['А что если небо — это просто очень большой узелок?', 'У меня 47 идей, и ни одну вкладку закрыть нельзя.', 'Гиперфокус включён. На что — пока непонятно.', 'Давай сбежим в новый проект? В пятый за неделю.'],
+    whatif: ['А вдруг меня тыкают, потому что что-то не так?', '3:00 — время заседания нашего отдела.', 'Я составил список того, что может пойти не так. Почитаем?', 'Всё хорошо. Подозрительно хорошо.'],
+    pleaser: ['Тебе удобно меня тыкать? Если нет — я подвинусь.', 'Я уже извинился. На всякий случай.', 'Всем точно хорошо? А тебе? А тебе-тебе?', 'Скажу «да», а потом подумаю.'],
+    snacks: ['Доставка утешения: плед, какао, любимый сериал.', 'Курьер на месте. Что утешаем сегодня?', 'Тёплое одеяло — тоже вкусняшка. Проверено.', 'Принимаем заказы на объятия.'],
+    enough: ['Профсоюз объявляет пятиминутку тишины.', 'Лимит ложек на сегодня исчерпан. Дальше — только плед.', 'Мы бастуем, но вежливо.', 'Отдых не надо заслуживать. Это в уставе.'],
+    rebel: ['А я не буду!', 'Правила? Это такие рекомендации?'],
+    jester: ['Ну хоть посмеёмся.', 'Тук-тук. Кто там? Часть. Какая? Твоя.'],
+    guard: ['Плед уже несу.', 'Самый тёплый плед — самому громкому.'],
+    luna: ['Я не свечу сама — я отражаю твой свет.', 'Зевнула. Это не про тебя, это фаза.', 'Узелок на память — буквально моя профессия.', 'У нас тут не тараканы в голове. У нас коллектив.', 'Маскировка выключена. Здесь все свои.'],
+    sun: ['Это ты. Солнце. Да, без ложной скромности.', 'Тёплое? Это ты.', 'Чем спокойнее ответы, тем ярче Солнце.']
+  };
+  /* What a part says on its page after you did its task today. */
+  var DONE_LINES = {
+    critic: '«Спасибо за выходной. Я почти не проверял.»', later: '«Сделано? Без меня? Ладно, горжусь.»', dreamer: '«Шаг к мечте! Маленький, но настоящий.»',
+    whatif: '«Ничего страшного не случилось. Записываю.»', pleaser: '«Сегодня позаботились и о тебе. Непривычно, но приятно.»',
+    snacks: '«Утешение без еды? Записываю в меню.»', enough: '«Отдых засчитан. Профсоюз доволен.»'
+  };
+  var LETTER = {
+    critic: ['Отчёт ОТК за неделю.', 'Ошибок не найдено. Почти.'], later: ['Министр «Потом» пишет. Не сразу, но пишет.', 'Остальное — потом. Это комплимент.'],
+    dreamer: ['Мечтатель на связи из облаков.', 'Мечтаю, чтобы так и дальше.'], whatif: ['Это «А вдруг?». Не пугайся, новости хорошие.', 'А вдруг всё и правда налаживается?'],
+    pleaser: ['Привет! Надеюсь, тебе удобно читать.', 'Тебе всё нравится? Если нет — скажи.'], snacks: ['Служба вкусняшек с доставкой новостей.', 'Плед уже греется.'],
+    enough: ['Профсоюз «Хватит» докладывает.', 'Предлагаем отдохнуть. Это не просьба, это устав.']
+  };
 
   /* Eight scenes for the prototype; the real test has 20–25. A calm answer adds to the Sun, not to a part.
      Each answer shows a doodle of its tone, never of the part it scores. */
@@ -439,17 +569,18 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
   /* «Узелок»: noticing a part as it happens. Feelings and body places are plain words. */
   var FEELS = [['f-calm', 'Спокойно'], ['f-anxious', 'Тревожно'], ['f-angry', 'Злюсь'], ['f-sad', 'Грустно'], ['f-tired', 'Устало'], ['f-awkward', 'Неловко'], ['f-empty', 'Пусто'], ['f-glad', 'Радостно']];
   var BODY = ['Грудь', 'Живот', 'Горло', 'Плечи', 'Голова', 'Руки', 'Не знаю'];
+  var BODY_IN = { 'Грудь': 'груди', 'Живот': 'животе', 'Горло': 'горле', 'Плечи': 'плечах', 'Голова': 'голове', 'Руки': 'руках' };
 
   var PRACTICES = [
-    { id: 'breath', cat: 'calm', title: 'Три выдоха и спасибо', mins: '1 мин', dd: 'f-calm', text: 'Когда внутри шумно.',
+    { id: 'breath', cat: 'calm', low: true, title: 'Три выдоха и спасибо', mins: '1 мин', dd: 'f-calm', text: 'Когда внутри шумно.',
       steps: ['Выдохни медленно три раза: выдох длиннее вдоха.', 'Скажи той части, что сейчас громче всех: «Спасибо, что бережёшь меня».', 'Отметь, что изменилось. Если ничего — это тоже нормально.'] },
-    { id: 'knot30', cat: 'part', title: 'Узелок за 30 секунд', mins: '30 с', knot: true, text: 'Заметить, кто внутри включился, и отметить это.',
+    { id: 'knot30', cat: 'part', low: true, title: 'Узелок за 30 секунд', mins: '30 с', knot: true, text: 'Заметить, кто внутри включился, и отметить это.',
       steps: ['Заметь: что-то внутри включилось.', 'Назови: какое это чувство и где оно в теле.', 'Отойди на шаг: это часть, а не весь ты.', 'Потяни за нить позже, когда станет спокойнее.'] },
     { id: 'critic', cat: 'part', part: 'critic', title: 'Дай ОТК выходной', mins: '5 мин', dd: 'critic', text: 'Для дней, когда всё нужно перепроверить трижды.' },
-    { id: 'later', cat: 'part', part: 'later', title: 'Две минуты, не больше', mins: '2 мин', dd: 'later', text: 'Когда «потом» длится третью неделю.' },
+    { id: 'later', cat: 'part', part: 'later', low: true, title: 'Две минуты, не больше', mins: '2 мин', dd: 'later', text: 'Когда «потом» длится третью неделю.' },
     { id: 'pleaser', cat: 'part', part: 'pleaser', title: 'Одно мягкое «нет»', mins: '5 мин', dd: 'pleaser', text: 'Чтобы и о тебе позаботились.' },
     { id: 'snacks', cat: 'calm', part: 'snacks', title: 'Утешение без еды', mins: '5 мин', dd: 'snacks', text: 'Когда рука сама тянется к шоколаду.' },
-    { id: 'enough', cat: 'calm', part: 'enough', title: '15 минут честного отдыха', mins: '15 мин', dd: 'enough', text: 'Отдых, который не нужно заслуживать.' },
+    { id: 'enough', cat: 'calm', part: 'enough', low: true, title: '15 минут честного отдыха', mins: '15 мин', dd: 'enough', text: 'Отдых, который не нужно заслуживать.' },
     { id: 'duo', cat: 'two', title: 'Фраза дня для двоих', mins: '1 мин', dd: 'jester', text: 'Для пары или друзей после «Двух небес».',
       steps: ['Вечером скажите друг другу одну фразу: «Сегодня во мне громче всех был…».', 'Не спорьте и не советуйте. Просто послушайте.', 'Через неделю вспомните, кто звучал чаще всех.'] },
     { id: 'talk', cat: 'soon', title: 'Разговор с частью', mins: '5–10 мин', dd: 'luna', soon: true, text: 'Луна задаёт вопросы, ты отвечаешь за часть. Появится на следующем шаге.' }
@@ -457,10 +588,11 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
 
   /* State lives only in this browser. */
   var KEY = 'innerverse-proto-v1';
-  var blank = function () { return { answers: [], cover: '', acts: {}, days: {}, today: null, moments: [], knots: [], waitlist: false, plain: false, mode: 'light', start: null, tasksDone: 0, shares: 0, plus: null, code: '' }; };
+  var blank = function () { return { answers: [], cover: '', acts: {}, days: {}, today: null, moments: [], knots: [], waitlist: false, plain: false, mode: 'light', calm: false, sound: false, start: null, tasksDone: 0, shares: 0, pokes: 0, plus: null, code: '', lastVisit: null, seenStages: {}, coverSeen: '' }; };
   var S = blank();
   try { var raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
   var save = function () { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+  var prevVisit = S.lastVisit; S.lastVisit = Date.now(); save();
 
   var view = document.getElementById('view');
   var tabs = document.getElementById('tabs');
@@ -468,11 +600,16 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
   var modeBtn = document.getElementById('modebtn');
   var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var img = function (k, alt) { return '<img src="' + IMG[k] + '" alt="' + esc(alt || '') + '">'; };
+  var ico = function (k) { return '<img class="ico3d" src="' + ICON[k] + '" alt="">'; };
   var dd = function (id, label) { return '<svg class="dd"' + (label ? ' role="img" aria-label="' + esc(label) + '"' : ' aria-hidden="true"') + '><use href="#d-' + id + '"/></svg>'; };
   var icon = function (id) { return '<svg aria-hidden="true"><use href="#' + id + '"/></svg>'; };
   var sun = '<svg viewBox="0 0 120 120" aria-hidden="true"><use href="#sym-sun"/></svg>';
   var stars = '<svg class="stars" viewBox="0 0 300 230" preserveAspectRatio="none" aria-hidden="true"><use href="#sym-stars"/></svg>';
   var dayKey = function (d) { d = d || new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+  var plural = function (n, one, few, many) { var m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many; };
+  var fmtTime = function (t) { return new Date(t).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); };
+  var fmtDay = function (t) { var d = new Date(t), y = new Date(); y.setDate(y.getDate() - 1); return dayKey(d) === dayKey() ? 'сегодня' : dayKey(d) === dayKey(y) ? 'вчера' : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }); };
+  var cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
   var L = function (key) {
     var plain = { home: 'Главная', parts: 'Части', knot: 'Заметить', practices: 'Практики', profile: 'Профиль', sky: 'Мои части', two: 'Сравнить с близким', stars: 'Найти своих', near: 'Шаг в сторону' };
     var norm = { home: 'Главная', parts: 'Части', knot: 'Узелок', practices: 'Практики', profile: 'Профиль', sky: 'Твоё небо', two: 'Два неба', stars: 'Созвездия', near: 'Рядом' };
@@ -482,10 +619,31 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     toastEl.textContent = msg; toastEl.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(function () { toastEl.hidden = true; }, 2600);
   };
+  var calmNow = function () { return S.calm || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); };
   var applyMode = function () {
     if (S.mode === 'sky') document.documentElement.dataset.mode = 'sky'; else delete document.documentElement.dataset.mode;
+    if (S.calm) document.documentElement.dataset.calm = ''; else delete document.documentElement.dataset.calm;
     modeBtn.innerHTML = S.mode === 'sky' ? icon('ic-day') : icon('ic-moon');
     modeBtn.setAttribute('aria-label', S.mode === 'sky' ? 'Светлый режим' : 'Режим неба');
+  };
+
+  /* Sound and touch: off by default; soft synthesized plucks, no files. */
+  var actx = null;
+  var sfx = function (kind) {
+    if (!S.sound) return;
+    try { if (navigator.vibrate) navigator.vibrate(kind === 'pop' ? 14 : 8); } catch (e) {}
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      var notes = { pluck: [523, 587, 659, 784, 880], pop: [330, 494], chime: [659, 988] }[kind] || [523];
+      notes.forEach(function (f, i) {
+        if (kind === 'pluck' && i > 0) return;
+        var t = actx.currentTime + i * 0.09, o = actx.createOscillator(), g = actx.createGain();
+        o.type = kind === 'pop' ? 'triangle' : 'sine';
+        o.frequency.value = kind === 'pluck' ? notes[Math.floor(Math.random() * notes.length)] : f;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + (kind === 'chime' ? 0.7 : 0.28));
+        o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + 0.8);
+      });
+    } catch (e) {}
   };
 
   var scores = function () {
@@ -504,44 +662,105 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
   var stageOf = function (id) { var n = S.acts[id] || 0, s = 0; LEVELS.forEach(function (lv, i) { if (n >= lv) s = i; }); return s; };
   var act = function (id) { if (!id || !PARTS[id]) return; S.acts[id] = (S.acts[id] || 0) + 1; };
   var whenNow = function () { return new Date().toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }); };
+  var countBy = function (xs, key) { var m = {}; xs.forEach(function (x) { var k = key(x); if (k) m[k] = (m[k] || 0) + 1; }); return m; };
+  var topKey = function (m) { var best = null; for (var k in m) if (best === null || m[k] > m[best]) best = k; return best; };
+  var feelName = function (id) { var f = FEELS.filter(function (x) { return x[0] === id; })[0]; return f ? f[1].toLowerCase() : 'что-то'; };
 
-  /* The sky: felt for the person's own sky (a keepsake); doodles with name bubbles for the welcome teaser. */
+  /* Луна knows you: lines built from what is stored on this device, each with where it came from. */
+  var lunaLines = function () {
+    var out = [], t = top();
+    var last = S.knots[S.knots.length - 1];
+    if (last && Date.now() - last.t < 36 * 3600000) {
+      var lp = last.part ? PARTS[last.part].short : '';
+      if (last.kind === 'sos') out.push({ text: cap(fmtDay(last.t)) + ' в ' + fmtTime(last.t) + ' накрывало. ' + (last.after > last.before ? '«Рядом» помогло: было ' + last.before + ', стало ' + last.after + '. Я запомнила.' : 'Иногда «Рядом» помогает не сразу. Это нормально.'), why: 'Момент «Накрыло»: ' + fmtDay(last.t) + ', ' + fmtTime(last.t) + '.' });
+      else out.push({ text: cap(fmtDay(last.t)) + ' в ' + fmtTime(last.t) + ' завязался узелок: ' + feelName(last.feel) + (lp ? ', ' + lp : '') + '. Как сейчас?', why: 'Узелок: ' + fmtDay(last.t) + ', ' + fmtTime(last.t) + '. Текст заметки я не пересказываю.' });
+    }
+    if (prevVisit && Date.now() - prevVisit > 2 * 86400000) out.push({ text: 'С возвращением. Небо на месте, части тоже. Никто не считал дни.', why: 'Прошлый визит: ' + fmtDay(prevVisit) + '.' });
+    var ups = ORDER.filter(function (p) { return stageOf(p) > (S.seenStages[p] || 0); });
+    if (ups.length) out.push({
+      text: ups.length === 1 ? PARTS[ups[0]].short + ' теперь «' + STAGES[stageOf(ups[0])] + '». Это видно.' : 'Новости с неба: ' + ups.map(function (p) { return PARTS[p].short + ' — «' + STAGES[stageOf(p)] + '»'; }).join(', ') + '.',
+      why: 'Путь части растёт от отметок дня, узелков и заданий. ' + ups.map(function (p) { return PARTS[p].short + ': ' + (S.acts[p] || 0); }).join(', ') + '.'
+    });
+    var late = S.knots.filter(function (k) { var h = new Date(k.t).getHours(); return k.part && (h >= 21 || h < 4); });
+    var lateCount = countBy(late, function (k) { return k.part; }), lateTop = topKey(lateCount);
+    if (lateTop && lateCount[lateTop] >= 2) out.push({ text: 'Похоже, вечерами чаще всего включается ' + PARTS[lateTop].short + '. Можно начать вечер помягче.', why: lateCount[lateTop] + ' ' + plural(lateCount[lateTop], 'узелок', 'узелка', 'узелков') + ' после 21:00 с этой частью.' });
+    var places = countBy([].concat.apply([], S.knots.map(function (k) { return k.body || []; })), function (b) { return BODY_IN[b] ? b : null; });
+    var place = topKey(places);
+    if (place && places[place] >= 2) out.push({ text: 'Чаще всего это чувствуется в ' + BODY_IN[place] + '. Тело подсказывает раньше, чем голова.', why: places[place] + ' ' + plural(places[place], 'узелок', 'узелка', 'узелков') + ' с отметкой «' + place + '».' });
+    if (S.today && S.today.day === dayKey()) out.push(S.today.done
+      ? { text: 'Задание сделано. ' + PARTS[S.today.part].short + ' это оценит.', why: 'Карточка дня отмечена сегодня.' }
+      : { text: 'Сегодня главный — ' + PARTS[S.today.part].short + '. Задание ждёт, без спешки.', why: 'Эта часть выбрана сегодня в «Кто сегодня главный?».' });
+    if (S.cover && S.coverSeen !== S.cover) out.push({ text: S.cover + ' — красивая обложка. А внутри, смотри-ка, ' + PARTS[t[0]].short + '.', why: 'Обложка из «Твоего неба».', cover: true });
+    return out;
+  };
+  var greeting = function () {
+    var h = new Date().getHours();
+    return h < 5 ? 'Ночная смена?' : h < 12 ? 'Доброе утро.' : h < 18 ? 'Привет.' : h < 23 ? 'Добрый вечер.' : 'Поздно уже.';
+  };
+  var lunaCache = null, typingNow = false;
+  var lunaChat = function (state) {
+    var lines = state.lines, text, why;
+    if (S.plain) text = lines.length ? lines.slice(0, 2).map(function (l) { return l.text; }).join(' ') : 'Привет. Вот что есть на сегодня.';
+    else text = greeting() + ' ' + (lines.length ? lines.slice(0, 2).map(function (l) { return l.text; }).join(' ') : QUIPS.luna[new Date().getDate() % QUIPS.luna.length]);
+    why = lines.slice(0, 2).map(function (l) { return l.why; }).filter(Boolean).join(' ');
+    var h = '<div class="luna-chat"><button class="luna-av" type="button" data-act="poke-luna" aria-label="Луна"><span class="idle">' + img('luna', '') + '</span></button><div class="lc-body">' +
+      '<div class="bubble' + (typingNow ? ' typing' : '') + '"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="txt">' + esc(text) + '</span></div>';
+    if (why) h += '<button class="why" type="button" data-act="why">Почему я это знаю?</button><p class="why-txt" hidden>' + esc(why) + '</p>';
+    if (!state.reply) {
+      h += '<p class="faint">Как ты сейчас?</p><div class="replies"><button type="button" data-act="reply" data-id="calm">Спокойно</button><button type="button" data-act="reply" data-id="noisy">Шумно внутри</button><button type="button" data-act="reply" data-id="sos">Накрыло</button></div>';
+    } else {
+      var who = S.today && S.today.day === dayKey() ? PARTS[S.today.part].short : PARTS[top()[0]].short;
+      var R = { calm: ['Спокойно', 'Хорошее время, чтобы познакомиться с частью «' + who + '» поближе. Карточка дня — чуть ниже.', null], noisy: ['Шумно внутри', 'Давай завяжем узелок: 30 секунд, и станет понятнее, кто шумит.', ['knot', 'Завязать узелок']] }[state.reply];
+      h += '<div class="bubble me">' + esc(R[0]) + '</div><div class="bubble">' + esc(R[1]) + '</div>' + (R[2] ? '<div class="replies"><button class="go" type="button" data-go="' + R[2][0] + '">' + esc(R[2][1]) + ' →</button></div>' : '');
+    }
+    return h + '</div></div>';
+  };
+
+  /* The sky: felt for the person's own sky (a keepsake); doodles with name bubbles for the welcome teaser. Every object answers a poke. */
   var skyScene = function (ids, opts) {
     opts = opts || {};
     var slots = opts.doodle ? [[21, 19], [72, 17], [73, 60], [22, 62], [50, 79]] : [[22, 24], [78, 22], [76, 74], [24, 76]];
     var glow = Math.min(1, 0.45 + scores().self * 0.12);
-    var h = '<div class="sky" role="img" aria-label="Внутреннее небо: в центре Солнце, вокруг ' + esc(ids.map(function (p) { return PARTS[p].short; }).join(', ')) + '">' + stars +
+    var h = '<div class="sky' + (opts.reveal ? ' reveal' : '') + '" role="group" aria-label="Внутреннее небо: в центре Солнце, вокруг ' + esc(ids.map(function (p) { return PARTS[p].short; }).join(', ')) + '">' + stars +
       '<span class="orbit" style="width:62%;aspect-ratio:1"></span>';
-    if (opts.luna) h += '<div class="luna">' + img('luna', '') + '</div>';
+    if (opts.luna) h += '<button class="luna" type="button" data-act="poke" data-id="luna" aria-label="Луна"><span class="lk"><span class="idle" style="--d:-2s">' + img('luna', '') + '</span></span></button>';
     if (S.cover && opts.cover) h += '<span class="cover">' + esc(S.cover) + '</span>';
-    h += '<div class="sun" style="filter:brightness(' + (opts.doodle ? 1 : glow.toFixed(2)) + ')">' + sun + '</div>';
+    h += '<button class="sun" type="button" data-act="poke" data-id="sun" aria-label="Солнце — это ты" style="filter:brightness(' + (opts.doodle ? 1 : glow.toFixed(2)) + ')"><span class="lk">' + sun + '</span></button>';
     ids.forEach(function (p, i) {
       var s = slots[i];
-      h += '<button class="pt' + (opts.doodle ? ' lbl' : '') + '" type="button" data-act="part" data-id="' + p + '" style="left:' + s[0] + '%;top:' + s[1] + '%">' +
-        (opts.doodle ? dd(p) : img(PARTS[p].img, '')) + '<span>' + esc(PARTS[p].short) + '</span></button>';
+      h += '<button class="pt' + (opts.doodle ? ' lbl' : '') + '" type="button" data-act="poke" data-id="' + p + '" aria-label="' + esc(PARTS[p].name) + '" style="left:' + s[0] + '%;top:' + s[1] + '%;--k:' + i + '">' +
+        '<span class="lk"><span class="idle" style="--d:-' + (i * 0.9).toFixed(1) + 's">' + (opts.doodle ? dd(p) : img(PARTS[p].img, '')) + '</span></span><span class="nm">' + esc(PARTS[p].short) + '</span></button>';
     });
     return h + '</div>';
   };
   var partRow = function (p, quiet) {
     var st = stageOf(p);
-    return '<button class="pr' + (quiet ? ' quiet' : '') + '" type="button" data-act="part" data-id="' + p + '">' + dd(p) +
+    return '<button class="pr' + (quiet ? ' quiet' : '') + '" type="button" data-act="part" data-id="' + p + '"><span class="idle" style="--d:-' + (ORDER.indexOf(p) * 0.7).toFixed(1) + 's">' + dd(p) + '</span>' +
       '<span><b>' + esc(PARTS[p].name) + '</b><small>' + esc(PARTS[p].sub) + '</small><span class="line">' + esc(PARTS[p].says) + '</span></span>' +
       (hasSky() ? '<span class="stage s' + (st + 1) + '">' + STAGES[st] + '</span>' : '<span class="chev" aria-hidden="true">›</span>') + '</button>';
   };
 
   /* Screens */
   var screens = {};
+  var welcomeChat = null;
 
   screens.welcome = function () {
     var tiles = ['critic', 'later', 'whatif'];
+    var W = { who: ['Кто такие части?', 'Это внутренние характеры. У каждого своя работа и своя забота о тебе: ОТК проверяет, Министр «Потом» бережёт силы, «А вдруг?» дежурит по ночам.'],
+      astro: ['Это гороскоп?', 'Нет. Звёзды тут для красоты. Отражение, а не диагноз: сцены из твоей жизни, а не дата рождения.'] };
+    var chat = '<div class="luna-chat"><button class="luna-av" type="button" data-act="poke-luna" aria-label="Луна"><span class="idle">' + img('luna', '') + '</span></button><div class="lc-body">' +
+      '<div class="bubble' + (typingNow ? ' typing' : '') + '"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="txt">' + (S.plain ? 'Привет. Я Луна, помощник. 8 сцен из жизни покажут, какие части чаще всего решают за тебя.' : 'Привет! Я Луна. Я не свечу сама — я отражаю твой свет. Ответь на 8 сцен из жизни, и я покажу, кто живёт у тебя внутри.') + '</span></div>' +
+      (welcomeChat ? '<div class="bubble me">' + esc(W[welcomeChat][0]) + '</div><div class="bubble">' + esc(W[welcomeChat][1]) + '</div>' : '') +
+      '<div class="replies"><button class="go" type="button" data-act="start">' + (S.answers.length ? 'Продолжить' : 'Поехали!') + '</button>' +
+      (welcomeChat !== 'who' ? '<button type="button" data-act="wchat" data-id="who">Кто такие части?</button>' : '') + (welcomeChat !== 'astro' ? '<button type="button" data-act="wchat" data-id="astro">Это гороскоп?</button>' : '') + '</div></div></div>';
     return '<div class="hero-head"><p class="kicker">7 минут · сцены из жизни</p><h1 class="mega">Кто живёт внутри?</h1></div>' +
       skyScene(['critic', 'later', 'pleaser', 'whatif', 'dreamer'], { doodle: true }) +
-      '<p class="lede">Ты — не один тип. Ты — целая вселенная. Ответь, кто внутри первым берёт слово, и увидишь своё внутреннее небо: части, которые чаще всего решают за тебя.</p>' +
+      '<p class="hand" style="text-align:center">' + (S.plain ? 'Нажми на часть, чтобы узнать о ней' : 'Потыкай в части. Они живые.') + '</p>' + chat +
       '<button class="btn" type="button" data-act="start">' + (S.answers.length ? 'Продолжить тест' : 'Пройти тест') + ' →</button>' +
       '<div class="meta"><span>≈ 7 минут</span><span>бесплатно</span><span>без регистрации</span></div>' +
       '<button class="link" type="button" data-go="how">Как это работает?</button>' +
       '<div class="between"><h2 class="h2">Кто бывает внутри</h2><span class="hand">все свои</span></div>' +
-      '<div class="tiles">' + tiles.map(function (p) { return '<button class="tile" type="button" data-act="part" data-id="' + p + '">' + dd(p) + '<b>' + esc(PARTS[p].short) + '</b><small>' + esc(PARTS[p].power) + '</small></button>'; }).join('') + '</div>' +
+      '<div class="tiles">' + tiles.map(function (p, i) { return '<button class="tile" type="button" data-act="part" data-id="' + p + '"><span class="idle" style="--d:-' + i + 's">' + dd(p) + '</span><b>' + esc(PARTS[p].short) + '</b><small>' + esc(PARTS[p].power) + '</small></button>'; }).join('') + '</div>' +
       '<div class="plist">' + ['pleaser', 'snacks', 'dreamer', 'enough'].map(function (p) { return partRow(p); }).join('') + '</div>' +
       '<p class="faint">Отражение, а не диагноз. Это прототип: ответы остаются только в этом браузере.</p>';
   };
@@ -564,16 +783,18 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     var h = '<div class="row" style="justify-content:space-between"><span class="faint">Сцена ' + (i + 1) + ' из ' + SCENES.length + '</span><span class="faint">≈ ' + Math.max(1, Math.round((SCENES.length - i) * 0.8)) + ' мин</span></div>' +
       '<div class="prog"><i style="width:' + Math.round(i / SCENES.length * 100) + '%"></i></div>' +
       '<div class="card"><p class="scene">' + esc(q.scene) + '</p><p class="ask">Кто внутри первым берёт слово?</p></div><div class="answers">';
-    q.a.forEach(function (a, ai) { h += '<button class="ans" type="button" data-act="answer" data-i="' + ai + '">' + dd(a.i) + '<span>' + esc(a.t) + '</span></button>'; });
+    q.a.forEach(function (a, ai) { h += '<button class="ans" type="button" data-act="answer" data-i="' + ai + '"><span class="idle" style="--d:-' + ai + 's">' + dd(a.i) + '</span><span>' + esc(a.t) + '</span></button>'; });
     h += '</div><p class="hand" style="text-align:center">Здесь нет плохих ответов</p>';
     h += i > 0 ? '<button class="link" type="button" data-act="back">Назад</button>' : '<button class="link" type="button" data-act="back-home">Выйти</button>';
     return h;
   };
 
+  var revealNext = false;
   screens.result = function () {
     var t = top(), first = PARTS[t[0]];
-    return '<p class="kicker">Готово</p><h1 class="h1">Твоё небо</h1>' + skyScene(t, { cover: true }) +
-      '<p class="hand">Похоже, у тебя очень живое небо. Это нормально.</p>' +
+    var h = '<p class="kicker">Готово</p><h1 class="h1">Твоё небо</h1>' + skyScene(t, { cover: true, reveal: revealNext }) +
+      '<div class="luna-chat"><button class="luna-av" type="button" data-act="poke-luna" aria-label="Луна"><span class="idle">' + img('luna', '') + '</span></button><div class="lc-body"><div class="bubble">' +
+      (S.plain ? 'Готово. Вот три части, которые чаще всего решают за тебя.' : 'Знакомство состоялось: три части и одно Солнце. Потыкай в них — они живые.') + '</div></div></div>' +
       '<div class="plist">' + t.map(function (p) { return partRow(p); }).join('') + '</div>' +
       '<div class="card"><label for="cover"><b style="font:800 14px/1.2 var(--display)">Обложка (по желанию)</b></label><p class="faint" style="margin:4px 0 8px">Твой тип или знак, если хочется. Мы его не измеряем, это просто обложка.</p><input type="text" id="cover" maxlength="28" placeholder="Например, INFP · Рыбы" value="' + esc(S.cover) + '"></div>' +
       '<p class="hand">«Тип — это обложка. Внутри — целая вселенная.»</p>' +
@@ -581,6 +802,8 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       '<div class="row"><button class="btn ghost" type="button" data-act="share" style="flex:1">Поделиться</button><button class="btn lilac" type="button" data-go="two" style="flex:1">' + esc(L('two')) + '</button></div>' +
       '<button class="btn" type="button" data-go="home">На главную</button>' +
       '<p class="faint">Отражение, а не диагноз. Ответы можно поменять: пройди тест заново в профиле.</p>';
+    revealNext = false;
+    return h;
   };
 
   screens.share = function () {
@@ -597,27 +820,44 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     var list = S.knots.slice(-n).reverse();
     return '<div class="thread">' + list.map(knotRow).join('') + '</div>';
   };
+  var letterCard = function () {
+    var loud = topKey(countBy(S.knots, function (k) { return k.part; })) || top()[0];
+    var feelTop = topKey(countBy(S.knots, function (k) { return k.feel; }));
+    var k = S.knots.filter(function (x) { return x.kind !== 'sos'; }).length;
+    var Lt = LETTER[loud];
+    var body = S.plain
+      ? 'Узелков: ' + k + '. Заданий сделано: ' + S.tasksDone + '.'
+      : Lt[0] + ' Узелков на нити: ' + k + '. Заданий сделано: ' + S.tasksDone + '.' + (feelTop ? ' Чаще всего было «' + feelName(feelTop) + '».' : '') + ' ' + Lt[1];
+    return '<div class="letter"><span class="idle" style="--d:-1s">' + dd(loud) + '</span><div><p class="kicker">Письмо недели · пишет ' + esc(PARTS[loud].short) + '</p><p style="margin-top:6px">' + esc(body) + '</p></div></div>';
+  };
 
   screens.home = function () {
     if (!hasSky()) return screens.welcome();
     var t = top(), dk = dayKey(), today = S.today && S.today.day === dk ? S.today : null;
     var date = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
-    var h = '<p class="kicker">' + esc(date) + '</p>';
+    if (!lunaCache) {
+      lunaCache = { lines: lunaLines(), reply: null };
+      ORDER.forEach(function (p) { S.seenStages[p] = stageOf(p); });
+      if (lunaCache.lines.some(function (l) { return l.cover; })) S.coverSeen = S.cover;
+      save();
+    }
+    var h = '<p class="kicker">' + esc(date) + '</p>' + lunaChat(lunaCache);
     if (!today) {
       h += '<h1 class="h1">Кто сегодня главный?</h1><div class="card"><p class="faint" style="margin-bottom:12px">10 секунд. Выбери, кто сегодня громче всех.</p><div class="chips">';
-      t.forEach(function (p) { h += '<button class="chip" type="button" data-act="today" data-id="' + p + '">' + dd(p) + esc(PARTS[p].short) + '</button>'; });
+      t.forEach(function (p, i) { h += '<button class="chip" type="button" data-act="today" data-id="' + p + '"><span class="idle" style="--d:-' + i + 's">' + dd(p) + '</span>' + esc(PARTS[p].short) + '</button>'; });
       h += '</div><button class="link" type="button" data-act="more-today">Другая часть</button><div id="more-today" hidden><div class="chips" style="margin-top:8px">';
       ORDER.filter(function (p) { return t.indexOf(p) < 0; }).forEach(function (p) { h += '<button class="chip" type="button" data-act="today" data-id="' + p + '">' + dd(p) + esc(PARTS[p].short) + '</button>'; });
       h += '</div></div></div>';
     } else {
       var P = PARTS[today.part];
-      h += '<h1 class="h1">Карточка дня</h1><div class="card yellow"><div class="daycard">' + dd(today.part) + '<div><p class="h3">Сегодня главный — ' + esc(P.short) + '</p><p class="muted" style="font-size:13.5px;margin-top:4px">Суперсила: ' + esc(P.power.toLowerCase()) + '.</p><p class="task">' + esc(P.tasks[today.task % P.tasks.length]) + '</p></div></div>' +
-        (today.done ? '<p class="hand" style="margin-top:10px">Сделано. Ещё шаг к дружбе.</p>' :
+      h += '<h1 class="h1">Карточка дня</h1><div class="card yellow" id="daycard"><div class="daycard"><span class="idle">' + dd(today.part) + '</span><div><p class="h3">Сегодня главный — ' + esc(P.short) + '</p><p class="muted" style="font-size:13.5px;margin-top:4px">Суперсила: ' + esc(P.power.toLowerCase()) + '.</p><p class="task">' + esc(P.tasks[today.task % P.tasks.length]) + '</p></div></div>' +
+        (today.done ? '<p class="hand" style="margin-top:10px">' + (S.plain ? 'Сделано.' : 'Сделано. Ещё шаг к дружбе.') + '</p>' :
           '<div class="row" style="margin-top:12px"><button class="btn small" type="button" data-act="done">Сделано</button><button class="btn small ghost" type="button" data-act="other-task">Другое задание</button></div>') + '</div>';
     }
+    if (S.knots.length >= 3 || dayIndex() >= 6) h += letterCard();
     if (plusDue()) {
       if (!S.plusPrice) { S.plusPrice = [199, 299, 399][Math.floor(Math.random() * 3)]; save(); }
-      h += '<div class="card lilac"><p class="kicker">Неделя вместе</p><h2 class="h2" style="margin-top:4px">Innerverse Plus · ' + S.plusPrice + ' ₽ в месяц</h2>' +
+      h += '<div class="card lilac"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div style="flex:1;min-width:0"><p class="kicker">Неделя вместе</p><h2 class="h2" style="margin-top:4px">Innerverse Plus · ' + S.plusPrice + ' ₽ в месяц</h2></div>' + ico('diamond') + '</div>' +
         '<ul style="margin:8px 0 0;padding-left:18px;display:grid;gap:5px" class="muted"><li>Подробный портрет твоего неба</li><li>Разговоры с частями вместе с Луной</li><li>Договоры с частями и итоги недели</li><li>Полные «Два неба» для пары</li></ul>' +
         '<div class="row" style="margin-top:12px"><button class="btn small" type="button" data-act="plus-yes">Оформить</button><button class="btn small ghost" type="button" data-act="plus-no">Не сейчас</button></div>' +
         '<p class="faint" style="margin-top:8px">Это прототип: оплаты нет, мы только узнаём, нужно ли это.</p></div>';
@@ -629,7 +869,7 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       h += '<span><i class="' + (S.days[dayKey(d)] ? 'on' : '') + '"></i>' + d.toLocaleDateString('ru-RU', { weekday: 'short' }) + '</span>';
     }
     h += '</div><p class="faint" style="margin-top:8px">Без серий: пропущенный день ничего не сжигает.</p></div>';
-    h += '<button class="card pink" type="button" data-go="two" style="text-align:left;display:grid;gap:4px;width:100%"><span class="kicker">' + esc(L('two')) + '</span><span class="h3">Сравни своё небо с небом близкого →</span><span class="faint">Какие части дружат, какие спорят и что сказать друг другу.</span></button>';
+    h += '<button class="card pink ico" type="button" data-go="two"><span style="display:grid;gap:4px"><span class="kicker">' + esc(L('two')) + '</span><span class="h3">Сравни своё небо с небом близкого →</span><span class="faint">Какие части дружат, какие спорят и что сказать друг другу.</span></span>' + ico('hearts') + '</button>';
     if (S.knots.length) h += '<div class="between"><h2 class="h2">Твоя нить</h2><button class="link" type="button" data-go="knot">Вся нить</button></div>' + recentKnots(3);
     return h;
   };
@@ -650,10 +890,19 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       '<p class="faint">Путь части: незнакомец, знакомый, услышан, договор, союзник. Он растёт от отметок дня, узелков и сделанных заданий.</p>';
   };
 
+  var partLine = function (id) {
+    var P = PARTS[id];
+    if (S.today && S.today.day === dayKey() && S.today.part === id && S.today.done) return DONE_LINES[id];
+    if (stageOf(id) >= 2) return '«Кажется, меня наконец слышат.»';
+    var n = S.knots.filter(function (k) { return k.part === id; }).length;
+    if (n >= 2) return '«Ты меня замечаешь. ' + n + ' ' + plural(n, 'узелок', 'узелка', 'узелков') + ' — это не шутки.»';
+    return P.says;
+  };
   screens.part = function (id) {
     var P = PARTS[id]; if (!P) return screens.parts();
     var st = stageOf(id);
-    var h = '<button class="link" type="button" data-act="back">← Назад</button><div class="hero">' + stars + '<span class="says">' + esc(P.says) + '</span>' + img(P.img, P.name) + '</div>' +
+    var h = '<button class="link" type="button" data-act="back">← Назад</button><div class="hero">' + stars + '<span class="says" id="says">' + esc(partLine(id)) + '</span>' +
+      '<button class="plush" type="button" data-act="poke-hero" data-id="' + id + '" aria-label="Потыкать: ' + esc(P.name) + '"><span class="lk"><span class="idle">' + img(P.img, P.name) + '</span></span></button></div>' +
       '<div><h1 class="h2">' + esc(P.name) + '</h1><p class="faint">' + esc(P.sub) + '</p></div>' +
       '<div class="tags">' + P.tags.map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') + '</div>';
     if (hasSky()) {
@@ -676,23 +925,18 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
   var knotRow = function (k) {
     var P = k.part ? PARTS[k.part] : null;
     var feel = FEELS.filter(function (f) { return f[0] === k.feel; })[0];
-    var tm = new Date(k.t).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     var body = k.kind === 'sos'
       ? '<b>Накрыло · ' + esc(P ? P.short : 'не знаю, кто') + '</b><p>Было ' + k.before + '/10, стало ' + k.after + '/10. Шаг: ' + esc(k.move) + '</p>'
       : '<b>' + esc(feel ? feel[1] : 'Что-то включилось') + ' · ' + esc(P ? P.short : 'не знаю, кто') + '</b>' + (k.body && k.body.length ? '<p>' + esc(k.body.join(', ')) + '</p>' : '') + (k.note ? '<p>' + esc(k.note) + '</p>' : '');
     return '<button class="kn' + (k.kind === 'sos' ? ' big' : '') + '" type="button"' + (P ? ' data-act="part" data-id="' + k.part + '"' : '') + '>' +
-      (k.kind === 'sos' ? '<span class="sosmark" aria-hidden="true">!</span>' : dd(k.feel || 'f-empty')) + '<span><span class="t">' + esc(tm) + '</span><br>' + body + '</span></button>';
+      (k.kind === 'sos' ? '<span class="sosmark" aria-hidden="true">!</span>' : dd(k.feel || 'f-empty')) + '<span><span class="t">' + esc(fmtTime(k.t)) + '</span><br>' + body + '</span></button>';
   };
   var threadView = function () {
-    if (!S.knots.length) return '<div class="card dash"><p class="muted">Пока ни одного узелка. Когда заметишь, что внутри что-то включилось, завяжи первый.</p></div>';
+    if (!S.knots.length) return '<div class="card dash empty">' + ico('lunaThread') + '<p class="muted">Пока ни одного узелка. Когда заметишь, что внутри что-то включилось, завяжи первый.</p></div>';
     var groups = [], last = '';
     S.knots.slice().reverse().forEach(function (k) {
-      var d = new Date(k.t), key = dayKey(d);
-      if (key !== last) {
-        var y = new Date(); y.setDate(y.getDate() - 1);
-        groups.push('<p class="day">' + (key === dayKey() ? 'Сегодня' : key === dayKey(y) ? 'Вчера' : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })) + '</p>');
-        last = key;
-      }
+      var key = dayKey(new Date(k.t));
+      if (key !== last) { groups.push('<p class="day">' + cap(fmtDay(k.t)) + '</p>'); last = key; }
       groups.push(knotRow(k));
     });
     return '<div class="thread">' + groups.join('') + '</div>';
@@ -718,9 +962,8 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       '<p class="faint">Нить видна только тебе. В «Два неба» и в отчёт для исследования тексты не попадают.</p>';
     return h;
   };
-  var plural = function (n, one, few, many) { var m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many; };
 
-  /* SOS: «Накрыло» → «Кто это?» → «Рядом» → «Мой шаг». Opened only from «Узелок»; it ends as a knot on the thread. */
+  /* SOS: «Накрыло» → «Кто это?» → «Рядом» → «Мой шаг». Opened only from «Узелок»; no jokes here; it ends as a knot on the thread. */
   var sos = null;
   var stepsBar = function (n) {
     var names = ['Накрыло', 'Кто это?', L('near'), 'Мой шаг'];
@@ -769,7 +1012,7 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     var t = hasSky() ? top() : ORDER.slice(0, 3);
     var text = 'Давай сравним наши внутренние небеса? Пройди тест «Кто живёт внутри?», и мы увидим, какие части у нас дружат, а какие спорят. [ссылка на тест]';
     if (!sample) {
-      return '<h1 class="h1">Твои части</h1>' + partsSeg('two') + '<h2 class="h2">Твоё небо рядом с небом близкого</h2>' +
+      return '<h1 class="h1">Твои части</h1>' + partsSeg('two') + '<div class="card pink ico"><span class="h2">Твоё небо рядом с небом близкого</span>' + ico('hearts') + '</div>' +
         '<p class="lede">Пригласи партнёра или друга. Человек проходит тот же тест, и вы видите, какие части дружат, какие спорят и что сказать друг другу.</p>' +
         '<label class="faint" for="invite2">Приглашение</label><textarea id="invite2" readonly>' + esc(text) + '</textarea>' +
         '<button class="btn" type="button" data-act="copy" data-target="invite2">Скопировать приглашение</button>' +
@@ -799,13 +1042,13 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
 
   var prFilter = 'all', prOpen = null;
   screens.practices = function () {
-    var cats = [['all', 'Все'], ['calm', 'Успокоиться'], ['part', 'С частью'], ['two', 'Для двоих']];
-    var h = '<h1 class="h1">Практики</h1><div class="filters" role="group" aria-label="Фильтр">' + cats.map(function (c) { return '<button type="button" data-act="pr-filter" data-id="' + c[0] + '" aria-pressed="' + (prFilter === c[0]) + '">' + c[1] + '</button>'; }).join('') + '</div><div class="stack">';
-    PRACTICES.filter(function (p) { return prFilter === 'all' || p.cat === prFilter || (prFilter === 'part' && p.cat === 'soon'); }).forEach(function (p) {
+    var cats = [['all', 'Все', null], ['low', 'Мало ложек', 'battery'], ['calm', 'Успокоиться', 'hill'], ['part', 'С частью', 'compass'], ['two', 'Для двоих', 'hearts']];
+    var h = '<h1 class="h1">Практики</h1><div class="filters" role="group" aria-label="Фильтр">' + cats.map(function (c) { return '<button type="button"' + (c[2] ? '' : ' class="noimg"') + ' data-act="pr-filter" data-id="' + c[0] + '" aria-pressed="' + (prFilter === c[0]) + '">' + (c[2] ? '<img src="' + ICON[c[2]] + '" alt="">' : '') + c[1] + '</button>'; }).join('') + '</div><div class="stack">';
+    PRACTICES.filter(function (p) { return prFilter === 'all' || (prFilter === 'low' ? p.low : p.cat === prFilter || (prFilter === 'part' && p.cat === 'soon')); }).forEach(function (p) {
       var open = prOpen === p.id;
       var steps = p.steps || (p.part ? PARTS[p.part].tasks : []);
-      h += '<div class="prc cat-' + p.cat + '"><button class="prc-head" type="button" data-act="pr-open" data-id="' + p.id + '" aria-expanded="' + open + '"><span><b>' + esc(p.title) + '</b><small>' + esc(p.text) + '</small><span class="meta" style="margin-top:8px"><span>' + esc(p.mins) + '</span>' + (p.soon ? '<span>скоро</span>' : '') + '</span></span>' +
-        (p.knot ? '<span class="knotico">' + icon('ic-knot') + '</span>' : dd(p.dd)) + '</button>';
+      h += '<div class="prc cat-' + p.cat + '"><button class="prc-head" type="button" data-act="pr-open" data-id="' + p.id + '" aria-expanded="' + open + '"><span><b>' + esc(p.title) + '</b><small>' + esc(p.text) + '</small><span class="meta" style="margin-top:8px"><span>' + esc(p.mins) + '</span>' + (p.low ? '<span>мало ложек</span>' : '') + (p.soon ? '<span>скоро</span>' : '') + '</span></span>' +
+        (p.knot ? '<span class="knotico">' + icon('ic-knot') + '</span>' : '<span class="idle">' + dd(p.dd) + '</span>') + '</button>';
       if (open) {
         if (p.soon) h += '<div class="convo"><div class="cv">Спроси часть: что случится, если она перестанет решать за тебя?</div><div class="cv part"><small>ты — за часть</small><span>Тогда всё рухнет. Я держу всё на себе.</span></div><div class="cv">Чего она на самом деле хочет для тебя?</div></div>';
         else h += '<ol>' + steps.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' +
@@ -829,20 +1072,251 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
 
   var resetArmed = false;
   screens.profile = function () {
+    var quick = S.knots.filter(function (k) { return k.kind !== 'sos'; }).length;
+    var nd = Object.keys(S.days).length;
+    var mem = [
+      ['Твоё небо', hasSky() ? top().map(function (p) { return PARTS[p].short; }).join(', ') : 'тест не пройден', null],
+      ['Отметки «Кто сегодня главный?»', nd + ' ' + plural(nd, 'день', 'дня', 'дней'), 'days'],
+      ['Узелки', String(quick), 'knots'],
+      ['Моменты «Накрыло»', String(S.moments.length), 'moments'],
+      ['Обложка', S.cover || 'нет', 'cover']
+    ];
+    var sw = function (key, label, sub) { return '<div class="toggle"><span><b>' + label + '</b><br><span class="faint">' + sub + '</span></span><button class="sw" type="button" role="switch" aria-checked="' + !!S[key] + '" aria-label="' + label + '" data-act="toggle" data-id="' + key + '"></button></div>'; };
     return '<h1 class="h1">Профиль</h1>' +
       '<div class="card me">' + sun + '<div><p class="h3">Гость</p><p class="faint">Ответы и узелки хранятся только в этом браузере.</p></div></div>' +
-      '<div class="card stack"><p class="kicker">Оформление</p><div class="seg" role="group" aria-label="Режим"><button type="button" data-act="set-mode" data-id="light" aria-pressed="' + (S.mode !== 'sky') + '">' + icon('ic-day') + 'Светлый</button><button type="button" data-act="set-mode" data-id="sky" aria-pressed="' + (S.mode === 'sky') + '">' + icon('ic-moon') + 'Небо</button></div>' +
+      '<div class="card stack"><div class="row" style="flex-wrap:nowrap;justify-content:space-between"><p class="kicker">Оформление</p>' + ico('palette') + '</div><div class="seg" role="group" aria-label="Режим"><button type="button" data-act="set-mode" data-id="light" aria-pressed="' + (S.mode !== 'sky') + '">' + icon('ic-day') + 'Светлый</button><button type="button" data-act="set-mode" data-id="sky" aria-pressed="' + (S.mode === 'sky') + '">' + icon('ic-moon') + 'Небо</button></div>' +
       '<p class="faint">Светлый — по умолчанию. «Небо» — тёмный режим: ночное небо, на котором живут твои части.</p></div>' +
-      '<div class="card stack"><p class="kicker">Комфорт</p>' +
-      '<div class="toggle"><span><b>Говорить проще</b><br><span class="faint">Без образов: «Мои части» вместо «Твоё небо», «Заметить» вместо «Узелок»</span></span><button class="sw" type="button" role="switch" aria-checked="' + S.plain + '" aria-label="Говорить проще" data-act="plain"></button></div>' +
-      '<p class="faint">Звук выключен, пока ты его не включишь.</p></div>' +
-      '<button class="card blue" type="button" data-go="stars" style="text-align:left;display:grid;gap:4px;width:100%"><span class="kicker">' + esc(L('stars')) + ' · скоро</span><span class="h3">Найти людей с похожими частями →</span></button>' +
+      '<div class="card stack"><div class="row" style="flex-wrap:nowrap;justify-content:space-between"><p class="kicker">Комфорт</p>' + ico('sprout') + '</div>' +
+      sw('plain', 'Говорить проще', 'Без шуток и образов: «Мои части» вместо «Твоё небо», «Заметить» вместо «Узелок»') +
+      sw('calm', 'Спокойная анимация', 'Части не прыгают и не дышат, а мягко появляются') +
+      sw('sound', 'Звуки и вибрация', 'Тихие щелчки, когда трогаешь части. Выключены, пока ты их не включишь') + '</div>' +
+      '<div class="card stack"><div class="row" style="flex-wrap:nowrap;justify-content:space-between"><div><p class="kicker">Луна помнит</p><p class="faint" style="margin-top:4px">Только на этом устройстве. Можно забыть что угодно.</p></div>' + ico('lock') + '</div><div class="mem">' +
+      mem.map(function (m) { return '<div><span>' + esc(m[0]) + ': <b>' + esc(m[1]) + '</b></span>' + (m[2] ? '<button type="button" data-act="forget" data-id="' + m[2] + '">Забыть</button>' : '') + '</div>'; }).join('') + '</div></div>' +
+      '<button class="card blue ico" type="button" data-go="stars"><span style="display:grid;gap:4px"><span class="kicker">' + esc(L('stars')) + ' · скоро</span><span class="h3">Найти людей с похожими частями →</span></span>' + ico('planet') + '</button>' +
+      '<button class="card lilac ico" type="button" data-go="therapist"><span style="display:grid;gap:4px"><span class="kicker">Для психолога · пример</span><span class="h3">Небо клиента в 3D →</span><span class="faint">Четыре оси, время, активность частей.</span></span>' + ico('compass') + '</button>' +
       '<button class="link" type="button" data-go="how">Как это работает?</button>' +
       '<div class="card dash stack"><p class="kicker">Для интервью</p>' +
       '<button class="btn small" type="button" data-go="report">Отчёт для исследования</button>' +
       '<button class="btn small ghost" type="button" data-act="retake">Пройти тест заново</button>' +
       (resetArmed ? '<p class="muted">Стереть ответы, узелки и отметки в этом браузере?</p><div class="row"><button class="btn small" type="button" data-act="reset-yes">Да, стереть</button><button class="btn small ghost" type="button" data-act="reset-no">Отмена</button></div>' : '<button class="btn small ghost" type="button" data-act="reset">Сбросить прототип</button>') +
-      '<p class="faint">Ссылки на экраны: добавь к адресу #test, #home, #knot, #sos, #parts, #two, #practices, #profile, #stars или #report.</p></div>';
+      '<p class="faint">Ссылки на экраны: добавь к адресу #test, #home, #knot, #sos, #parts, #two, #practices, #profile, #stars, #therapist или #report.</p></div>';
+  };
+
+  /* The therapist's 3+1 sky: the universe's four dimensions, any three as X, Y and Z, the fourth as colour and lens; size is activation; a time scrubber. */
+  var DIMS = [
+    { k: 'ag', name: 'Инициатива', lo: 'активная', hi: 'принимающая' },
+    { k: 'te', name: 'Температура', lo: 'прохладная', hi: 'горячая' },
+    { k: 'fo', name: 'Фокус', lo: 'на себе', hi: 'на других' },
+    { k: 'at', name: 'Привязанность', lo: 'избегающая', hi: 'тревожная' }
+  ];
+  var CLIENT = [
+    { id: 'critic', name: 'Отдел контроля качества', fam: 'Менеджер · внутренний критик', c: [[-0.75, -0.3, 0.1, 0.35], [-0.6, -0.2, 0.1, 0.3], [-0.45, -0.1, 0.05, 0.2]], T: [72, 66, 58] },
+    { id: 'whatif', name: 'Начальник отдела «А вдруг?»', fam: 'Менеджер · контролёр', c: [[-0.45, 0.45, 0.3, 0.7], [-0.35, 0.35, 0.25, 0.55], [-0.25, 0.2, 0.2, 0.4]], T: [70, 64, 57] },
+    { id: 'pleaser', name: 'Главный по «всем ли удобно?»', fam: 'Менеджер · угодник', c: [[0.55, 0.3, 0.8, 0.6], [0.45, 0.25, 0.65, 0.5], [0.35, 0.2, 0.5, 0.35]], T: [66, 62, 55] },
+    { id: 'later', name: 'Министр «Потом»', fam: 'Пожарный · онемение', c: [[0.5, -0.45, -0.5, -0.5], [0.4, -0.35, -0.4, -0.4], [0.3, -0.25, -0.3, -0.3]], T: [64, 60, 54] },
+    { id: 'snacks', name: 'Служба утешительных вкусняшек', fam: 'Пожарный · онемение', c: [[0.3, 0.65, -0.3, 0.25], [0.25, 0.55, -0.25, 0.2], [0.2, 0.4, -0.2, 0.15]], T: [59, 56, 52] },
+    { id: 'enough', name: 'Профсоюз «Хватит»', fam: 'Менеджер · отшельник', c: [[0.4, -0.6, -0.7, -0.65], [0.35, -0.5, -0.6, -0.55], [0.3, -0.4, -0.5, -0.45]], T: [61, 58, 53] },
+    { id: 'dreamer', name: 'Мечтатель', fam: 'Ресурс · исследователь', c: [[-0.2, 0.35, -0.1, -0.1], [-0.15, 0.3, 0, -0.05], [-0.1, 0.25, 0.05, 0]], T: [50, 55, 61] },
+    { id: 'tender', name: 'Тот, кого не позвали', fam: 'Изгнанник · незамеченный', c: [[0.25, 0.75, 0.6, 0.85], [0.2, 0.65, 0.5, 0.75], [0.15, 0.55, 0.45, 0.6]], T: [63, 60, 55], tender: true }
+  ];
+  var SELF_T = [44, 52, 61];
+  var th = null, threeP = null;
+  var loadThree = function () {
+    if (window.THREE) return Promise.resolve(window.THREE);
+    if (!threeP) threeP = new Promise(function (res, rej) {
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+      s.onload = function () { res(window.THREE); };
+      s.onerror = function () { threeP = null; rej(new Error('three.js did not load')); };
+      document.head.appendChild(s);
+    });
+    return threeP;
+  };
+  var tState = { axes: [0, 1, 2], iso: -1, s: 2, lens: null };
+  var tFourth = function () { return [0, 1, 2, 3].filter(function (i) { return tState.axes.indexOf(i) < 0; })[0]; };
+  var tAt = function (p, s) { var i = Math.min(1, Math.floor(s)), f = s - i; return p.c[i].map(function (v, k) { return v + (p.c[i + 1][k] - v) * f; }); };
+  var tT = function (arr, s) { var i = Math.min(1, Math.floor(s)), f = s - i; return arr[i] + (arr[i + 1] - arr[i]) * f; };
+  var sessionName = function (s) { return ['Сессия 1 · знакомство', 'Сессия 4 · через месяц', 'Сессия 8 · через два месяца'][Math.round(s)]; };
+  var tTable = function () {
+    var f = tFourth();
+    return '<table class="ptable"><thead><tr><th>Часть</th>' + DIMS.map(function (d) { return '<th>' + d.name + '</th>'; }).join('') + '<th>T</th></tr></thead><tbody>' +
+      CLIENT.map(function (p) { var c = tAt(p, tState.s); return '<tr><td>' + esc(p.name) + '</td>' + c.map(function (v) { return '<td>' + (v > 0 ? '+' : '') + v.toFixed(2) + '</td>'; }).join('') + '<td>' + Math.round(tT(p.T, tState.s)) + '</td></tr>'; }).join('') +
+      '<tr><td>Солнце (Self)</td><td colspan="4">в центре</td><td>' + Math.round(tT(SELF_T, tState.s)) + '</td></tr></tbody></table><p class="faint" style="margin-top:6px">Четвёртая ось сейчас: ' + DIMS[f].name + ' (цвет).</p>';
+  };
+  screens.therapist = function () {
+    var f = tFourth();
+    var sel = function (slot) { return '<label for="ax' + slot + '">' + 'XYZ'[slot] + '<select id="ax' + slot + '" data-slot="' + slot + '">' + DIMS.map(function (d, i) { return '<option value="' + i + '"' + (tState.axes[slot] === i ? ' selected' : '') + '>' + d.name + '</option>'; }).join('') + '</select></label>'; };
+    return '<button class="link" type="button" data-go="profile">← Профиль</button><p class="example">Для психолога · пример: выдуманный клиент</p><h1 class="h1">Небо клиента в 3D</h1>' +
+      '<p class="muted">Четыре оси из «Рефлексии» (64): любые три — пространство, четвёртая — цвет и линза. Размер — активность части по «Погружению» (147). Здесь можно говорить профессиональными терминами: это экран для специалиста.</p>' +
+      '<div class="t3d" id="t3d"><p class="msg" id="t3d-msg">Загружаю 3D…</p></div>' +
+      '<p class="faint">Крути пальцем или мышью, приближай колесом или щипком. Нажми на часть, чтобы увидеть её данные.</p>' +
+      '<div class="card stack" id="t3d-info" hidden></div>' +
+      '<div class="card stack"><div class="axes-sel">' + sel(0) + sel(1) + sel(2) + '</div>' +
+      '<div><b style="font:800 13px/1.2 var(--display)">Четвёртая ось: <span id="t4name">' + DIMS[f].name + '</span></b><div class="legend" style="margin-top:6px"></div><div class="between faint" style="margin-top:4px"><span id="t4lo">' + DIMS[f].lo + '</span><span id="t4hi">' + DIMS[f].hi + '</span></div></div>' +
+      '<label class="toggle" for="lens"><span><b style="font:800 13px/1.2 var(--display)">Линза по четвёртой оси</b><br><span class="faint">Части у выбранного значения светятся ярче</span></span><input type="checkbox" id="lens"' + (tState.lens !== null ? ' checked' : '') + '></label>' +
+      '<input type="range" id="lensv" min="-100" max="100" value="' + Math.round((tState.lens || 0) * 100) + '" aria-label="Значение линзы"' + (tState.lens === null ? ' disabled' : '') + '>' +
+      '<label for="iso"><b style="font:800 13px/1.2 var(--display)">Изолировать ось</b><select id="iso" style="margin-top:6px"><option value="-1">Нет</option>' + DIMS.map(function (d, i) { return '<option value="' + i + '"' + (tState.iso === i ? ' selected' : '') + '>' + d.name + '</option>'; }).join('') + '</select></label>' +
+      '<div><b style="font:800 13px/1.2 var(--display)">Время: <span id="tsname">' + sessionName(tState.s) + '</span></b><div class="tline" style="margin-top:6px"><button class="btn small ghost" type="button" id="tplay" aria-label="Проиграть">▶</button><input type="range" id="tscrub" min="0" max="200" value="' + Math.round(tState.s * 100) + '" aria-label="Время"><span class="faint">8</span></div></div></div>' +
+      '<div class="tablewrap" id="t3d-table">' + tTable() + '</div>' +
+      '<p class="faint">Клиент сам решает, что видит психолог, и может отозвать доступ. Каждый просмотр записывается.</p>';
+  };
+  var lerpColor = function (v) {
+    var a = [110, 214, 255], m = [244, 236, 222], b = [255, 111, 168];
+    var t = (v + 1) / 2, from = t < 0.5 ? a : m, to = t < 0.5 ? m : b, u = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+    return 'rgb(' + from.map(function (x, i) { return Math.round(x + (to[i] - x) * u); }).join(',') + ')';
+  };
+  var stopTherapist = function () {
+    if (!th) return;
+    th.active = false;
+    try { th.renderer.dispose(); } catch (e) {}
+    th = null;
+  };
+  var showInfo = function (p) {
+    var box = document.getElementById('t3d-info'); if (!box) return;
+    if (!p) { box.hidden = true; return; }
+    var c = tAt(p, tState.s);
+    box.hidden = false;
+    box.innerHTML = '<div class="row" style="flex-wrap:nowrap">' + (p.tender ? '<span class="sosmark" aria-hidden="true">♡</span>' : dd(p.id)) + '<div style="min-width:0"><p class="h3">' + esc(p.name) + '</p><p class="faint">' + esc(p.fam) + '</p></div></div>' +
+      '<p class="muted">' + DIMS.map(function (d, i) { return d.name + ': ' + (c[i] > 0 ? '+' : '') + c[i].toFixed(2); }).join(' · ') + '</p>' +
+      '<p class="muted">Активность (T): ' + p.T.join(' → ') + '</p>' + (p.tender ? '<p class="faint">Нежное место: показывается психологу только с согласия клиента, без шуток и без заданий.</p>' : '') +
+      '<label class="faint" for="tnote">Заметка психолога (только на этом устройстве)</label><textarea id="tnote" placeholder="Например: громче перед дедлайнами"></textarea>';
+  };
+  var initTherapist = function () {
+    var box = document.getElementById('t3d'), msg = document.getElementById('t3d-msg');
+    loadThree().then(function (THREE) {
+      if (current !== 'therapist' || !box.isConnected) return;
+      msg.hidden = true;
+      var W = box.clientWidth, H = box.clientHeight;
+      var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); renderer.setSize(W, H);
+      box.appendChild(renderer.domElement);
+      var scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 200);
+      camera.position.set(0, 0, 30);
+      var root = new THREE.Group(); root.rotation.set(-0.35, 0.6, 0); scene.add(root);
+      var label = function (text, color) {
+        var c = document.createElement('canvas'), g = c.getContext('2d'); c.width = 256; c.height = 64;
+        g.font = '700 26px Onest, sans-serif'; g.fillStyle = color || '#F4ECDE'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 128, 32);
+        var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthWrite: false, transparent: true })); sp.scale.set(5, 1.25, 1); return sp;
+      };
+      var axisGroup = new THREE.Group(); root.add(axisGroup);
+      var buildAxes = function () {
+        while (axisGroup.children.length) axisGroup.remove(axisGroup.children[0]);
+        var dirs = [[1, 0, 0], [0, 1, 0], [0, 0, 1]], cols = [0xFF6FA8, 0xFFD43B, 0x6ED6FF];
+        dirs.forEach(function (d, i) {
+          var geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-13 * d[0], -13 * d[1], -13 * d[2]), new THREE.Vector3(13 * d[0], 13 * d[1], 13 * d[2])]);
+          axisGroup.add(new THREE.Line(geo, new THREE.LineBasicMaterial({ color: cols[i], transparent: true, opacity: 0.55 })));
+          var D = DIMS[tState.axes[i]];
+          var lo = label('− ' + D.lo), hi = label(D.hi + ' +');
+          lo.position.set(-15 * d[0], -15 * d[1] - (i === 1 ? 0 : 0.8), -15 * d[2]); hi.position.set(15 * d[0], 15 * d[1] + (i === 1 ? 0 : -0.8), 15 * d[2]);
+          axisGroup.add(lo); axisGroup.add(hi);
+        });
+        var grid = new THREE.GridHelper(26, 4, 0x8E6CFF, 0x8E6CFF); grid.material.transparent = true; grid.material.opacity = 0.18; grid.position.y = -13; axisGroup.add(grid);
+      };
+      buildAxes();
+      var loader = new THREE.TextureLoader();
+      var radial = function (stops) { var c = document.createElement('canvas'), g = c.getContext('2d'); c.width = c.height = 128; var r = g.createRadialGradient(64, 64, 4, 64, 64, 62); stops.forEach(function (s) { r.addColorStop(s[0], s[1]); }); g.fillStyle = r; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); };
+      var glowTex = radial([[0, 'rgba(255,255,255,1)'], [0.5, 'rgba(255,255,255,.35)'], [1, 'rgba(255,255,255,0)']]);
+      var sunTex = radial([[0, '#FFF3B0'], [0.35, '#FFC75A'], [0.7, 'rgba(255,181,71,.35)'], [1, 'rgba(255,181,71,0)']]);
+      var selfSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, transparent: true, depthWrite: false })); root.add(selfSprite);
+      var nodes = CLIENT.map(function (p) {
+        var halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, opacity: 0.6 }));
+        var body = p.tender ? new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xFFB6CF, transparent: true, depthWrite: false })) : new THREE.Sprite(new THREE.SpriteMaterial({ map: loader.load(IMG[p.id]), transparent: true, depthWrite: false }));
+        body.userData.part = p; root.add(halo); root.add(body);
+        var name = label(p.tender ? 'Нежное место' : PARTS[p.id] ? PARTS[p.id].short : p.name); name.scale.set(4.2, 1.05, 1); root.add(name);
+        return { p: p, halo: halo, body: body, name: name };
+      });
+      var place = function () {
+        var f = tFourth();
+        nodes.forEach(function (n) {
+          var c = tAt(n.p, tState.s);
+          var pos = tState.axes.map(function (k) { return tState.iso >= 0 && k !== tState.iso ? 0 : c[k] * 12; });
+          var T = tT(n.p.T, tState.s), size = 1.4 + (T - 45) / 10;
+          var aff = tState.lens === null ? 1 : Math.exp(-Math.pow(c[f] - tState.lens, 2) * 3);
+          n.body.position.set(pos[0], pos[1], pos[2]); n.body.scale.set(size, size, 1);
+          n.halo.position.set(pos[0], pos[1], pos[2] - 0.05); n.halo.scale.set(size * 1.45, size * 1.45, 1);
+          n.halo.material.color.set(lerpColor(c[f])); n.halo.material.opacity = 0.2 + 0.5 * aff;
+          n.body.material.opacity = 0.35 + 0.65 * aff;
+          n.name.position.set(pos[0], pos[1] - size * 0.75 - 0.4, pos[2]);
+          n.name.material.opacity = 0.4 + 0.6 * aff;
+        });
+        var st = tT(SELF_T, tState.s), ss = 2 + (st - 40) / 6; selfSprite.scale.set(ss, ss, 1);
+      };
+      place();
+      th = { active: true, renderer: renderer, place: place, buildAxes: buildAxes };
+      /* drag to turn, wheel or pinch to zoom, tap to select */
+      var pts = {}, last = null, pinch = null, moved = 0, idleSpin = !calmNow();
+      var cv = renderer.domElement;
+      cv.addEventListener('pointerdown', function (e) { try { cv.setPointerCapture(e.pointerId); } catch (err) {} pts[e.pointerId] = { x: e.clientX, y: e.clientY }; last = { x: e.clientX, y: e.clientY }; moved = 0; idleSpin = false; });
+      cv.addEventListener('pointermove', function (e) {
+        if (!pts[e.pointerId]) return;
+        pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+        var ids = Object.keys(pts);
+        if (ids.length === 2) {
+          var a = pts[ids[0]], b = pts[ids[1]], d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (pinch) camera.position.z = Math.max(16, Math.min(60, camera.position.z * pinch / d));
+          pinch = d; moved += 10; return;
+        }
+        if (!last) return;
+        var dx = e.clientX - last.x, dy = e.clientY - last.y; moved += Math.abs(dx) + Math.abs(dy);
+        root.rotation.y += dx * 0.008; root.rotation.x = Math.max(-1.4, Math.min(1.4, root.rotation.x + dy * 0.008));
+        last = { x: e.clientX, y: e.clientY };
+      });
+      var up = function (e) {
+        delete pts[e.pointerId]; pinch = null;
+        if (moved < 6 && e.type === 'pointerup') {
+          var r = cv.getBoundingClientRect(), ray = new THREE.Raycaster();
+          ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+          var hit = ray.intersectObjects(nodes.map(function (n) { return n.body; }))[0];
+          showInfo(hit ? hit.object.userData.part : null);
+        }
+        last = null;
+      };
+      cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+      cv.addEventListener('wheel', function (e) { e.preventDefault(); camera.position.z = Math.max(16, Math.min(60, camera.position.z + e.deltaY * 0.03)); }, { passive: false });
+      var tick = function () {
+        if (!th || !th.active) return;
+        if (idleSpin) root.rotation.y += 0.0025;
+        renderer.render(scene, camera);
+        requestAnimationFrame(tick);
+      };
+      tick();
+    }).catch(function () {
+      msg.textContent = '3D не загрузилось. Ниже та же картина таблицей.';
+    });
+  };
+  var bindTherapist = function () {
+    var refresh = function (rebuildAxes) {
+      var f = tFourth();
+      document.getElementById('t4name').textContent = DIMS[f].name; document.getElementById('t4lo').textContent = DIMS[f].lo; document.getElementById('t4hi').textContent = DIMS[f].hi;
+      document.getElementById('tsname').textContent = sessionName(tState.s);
+      document.getElementById('t3d-table').innerHTML = tTable();
+      if (th) { if (rebuildAxes) th.buildAxes(); th.place(); }
+    };
+    [0, 1, 2].forEach(function (slot) {
+      document.getElementById('ax' + slot).addEventListener('change', function (e) {
+        var v = +e.target.value, other = tState.axes.indexOf(v);
+        if (other >= 0 && other !== slot) tState.axes[other] = tState.axes[slot];
+        tState.axes[slot] = v;
+        [0, 1, 2].forEach(function (s) { document.getElementById('ax' + s).value = tState.axes[s]; });
+        refresh(true);
+      });
+    });
+    var lens = document.getElementById('lens'), lensv = document.getElementById('lensv');
+    lens.addEventListener('change', function () { tState.lens = lens.checked ? +lensv.value / 100 : null; lensv.disabled = !lens.checked; refresh(); });
+    lensv.addEventListener('input', function () { if (lens.checked) { tState.lens = +lensv.value / 100; refresh(); } });
+    document.getElementById('iso').addEventListener('change', function (e) { tState.iso = +e.target.value; refresh(); });
+    var scrub = document.getElementById('tscrub');
+    scrub.addEventListener('input', function () { tState.s = +scrub.value / 100; refresh(); });
+    document.getElementById('tplay').addEventListener('click', function () {
+      tState.s = 0; scrub.value = 0;
+      var t0 = performance.now();
+      var step = function (now) {
+        if (current !== 'therapist') return;
+        tState.s = Math.min(2, (now - t0) / 2400 * 2); scrub.value = Math.round(tState.s * 100); refresh();
+        if (tState.s < 2) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
   };
 
   /* Diary report: participants copy this and send it to the researcher on day 7 and day 14. Nothing leaves the browser on its own. */
@@ -861,8 +1335,8 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       'Заданий сделано: ' + S.tasksDone,
       'Узелков: ' + quick.length + (quick.length ? ' (с частью: ' + quick.filter(function (k) { return k.part; }).length + ')' : ''),
       'Моментов «Накрыло»: ' + S.moments.length + (shifts.length ? ' · медиана сдвига: ' + (median(shifts) > 0 ? '+' : '') + median(shifts) : ''),
-      'Приглашений скопировано: ' + S.shares,
-      'Режим: ' + (S.mode === 'sky' ? 'небо' : 'светлый') + ' · Plus: ' + (S.plus ? (S.plus === 'yes' ? 'оформить' : 'не сейчас') + ' (' + S.plusPrice + ' ₽)' : 'не показан') + ' · созвездия: ' + (S.waitlist ? 'в списке' : 'нет')
+      'Приглашений скопировано: ' + S.shares + ' · касаний частей: ' + S.pokes,
+      'Режим: ' + (S.mode === 'sky' ? 'небо' : 'светлый') + (S.plain ? ' · проще' : '') + (S.calm ? ' · спокойная анимация' : '') + (S.sound ? ' · звук' : '') + ' · Plus: ' + (S.plus ? (S.plus === 'yes' ? 'оформить' : 'не сейчас') + ' (' + S.plusPrice + ' ₽)' : 'не показан') + ' · созвездия: ' + (S.waitlist ? 'в списке' : 'нет')
     ];
     S.moments.forEach(function (m, i) { lines.push('Момент ' + (i + 1) + ': ' + (m.part ? PARTS[m.part].short : 'не знаю') + ', ' + m.before + '→' + m.after + ', шаг: ' + m.move); });
     return lines.join('\n');
@@ -875,11 +1349,69 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       '<button class="btn" type="button" data-act="copy" data-target="report">Скопировать отчёт</button>';
   };
 
+  /* Life: pokes, quips, sparkles, celebrations. */
+  var lastQ = {};
+  var quipFor = function (id) {
+    if (S.plain) return id === 'sun' ? 'Солнце — это ты.' : id === 'luna' ? 'Луна — твой помощник.' : PARTS[id] ? PARTS[id].name + ': ' + PARTS[id].power.toLowerCase() + '.' : '';
+    var list = QUIPS[id] || []; if (!list.length) return '';
+    var i; do { i = Math.floor(Math.random() * list.length); } while (list.length > 1 && i === lastQ[id]);
+    lastQ[id] = i; return list[i];
+  };
+  var pokeEl = function (el) { if (!el) return; el.classList.remove('poked'); void el.offsetWidth; el.classList.add('poked'); setTimeout(function () { el.classList.remove('poked'); }, 560); };
+  var showQuip = function (btn, id) {
+    var sky = btn.closest('.sky'); if (!sky) return;
+    var old = sky.querySelector('.qb'); if (old) old.remove();
+    var r = btn.getBoundingClientRect(), sr = sky.getBoundingClientRect();
+    var x = (r.left + r.width / 2 - sr.left) / sr.width * 100, y = (r.top - sr.top) / sr.height * 100, below = y < 34;
+    var b = document.createElement('div'); b.className = 'qb' + (below ? ' below' : ''); b.setAttribute('role', 'status');
+    b.style.left = Math.max(32, Math.min(68, x)) + '%';
+    b.style.top = (below ? Math.min(70, (r.bottom - sr.top) / sr.height * 100 + 1) : Math.max(4, y - 1)) + '%';
+    b.innerHTML = '<span>' + esc(quipFor(id)) + '</span>' + (PARTS[id] ? '<button type="button" data-act="part" data-id="' + id + '">Познакомиться →</button>' : '');
+    sky.appendChild(b);
+    clearTimeout(showQuip.t); showQuip.t = setTimeout(function () { if (b.parentNode) b.remove(); }, 3800);
+  };
+  var sparkAt = function (sky, e) {
+    if (calmNow()) return;
+    var sr = sky.getBoundingClientRect(), s = document.createElement('span'); s.className = 'spark';
+    s.style.left = (e.clientX - sr.left) + 'px'; s.style.top = (e.clientY - sr.top) + 'px';
+    s.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#sym-spark"/></svg>';
+    sky.appendChild(s); setTimeout(function () { s.remove(); }, 720);
+  };
+  var confettiFrom = function (el) {
+    if (calmNow() || !el) return;
+    var r = el.getBoundingClientRect(), colors = ['#FFD43B', '#FF6FA8', '#8E6CFF', '#3DCB8E', '#6ED6FF', '#FF8A1F'];
+    for (var i = 0; i < 16; i++) {
+      var f = document.createElement('span'); f.className = 'felt';
+      f.style.left = (r.left + r.width / 2) + 'px'; f.style.top = (r.top + r.height / 2) + 'px';
+      f.style.background = colors[i % colors.length]; f.style.borderRadius = i % 3 ? '3px' : '50%';
+      f.style.setProperty('--dx', (Math.random() * 220 - 110).toFixed(0) + 'px'); f.style.setProperty('--dy', (80 + Math.random() * 160).toFixed(0) + 'px'); f.style.setProperty('--rot', (Math.random() * 720 - 360).toFixed(0) + 'deg');
+      document.body.appendChild(f); (function (n) { setTimeout(function () { n.remove(); }, 1400); })(f);
+    }
+  };
+  var knotFx = function () {
+    if (calmNow()) return;
+    var d = document.createElement('div'); d.className = 'knotfx';
+    d.innerHTML = '<svg viewBox="0 0 170 120" aria-hidden="true"><path d="M10 100C40 96 52 70 70 60c22-12 44 6 34 24-9 17-36 6-26-14C88 50 120 30 160 26" fill="none" stroke="#E5484D" stroke-width="4" stroke-linecap="round"/><circle cx="86" cy="66" r="9" fill="#E5484D"/></svg>';
+    document.body.appendChild(d); setTimeout(function () { d.remove(); }, 1500);
+  };
+  /* Plush look toward your finger. */
+  document.addEventListener('pointermove', function (e) {
+    var box = e.target.closest && e.target.closest('.sky, .hero');
+    if (!box || calmNow()) return;
+    var r = box.getBoundingClientRect();
+    box.style.setProperty('--lx', ((e.clientX - r.left) / r.width * 2 - 1).toFixed(2));
+    box.style.setProperty('--ly', ((e.clientY - r.top) / r.height * 2 - 1).toFixed(2));
+  });
+  document.addEventListener('pointerout', function (e) {
+    var box = e.target.closest && e.target.closest('.sky, .hero');
+    if (box && !box.contains(e.relatedTarget)) { box.style.setProperty('--lx', 0); box.style.setProperty('--ly', 0); }
+  });
+
   /* Router */
-  var current = '', prev = 'home';
+  var current = '', prev = 'home', busy = false;
   var partId = null;
   var TABS = [['home', 'ic-home'], ['parts', 'ic-parts'], ['knot', 'ic-knot'], ['practices', 'ic-practice'], ['profile', 'ic-me']];
-  var TAB_OF = { welcome: 'home', home: 'home', result: 'home', share: 'home', how: 'home', parts: 'parts', part: 'parts', two: 'parts', 'two-sample': 'parts', knot: 'knot', practices: 'practices', profile: 'profile', stars: 'profile', report: 'profile' };
+  var TAB_OF = { welcome: 'home', home: 'home', result: 'home', share: 'home', how: 'home', parts: 'parts', part: 'parts', two: 'parts', 'two-sample': 'parts', knot: 'knot', practices: 'practices', profile: 'profile', stars: 'profile', report: 'profile', therapist: 'profile' };
   var renderTabs = function (name) {
     var base = TAB_OF[name];
     tabs.querySelector('.in').innerHTML = TABS.map(function (t) {
@@ -892,17 +1424,25 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     opts = opts || {};
     if (name === 'home' && !hasSky()) name = 'welcome';
     if ((name === 'result' || name === 'share') && !hasSky()) name = 'test';
+    if (current === 'therapist' && name !== 'therapist') stopTherapist();
+    if ((name === 'home' || name === 'welcome') && !opts.keepScroll && current !== name) { lunaCache = null; welcomeChat = null; }
+    var fresh = !opts.keepScroll;
     if (name !== current && name !== 'part') prev = current || 'home';
     current = name;
+    typingNow = fresh && !calmNow() && (name === 'home' || name === 'welcome');
     var html = name === 'part' ? screens.part(partId) : name === 'two-sample' ? screens.two(true) : (screens[name] || screens.welcome)();
+    view.classList.remove('enter');
     view.innerHTML = html;
+    if (fresh && !calmNow()) { Array.prototype.forEach.call(view.children, function (c, i) { c.style.setProperty('--i', Math.min(i, 10)); }); void view.offsetWidth; view.classList.add('enter'); }
     tabs.hidden = name === 'test' || name === 'sos';
     if (!tabs.hidden) renderTabs(name);
-    if (!opts.keepScroll) window.scrollTo(0, 0);
+    if (fresh) window.scrollTo(0, 0);
     var token = { welcome: '', 'two-sample': 'two', part: 'parts' }[name];
     token = token === undefined ? name : token;
     try { if (location.hash.slice(1) !== token) history.replaceState(null, '', token ? '#' + token : location.pathname + location.search); } catch (e) {}
+    if (typingNow) setTimeout(function () { Array.prototype.forEach.call(view.querySelectorAll('.bubble.typing'), function (b) { b.classList.remove('typing'); }); }, 750);
     bindInputs();
+    if (name === 'therapist') { bindTherapist(); initTherapist(); }
   };
 
   var bindInputs = function () {
@@ -919,16 +1459,31 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     var note = document.getElementById('kn-note');
     if (note) note.addEventListener('input', function () { kn.note = note.value; });
   };
+  var setPressed = function (sel, on) { Array.prototype.forEach.call(document.querySelectorAll(sel), function (b) { b.setAttribute('aria-pressed', String(on(b))); }); };
 
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act],[data-go]');
-    if (!el) return;
-    if (el.dataset.go) { if (el.dataset.go === 'knot') kn = kn || null; go(el.dataset.go); return; }
+    if (!el) { var skyBox = e.target.closest('.sky'); if (skyBox) sparkAt(skyBox, e); return; }
+    if (busy) return;
+    if (el.dataset.go) { go(el.dataset.go); return; }
     var a = el.dataset.act, id = el.dataset.id;
     if (a === 'start') { if (hasSky()) S.answers = []; save(); go('test'); }
-    else if (a === 'answer') { S.answers.push(+el.dataset.i); if (hasSky() && !S.start) S.start = Date.now(); save(); go(S.answers.length >= SCENES.length ? 'result' : 'test'); }
+    else if (a === 'answer') {
+      busy = true; el.classList.add('picked'); pokeEl(el.querySelector('.idle')); sfx('pluck');
+      setTimeout(function () {
+        busy = false;
+        S.answers.push(+el.dataset.i); if (hasSky() && !S.start) S.start = Date.now(); save();
+        if (S.answers.length >= SCENES.length) { revealNext = !calmNow() && document.visibilityState === 'visible'; sfx('chime'); go('result'); } else go('test');
+      }, calmNow() ? 0 : 220);
+    }
     else if (a === 'back') { if (current === 'test') { S.answers.pop(); save(); go('test'); } else go(prev && prev !== 'part' ? prev : 'parts'); }
     else if (a === 'back-home') go('home');
+    else if (a === 'wchat') { welcomeChat = id; go('welcome', { keepScroll: true }); }
+    else if (a === 'reply') {
+      if (id === 'sos') { sos = null; go('sos'); return; }
+      lunaCache.reply = id; go('home', { keepScroll: true });
+    }
+    else if (a === 'why') { var w = el.nextElementSibling; if (w) w.hidden = !w.hidden; }
     else if (a === 'share') go('share');
     else if (a === 'copy') {
       var ta = document.getElementById(el.dataset.target);
@@ -937,22 +1492,51 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       var fallback = function () { ta.focus(); ta.select(); toast('Выделено — скопируй вручную'); };
       try { navigator.clipboard.writeText(ta.value).then(done, fallback); } catch (err) { fallback(); }
     }
-    else if (a === 'part') { partId = id; go('part'); }
+    else if (a === 'part') {
+      var av = el.querySelector('.idle');
+      if (av && !calmNow()) { busy = true; pokeEl(av); sfx('pluck'); setTimeout(function () { busy = false; partId = id; go('part'); }, 170); }
+      else { partId = id; go('part'); }
+    }
+    else if (a === 'poke') {
+      S.pokes++; save(); sfx('pluck');
+      pokeEl(el.querySelector('.idle') || el.querySelector('.lk') || el);
+      showQuip(el, id);
+    }
+    else if (a === 'poke-hero') {
+      S.pokes++; save(); sfx('pluck'); pokeEl(el.querySelector('.idle'));
+      var says = document.getElementById('says');
+      if (says) { says.textContent = '«' + quipFor(id).replace(/[«»]/g, '') + '»'; says.classList.remove('pop'); void says.offsetWidth; says.classList.add('pop'); }
+    }
+    else if (a === 'poke-luna') {
+      S.pokes++; save(); sfx('pluck'); pokeEl(el.querySelector('.idle'));
+      toast(quipFor('luna'));
+    }
     else if (a === 'mode') { S.mode = S.mode === 'sky' ? 'light' : 'sky'; save(); applyMode(); if (current === 'profile') go('profile', { keepScroll: true }); }
     else if (a === 'set-mode') { S.mode = id; save(); applyMode(); go('profile', { keepScroll: true }); }
+    else if (a === 'toggle') { S[id] = !S[id]; save(); applyMode(); if (id === 'sound' && S.sound) sfx('chime'); go(current, { keepScroll: true }); }
+    else if (a === 'forget') {
+      if (id === 'days') { S.days = {}; S.today = null; }
+      else if (id === 'knots') S.knots = S.knots.filter(function (k) { return k.kind === 'sos'; });
+      else if (id === 'moments') { S.moments = []; S.knots = S.knots.filter(function (k) { return k.kind !== 'sos'; }); }
+      else if (id === 'cover') { S.cover = ''; S.coverSeen = ''; }
+      save(); go('profile', { keepScroll: true }); toast('Забыто');
+    }
     else if (a === 'more-today') { var m = document.getElementById('more-today'); m.hidden = !m.hidden; }
-    else if (a === 'today') { S.today = { day: dayKey(), part: id, task: 0, done: false }; S.days[dayKey()] = true; act(id); save(); go('home', { keepScroll: true }); }
+    else if (a === 'today') {
+      busy = true; pokeEl(el.querySelector('.idle') || el.querySelector('svg.dd')); sfx('pluck');
+      setTimeout(function () { busy = false; S.today = { day: dayKey(), part: id, task: 0, done: false }; S.days[dayKey()] = true; act(id); save(); go('home', { keepScroll: true }); }, calmNow() ? 0 : 260);
+    }
     else if (a === 'other-task') { S.today.task++; save(); go('home', { keepScroll: true }); }
-    else if (a === 'done') { S.today.done = true; S.tasksDone++; act(S.today.part); save(); go('home', { keepScroll: true }); toast('Отмечено'); }
+    else if (a === 'done') { confettiFrom(el); sfx('chime'); S.today.done = true; S.tasksDone++; act(S.today.part); save(); go('home', { keepScroll: true }); toast(S.plain ? 'Отмечено' : 'Отмечено. ' + PARTS[S.today.part].short + ' это заметит.'); }
     else if (a === 'plus-yes' || a === 'plus-no') { S.plus = a === 'plus-yes' ? 'yes' : 'no'; save(); go('home', { keepScroll: true }); toast(S.plus === 'yes' ? 'Спасибо! Оплаты в прототипе нет — мы учтём твой ответ.' : 'Хорошо. Всё бесплатное остаётся с тобой.'); }
     else if (a === 'knot-part') { kn = { feel: null, body: [], part: id, note: '' }; go('knot'); }
-    else if (a === 'kn-feel') { kn.feel = kn.feel === id ? null : id; go('knot', { keepScroll: true }); }
-    else if (a === 'kn-body') { var bi = kn.body.indexOf(id); if (bi >= 0) kn.body.splice(bi, 1); else kn.body.push(id); go('knot', { keepScroll: true }); }
-    else if (a === 'kn-part') { kn.part = kn.part === id ? null : id; go('knot', { keepScroll: true }); }
+    else if (a === 'kn-feel') { kn.feel = kn.feel === id ? null : id; setPressed('[data-act="kn-feel"]', function (b) { return b.dataset.id === kn.feel; }); pokeEl(el.querySelector('svg.dd')); var sv = document.querySelector('[data-act="kn-save"]'); if (sv) sv.disabled = !kn.feel; }
+    else if (a === 'kn-body') { var bi = kn.body.indexOf(id); if (bi >= 0) kn.body.splice(bi, 1); else kn.body.push(id); el.setAttribute('aria-pressed', String(bi < 0)); }
+    else if (a === 'kn-part') { kn.part = kn.part === id ? null : id; setPressed('[data-act="kn-part"]', function (b) { return b.dataset.id === kn.part; }); pokeEl(el.querySelector('svg.dd')); }
     else if (a === 'kn-save') {
       if (!kn.feel) return;
       S.knots.push({ t: Date.now(), kind: 'knot', feel: kn.feel, body: kn.body.slice(), part: kn.part || null, note: (kn.note || '').trim() });
-      act(kn.part); save(); kn = null; go('knot', { keepScroll: true }); toast('Узелок завязан');
+      act(kn.part); save(); kn = null; knotFx(); sfx('pop'); go('knot', { keepScroll: true }); toast(S.plain ? 'Узелок сохранён' : 'Узелок завязан. На память — буквально.');
     }
     else if (a === 'sos-open') { sos = null; go('sos'); }
     else if (a === 'sos-new') { var sm = document.getElementById('sos-more'); sm.hidden = !sm.hidden; }
@@ -972,13 +1556,12 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     else if (a === 'sos-close') { sos = null; go('knot'); }
     else if (a === 'pr-filter') { prFilter = id; prOpen = null; go('practices', { keepScroll: true }); }
     else if (a === 'pr-open') { prOpen = prOpen === id ? null : id; go('practices', { keepScroll: true }); }
-    else if (a === 'pr-done') { var pp = PRACTICES.filter(function (p) { return p.id === id; })[0]; S.tasksDone++; act(pp && pp.part); save(); prOpen = null; go('practices', { keepScroll: true }); toast('Отмечено'); }
+    else if (a === 'pr-done') { var pp = PRACTICES.filter(function (p) { return p.id === id; })[0]; confettiFrom(el); sfx('chime'); S.tasksDone++; act(pp && pp.part); save(); prOpen = null; go('practices', { keepScroll: true }); toast('Отмечено'); }
     else if (a === 'waitlist') { S.waitlist = true; save(); go('stars', { keepScroll: true }); }
-    else if (a === 'plain') { S.plain = !S.plain; save(); go('profile', { keepScroll: true }); }
     else if (a === 'retake') { S.answers = []; save(); go('test'); }
     else if (a === 'reset') { resetArmed = true; go('profile', { keepScroll: true }); }
     else if (a === 'reset-no') { resetArmed = false; go('profile', { keepScroll: true }); }
-    else if (a === 'reset-yes') { resetArmed = false; var keepMode = S.mode; S = blank(); S.mode = keepMode; save(); sos = null; kn = null; go('welcome'); }
+    else if (a === 'reset-yes') { resetArmed = false; var keep = { mode: S.mode, calm: S.calm, sound: S.sound }; S = Object.assign(blank(), keep); save(); sos = null; kn = null; lunaCache = null; go('welcome'); }
   });
 
   /* Old links (#sky, #luna) from the first round of interviews still open the right place. */
@@ -986,7 +1569,7 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
   var fromHash = function () {
     var h = location.hash.slice(1);
     h = ALIAS[h] || h;
-    var ok = ['test', 'result', 'share', 'home', 'how', 'knot', 'sos', 'parts', 'two', 'practices', 'profile', 'stars', 'report'];
+    var ok = ['test', 'result', 'share', 'home', 'how', 'knot', 'sos', 'parts', 'two', 'practices', 'profile', 'stars', 'therapist', 'report'];
     if (ok.indexOf(h) >= 0) { if (h === 'sos') sos = null; go(h); }
     else go(hasSky() ? 'home' : 'welcome');
   };

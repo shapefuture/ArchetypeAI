@@ -1,7 +1,7 @@
-# Innerverse: the plan («Вы — не один тип. Вы — целая вселенная.»)
+# Innerverse: the plan («Ты — не один тип. Ты — целая вселенная.»)
 
 Status: **proposal for approval. Plan only; nothing is implemented.**
-Prepared 2026-10-28 on branch `claude/hopeful-franklin-jkny8n`. Version 4 (2026-10-28), branch `claude/innerverse-v4-direction`.
+Prepared 2026-10-28 on branch `claude/hopeful-franklin-jkny8n`. Version 5 (2026-10-28), branch `claude/innerverse-v4-direction`.
 
 This plan **supersedes** two earlier drafts:
 
@@ -20,13 +20,22 @@ v3 keeps v2's skeleton and v1's soul, and changes the words to fit the people th
 - **Theme.** Light by default. «Небо» is the dark mode (§3.1).
 - **References** are saved in [research/references/](research/references/README.md), each with what to take and what to avoid.
 
+**What changed in v5** (owner direction of 2026-10-28; §12, decisions 17–22):
+
+- **Alive.** It should feel like Humongous and Amanita games and Duolingo: everything you touch answers, the plush breathe and react, and motion is smooth (§3.6).
+- **Someone you talk to.** Луна opens each visit with a line about what you did, and you answer her. She remembers on the device, notices patterns and explains how she knows (§3.7).
+- **Humour for curious, neurodivergent and plural minds.** Puns and quirks, with a literal mode that switches them off, and care for systems (DID, OSDD) (§3.8).
+- **Icons and textures.** 3D soft object icons, as in `redesign.zip`, plus paper, felt and night-sky textures (§3.5).
+- **The therapist's sky.** The full 3+1-axis 3D universe for analysing results (§4.6).
+- **Gaps.** What The Pattern, Boo and Duolingo do that the plan didn't yet (§5.1). The 7-minute test is compared with the 64 and 147 in [research/test-vs-instruments.md](research/test-vs-instruments.md).
+
 **Evidence limit.** v3 rests on the owner's description of the audience, the desk research in v2 (public posts, listings, surveys, prices) and the current code. No interviews were run. Every audience claim is a hypothesis with a named test (§9).
 
 ---
 
 ## 0. The whole plan on one page
 
-**What it is.** The Pattern and Duolingo had a baby: playful daily self-discovery, rooted in IFS and other evidence-based and creative methods.
+**What it is.** The Pattern, Boo and Duolingo had a baby, for personal growth: playful daily self-discovery with a companion who knows you, rooted in IFS and other evidence-based and creative methods.
 
 **Who it is for.** People who love personality tests, astrology apps and Jung quotes, and want real depth. They are often neurodivergent and creative, and mostly intuitive types (INTJ, INFP, ENFP, ENTP). The core of the audience is young women who already pay for The Pattern or Co–Star, read about archetypes and send each other test results.
 
@@ -47,6 +56,8 @@ v3 keeps v2's skeleton and v1's soul, and changes the words to fit the people th
 | **Я** | The test, «Твоё небо» card, part pages, conversations and deals | understand and grow |
 | **Два неба** | Your sky meets a partner's or friend's: which parts get along, which collide, what to say | understand the people I love |
 | **Созвездия** | Small circles of people who share a part, around a weekly shared task | find my people |
+| **Feel** | Alive like a point-and-click game: everything answers your touch. Луна talks to you and remembers what you did | «Оно меня помнит!» |
+| **For therapists** | The full 3+1-axis 3D sky of a client's results, with consent | see the whole system |
 
 **End in mind.** After six weeks you know your inner cast by name. When a part takes over, you can step back in under two minutes. You and your partner share a language («моя Перфекционистка, твой Бунтарь»). You've found a few people who get you. It was fun, and you need the app a little less than you did.
 
@@ -174,7 +185,7 @@ Titles name the protective job and make people laugh with recognition. They are 
 
 ### 3.4 Positioning
 
-- **Public line:** «Вы — не один тип. Вы — целая вселенная.» It names the product (Innerverse) and answers the type-lover's frustration.
+- **Public line:** «Ты — не один тип. Ты — целая вселенная.» It names the product (Innerverse) and answers the type-lover's frustration.
 - **For type-lovers:** «Тип — это обложка. Внутри — целая вселенная.»
 - **Covers:** MBTI, Enneagram and a sun sign may be typed in by the person as a "cover" on their card. The app never measures or asserts them. This welcomes astrology fans without lying to sceptical INTJs.
 - **Honesty line**, on every result: «Отражение, а не диагноз.»
@@ -195,7 +206,84 @@ So every part a person crafts or restyles gets its doodle automatically, and the
 - **Shapes.** Ink-outlined cards with a hard offset shadow; a yellow pill button that presses like a key; speech bubbles; part rows (doodle, funny title, job, own line, stage on the path); filter chips; two-way switches.
 - **The centre button.** A yellow disc holding Ariadne's labyrinth: three rings, and a red thread that runs in through every gap to a knot at the centre.
 - **People.** Illustrations of the reader (onboarding, practices) use the same doodle line. They are scenes, never parts.
+- **Icons.** Content icons are 3D soft objects, as in `redesign.zip`: the owner's sticker set (palette, padlock, compass, sprout, diamond, phone, open book, ringed planet, double hearts), extended in the same style. The tab bar keeps simple line icons, so the centre button stands out.
+- **Textures.** Paper grain on the light page; felt fuzz and stitches on the plush; nebula, twinkling stars and the odd shooting star in «Небо»; a glossy, lit edge on the yellow button.
 - **References** set the mood only: [research/references/](research/references/README.md) lists what to take and what to avoid from each image.
+
+### 3.6 How it feels: alive
+
+It should feel like a Humongous or Amanita game: a world where everything you touch answers, small surprises reward curiosity, and nothing is a dead screen. The cast reacts to you the way Duolingo's characters do, but without guilt.
+
+- **Everything answers your touch.** Poke a plush and it squashes, springs back and says one of its lines. The Sun giggles, stars twinkle, Луна yawns, and the thread tightens. Curious people find hidden reactions.
+- **Idle life.** Plush breathe, blink and look toward your finger (`FeltCharacter` already takes a `look` direction). The sky drifts. Nothing stands still unless motion is off.
+- **Motion with weight.** Springs and squash-and-stretch, 150–400 ms, transform and opacity only, 60 fps on a mid-range Android. Screens slide and fade into each other, and a plush flies from a list to its own page.
+- **Celebrations sized to the act.** A knot pulls tight with a pop; a finished task drops a few felt scraps; a part that moves up its path gets a ceremony and a new patch or hat on its plush.
+- **Sound and touch.** Off by default. When turned on: soft plucks, felt thumps and a quiet night sky, each with its own volume, plus a short vibration on a poke.
+- **A fidget.** Any plush can be squished as a stim toy, with no goal and no score.
+- **Calm mode.** With reduced motion, everything still reacts, but with fades instead of bounces.
+- **Built with** the felt engine and three.js for the plush, SVG and CSS springs for doodles, and Rive or Lottie for scripted character moments where hand animation beats physics.
+
+### 3.7 Луна knows you
+
+Duolingo's owl knows your streak. Луна knows your sky, and she uses that knowledge to help, never to nag.
+
+- **She talks first.** Every visit opens with Луна's line about you, with two or three quick replies, like a chat. Your answer changes what comes next.
+- **She remembers, on your device:** what you picked today, your knots (time, feeling, body place, part), which steps helped, your deals and paths, your cover, and your own words.
+- **She notices patterns** and says them plainly: «Вечерами чаще всего включается «А вдруг?»», «Перед дедлайнами ОТК не спит». Forecasts come from your data, not from the stars: «По понедельникам утром обычно громко. Начнём помягче?»
+- **She uses your words.** If you wrote «сердце в пятки», she says «сердце в пятки», not «тревога».
+- **Parts answer from history.** A part's line changes with what you did: «Спасибо за выходной. Я почти не проверял.» The loudest part writes a weekly letter in its own voice. Anniversaries come back: «Месяц назад ОТК был незнакомцем».
+- **Moments that make people say "wow":**
+  - the «Небо» sky shows your week (clear after a calm one) and the real moon phase;
+  - plush earn patches and hats from real acts;
+  - parts sit on your desk in AR (the universe already supports WebXR);
+  - «Итоги сезона» is a story you want to share.
+- **Trust, so it never feels creepy:**
+  - **Explained.** Every remembered line has «Почему я это знаю?», which shows the knots it came from.
+  - **Visible.** «Луна помнит» in Профиль lists what is stored, with «Забыть» on each item.
+  - **Opt-in.** AI writing (the existing coach, memory and JITAI) runs only with consent.
+  - **Local first.** Data stays on the device first, under 152-ФЗ.
+  - **Never:**
+    - quotes private notes in notifications or shared cards;
+    - comments on food or bodies unasked;
+    - uses absence to guilt-trip.
+
+### 3.8 Humour for curious, neurodivergent and plural minds
+
+The audience includes many autistic, ADHD and plural people (systems, including DID and OSDD), and creative people of every kind. The jokes are written for them first and work for everyone.
+
+- **Puns and quirks:**
+  - «Завяжи узелок на память. Буквально.»
+  - «У нас не тараканы в голове, у нас коллектив.»
+  - «Министр «Потом» одобрил этот пункт. Позже.»
+  - «ОТК проверил эту шутку трижды.»
+  - «Сколько у тебя сегодня ложек?»
+  - «Вкладок открыто: 47. Гиперфокус: включён.»
+  - «Маскировка выключена. Здесь все свои.»
+  - «3:00 — время заседания отдела «А вдруг?»»
+  - «Это не баг. Это часть.»
+- **Rules:**
+  - every joke sits next to the plain meaning, and instructions are never sarcastic;
+  - never at the person's expense;
+  - no jokes about hurt parts, crises, food or bodies;
+  - humour switches off inside «Меня накрыло»;
+  - «Говорить проще» turns off jokes and metaphors together.
+- **Neurodivergent-friendly:**
+  - predictable layouts and visible time;
+  - practices filtered by energy («мало ложек»);
+  - «Подробнее» corners for deep dives;
+  - sessions to work alongside others;
+  - the existing sensory settings, and no streaks.
+- **Plural-friendly:**
+  - an option to be addressed as «вы» («нас несколько»);
+  - «Кто сегодня главный?» works as a front check-in;
+  - members can leave notes for each other on «Твоя нить»;
+  - flows can be finished by someone else later;
+  - the app never assumes that merging is the goal.
+- **Safety for dissociative experience:**
+  - Innerverse is not a treatment for DID or OSDD;
+  - grounding comes first, and there is no work with hurt parts in the app;
+  - a plural-informed clinician reviews the flows;
+  - crisis routing stays on every free-text surface.
 
 ---
 
@@ -265,9 +353,26 @@ The Lab holds everything without a job yet.
 | «Глубокая карта» | The 64/147 instruments |
 | «Репетиция» | Replay |
 | Psychologist layer | Therapist link and booking |
+| The therapist's 3+1 sky | The universe: `universe-scene.ts` and `universe-lens.ts` (four dimensions, axis choice, isolation, lens, WebXR) |
+| «Уточнить небо» | The 14-item Quick Scan (`screens/quick-scan.jsx`) |
 | Comfort controls | `sensory-preferences.ts` |
 
-New work: the test, the card, the daily card and task library, the «Меня накрыло» flow, part arcs, the doodle renderer and the share target.
+New work: the test, the card, the daily card and task library, the «Меня накрыло» flow, part arcs, the doodle renderer, Луна's greeting and memory panel, the motion layer and the share target.
+
+### 4.6 The therapist's sky (Step 3)
+
+A psychologist the client invites sees the client's full sky in 3D, built on the universe that already exists.
+
+- **Axes, 3+1.** The 64 places each archetype on four dimensions: **Агентность** (active ↔ receptive), **Температура** (cool ↔ hot), **Фокус** (self ↔ other) and **Привязанность** (avoidant ↔ anxious). Any three are X, Y and Z, and the fourth is shown as colour and as a lens that pulls matching parts forward. Any axis can be isolated.
+- **What else is drawn:**
+  - **size:** activation from the 147, shown as T-scores;
+  - **threads:** polarizations;
+  - **a chain:** the coping stack, from the first protector down to the part it protects;
+  - **glow:** how often a part shows up in the client's knots;
+  - **a time scrubber:** moves through assessments and weeks.
+- **Language.** Professional terms (manager, firefighter, exile) are allowed here, because the audience is clinicians. The client's own view keeps the funny titles.
+- **For the session.** Notes per part, filters by family, a snapshot to compare later, PDF and CSV export, and WebXR when the room has a headset.
+- **Consent.** Per item: the client chooses what the therapist sees, can withdraw at any time, and every view is logged.
 
 ---
 
@@ -288,6 +393,35 @@ New work: the test, the card, the daily card and task library, the «Меня н
 | Money | | Plus, pairs, psychologists; Russian payments | Unchanged |
 | Evidence | | Tests with pass and kill thresholds | Unchanged, renamed |
 | Dropped | Feature-home table, six metaphors, quilt, weather window | Cockpit, crew, «Стыковка», «Пересадка», «Разбор полётов» | |
+
+### 5.1 What the baby still misses: The Pattern, Boo and Duolingo
+
+What each parent does that people love, and what Innerverse takes from it. «Have» means it is already in the plan.
+
+| Feature | From | Innerverse version | Decision | Step |
+|---|---|---|---|---|
+| An eerily specific long portrait | The Pattern | «Портрет неба»: a long read from the deep map, told in your parts' voices | Adopt | 2 (Plus) |
+| Timing and forecasts | The Pattern | «Погода внутри»: patterns from your own knots and calendar, never from the stars | Adapt | 2 |
+| Bonds with many people | The Pattern | «Два неба» with several people; a group sky for a family, flat or team | Extend | 2 |
+| Matching friends and dates by personality | Boo | «Созвездия» first, then matching by sky | After T8 | 4 |
+| Interest communities ("universes") | Boo | Circles around a shared part and a shared interest or fandom | Adapt | 4 |
+| A database of typed characters | Boo | «Небо персонажа»: skies of public-domain characters (Шерлок Холмс, Онегин, Алиса) that people can argue about; strong for special interests | Adopt | 2 |
+| Icebreakers | Boo | Openers from two skies: «Спроси про её Министра "Потом"» | Adopt | 2 |
+| A cast with personalities that reacts | Duolingo | The plush cast and Луна, alive (§3.6) | Adopt | 1 |
+| Bite-size lessons with instant feedback | Duolingo | «Карточка дня» and practices | Have | 1 |
+| Streaks, XP, leagues | Duolingo | The moon rhythm instead; no leagues | Reject: guilt and rejection sensitivity | – |
+| Friend quests | Duolingo | The weekly task in «Два неба»; co-working in «Созвездия» | Have, extend | 1–4 |
+| Badges and a shop | Duolingo | Felt patches and outfits for your plush, earned by real acts; no loot boxes, no paid status | Adapt | 2 |
+| Notifications with character | Duolingo | Notes from your parts in their voices; quiet hours; never guilt | Adapt | 1 |
+| Role-play, a video call with a character, "explain my answer" | Duolingo Max | «Разговор» with a part; a voice call with Луна; «Объясни моё небо» | Adopt | 2 |
+| Stories | Duolingo | «Истории»: two-minute interactive stories with the plush cast, where you choose who reacts | Adopt | 2 |
+| Year in review | Duolingo | «Итоги сезона», made to share | Adopt | 2 |
+| Revisiting weak spots | Duolingo | A check-in with a part you haven't heard from in a while | Adopt | 2 |
+| Working alongside someone | Neurodivergent tools | «Посиди со мной»: 25 minutes alongside other people, or alongside a part | Adopt | 4 |
+| Front log and a board between members | Plural tools | «Кто сегодня главный?» as a front check-in; notes between members on «Твоя нить» | Adapt with care | 2–3 |
+| A personal safety plan | Clinical apps | «План на чёрный день»: people, places and steps chosen in a calm moment | Adopt | 1 |
+| Something to fidget with | Neurodivergent tools | A squishable plush | Adopt | 1 |
+| Parts in the room | — | Your plush on your desk in AR (WebXR is already in the code) | Later | 3 |
 
 ---
 
@@ -344,6 +478,10 @@ New work: the test, the card, the daily card and task library, the «Меня н
 | T10 | The soft, astrology-adjacent voice and «ты» don't cost credibility | A/B the card copy with type-lovers vs. INTJ-heavy groups | Resonance within 10 points across groups | Add a «строже» voice option |
 | T11 | Noticing becomes a habit between crises | «Узелок» counts in the diary study | ≥40% of week-2 actives tie ≥3 knots a week | Fold noticing into the daily card |
 | T12 | The doodle and the plush read as the same character | In interviews, match six doodles to their plushes | ≥90% matched | Carry more of the plush into the doodle (patch, topper, colour) |
+| T13 | Луна's memory feels welcome, not creepy | In interviews and the diary, react to her remembered lines and «Почему я это знаю?» | ≥70% "приятно" or "полезно", ≤10% "жутковато" | Remember less; ask before using a memory |
+| T14 | The humour lands with neurodivergent and plural readers | Rate a joke set; watch who turns on «Говорить проще» | ≥60% like it; ≤10% confused or hurt | Rewrite the set with community readers |
+| T15 | Therapists use the 3+1 sky | Eight psychologists from T7 try it with a real (consenting) client | ≥5 use it in a session and ask to keep it | Simplify to a 2D map |
+| T16 | The scene test agrees with the 147 | 30–50 people take both | Family scores correlate ≥ .5; top-3 test–retest ≥ 70% | Call the result a first sketch; push «Уточнить небо» |
 
 **Interview guide (30 minutes, never pitch).** Ask about the last test or horoscope they took and what they did with it; whether a result ever changed what they did; the last time a reaction took over and what they tried in the next hour; the last time they didn't understand a partner or friend; how they found the people who get them; and what they pay for now and what they stopped paying for. Record episodes, not opinions.
 
@@ -355,8 +493,8 @@ New work: the test, the card, the daily card and task library, the «Меня н
 |---|---|---|
 | **0. Learn** (2 weeks) | 15 interviews; a clickable prototype of the test, card, daily card and «Узелок» behind a flag; psychologist outreach with a paid pilot; payment and legal options | T1 signal, T7 interest, T12, payments decided |
 | **1. Core** (3–4 weeks) | Test and card, daily card and tasks, «Узелок» with «Меня накрыло» and «Твоя нить», the doodle renderer, «Два неба» lite, share target, opt-in metrics, safety rails | T1–T4, T9–T11 |
-| **2. Depth** | «Разговор», «Договор», «Итоги недели», briefings, «Глубокая карта», Plus payments, stickers | T5, T6 |
-| **3. Psychologists** | Invites, assigned tasks, consented sharing, session digest | T7 |
+| **2. Depth** | «Разговор», «Договор», «Итоги недели», briefings, «Уточнить небо» and «Глубокая карта», letters and a voice for Луна, «Истории», patches and outfits, Plus payments, stickers | T5, T6, T13, T16 |
+| **3. Psychologists** | Invites, assigned tasks, consented sharing, session digest, the 3+1 sky | T7, T15 |
 | **4. «Созвездия»** | Fake door, then circles, then matching | T8 and the safety plan |
 
 The look in §3.5 applies inside each step as needed. It is not a separate redesign phase.
@@ -378,6 +516,10 @@ The look in §3.5 applies inside each step as needed. It is not a separate redes
 | Licensing of the 42 provided stickers in a public repo | Resolved 2026-10-28: the stickers are the owner's own work |
 | Doodles drift from the plush people craft | One renderer from the sewing record; no hand-drawn character art; T12 |
 | Therapy words leak into the interface (today's app shows «Менеджеры», «Пожарные», «Изгнанники») | Rename on the surface in Step 1 and keep the families internal; a copy check for the banned list in §3.2 |
+| Awareness feels like surveillance | «Почему я это знаю?» on every remembered line; «Луна помнит» with «Забыть»; AI only with consent; T13 |
+| Motion costs battery or frame rate | Transform and opacity only, a 60 fps budget checked on a mid-range Android, calm mode |
+| Jokes confuse or hurt | Plain meaning beside every joke; literal mode; no jokes in crises; T14 |
+| Plural and dissociative users are destabilised | Not a treatment claim; grounding first; no work with hurt parts; plural-informed clinician review |
 
 ---
 
@@ -399,5 +541,11 @@ The look in §3.5 applies inside each step as needed. It is not a separate redes
 14. **Voice.** «Ты», gender-neutral, Russian only on a Russian screen (§6). **Chosen on 2026-10-28 on the owner's instruction to make an educated guess; T10 checks it.**
 15. **Theme.** Light by default; «Небо» is the dark mode. **Decided by the owner on 2026-10-28.**
 16. **References.** All references saved with notes in [research/references/](research/references/README.md). **Done on 2026-10-28.**
+17. **Alive.** Humongous, Amanita and Duolingo as the bar for feel: everything reacts, smooth motion, optional sound (§3.6). **Owner direction, 2026-10-28.**
+18. **Aware.** Луна talks first and remembers, with explanations and a memory panel (§3.7). **Owner direction, 2026-10-28.**
+19. **Humour.** Puns and quirks for curious, neurodivergent and plural minds, with literal mode and plural care (§3.8). **Owner direction, 2026-10-28.**
+20. **Icons and textures** as in the references and `redesign.zip` (§3.5). **Owner direction, 2026-10-28.**
+21. **The therapist's 3+1 sky** (§4.6). **Owner direction, 2026-10-28.**
+22. **Tests in three depths** sharing one cast, with exiles hidden from the consumer deep map by default ([research/test-vs-instruments.md](research/test-vs-instruments.md)). **Recommended; awaiting the owner.**
 
 Nothing is implemented until you approve. After approval, the steps become Beads under `ArchetypeAI-d6d`.

@@ -126,7 +126,7 @@ Title: **«Исследование о самопознании и отноше�
 
 ### 4.6 Last five minutes only: a quick reaction (optional)
 
-Show «Ваше небо» from the prototype, or a screenshot, with no explanation.
+Show «Твоё небо» from the prototype, or a screenshot, with no explanation.
 
 > «Что вы видите? Что бы с этим сделали?» *(Then stay silent. Write down their first words.)*
 
@@ -157,7 +157,7 @@ Show «Ваше небо» from the prototype, or a screenshot, with no explanat
 2. «Сделали задание дня?» (да / частично / нет / сегодня не до этого)
 
 **When something hits:**
-3. «Накрыло?» → the centre button «Узелок» → «Меня накрыло» → «Кто сейчас ведёт: ты или часть? До: 0–10, после: 0–10». On calmer moments, «Завязать узелок» (30 seconds). The report counts both, never their texts.
+3. «Накрыло?» → «Меня накрыло» on «Главная» (six short steps, safety question first). On calmer moments, «Узелки» → «Новый узелок» (30 seconds). The report counts both, never their texts. Version 6 of the prototype does not yet ask the 0–10 before and after ratings; add them to the SOS flow before this diary runs.
 
 **Day 7:**
 4. «Что запомнилось за неделю?»
@@ -252,9 +252,9 @@ Surprises:
 - [ ] The thank-you: an amount (1,000–1,500 ₽ is typical for 30–40 minutes) or a year of Plus.
 - [x] Crisis guidance: the app's wording plus 112 or the local emergency number (§6). Optional: add a verified hotline to both the app and §6.
 - [ ] The screener link.
-- [x] The prototype: [`prototype/`](prototype/) (source and build script), published privately as an artifact. Share it with each participant before the session. It covers the test (8 of the planned 20–25 scenes), «Твоё небо», the daily card, the centre «Узелок» with «Меня накрыло» and «Твоя нить», parts and a «Два неба» example, practices, the light and «Небо» modes and the «Созвездия» waitlist. State stays in the participant's browser. «Профиль» → «Сбросить прототип» clears it between sessions. Old links ending in #sky or #luna still open home and the profile.
+- [x] The prototype: [`prototype/`](prototype/) (source and build script), published privately as an artifact. Share it with each participant before the session. It covers the test (eight scenes, the 14-item scan and the 147 in three sittings, all scored by the app's own code), «Твоё небо» as a 2D sky, the check-in, «Узелки» with sealed notes, «Меня накрыло» on «Главная», the parts with their tools, practices, the reminder settings, the therapist's 3+1D view (Ты → «Терапевт»), the light and «Небо» modes, and «Отчёт для исследования». State stays in the participant's browser. Ты → «Сбросить прототип» clears it between sessions. The «Созвездия» waitlist is not in version 6.
 - [ ] T12, in the session: show six doodles and six plushes from the prototype and ask the participant to pair them. Note how many pairs are right.
 - [ ] T13, in the session: after the participant has tied a knot, reopen «Главная» and read Луна's line together. Ask «Как вам то, что она это помнит?», then show «Почему я это знаю?». Note the words they use: "приятно", "полезно", "жутковато".
 - [ ] T14, in the session: let the participant poke the parts for a minute. Ask which line made them smile, and whether any felt confusing or hurtful. Note whether they turn on «Говорить проще».
-- [ ] The prototype also has a therapist demo (Профиль → «Для психолога · пример», or the link ending in #therapist). Show it only to psychologists in the T7 outreach.
+- [ ] The prototype also has a therapist demo (Ты → «Терапевт», with two invented clients). Show it only to psychologists in the T7 outreach.
 - [ ] The diary channel: prototype, bot or form.

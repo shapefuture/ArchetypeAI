@@ -17,7 +17,7 @@ export default defineConfig({
     configureServer(server) {
       server.middlewares.use('/__plush/', (req, res) => {
         const id = (req.url || '').replace(/^\//, '');
-        if (req.method !== 'POST' || !/^[a-z-]+$/.test(id)) { res.statusCode = 400; res.end(); return; }
+        if (req.method !== 'POST' || !/^[a-z_-]+$/.test(id)) { res.statusCode = 400; res.end(); return; }
         let body = '';
         req.on('data', (chunk) => { body += chunk; });
         req.on('end', () => {

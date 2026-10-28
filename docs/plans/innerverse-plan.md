@@ -1,7 +1,7 @@
 # Innerverse: the plan («Ты — не один тип. Ты — целая вселенная.»)
 
 Status: **proposal for approval. Plan only; nothing is implemented.**
-Prepared 2026-10-28 on branch `claude/hopeful-franklin-jkny8n`. Version 5 (2026-10-28), branch `claude/innerverse-v4-direction`.
+Prepared 2026-10-28 on branch `claude/hopeful-franklin-jkny8n`. Version 6 (2026-10-28), branch `claude/innerverse-v4-direction`.
 
 This plan **supersedes** two earlier drafts:
 
@@ -29,6 +29,16 @@ v3 keeps v2's skeleton and v1's soul, and changes the words to fit the people th
 - **The therapist's sky.** The full 3+1-axis 3D universe for analysing results (§4.6).
 - **Gaps.** What The Pattern, Boo and Duolingo do that the plan didn't yet (§5.1). The 7-minute test is compared with the 64 and 147 in [research/test-vs-instruments.md](research/test-vs-instruments.md).
 
+**What changed in v6** (owner review of the v5 prototype, 2026-10-28; §12, decisions 23–30):
+
+- **The voice.** Quirky Russian with soul: natural phrasing, names borrowed from characters people know (Шапокляк, Кролик, Тигра, Карлсон, Чебурашка), and jokes that land. «Профсоюз» is gone, because the owner found it unclear (§3.2, §6).
+- **Every function is in the prototype.** Forty-three rows of the app's functions each have a place in the prototype, marked full, simple or plan (§4.7).
+- **The user's sky is 2D.** Flat doodles on a flat field, with no glow and no squeezed 3D (§3.5, §4.1).
+- **The therapist's sky is the app's own 3+1D universe**, reused as it is, with each part shown against its reference baseline in words and never in numbers (§4.6).
+- **SOS is a guided exercise:** a safety question first, then breathing, grounding, naming the loudest part, one small step, and a note in «Узелки». «Выйти» is a button (§8).
+- **Tests reconciled, with educated guesses** (§9, T16–T19): scene points set a level for each part, levels become tiers through the app's own scoring, the 14-item quick scan keeps the app's rule, the 147 is taken in three sittings of 49, and the 64 stays as a legacy map.
+- **Reminders** on the day, the week and the month, with guidance and lock-screen privacy (§3.9). Sending them from a server is an owner decision (§12, decision 29).
+
 **Evidence limit.** v3 rests on the owner's description of the audience, the desk research in v2 (public posts, listings, surveys, prices) and the current code. No interviews were run. Every audience claim is a hypothesis with a named test (§9).
 
 ---
@@ -49,15 +59,15 @@ v3 keeps v2's skeleton and v1's soul, and changes the words to fit the people th
 
 | | What | In the person's words |
 |---|---|---|
-| **World** | Your inner sky on a sunny page. You are the Sun; your parts are plush characters you can restyle (felt in 3D, doodles in 2D); Луна is your guide. «Небо» is the night, dark mode | «Моё внутреннее небо» |
+| **World** | Your inner sky as a flat doodle picture. You are the Sun; your parts are doodles you can restyle, and Луна is your guide. The 3D universe belongs to the therapist. «Небо» is the night, dark mode | «Моё внутреннее небо» |
 | **Model** | Your parts, each with a funny job title that honours its good intention, its own line in a speech bubble, and an arc from stranger to ally | «Кто живёт внутри?» |
-| **Daily** | «Кто сегодня главный?» (10 s) gives a «Карточка дня» with one small task (2–5 min) | the horoscope habit, made true |
+| **Daily** | «Кто сегодня главный?» (10 s) gives a «Карточка дня» with one small task (2–5 min). Reminders on the day, the week and the month (§3.9) | the horoscope habit, made true |
 | **«Узелок»** | The centre button. Tie a knot when a part shows up (30 s), or «Меня накрыло» → «Кто это?» → «Рядом» → «Мой шаг» in under two minutes. Every knot lands on «Твоя нить», the diary | «Меня накрыло — помогите» |
 | **Я** | The test, «Твоё небо» card, part pages, conversations and deals | understand and grow |
 | **Два неба** | Your sky meets a partner's or friend's: which parts get along, which collide, what to say | understand the people I love |
 | **Созвездия** | Small circles of people who share a part, around a weekly shared task | find my people |
 | **Feel** | Alive like a point-and-click game: everything answers your touch. Луна talks to you and remembers what you did | «Оно меня помнит!» |
-| **For therapists** | The full 3+1-axis 3D sky of a client's results, with consent | see the whole system |
+| **For therapists** | The app's own 3+1-axis universe for a client's results, with each part shown against its reference baseline in words, not numbers, and with consent | see the whole system |
 
 **End in mind.** After six weeks you know your inner cast by name. When a part takes over, you can step back in under two minutes. You and your partner share a language («моя Перфекционистка, твой Бунтарь»). You've found a few people who get you. It was fun, and you need the app a little less than you did.
 
@@ -148,12 +158,31 @@ Everything else from v1's world (quilt, weather window, spools, hoop) is dropped
 
 Titles name the protective job and make people laugh with recognition. They are gender-neutral. Jung-style archetype words (Страж, Мечтатель, Бунтарь, Целительница) can appear as a part's "second name", since this audience already speaks that language, but the app never claims to type you by Jungian theory.
 
-- «Отдел контроля качества (без выходных с 2009 года)»: the inner critic
-- «Министр "Потом"»: procrastination
-- «Начальник отдела "А вдруг?"»: anxiety
-- «Главный по "всем ли удобно?"»: people-pleasing
-- «Служба утешительных вкусняшек»: comfort eating
-- «Профсоюз "Хватит"»: exhaustion
+The v6 names (the owner asked for quirky Russian with soul and comic-character inspiration). Each name is read aloud before it ships. Internal family ids stay in the code.
+
+| Family | Name in the prototype | Inspiration and job |
+|---|---|---|
+| Inner critic | **Шапокляк** | Sharp and gossipy; has a remark about every bump in the road |
+| Controller | **Завхоз** | A spare plan for the spare plan, and a spare stapler |
+| Pleaser | **Официант** | «Что принести? Всё будет!» Never says no |
+| Taskmaster | **Кролик** | Busy and organising: «Ну что, давайте организовываться!» (Winnie-the-Pooh) |
+| Analyst | **Знайка** | Explains everything, including what nobody asked it to explain (Nosov) |
+| Hermit | **Ёжик** | «Туман — мой друг» («Ёжик в тумане») |
+| Bypasser | **Тигра** | Bounces over the puddles and calls every puddle a fine day (Tigger) |
+| Numb (firefighter) | **Залипашка** | «Я на минутку…» Three hours later |
+| Rebel (firefighter) | **Не буду** | Refuses to be told, and means it |
+| Charmer (firefighter) | **Карлсон** | Arrives with a flourish and applauds himself («Я лучший, между прочим») |
+| Abandoned (exile) | **Чебурашка** | A small one nobody was expecting; tender, never a punchline |
+| Ashamed (exile) | **Кот под диваном** | Broke the vase and hides under the sofa: «Меня тут нет» |
+| Frightened (exile) | **Заяц** | Still running, though the wolf left long ago («Ну, погоди!») |
+| Unseen (exile) | **Крайний на фото** | Always at the edge of the picture, glad that everyone else is fine |
+| Sage (resource) | **Сова** | Sees the whole picture, sometimes in silence |
+| Warrior (resource) | **Богатырь** | Holds the outpost and wants a task worth the strength |
+| Caregiver (resource) | **Обнимашка** | Warms everyone except itself; needs rest too |
+| Explorer (resource) | **Незнайка** | Doesn't know, so it tries and looks. With Знайка, a fair team |
+| Guide | **Луна** | Talks first and remembers only what you chose to keep |
+
+«Профсоюз» (Trade union) and the earlier «Министр "Потом"», «Начальник отдела "А вдруг?"» and «Служба вкусняшек» are retired. The owner found the first unclear and the rest too formal.
 
 **Each part has its own line**, in its own voice, shown in a speech bubble: «Ещё разок проверим?», «Начнём с понедельника», «Всё, мы бастуем». The line makes the title funny and the intention audible.
 
@@ -196,18 +225,18 @@ Titles name the protective job and make people laugh with recognition. They are 
 
 | Look | Drawn by | Used for |
 |---|---|---|
-| **Felt, 3D** | The engine's WebGL plush (`feltThumbnail`, the universe) | Keepsakes: the sky, «Твоё небо» and its story card, a part's page, «Рядом», stickers, «Мастерская» |
-| **Doodle, 2D** | The same sewing record, drawn flat: the body in its exact felt colour with an ink outline; the same face, patch and topper; no felt texture or stitches | Everything small: part rows, chips, test answers, feelings, practices, «Твоя нить», «Два неба» lists |
+| **Felt, 3D** | The engine's WebGL plush (`feltThumbnail`, the universe) | Keepsakes on a part's page, «Мастерская», and the therapist's 3+1D universe. Never on the user's sky |
+| **Doodle, 2D** | The same sewing record, drawn flat: the body in its exact felt colour with an ink outline; the same face, patch and topper; no felt texture or stitches | The user's sky, part rows, chips, test answers, feelings, practices, «Узелки», «Два неба» lists |
 
 So every part a person crafts or restyles gets its doodle automatically, and the two always match. Nobody draws character art by hand, and no character is traced from a reference. In the app this is one function beside `toSVG` in `felt-atelier/src/flat.js` (`toDoodleSVG`). The prototype's [`doodles.mts`](research/prototype/doodles.mts) is the working draft: it runs the app's own `feltDna` and the engine, and its cast ([`cast.ts`](research/prototype/cast.ts)) uses the code's seed parts where they fit, plus parts crafted from the same editor options. Interface icons that are not parts, such as feelings and test-answer tones, use the same engine with its own expressions.
 
-- **Palette.** Paper `#FBF4E6`, ink `#1C1830`, one sunflower-yellow primary action `#FFD43B`, lilac `#8E6CFF` for secondary actions, and pastel tints for cards. Plush colours come from the editor's palette. «Небо» turns the paper to night `#15122B` with stars, and doodle outlines turn to chalk.
+- **Palette.** Paper `#FBF4E6`, ink `#1C1830`, one sunflower-yellow primary action `#FFD43B`, lilac `#8E6CFF` for secondary actions, and pastel tints for cards. Plush colours come from the editor's palette. «Небо» turns the paper to night `#17142E`, and the sky becomes a flat indigo field with doodle stars. Doodle outlines turn to chalk. No gradients and no glow.
 - **Type.** A heavy rounded display face (Rubik Black in the prototype) for headings, Onest for text, and Caveat for the parts' own lines and handwritten notes.
 - **Shapes.** Ink-outlined cards with a hard offset shadow; a yellow pill button that presses like a key; speech bubbles; part rows (doodle, funny title, job, own line, stage on the path); filter chips; two-way switches.
 - **The centre button.** A yellow disc holding Ariadne's labyrinth: three rings, and a red thread that runs in through every gap to a knot at the centre.
 - **People.** Illustrations of the reader (onboarding, practices) use the same doodle line. They are scenes, never parts.
 - **Icons.** Content icons are 3D soft objects, as in `redesign.zip`: the owner's sticker set (palette, padlock, compass, sprout, diamond, phone, open book, ringed planet, double hearts), extended in the same style. The tab bar keeps simple line icons, so the centre button stands out.
-- **Textures.** Paper grain on the light page; felt fuzz and stitches on the plush; nebula, twinkling stars and the odd shooting star in «Небо»; a glossy, lit edge on the yellow button.
+- **Textures.** Paper grain on the light page; felt fuzz and stitches on the plush; a flat sky with doodle stars in «Небо», with no nebula and no glow (the owner found the glowing 3D sky ugly); a glossy, lit edge on the yellow button.
 - **References** set the mood only: [research/references/](research/references/README.md) lists what to take and what to avoid from each image.
 
 ### 3.6 How it feels: alive
@@ -287,6 +316,30 @@ The audience includes many autistic, ADHD and plural people (systems, including 
 
 ---
 
+### 3.9 Reminders: the day, the week, the month
+
+The rhythm people know from The Pattern, built on what the app already has: device reminders through Firebase Cloud Messaging (`core/push.ts`, `public/firebase-messaging-sw.js`, tokens in `pushTokens`), in-app reminders with quiet hours and a skip (`core/reminder-policy.ts`). What is new is the cadence, the words and the privacy.
+
+| Cadence | Default | Lock-screen text (no names) | Inside the app |
+|---|---|---|---|
+| **Daily** | 20:30, on | «Луна на связи. Минутка про сегодня?» | «Какая часть сегодня была за рулём? Угадывать необязательно.» Opens the check-in |
+| **Weekly** | Sunday 19:00, off until chosen | «Неделя в небе готова.» | «Посмотрим, что было громче и что помогло. Три минуты.» Opens the week, in words |
+| **Monthly** | 1st of the month, 10:00, off until chosen | «Месяц позади. Как коллектив?» | «Можно уточнить небо или просто выдохнуть. Оба варианта правильные.» Offers «Уточнить небо» |
+| **Gentle follow-up** | Off; opt-in | «Мы тут, без спешки.» | «Вчера было непросто. Можно открыть и ничего не делать.» Only the day after «Меня накрыло» |
+
+**Rules.**
+
+- Opt in per cadence. The first push asks once, inside the app.
+- At most one push a day across all cadences. When two fall on the same day, the weekly one wins and the daily one waits.
+- Quiet hours 22:00–08:00 by default. «Пропустить сегодня» and a two-week pause are one tap each. No streaks, no counts of missed days, no guilt.
+- Lock-screen privacy is on by default. A notification says nothing about parts, feelings or tests.
+- Nothing is sent after a check-in that day, and nothing is sent in a red-gate state, where the app stops solo suggestions.
+- Each push opens one screen: `#checkin`, `#weekly`, `#monthly` or `#sos-follow`.
+
+**What exists and what is missing.** The app can already show a device reminder, and the service worker shows one daily notification. Nothing schedules a sender: the repository has no scheduled function and no cron trigger, so the weekly and monthly reminders would not send. The sender is an owner decision (§12, decision 29): a scheduled Firebase function (needs the Blaze plan), or a Cloudflare cron trigger in the existing worker, which would read `pushTokens` through a service account.
+
+**In the prototype.** Ты → Напоминания shows the three cadences, the times, quiet hours, the skip and pause, the privacy switch and a lock-screen preview. It sends nothing.
+
 ## 4. The product
 
 ### 4.1 Step 1: the smallest thing that does all six jobs
@@ -361,18 +414,34 @@ New work: the test, the card, the daily card and task library, the «Меня н
 
 ### 4.6 The therapist's sky (Step 3)
 
-A psychologist the client invites sees the client's full sky in 3D, built on the universe that already exists.
+A psychologist the client invites sees the client's results in the app's own 3+1-axis universe. It is reused as it is, not redrawn.
 
-- **Axes, 3+1.** The 64 places each archetype on four dimensions: **Агентность** (active ↔ receptive), **Температура** (cool ↔ hot), **Фокус** (self ↔ other) and **Привязанность** (avoidant ↔ anxious). Any three are X, Y and Z, and the fourth is shown as colour and as a lens that pulls matching parts forward. Any axis can be isolated.
-- **What else is drawn:**
-  - **size:** activation from the 147, shown as T-scores;
-  - **threads:** polarizations;
-  - **a chain:** the coping stack, from the first protector down to the part it protects;
-  - **glow:** how often a part shows up in the client's knots;
-  - **a time scrubber:** moves through assessments and weeks.
-- **Language.** Professional terms (manager, firefighter, exile) are allowed here, because the audience is clinicians. The client's own view keeps the funny titles.
-- **For the session.** Notes per part, filters by family, a snapshot to compare later, PDF and CSV export, and WebXR when the room has a headset.
+- **Axes, 3+1.** The four dimensions are the app's own: **Инициативность**, **Эмоциональность**, **Фокус внимания** and **Близость и дистанция**. Any three are X, Y and Z, and the app keeps them distinct. The fourth is isolated with one tap.
+- **Where parts sit.** Each part sits at its reference position (`IV_PARTS` in the app), so every client's parts are read against the same map. Size shows how noticeable a part is.
+- **Against the baseline, in words.** Each part is read against its reference baseline with four phrases, never numbers: **дремлет** (ниже обычного), **присутствует** (около обычного), **заметна** (выше обычного), **часто солирует** (заметно выше обычного). A bar shows the position, with «обычно» at the centre. No T-scores and no percentages appear in the therapist view or the report.
+- **Links.** Polarizations (cycles) show when both parts are noticeable at once. A protector shows whom it guards, by name only.
+- **Over sessions.** Each part's path across sessions, in words («дремлет → присутствует → заметна»), and a verdict: громче, тише or без изменений.
+- **Report.** A text summary for each session: what is noticeable, what is near the usual, what is quiet, and what to look at next time. It carries no numbers.
+- **Language.** Professional terms (protector, exile) are allowed here, because the audience is clinicians. The client's own view keeps the funny names.
 - **Consent.** Per item: the client chooses what the therapist sees, can withdraw at any time, and every view is logged.
+- **In the prototype.** The client view loads the app's universe through `bridge.js` (the app's own `initUniverse`, `setParts`, `setView` and `onPick`) and shows the same data in words. The two clients are invented.
+
+### 4.7 What the prototype covers
+
+Ты → Карта прототипа lists every function found in the app, with where it lives in the prototype and one of three statuses: **full** (works), **simple** (present, reduced) or **plan** (described, not built). The page is generated from the same list as this table.
+
+| Area | Functions | Prototype |
+|---|---|---|
+| Entry | Onboarding with Луна, map gate, install, sign-in | Full: onboarding, gate, install. Simple: sign-in (no mail is sent) |
+| The map | Scenes (new), quick scan (14), deep map (147), legacy map (64), history | Full: scenes, scan, the 147 in three sittings, scored by the app. Simple: the 64 (described), history |
+| Sky | User's sky (2D), filters, summon, studio, part sheet, editor | Full: sky, filters, part sheet. Simple: editor (2D from the bridge). Plan: summon and studio |
+| Parts | Cabinet, pins, part history, coordinates, chemistry, negotiation, rest, replay | Full: cabinet, history, coordinates (no numbers), chemistry, negotiation, rest. Simple: replay |
+| Daily | Check-in with a prediction, Узелки and sealed notes, practices, SOS | Full: check-in, Узелки, sealed notes, SOS, practice steps. Simple: practice kit and the practice path |
+| Coach and memory | AI coach (paid), memory panel | Full: memory panel. Simple: coach (paywall and an example) |
+| Reminders | Daily, weekly and monthly; quiet hours; privacy | Full: the settings and previews. Plan: sending |
+| Data | Backup, restore, cloud history, comfort and senses, share | Full: comfort and senses. Simple: backup, share |
+| People | Therapist cabinet, client's 3+1D sky, report, booking | Full: cabinet, client's sky, parts, links, history, report. Simple: booking |
+| Help | Help, feature map | Full |
 
 ---
 
@@ -433,7 +502,10 @@ What each parent does that people love, and what Innerverse takes from it. «Hav
 - **Russian only on a Russian screen.** English is a separate locale, never mixed into the same screen.
 - **Gender-neutral by construction:** impersonal and plural forms, titles of offices rather than people, and no past-tense verbs about the reader («заметил(а)»). Where a gendered form can't be avoided, the app may ask once, «Как к тебе обращаться?», and never guesses.
 - **Humour reveals good intent** and never mocks the person. It switches off for hurt parts and crises.
-- **Shareable without exposure:** cards, stickers («мой ОТК сегодня на смене») and «Два неба» cards. Every share shows «Вот что увидят» first.
+- **Shareable without exposure:** cards, stickers («мой Шапокляк сегодня на смене») and «Два неба» cards. Every share shows «Вот что увидят» first.
+- **Read it aloud.** Every line should sound like something a friend would say. Formal Russian («в рамках», «пожалуйста, обратите внимание», «Вы» in the interface) is a bug. The owner's test for v5 was «who talks like that?».
+- **Comic inspiration, not copies.** Names borrow from characters people know (Шапокляк, Кролик, Тигра, Карлсон, Знайка and Незнайка, Ёжик, Чебурашка, Заяц), and every line is written fresh. Jokes aim at the situation or at the part, never at the person, and never at an exile.
+- **No jokes in a crisis.** The SOS flow and the safety question are warm and plain.
 
 ---
 
@@ -459,6 +531,8 @@ What each parent does that people love, and what Innerverse takes from it. «Hav
 - **Privacy:** sensitive psychological data under 152-ФЗ. Diary entries are never shared. «Два неба» and «Созвездия» show cards only, with consent per item.
 - **«Созвездия» and matching** need a moderation plan and a safety plan before they exist.
 - **No dark patterns:** no streaks, no guilt notifications, no countdown upsells.
+- **SOS is a guided exercise.** Six steps: a safety question first (with 112 shown as text and a route to a person), then 4–6 breathing, grounding, naming the loudest part, one small step, and a note in «Узелки». «Выйти» is a button on every step.
+- **Reminder text carries no names.** On a locked screen a push says nothing about parts, feelings or tests. Nothing is sent on a hard day unless the person opted into the gentle follow-up.
 
 ---
 
@@ -481,7 +555,10 @@ What each parent does that people love, and what Innerverse takes from it. «Hav
 | T13 | Луна's memory feels welcome, not creepy | In interviews and the diary, react to her remembered lines and «Почему я это знаю?» | ≥70% "приятно" or "полезно", ≤10% "жутковато" | Remember less; ask before using a memory |
 | T14 | The humour lands with neurodivergent and plural readers | Rate a joke set; watch who turns on «Говорить проще» | ≥60% like it; ≤10% confused or hurt | Rewrite the set with community readers |
 | T15 | Therapists use the 3+1 sky | Eight psychologists from T7 try it with a real (consenting) client | ≥5 use it in a session and ask to keep it | Simplify to a 2D map |
-| T16 | The scene test agrees with the 147 | 30–50 people take both | Family scores correlate ≥ .5; top-3 test–retest ≥ 70% | Call the result a first sketch; push «Уточнить небо» |
+| T16 | The scene test and the 147 tell the same story | 30–50 people take both. Per part, the scene tier equals the 147 tier in ≥60% of people, and within one step in ≥85%. Their top-3 parts overlap by two or more in ≥70% | Call the scenes a first sketch; keep «Уточнить небо» and the 147 as the way to firm it up |
+| T17 | The points-to-level table holds for real people | Measure the scene-to-tier table against the 147 scores of the same people, then re-fit the 1–5 mapping if needed (weights live in `app/copy.js`) | Change the points per option and repeat T16 |
+| T18 | The guided SOS helps more than a pause | After a real hard moment, ask which helped more: the six steps or a pause. Compare distress before and after | ≥70% say the steps helped; nobody reports more distress afterwards |
+| T19 | Reminders feel welcome and quiet enough | Opt-in and opt-out rates per cadence over 14 days; complaints about quiet hours | ≥50% keep the daily one; ≤5% switch off a cadence in its first week |
 
 **Interview guide (30 minutes, never pitch).** Ask about the last test or horoscope they took and what they did with it; whether a result ever changed what they did; the last time a reaction took over and what they tried in the next hour; the last time they didn't understand a partner or friend; how they found the people who get them; and what they pay for now and what they stopped paying for. Record episodes, not opinions.
 
@@ -519,6 +596,9 @@ The look in §3.5 applies inside each step as needed. It is not a separate redes
 | Awareness feels like surveillance | «Почему я это знаю?» on every remembered line; «Луна помнит» with «Забыть»; AI only with consent; T13 |
 | Motion costs battery or frame rate | Transform and opacity only, a 60 fps budget checked on a mid-range Android, calm mode |
 | Jokes confuse or hurt | Plain meaning beside every joke; literal mode; no jokes in crises; T14 |
+| The scene test drifts from the 147 | One scoring pipeline (the app's own); a level table measured in the app; T16–T17 |
+| Reminders become spam or leak a part's name | At most one a day, quiet hours, lock-screen text with no names, opt-in per cadence (§3.9); T19 |
+| Jokes read as formal or flat | The owner reads every line aloud; T14; the formal-phrase list in §6 |
 | Plural and dissociative users are destabilised | Not a treatment claim; grounding first; no work with hurt parts; plural-informed clinician review |
 
 ---
@@ -547,5 +627,13 @@ The look in §3.5 applies inside each step as needed. It is not a separate redes
 20. **Icons and textures** as in the references and `redesign.zip` (§3.5). **Owner direction, 2026-10-28.**
 21. **The therapist's 3+1 sky** (§4.6). **Owner direction, 2026-10-28.**
 22. **Tests in three depths** sharing one cast, with exiles hidden from the consumer deep map by default ([research/test-vs-instruments.md](research/test-vs-instruments.md)). **Recommended; awaiting the owner.**
+23. **Voice (v6).** Quirky, natural Russian with soul; comic-character names; «Профсоюз» dropped as unclear (§3.2, §6). **Owner direction, 2026-10-28.**
+24. **Skies (v6).** The user's sky is flat 2D doodles with no glow. The therapist's sky is the app's own 3+1D universe (§3.5, §4.6). **Owner direction, 2026-10-28.**
+25. **Therapist view (v6).** Parts against their reference baselines, in words, with no numbers (§4.6). **Owner direction, 2026-10-28.**
+26. **SOS (v6).** A guided six-step exercise, safety first, with «Выйти» as a button (§8). **Owner direction, 2026-10-28.**
+27. **Tests (v6, educated guesses).** Scene points set a level from 1 to 5 for each part (1 + points, capped at 5). The app's own scoring turns levels into tiers. The 14-item quick scan keeps the app's rule (one part at 4 or more). The 147 is taken in three sittings of 49. The 64 stays as a legacy map (§9, T16–T17). **Proposed; awaiting the owner.**
+28. **Reminder cadence (v6).** Daily 20:30, weekly on Sunday at 19:00, monthly on the 1st at 10:00. Quiet hours 22:00–08:00, at most one push a day, lock-screen privacy on by default (§3.9). **Proposed; awaiting the owner.**
+29. **Who sends the reminders (v6).** A scheduled Firebase function (needs the Blaze plan), or a Cloudflare cron trigger in the existing worker with a Firestore service account. **Open. The owner decides cost and operations. The prototype sends nothing.**
+30. **Exile names (v6).** Чебурашка, Кот под диваном, Заяц and Крайний на фото, with tender lines and no jokes at an exile's expense. **Proposed; awaiting the owner, who should hear them read aloud.**
 
 Nothing is implemented until you approve. After approval, the steps become Beads under `ArchetypeAI-d6d`.

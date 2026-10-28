@@ -1,7 +1,8 @@
 // The prototype's characters, as editor traits: the same record a person sets when they craft a part.
-// Most are the app's own seed plushes; the rest are crafted from the same editor options.
-// The 3D plush (plush-shots.html, via feltThumbnail) and the 2D doodle (doodles.mts) are both drawn
-// from these traits, through the app's own feltDna mapping, so each pair always matches.
+// One per 147 family (seven managers, three firefighters, four exiles, four resources) plus Луна, the guide.
+// Seed parts from the app where they fit, the rest crafted from the same editor options. The 3D plush
+// (plush-shots.html, via feltThumbnail) and the 2D doodle (doodles.mts, or the bridge in the browser) are both
+// drawn from these traits through the app's own feltDna mapping, so each pair always matches.
 import { SEED_PARTS, type Traits } from '../../../../src/parts-cartographer/pal/traits';
 
 const seed = (id: string): Traits => {
@@ -11,19 +12,27 @@ const seed = (id: string): Traits => {
 };
 const craft = (p: Partial<Traits>): Traits => ({ shape: 'bean', color: '#3B9BFF', eyes: 'ovals', mouth: 'smile', head: 'none', face: 'none', bow: false, cheeks: false, ...p });
 
-/** Parts (protectors only) and the example partner: plushes a person could own. */
+/** Keys are the 147 family ids; the comment is the name a person sees (app/copy.js holds the voice). */
 export const PARTS: Record<string, Traits> = {
-  critic: seed('seed-critic'), // «Отдел контроля качества»
-  later: seed('seed-scroller'), // «Министр "Потом"»
-  dreamer: craft({ shape: 'flower', color: '#FF2D8A', eyes: 'closed', mouth: 'smile', head: 'party', cheeks: true }), // «Мечтатель»
-  whatif: seed('seed-planner'), // «Начальник отдела "А вдруг?"»
-  pleaser: seed('seed-pleaser'), // «Главный по "всем ли удобно?"»
-  snacks: seed('seed-sweet'), // «Служба утешительных вкусняшек»
-  enough: seed('seed-guardian'), // «Профсоюз "Хватит"»
-  rebel: seed('seed-rage'), // example partner: «Бунтарь»
-  jester: seed('seed-coach'), // example partner: «Шутник»
-  guard: craft({ shape: 'square', color: '#C47A3A', eyes: 'ovals', mouth: 'smile', head: 'halo' }), // example partner: «Главный по пледам»
-  luna: craft({ shape: 'crescent', color: '#FFD000', eyes: 'closed', mouth: 'smile', cheeks: true }), // the guide
+  inner_critic: seed('seed-critic'), // Шапокляк
+  controller: seed('seed-planner'), // Завхоз
+  pleaser: seed('seed-pleaser'), // Официант
+  numb: seed('seed-scroller'), // Залипашка
+  taskmaster: craft({ shape: 'pill', color: '#FF3B4E', eyes: 'googly', mouth: 'grin', head: 'party' }), // Кролик
+  analyst: craft({ shape: 'square', color: '#F3EEE4', eyes: 'tiny', mouth: 'flat', face: 'glasses' }), // Знайка
+  hermit: craft({ shape: 'mochi', color: '#C47A3A', eyes: 'closed', mouth: 'smile', cheeks: true }), // Ёжик
+  bypasser: craft({ shape: 'flower', color: '#FFD000', eyes: 'ovals', mouth: 'grin', head: 'halo' }), // Тигра
+  rebel: seed('seed-rage'), // Не буду
+  charmer: craft({ shape: 'pentagon', color: '#FF2D8A', eyes: 'wink', mouth: 'grin', head: 'party', bow: true }), // Карлсон
+  abandoned: seed('seed-little'), // Чебурашка
+  ashamed: craft({ shape: 'mochi', color: '#8B6CFF', eyes: 'closed', mouth: 'flat', cheeks: true }), // Кот под диваном
+  frightened: craft({ shape: 'pill', color: '#F3EEE4', eyes: 'ovals', mouth: 'o', cheeks: true }), // Заяц
+  unseen: craft({ shape: 'cloud', color: '#6ED6FF', eyes: 'closed', mouth: 'none', cheeks: true }), // Крайний на фото
+  sage: seed('seed-witness'), // Сова
+  warrior: craft({ shape: 'square', color: '#3B9BFF', eyes: 'ovals', mouth: 'grin', head: 'beret' }), // Богатырь
+  caregiver: seed('seed-coach'), // Обнимашка
+  explorer: craft({ shape: 'bean', color: '#8BE03A', eyes: 'googly', mouth: 'o', head: 'party' }), // Незнайка
+  luna: craft({ shape: 'crescent', color: '#FFD000', eyes: 'closed', mouth: 'smile', cheeks: true }), // Луна, the guide
 };
 
 /**

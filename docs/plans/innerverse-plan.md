@@ -324,7 +324,7 @@ v1's visual system (felt, colour, motion, sound) applies inside each step as nee
 | Scope creep across three spaces | One model and the same objects everywhere; each space gated by its test |
 | Payments and platforms in Russia | The PWA is canonical, the share target works with any messenger, payments are an owner decision |
 | Conflict with the `AGENTS.md` mission (implement the entire approved program) | Owner decision (§12) |
-| Licensing of the 42 provided stickers in a public repo | Confirm the source and licence before the repo goes public |
+| Licensing of the 42 provided stickers in a public repo | Resolved 2026-10-28: the stickers are the owner's own work |
 
 ---
 

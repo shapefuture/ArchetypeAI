@@ -1,0 +1,737 @@
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="feltcut" x="-5%" y="-10%" width="110%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter>
+    <radialGradient id="g-sunglow"><stop offset="0" stop-color="#FFD978" stop-opacity=".95"/><stop offset=".55" stop-color="#FFB547" stop-opacity=".35"/><stop offset="1" stop-color="#FFB547" stop-opacity="0"/></radialGradient>
+    <symbol id="sym-sun" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="59" fill="url(#g-sunglow)"/>
+      <g fill="#FFB547" stroke="#B9761A" stroke-width="1.2" stroke-dasharray="3 2.4">
+        <ellipse cx="60" cy="26" rx="9.5" ry="14"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(45 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(90 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(135 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(180 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(225 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(270 60 60)"/><ellipse cx="60" cy="26" rx="9.5" ry="14" transform="rotate(315 60 60)"/>
+      </g>
+      <circle cx="60" cy="60" r="25" fill="#FFC75A" stroke="#B9761A" stroke-width="1.4" stroke-dasharray="3 2.4"/>
+      <path d="M49 58q3.5 3.5 7 0M64 58q3.5 3.5 7 0" stroke="#5A3A12" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M55 66q5 4 10 0" stroke="#5A3A12" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="47" cy="65" r="3.4" fill="#F0876A" opacity=".55"/><circle cx="73" cy="65" r="3.4" fill="#F0876A" opacity=".55"/>
+    </symbol>
+    <symbol id="sym-klubok" viewBox="0 0 64 64">
+      <path d="M53 44c7 3 9 9 7 15" fill="none" stroke="#C8901E" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="32" cy="34" r="23" fill="#F2BC2E" stroke="#A9770F" stroke-width="1.6"/>
+      <g fill="none" stroke="#C8901E" stroke-width="2" stroke-linecap="round" opacity=".9"><path d="M12 29c10-8 30-10 41 4"/><path d="M11 40c12-6 31-6 43 4"/><path d="M19 16c6 10 8 26 4 39"/><path d="M35 11c-4 12-2 30 8 42"/></g>
+      <circle cx="25" cy="34" r="3.3" fill="#1F1A38"/><circle cx="39" cy="34" r="3.3" fill="#1F1A38"/>
+      <circle cx="26.2" cy="32.8" r="1.1" fill="#fff"/><circle cx="40.2" cy="32.8" r="1.1" fill="#fff"/>
+      <circle cx="21" cy="41" r="2.6" fill="#F0876A" opacity=".55"/><circle cx="43" cy="41" r="2.6" fill="#F0876A" opacity=".55"/>
+    </symbol>
+    <symbol id="sym-spool-s" viewBox="0 0 60 80"><rect x="8" y="6" width="44" height="9" rx="4" fill="#C79A63" stroke="#8E6A3E"/><rect x="8" y="65" width="44" height="9" rx="4" fill="#C79A63" stroke="#8E6A3E"/><rect x="22" y="15" width="16" height="50" fill="#9C7445"/><rect x="18" y="30" width="24" height="20" rx="3" fill="#F2BC2E"/><g stroke="#C8901E" stroke-width="1.3"><path d="M19 34h22M19 39h22M19 44h22"/></g></symbol>
+    <symbol id="sym-spool-m" viewBox="0 0 60 80"><rect x="6" y="6" width="48" height="9" rx="4" fill="#C79A63" stroke="#8E6A3E"/><rect x="6" y="65" width="48" height="9" rx="4" fill="#C79A63" stroke="#8E6A3E"/><rect x="22" y="15" width="16" height="50" fill="#9C7445"/><rect x="13" y="20" width="34" height="40" rx="5" fill="#F2BC2E"/><g stroke="#C8901E" stroke-width="1.3"><path d="M14 25h32M14 30h32M14 35h32M14 40h32M14 45h32M14 50h32M14 55h32"/></g></symbol>
+    <symbol id="sym-spool-l" viewBox="0 0 60 80"><rect x="3" y="4" width="54" height="10" rx="4" fill="#C79A63" stroke="#8E6A3E"/><rect x="3" y="66" width="54" height="10" rx="4" fill="#C79A63" stroke="#8E6A3E"/><rect x="7" y="14" width="46" height="52" rx="7" fill="#F2BC2E"/><g stroke="#C8901E" stroke-width="1.3"><path d="M8 19h44M8 24h44M8 29h44M8 34h44M8 39h44M8 44h44M8 49h44M8 54h44M8 59h44"/></g></symbol>
+    <symbol id="sym-scissors" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6" cy="17" r="3"/><circle cx="6" cy="7" r="3"/><path d="M8.5 8.8 20 17M8.5 15.2 20 7"/></g></symbol>
+    <symbol id="sym-pin" viewBox="0 0 24 24"><path d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.3l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9z" fill="#F6C744" stroke="#A87A12" stroke-width="1"/></symbol>
+    <symbol id="sym-bolt" viewBox="0 0 40 60"><path d="M24 2 6 34h12L12 58l22-34H22z" fill="#F6E7B0" stroke="#F6C744" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+    <symbol id="sym-cup" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 10h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 11h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M8 3c-1 1.5 1 2.5 0 4M12 3c-1 1.5 1 2.5 0 4" stroke-dasharray="2 2"/></g></symbol>
+    <symbol id="ic-sky" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5a8.5 8.5 0 1 0 6 13.8 7 7 0 0 1-6-13.8Z"/><path d="M18 4.5v3M16.5 6h3"/></g></symbol>
+    <symbol id="ic-cast" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 19c0-4.5 2.2-8 5.2-8s5.2 3.5 5.2 8Z"/><path d="M12.5 19c.3-3.4 2-6 4.3-6s4 2.6 3.8 6"/></g><circle cx="7.2" cy="15" r="1" fill="currentColor"/><circle cx="10.2" cy="15" r="1" fill="currentColor"/></symbol>
+    <symbol id="ic-path" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20.5c0-4.5 14-3.5 14-8.5S5 9 5 4.5" stroke-dasharray="3 2.5"/><circle cx="5" cy="4" r="1.8" fill="currentColor"/><circle cx="5" cy="20.5" r="1.8"/></g></symbol>
+    <symbol id="ic-moon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 3a9 9 0 1 0 7.5 13.6A7.6 7.6 0 0 1 13.5 3Z"/><path d="M15 9.5q3 1 5-2" stroke-dasharray="2 2"/></g></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#top"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-moon" style="color: var(--moon)"/></svg>Felt Cosmos</a>
+    <nav class="toc" aria-label="Sections">
+      <a href="#today">Today</a><a href="#mockups">Mockups</a><a href="#doodles">Doodles</a><a href="#world">World</a><a href="#stitches">Stitches</a><a href="#cast">Cast</a><a href="#map">Map</a><a href="#screens">Screens</a><a href="#system">System</a><a href="#motion">Motion</a><a href="#voice">Voice</a><a href="#access">Access</a><a href="#render">3D</a><a href="#assets">Assets</a><a href="#plan">Plan</a><a href="#decisions">Decisions</a>
+    </nav>
+    <div class="toggles">
+      <button class="tog" id="plainBtn" type="button" aria-pressed="false" title="Show every metaphor as its literal twin">Plain words</button>
+      <button class="tog" id="themeBtn" type="button" aria-pressed="false">Day</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">Innerverse redesign plan · 27 Oct 2026 · for your approval</p>
+      <h1 class="h-title"><span class="sr">Здесь все свои</span><span class="cutf jitter" aria-hidden="true">Здесь <span class="gold">все свои</span></span></h1>
+      <p class="h-en">All parts welcome.</p>
+      <p class="h-lede">Your inner world becomes a hand-sewn night sky. Parts are felt plush who live there. You are the Sun at the centre. Луна, a sleepy seamstress, guides you; your days become knots on a golden thread. Every claim the app makes shows its stitch.</p>
+      <div class="h-stats">
+        <div class="h-stat"><b>4</b><span>places, down from 4 tabs and 13 overlays</span></div>
+        <div class="h-stat"><b>1</b><span>daily action: tie a knot</span></div>
+        <div class="h-stat"><b>7</b><span>stitches that replace disclaimers</span></div>
+        <div class="h-stat"><b>0</b><span>streaks, debts or guilt</span></div>
+      </div>
+    </div>
+    <div class="diorama" aria-label="A felt night sky: the Sun at the centre, five plush parts floating around it, the Moon with a golden thread, and a garland of knots" role="img">
+      <div class="stars"></div>
+      <svg class="d-garland" viewBox="0 0 600 120" aria-hidden="true"><path d="M0 18 Q300 120 600 18" fill="none" stroke="#F6C744" stroke-width="2.4" stroke-dasharray="7 5" stroke-linecap="round"/><g fill="#F6C744" stroke="#A87A12" stroke-width="1.5"><circle cx="70" cy="40" r="7"/><circle cx="140" cy="56" r="6"/><circle cx="215" cy="66" r="7.5"/><circle cx="300" cy="69" r="6.5"/><circle cx="385" cy="66" r="7"/><circle cx="460" cy="56" r="6"/><circle cx="530" cy="40" r="7"/></g><g fill="#E0564E"><circle cx="215" cy="66" r="3"/><circle cx="300" cy="69" r="3"/><circle cx="385" cy="66" r="3"/></g><path d="M215 66 Q300 92 385 66" fill="none" stroke="#E0564E" stroke-width="2" stroke-dasharray="4 3"/></svg>
+      <img class="d-moon" src="{{S32}}" alt="">
+      <svg class="d-sun" viewBox="0 0 120 120" aria-hidden="true"><use href="#sym-sun"/></svg>
+      <img class="d-part" style="left:9%;top:36%" src="{{S34}}" alt="">
+      <img class="d-part" style="left:24%;top:62%" src="{{S18}}" alt="">
+      <img class="d-part" style="left:66%;top:60%" src="{{S41}}" alt="">
+      <img class="d-part" style="left:72%;top:33%" src="{{S14}}" alt="">
+      <img class="d-part" style="left:43%;top:24%;width:16%" src="{{S36}}" alt="">
+      <svg class="d-hills" viewBox="0 0 600 140" preserveAspectRatio="none" aria-hidden="true"><path d="M0 92 C90 50 160 60 230 86 S380 120 450 80 560 52 600 70 V140 H0Z" fill="#2B2452"/><path d="M0 112 C110 84 200 96 300 112 S480 128 600 100 V140 H0Z" fill="#221C42"/><path d="M0 92 C90 50 160 60 230 86 S380 120 450 80 560 52 600 70" fill="none" stroke="rgba(244,236,222,.25)" stroke-width="1.5" stroke-dasharray="6 5"/></svg>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="today">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Diagnosis</p>
+      <h2>Why it reads as 1/10 today</h2>
+      <p class="lede">I ran the current React app at phone size in Russian and English, day and night, and walked every flow. The engine underneath is strong. The surface is a pile of panels.</p>
+    </div>
+    <div class="strip" aria-label="Screens of the current app">{{AUDIT_STRIP}}</div>
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card finding"><h3>A fake phone inside a real phone</h3><p>A drawn clock, notch and battery sit under the real status bar on every device.</p></div>
+      <div class="card finding"><h3>No places, only overlays</h3><p>13 features open as blurred layers over Home. The light-theme blur turns muddy brown.</p></div>
+      <div class="card finding"><h3>Home is a settings page</h3><p>Instructions, three routes, other tools, support, a tool grid, a cabinet peek and seven settings rows. No "what now".</p></div>
+      <div class="card finding"><h3>Lab scaffolding shipped as product</h3><p>The Cabinet is 9,090 px of stacked panels, including device-measurement forms and plan IDs "X01", "X02".</p></div>
+      <div class="card finding"><h3>Legal register everywhere</h3><p>Consent boxes and multi-paragraph disclaimers where a single visual cue would do.</p></div>
+      <div class="card finding"><h3>Characters as wallpaper</h3><p>The felt plush never act. Results cards show 🕊️ and 🧭 instead of the characters. Cabinet art covers names.</p></div>
+      <div class="card finding"><h3>Forms instead of moments</h3><p>Journal: four inputs. Check-in: five jargon buttons. Practice: five «Закрыто» rows.</p></div>
+      <div class="card finding"><h3>3D opens with a manual</h3><p>A seven-point help sheet («…рендерер просто засыпает») hides the map, above an 11-button tray.</p></div>
+      <div class="card finding"><h3>Russian loses its voice</h3><p>The display fonts have no Cyrillic, so the default language falls back to plain bold Nunito.</p></div>
+      <div class="card finding"><h3>Emoji as icons</h3><p>They differ per platform and the meaning is unclear: the 147-item scale is 🙅 ✊ 🌗 👋 🎯.</p></div>
+      <div class="card finding"><h3>Leaks and slips</h3><p>Raw uid in Profile; therapist tools on a client report; "Lighthouse Protocol" in RU history; «1. 1. Заметьте…».</p></div>
+      <div class="card finding"><h3>Celebration in the wrong place</h3><p>Confetti during questions, and a fake «Загрузка…» that waits for a click.</p></div>
+    </div>
+    <div class="card foundation" style="margin-top:16px">
+      <h3>What is already 10/10 underneath</h3>
+      <p>The Felt Atelier engine (real fibre felt, blanket stitch, squish on tap, 2D stickers from the same stitches), local-first privacy, independent sensory controls, and rich domain logic: weather layer, unburdening moments, JITAI cards, sealed verdicts. The redesign gives all of this a face.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="mockups">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Your proposal zip</p>
+      <h2>A real art-direction step, on the same old floor plan</h2>
+      <p class="lede">The ten mockups bring plush cosmic characters, a cream and indigo duo, 3D icons and a sleepy moon. They keep every structural problem above and add a few: «Отделись» breaks the «вы» rule, «согласен» is gendered, and the emoji scale stays.</p>
+    </div>
+    <div class="strip" aria-label="Proposal mockups with verdicts">{{MOCKUP_STRIP}}</div>
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card"><h3>Keep</h3><div class="chips"><span class="chip keep">Plush with cosmic props</span><span class="chip keep">Day and night duo</span><span class="chip keep">3D object icons</span><span class="chip keep">Chunky gold primary</span><span class="chip keep">Sleepy moon</span><span class="chip keep">Tangled thread</span></div></div>
+      <div class="card"><h3>Transform</h3><div class="chips"><span class="chip change">Cards → places</span><span class="chip change">Mascots → actors</span><span class="chip change">Route chips → spools</span><span class="chip change">Bars → petals and stitches</span><span class="chip change">Form → knot ritual</span></div></div>
+      <div class="card"><h3>Drop</h3><div class="chips"><span class="chip drop">Emoji scales</span><span class="chip drop">Feature-list subtitles</span><span class="chip drop">Two CTAs, one job</span><span class="chip drop">Raw uid</span><span class="chip drop">Settings as a tab</span><span class="chip drop">Bar dashboards</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="doodles">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Second inspiration round</p>
+      <h2>Your doodle boards, folded in</h2>
+      <p class="lede">The five boards you sent while I was working (cream paper, ink-outlined doodles, hand-lettered headlines, speech bubbles) confirm the direction and add a second register. Board one even says «All parts welcome», this plan's motto.</p>
+    </div>
+    <div class="grid g3">
+      <div class="card"><h3>Confirmed</h3><div class="chips"><span class="chip">Self as a sun, parts in orbit</span><span class="chip">A winding path of milestones</span><span class="chip">«Просто» toggle = plain words</span><span class="chip">A central capture button</span><span class="chip">Карта / Список parity</span><span class="chip">Minutes on every practice</span><span class="chip">«Здесь нет плохих ответов»</span></div></div>
+      <div class="card"><h3>Adopted</h3><div class="chips"><span class="chip keep">Felt-cut hand lettering</span><span class="chip keep">A sketch layer of ink doodles</span><span class="chip keep">Speech-bubble part labels</span><span class="chip keep">Суперсила · Что тяжело · Как подружиться</span><span class="chip keep">«Можно спросить» chips</span><span class="chip keep">Blob-face feelings</span><span class="chip keep">Habitats on the islands</span><span class="chip keep">«Это нормально!» sign</span><span class="chip keep">Lilac secondary</span><span class="chip keep">«Кто говорит внутри?»</span></div></div>
+      <div class="card"><h3>Not adopted</h3><div class="chips"><span class="chip drop">«ты» and «(а)» endings</span><span class="chip drop">"Критик 25%" pies</span><span class="chip drop">Doodles replacing your felt parts</span><span class="chip drop">Emoji faces in the nav</span></div><p style="margin-top:12px;font-size:14px">Russian «вы» in the past tense is plural and gender-neutral, so «вы замечали» replaces «ты замечал(а)». A part is not a percentage of a person.</p></div>
+    </div>
+    <div class="s2s-wrap">
+      <div class="s2s-text">
+        <p class="kicker" style="margin:0">The idea that joins both styles</p>
+        <h3 style="font-size:26px">From sketch to stitch</h3>
+        <p>A doodle is a pattern; felt is the sewn thing. Common parts, examples, feelings and the sample map are ink sketches on paper. When a part becomes yours, at the reveal after Мерка or in Мастерская, a running stitch traces the sketch and felt fills in. Your own parts stay felt, as the locked Felt identity requires.</p>
+        <button class="felt-btn" id="s2sBtn" type="button">Сшить</button>
+      </div>
+      <div class="s2s" id="s2s" role="img" aria-label="A doodle sketch of a frog-like part on pattern paper; pressing Сшить stitches it into a felt plush">
+        <span class="s2s-cut"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#sym-scissors"/></svg>выкройка</span>
+        <svg class="s2s-sketch" viewBox="0 0 200 200" aria-hidden="true">
+          <defs><mask id="s2sMask"><path class="s2s-m" pathLength="100" d="M40 152 C28 122 38 96 60 88 C54 64 90 54 98 78 C106 54 144 62 140 88 C162 96 174 122 162 152 C150 178 52 178 40 152 Z"/></mask></defs>
+          <path class="fill-body" d="M40 152 C28 122 38 96 60 88 C54 64 90 54 98 78 C106 54 144 62 140 88 C162 96 174 122 162 152 C150 178 52 178 40 152 Z"/>
+          <path class="ink" d="M40 152 C28 122 38 96 60 88 C54 64 90 54 98 78 C106 54 144 62 140 88 C162 96 174 122 162 152 C150 178 52 178 40 152 Z"/>
+          <circle class="fill-white" cx="79" cy="80" r="14"/><circle class="ink thin" cx="79" cy="80" r="14"/>
+          <circle class="fill-white" cx="121" cy="80" r="14"/><circle class="ink thin" cx="121" cy="80" r="14"/>
+          <circle class="fill-ink" cx="82" cy="83" r="5.5"/><circle class="fill-ink" cx="118" cy="83" r="5.5"/>
+          <path class="ink thin" d="M86 126 Q100 138 114 126"/>
+          <circle class="fill-cheek" cx="68" cy="122" r="6"/><circle class="fill-cheek" cx="132" cy="122" r="6"/>
+          <path class="ink thin" d="M16 138 Q100 176 186 124"/>
+          <path class="fill-gold" d="M34 34 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 z"/><path class="ink thin" d="M34 34 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 z"/>
+          <path class="ink thin" d="M164 40 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 z"/>
+          <path class="s2s-stitch" mask="url(#s2sMask)" d="M40 152 C28 122 38 96 60 88 C54 64 90 54 98 78 C106 54 144 62 140 88 C162 96 174 122 162 152 C150 178 52 178 40 152 Z"/>
+        </svg>
+        <img class="s2s-felt" src="{{S34}}" alt="">
+        <span class="bubble s2s-bubble">Я всё держу под контролем!</span>
+      </div>
+    </div>
+    <h3 style="margin-top:34px">Атлас частей</h3>
+    <p class="muted" style="margin-top:6px;font-size:15px;max-width:64ch">Common parts in the sketch style, each with its typical line. Every card says it is a common pattern, not a measurement of you. "This one is like mine" opens Мастерская and sews your own.</p>
+    <div class="atlas">
+      <div class="at"><span class="bubble">Я рядом. Давайте помедленнее.</span><img src="{{S16}}" alt=""><b>Утешитель</b><small>частый узор</small></div>
+      <div class="at"><span class="bubble">Можно было и лучше.</span><img src="{{S42}}" alt=""><b>Внутренний критик</b><small>частый узор</small></div>
+      <div class="at"><span class="bubble">А вдруг?..</span><img src="{{S37}}" alt=""><b>Тревожный стратег</b><small>частый узор</small></div>
+      <div class="at"><span class="bubble">Никого не подпущу.</span><img src="{{S31}}" alt=""><b>Защитник</b><small>частый узор</small></div>
+      <div class="at"><span class="bubble">Я посижу в домике.</span><img src="{{S02}}" alt=""><b>Избегающий</b><small>частый узор</small></div>
+      <div class="at"><span class="bubble">Можно я полежу?</span><img src="{{S08}}" alt=""><b>Уставший</b><small>частый узор</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="world">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">The world</p>
+      <h2>One metaphor system, one job per image</h2>
+      <p class="lede">It is native to the code ("Trait is the map; state is the weather" opens <code>state-v2.ts</code>; the journal is «Узелки»; its last step is «Потяните нить») and native to Russian: «узелок на память», «красной нитью», «на живую нитку», «шито-крыто», «снять мерку». At most two images are in focus on any screen.</p>
+    </div>
+    <div class="legend">
+      <div class="leg"><div class="vis"><svg viewBox="0 0 120 120"><use href="#sym-sun"/></svg></div><div><b data-plain="Self-энергия">Солнце</b><span>You, the Self. Eight petals are the eight qualities; the glow is Self-энергия.</span><i>Centre of every sky</i></div></div>
+      <div class="leg"><div class="vis"><img src="{{S32}}" alt=""></div><div><b data-plain="ИИ-коуч">Луна</b><span>Guide and AI coach. She reflects your light rather than making her own.</span><i>Луна place, arrival, quiet hours</i></div></div>
+      <div class="leg"><div class="vis"><svg viewBox="0 0 64 64"><use href="#sym-klubok"/></svg></div><div><b data-plain="Следующий шаг">Клубок</b><span>Your next step. The only thing that ever rolls toward a button.</span><i>Путь, onboarding, empty states</i></div></div>
+      <div class="leg"><div class="vis"><img src="{{S34}}" alt=""></div><div><b data-plain="Часть">Фетровые свои</b><span>Each part is a felt plush sewn by the engine from its DNA.</span><i>Everywhere</i></div></div>
+      <div class="leg"><div class="vis"><img src="{{S10}}" alt=""></div><div><b data-plain="Состояние">Погода</b><span>How you are today, arousal −2…+2. The sky shows it.</span><i>Окно check-in, sky overlay</i></div></div>
+      <div class="leg"><div class="vis"><svg viewBox="0 0 40 40"><path d="M2 20 Q20 34 38 20" fill="none" stroke="#F6C744" stroke-width="2" stroke-dasharray="4 3"/><circle cx="20" cy="27" r="7" fill="#F6C744" stroke="#A87A12" stroke-width="1.5"/></svg></div><div><b data-plain="Запись">Узелок</b><span>One journal entry, tied onto the garland across your sky.</span><i>FAB, garland, part stories</i></div></div>
+      <div class="leg"><div class="vis"><svg viewBox="0 0 40 40"><path d="M3 30 Q14 8 22 22 T38 10" fill="none" stroke="#E0564E" stroke-width="3" stroke-linecap="round"/></svg></div><div><b data-plain="Повторяющаяся тема">Красная нить</b><span>A recurring theme that you name. Never an inferred trait.</span><i>Небо, part page</i></div></div>
+      <div class="leg"><div class="vis"><svg viewBox="0 0 60 80" style="width:48px"><use href="#sym-spool-m"/></svg></div><div><b data-plain="Время и объём">Катушки</b><span>Effort made physical: a short, medium or long thread.</span><i>Мерка chooser</i></div></div>
+      <div class="leg"><div class="vis"><div style="width:58px;height:58px;display:grid;grid-template-columns:repeat(3,1fr);gap:3px"><i style="background:#4A74D9;border-radius:4px"></i><i style="background:#EF7B35;border-radius:4px"></i><i style="background:#E792B4;border-radius:4px"></i><i style="background:#4FC79B;border-radius:4px"></i><i style="background:#F6C744;border-radius:4px"></i><i style="background:#6F55C2;border-radius:4px"></i></div></div><div><b data-plain="История практики">Лоскутное одеяло</b><span>Practice history as a quilt. It only ever grows.</span><i>Путь</i></div></div>
+      <div class="leg"><div class="vis"><div class="paper" style="width:58px;height:58px;border-radius:8px;border:1.5px dashed var(--paper-line)"></div></div><div><b data-plain="Пример">Выкройка</b><span>Sewing-pattern tissue marks samples and references: not you.</span><i>Sample map, 147 references</i></div></div>
+      <div class="leg"><div class="vis"><svg viewBox="0 0 60 60"><ellipse cx="30" cy="30" rx="25" ry="25" fill="none" stroke="#C79A63" stroke-width="5"/><ellipse cx="30" cy="30" rx="20" ry="20" fill="none" stroke="#8E6A3E" stroke-width="1.5" stroke-dasharray="3 3"/></svg></div><div><b data-plain="Срез по 4-й оси">Пяльцы</b><span>The embroidery hoop slices the fourth axis for specialists.</span><i>Обсерватория</i></div></div>
+      <div class="leg"><div class="vis"><img src="{{S33}}" alt=""></div><div><b data-plain="Укрытие изгнанника">Облачко</b><span>The blanket exiles hide under. A gentle hold makes them peek.</span><i>Exiles, quiet hours</i></div></div>
+      <div class="leg"><div class="vis"><img src="{{S37}}" alt=""></div><div><b data-plain="Общий пример">Набросок</b><span>An ink doodle on paper: a common pattern, an example or a feeling. Not yours until it is sewn.</span><i>Атлас, samples, feelings</i></div></div>
+      <div class="leg"><div class="vis"><span class="bubble" style="font-size:9.5px;padding:4px 7px">А вдруг?..</span></div><div><b data-plain="Слова части">Пузырь</b><span>A part speaking: its typical line, in its own typographic voice.</span><i>Map labels, dialogue</i></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="stitches">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Signature system</p>
+      <h2>The stitch grammar</h2>
+      <p class="lede">The existing coordinate statuses (<code>measured · derived · reference · unknown</code>) and the 11/10 plan's credibility rules map onto stitches one to one. Paragraphs of disclaimers become something you can see at a glance. Every stitch also has a text label and screen-reader text.</p>
+    </div>
+    <div class="stitches">
+      <div class="st"><div class="sample"><svg class="frame" viewBox="0 0 220 104" preserveAspectRatio="none"><defs><pattern id="satin" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.2" height="5" fill="#F6C744"/></pattern></defs><rect x="6" y="6" width="208" height="92" rx="14" fill="none" stroke="url(#satin)" stroke-width="7"/></svg><span class="embroidered">56</span></div><b>Measured</b><p>Satin embroidery in gold. Canonical 64/147 results and measured coordinates.</p><code>scored profile · measured</code></div>
+      <div class="st"><div class="sample"><span class="tag">«коллега резко оборвал»</span></div><b>Your words</b><p>Handwritten felt tag, kept verbatim. Knots, corrections, goals, names you chose.</p><code>user free text</code></div>
+      <div class="st"><div class="sample"><svg class="frame" viewBox="0 0 220 104" preserveAspectRatio="none"><path d="M10 14 C60 11 120 17 210 12 L208 92 C150 95 80 89 12 93 Z" fill="none" stroke="var(--ink-faint)" stroke-width="1.8" stroke-dasharray="16 9" stroke-linecap="round" style="stroke: var(--ink-faint)"/></svg><span class="guess-label">на живую нитку</span></div><b>Reading / guess</b><p>Basting stitch: long, loose, a little wobbly. A reading the system or AI offers.</p><code>derived · suggestion queue</code></div>
+      <div class="st"><div class="sample"><svg class="frame" viewBox="0 0 220 104" preserveAspectRatio="none"><rect x="10" y="12" width="200" height="80" rx="12" fill="none" style="stroke: var(--mint)" stroke-width="2" stroke-dasharray="5 3"/><circle cx="204" cy="86" r="5" style="fill: var(--mint)"/></svg><span class="guess-label" style="font-style:normal;font-weight:700">Да, похоже</span></div><b>Confirmed by you</b><p>Basting becomes a tight backstitch that ends in a tiny knot.</p><code>correction accepted</code></div>
+      <div class="st"><div class="sample"><svg class="frame" viewBox="0 0 220 104" preserveAspectRatio="none"><rect x="10" y="12" width="200" height="80" rx="12" fill="none" style="stroke: var(--ink-faint)" stroke-width="2.6" stroke-dasharray="0.1 10" stroke-linecap="round" opacity=".7"/></svg><span class="holes">старое прочтение</span></div><b>Rejected</b><p>Unpicked: the thread is gone and only holes remain. It never returns as "new".</p><code>e06 rejectHypothesis</code></div>
+      <div class="st"><div class="sample paper"><svg class="frame" viewBox="0 0 220 104" preserveAspectRatio="none"><rect x="10" y="12" width="200" height="80" rx="4" fill="none" style="stroke: var(--paper-ink)" stroke-width="1.4" stroke-dasharray="6 5"/></svg><span class="paper-label"><svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align:-4px;color:var(--paper-ink)"><use href="#sym-scissors"/></svg> Пример · не ваш результат</span></div><b>Reference / sample</b><p>Sewing-pattern tissue (выкройка). Nobody mistakes a pattern for a garment.</p><code>isSampleProfile · reference</code></div>
+      <div class="st"><div class="sample"><svg class="frame" viewBox="0 0 220 104" preserveAspectRatio="xMidYMid meet"><circle cx="110" cy="52" r="34" fill="none" stroke="#C79A63" stroke-width="6"/><circle cx="110" cy="52" r="28" fill="none" stroke="#8E6A3E" stroke-width="1.4" stroke-dasharray="3 3"/><path d="M138 70 q14 10 26 4" fill="none" style="stroke: var(--moon)" stroke-width="2" stroke-linecap="round"/><text x="110" y="60" text-anchor="middle" font-family="Unbounded, sans-serif" font-weight="800" font-size="22" style="fill: var(--ink-faint)">?</text></svg></div><b>Unknown</b><p>An empty hoop and a loose thread end: «не известно, это не ноль».</p><code>unknown</code></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="cast">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">The cast</p>
+      <h2>Two who speak, one who points, and you at the centre</h2>
+      <p class="lede">A cast, not a zoo. Every character has a job. The parts are always the Felt Atelier engine's own plush, so identity stays consistent from card to 3D to sticker.</p>
+    </div>
+    <div class="cast-hero">
+      <div class="char">
+        <div class="char-art"><img src="{{S15}}" alt="Луна, a sleepy felt crescent moon on clouds"><img src="{{S32}}" alt="Луна with a golden thread" style="width:96px"></div>
+        <p class="role">Guide and AI coach</p><h3>Луна</h3>
+        <ul><li>Sleepy-witty, gentle, dry humour; loves sewing puns.</li><li>Remembers only what you put in her Шкатулка, so privacy is a character trait.</li><li>Never diagnoses, never claims to be your Self, never «ты».</li></ul>
+        <p class="quote">«Я не свечу сама — я отражаю ваш свет.»</p>
+      </div>
+      <div class="char">
+        <div class="char-art"><svg viewBox="0 0 64 64" aria-label="Клубок, a golden felt yarn ball with bead eyes" role="img"><use href="#sym-klubok"/></svg></div>
+        <p class="role">The next step</p><h3>Клубок</h3>
+        <ul><li>The путеводный клубок of the fairy tales, and Ariadne's thread.</li><li>Rolls ahead and unspools a thread to the next step.</li><li>Gets tangled when you report overwhelm; Луна helps untangle it.</li></ul>
+        <p class="quote">«Покачусь вперёд — а вы за ниточкой.»</p>
+      </div>
+      <div class="char">
+        <div class="char-art"><svg viewBox="0 0 120 120" aria-label="The Sun, a felt sun with eight petals" role="img"><use href="#sym-sun"/></svg></div>
+        <p class="role">You, not a character</p><h3>Солнце</h3>
+        <ul><li>Eight petals: Спокойствие, Ясность, Сострадание, Любопытство, Уверенность, Смелость, Творчество, Связь.</li><li>Its glow is Self-энергия, and the whole sky warms with it.</li><li>It never speaks; the copy says «ваше Солнце».</li></ul>
+      </div>
+    </div>
+    <div class="fams">
+      <div class="fam"><div class="fam-top"><img src="{{S34}}" alt=""><div><b><span class="dot" style="background:var(--cobalt)"></span>Менеджеры</b></div></div><dl><dt>Idle</dt><dd>Tidy up, check a tiny watch, adjust glasses</dd><dt>Tap</dt><dd>Stand straighter</dd><dt>Hold</dt><dd>Reluctantly relax, with a sigh</dd></dl><div class="voice v-manager"><ul><li>☐ проверить почту</li><li>☐ всё предусмотреть</li><li>☑ не опоздать</li></ul></div></div>
+      <div class="fam"><div class="fam-top"><img src="{{S19}}" alt=""><div><b><span class="dot" style="background:var(--tang)"></span>Пожарные</b></div></div><dl><dt>Idle</dt><dd>Fidget, bounce, spin</dd><dt>Tap</dt><dd>Zoom around</dd><dt>Hold</dt><dd>Slow down and breathe with you</dd></dl><div class="voice v-fire">Я просто тушу пожар!</div></div>
+      <div class="fam"><div class="fam-top"><img src="{{S36}}" alt=""><div><b><span class="dot" style="background:var(--rose)"></span>Изгнанники</b></div></div><dl><dt>Idle</dt><dd>Doze under the cloud blanket</dd><dt>Tap</dt><dd>A fast tap makes them hide</dd><dt>Hold</dt><dd>A gentle hold, and they peek out</dd></dl><div class="voice v-exile">можно я посижу рядом?</div></div>
+      <div class="fam"><div class="fam-top"><img src="{{S41}}" alt=""><div><b><span class="dot" style="background:var(--mint)"></span>Ресурсы</b></div></div><dl><dt>Idle</dt><dd>Sit, hum, glow</dd><dt>Tap</dt><dd>A warm pulse</dd><dt>Hold</dt><dd>The glow spreads to neighbours</dd></dl><div class="voice v-res">Я здесь. Давайте не спеша.</div></div>
+    </div>
+    <p class="muted" style="margin-top:14px;font-size:14.5px">Typography is a voice: managers speak in tidy checklists, firefighters in bouncy capitals, exiles in small lowercase handwriting, resources in calm rounded text. Optional babble pitch comes from each part's DNA. Unburdening makes a part set down its sack and glow from inside.</p>
+  </div>
+</section>
+
+<section class="sec" id="map">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Information architecture</p>
+      <h2>Four places and one action</h2>
+      <p class="lede">Settings leave the dock for your Sun in the corner. Lab scaffolding moves to «Для исследователей». Every existing feature gets a home, and a route-inventory test proves nothing was lost.</p>
+    </div>
+    <div class="ia-compare">
+      <div class="card before"><h3>Today</h3><div class="big-n"><div><b>4+1</b><span>tabs + FAB</span></div><div><b>13</b><span>overlays</span></div><div><b>14</b><span>stacked Cabinet panels</span></div><div><b>11</b><span>tray buttons in 3D</span></div></div></div>
+      <div class="card after"><h3>Felt Cosmos</h3><div class="big-n"><div><b>4</b><span>places</span></div><div><b>1</b><span>action</span></div><div><b>1</b><span>personal sheet</span></div><div><b>1</b><span>hidden lab</span></div></div></div>
+    </div>
+    <div class="dockdemo" role="img" aria-label="The new dock: Небо, Свои, the yarn-ball action Узелок, Путь, Луна">
+      <div class="dd-tab on"><svg aria-hidden="true"><use href="#ic-sky"/></svg><span data-plain="Карта">Небо</span></div>
+      <div class="dd-tab"><svg aria-hidden="true"><use href="#ic-cast"/></svg><span data-plain="Части">Свои</span></div>
+      <div class="dd-fab"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#sym-klubok"/></svg></div>
+      <div class="dd-tab"><svg aria-hidden="true"><use href="#ic-path"/></svg><span data-plain="Практики">Путь</span></div>
+      <div class="dd-tab"><svg aria-hidden="true"><use href="#ic-moon"/></svg><span data-plain="ИИ-коуч">Луна</span></div>
+    </div>
+    <p class="faint" style="font-size:13px;margin-top:8px">Try «Plain words» in the header: every metaphor label switches to its literal twin.</p>
+    <div class="scroll-x" style="margin-top:22px">
+      <table class="tbl">
+        <thead><tr><th>Today</th><th>Felt Cosmos home</th></tr></thead>
+        <tbody>
+          <tr><td>Route chooser on Base</td><td><b>Мерка</b> spools, from the empty sky and «Уточнить карту»</td></tr>
+          <tr><td>Report in the tool grid</td><td>Небо › <b>«Ваша карта»</b> story, «Полный отчёт» one tap away</td></tr>
+          <tr><td>Check-in overlay (+3 stacked panels)</td><td>Небо › Сегодня › <b>Окно</b>; the inquiry becomes the short spool</td></tr>
+          <tr><td>Journal FAB form</td><td><b>Узелок</b> ritual, sky garland, part stories, red threads</td></tr>
+          <tr><td>Practice overlay (+5 panels), toolkit</td><td><b>Путь</b>: path, quilt, rhythm, pocket cards, goal, review, season</td></tr>
+          <tr><td>Cabinet, part sheet, editor, chemistry, charter</td><td><b>Свои</b> shelves, part page, <b>Мастерская</b></td></tr>
+          <tr><td>Universe tray: replay, negotiation, coordinates, rest, list</td><td>Театр and Костёр in Путь; coordinates on the part page; «Списком» in Небо</td></tr>
+          <tr><td>Coach tab behind a paywall</td><td><b>Луна</b> always opens; Plus adds AI thinking</td></tr>
+          <tr><td>Booking, help, memory, session prep</td><td>Луна › Позвать человека · Как это работает · Шкатулка · К сессии</td></tr>
+          <tr><td>Synastry</td><td>Небо › <b>Два неба</b></td></tr>
+          <tr><td>Profile tab: login, Plus, theme, sensory, data</td><td>Your Sun › <b>«Вы»</b> sheet</td></tr>
+          <tr><td>Device envelope, extensions, grammar, rubric, admin</td><td><b>Лаборатория</b>, out of consumer flows</td></tr>
+          <tr><td>Therapist overlay and specialist view</td><td>«Вы» › Режим специалиста › <b>Обсерватория</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="sec screens-band" id="screens">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Concept screens</p>
+      <h2>Eleven moments, sketched in the new language</h2>
+      <p class="lede">These are concept sketches with the real stickers, not final art. Several are live: drag the window cord, choose a moon, tie the knot, squish a plush.</p>
+    </div>
+    <div class="phones">
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="ph-sky"><div class="stars"></div>
+            <svg class="garland" viewBox="0 0 300 60" aria-hidden="true"><path d="M-4 6 Q150 64 304 6" fill="none" stroke="#F6C744" stroke-width="1.8" stroke-dasharray="5 4"/><g fill="#F6C744" stroke="#A87A12"><circle cx="40" cy="18" r="4.5"/><circle cx="85" cy="28" r="4"/><circle cx="130" cy="33" r="5"/><circle cx="175" cy="33" r="4.5"/><circle cx="220" cy="28" r="4"/></g><g fill="#E0564E"><circle cx="130" cy="33" r="2"/><circle cx="175" cy="33" r="2"/></g></svg>
+            <img class="moon" src="{{S32}}" alt="">
+            <svg class="sun" viewBox="0 0 120 120" aria-hidden="true"><use href="#sym-sun"/></svg>
+            <img class="pt" style="left:14px;top:178px" src="{{S34}}" alt="">
+            <img class="pt b" style="left:66px;top:262px;width:56px" src="{{S18}}" alt="">
+            <img class="pt c" style="right:22px;top:250px" src="{{S41}}" alt="">
+            <img class="pt b" style="right:46px;top:150px;width:54px" src="{{S14}}" alt="">
+            <img class="pt" style="left:118px;top:118px;width:52px" src="{{S36}}" alt="">
+            <svg class="hills" viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C50 18 90 26 130 40 S210 62 250 40 290 26 300 34 V70 H0Z" fill="#2B2452"/><path d="M0 56 C60 42 110 48 160 56 S250 64 300 52 V70 H0Z" fill="#221C42"/></svg>
+          </div>
+          <div class="p-head"><div><div class="d">вторник · {{TODAY_PHASE}}</div><div class="t" data-plain="Карта">Небо</div></div><svg class="p-avatar" viewBox="0 0 120 120" aria-label="Your Sun: open «Вы»" role="img"><use href="#sym-sun"/></svg></div>
+          <div class="today"><div class="t-card"><div class="t-dots"><i class="on"></i><i></i><i></i></div><div class="t-k">Сегодня · 1 из 3</div><div class="t-t">Как погода внутри?</div><div class="t-row"><span class="mw"></span><span>10 секунд · ничего не оценивает · можно пропустить</span></div></div></div>
+          <nav class="p-dock" aria-label="Dock"><span class="dt on"><svg><use href="#ic-sky"/></svg><span data-plain="Карта">Небо</span></span><span class="dt"><svg><use href="#ic-cast"/></svg><span data-plain="Части">Свои</span></span><span class="fab"><svg viewBox="0 0 64 64"><use href="#sym-klubok"/></svg></span><span class="dt"><svg><use href="#ic-path"/></svg><span data-plain="Практики">Путь</span></span><span class="dt"><svg><use href="#ic-moon"/></svg><span data-plain="ИИ-коуч">Луна</span></span></nav>
+        </div>
+        <figcaption><b>Небо · night</b><span>Home is your sky: parts orbit your Sun, recent knots hang on the garland (two joined by a red thread), and one card says what now.</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone day">
+          <div class="ph-sky"><div class="stars"></div>
+            <svg class="garland" viewBox="0 0 300 60" aria-hidden="true"><path d="M-4 6 Q150 64 304 6" fill="none" stroke="#B9851A" stroke-width="1.8" stroke-dasharray="5 4"/><g fill="#F2BC2E" stroke="#9A6E0E"><circle cx="40" cy="18" r="4.5"/><circle cx="85" cy="28" r="4"/><circle cx="130" cy="33" r="5"/><circle cx="175" cy="33" r="4.5"/><circle cx="220" cy="28" r="4"/></g></svg>
+            <img class="moon" src="{{S15}}" alt="">
+            <svg class="sun" viewBox="0 0 120 120" style="width:132px;height:132px" aria-hidden="true"><use href="#sym-sun"/></svg>
+            <img class="pt" style="left:14px;top:178px" src="{{S34}}" alt="">
+            <img class="pt b" style="left:66px;top:262px;width:56px" src="{{S18}}" alt="">
+            <img class="pt c" style="right:22px;top:250px" src="{{S41}}" alt="">
+            <img class="pt b" style="right:46px;top:150px;width:54px" src="{{S14}}" alt="">
+            <img class="pt" style="left:118px;top:118px;width:52px" src="{{S36}}" alt="">
+            <svg class="hills" viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C50 18 90 26 130 40 S210 62 250 40 290 26 300 34 V70 H0Z" fill="#B8D59A"/><path d="M0 56 C60 42 110 48 160 56 S250 64 300 52 V70 H0Z" fill="#9CC27E"/></svg>
+          </div>
+          <div class="p-head"><div><div class="d">вторник · 11:20</div><div class="t" data-plain="Карта">Небо</div></div><svg class="p-avatar" viewBox="0 0 120 120" aria-hidden="true"><use href="#sym-sun"/></svg></div>
+          <div class="today"><div class="t-card"><div class="t-dots"><i></i><i class="on"></i><i></i></div><div class="t-k">Сегодня · 2 из 3</div><div class="t-t">Следующий шаг: «Земля, приём»</div><div class="t-row"><svg viewBox="0 0 64 64" style="width:44px;height:44px;flex:0 0 auto"><use href="#sym-klubok"/></svg><span>3 минуты · заземление · Клубок выбрал, потому что вчера было «Взвинченность»</span></div></div></div>
+          <nav class="p-dock" aria-label="Dock"><span class="dt on"><svg><use href="#ic-sky"/></svg><span data-plain="Карта">Небо</span></span><span class="dt"><svg><use href="#ic-cast"/></svg><span data-plain="Части">Свои</span></span><span class="fab"><svg viewBox="0 0 64 64"><use href="#sym-klubok"/></svg></span><span class="dt"><svg><use href="#ic-path"/></svg><span data-plain="Практики">Путь</span></span><span class="dt"><svg><use href="#ic-moon"/></svg><span data-plain="ИИ-коуч">Луна</span></span></nav>
+        </div>
+        <figcaption><b>Небо · day</b><span>«Авто по времени суток»: the same sky at 11:20, oat linen and felt hills. A visible clock for time blindness.</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="p-head"><div><div class="d">Погода внутри · 10 секунд</div><div class="t" data-plain="Состояние">Окно</div></div></div>
+          <div class="win-wrap">
+            <div class="win"><div class="scene" id="scene" data-s="0"><div class="layer stars"></div><div class="layer frost"><svg viewBox="0 0 200 240" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#fff" stroke-width="1.2" opacity=".9"><path d="M0 0 l30 30 m-12 -4 l8 -12 m-18 6 l-4 12 M200 0 l-34 30 m14 -2 l-8 -12 M0 240 l36 -34 m-14 4 l-6 12 M200 240 l-30 -36 m10 6 l10 -10"/></g></svg></div><div class="layer fog"></div><div class="layer wind"></div><div class="layer storm"><svg class="bolt" viewBox="0 0 40 60" aria-hidden="true"><use href="#sym-bolt"/></svg></div></div><div class="bar-h"></div></div>
+            <div class="curtain l"></div><div class="curtain r"></div>
+            <div class="cord" role="radiogroup" aria-label="Состояние сейчас" id="cord">
+              <button class="bead" type="button" role="radio" aria-checked="false" tabindex="-1" data-v="2" aria-label="Гипер" data-desc="буря: сердце колотится, всего слишком много" data-img="storm"></button>
+              <button class="bead" type="button" role="radio" aria-checked="false" tabindex="-1" data-v="1" aria-label="Взвинченность" data-desc="ветрено: мысли бегут, трудно усидеть" data-img="{{S37}}"></button>
+              <button class="bead" type="button" role="radio" aria-checked="true" tabindex="0" data-v="0" aria-label="В окне" data-desc="спокойно и ясно, можно думать и чувствовать" data-img="{{S10}}"></button>
+              <button class="bead" type="button" role="radio" aria-checked="false" tabindex="-1" data-v="-1" aria-label="Низко" data-desc="туман: мало сил, всё медленно" data-img="{{S08}}"></button>
+              <button class="bead" type="button" role="radio" aria-checked="false" tabindex="-1" data-v="-2" aria-label="Замирание" data-desc="иней: будто всё застыло" data-img="{{S02}}"></button>
+            </div>
+          </div>
+          <div class="sill" aria-live="polite"><img id="sillImg" src="{{S10}}" alt=""><div><b id="sillT">В окне</b><span id="sillP">спокойно и ясно, можно думать и чувствовать</span></div></div>
+          <div class="w-save"><button class="p-btn" type="button">Готово</button></div>
+          <p style="text-align:center;font-size:11px;color:var(--p-faint);margin-top:10px">Где в теле? · Кто рядом? · Что поможет?</p>
+        </div>
+        <figcaption><b>Окно · live</b><span>Pull the cord's beads. Frost for «Замирание», fog for «Низко», a clear night «В окне», wind, then storm. The canonical labels and data stay as they are.</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="p-head"><div><div class="d">Узелки · 4 шага, любой можно пропустить</div><div class="t">Узелок</div></div></div>
+          <div class="k-sheet">
+            <svg class="k-thread" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 Q150 30 300 10" fill="none" stroke="#F6C744" stroke-width="2" stroke-dasharray="6 4"/></svg>
+            <div class="k-handle"></div>
+            <div class="k-steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+            <div class="k-q">Что случилось?</div>
+            <div class="k-tag">коллега резко оборвал на созвоне</div>
+            <div class="k-types"><span class="on">Чувство</span><span>Тело</span><span>Мысль</span><span>Поведение</span></div>
+            <div class="k-label">Как это было</div>
+            <div class="k-stickers"><img src="{{S04}}" alt="Сдерживаюсь"><img class="on" src="{{S24}}" alt="Тревожно"><img src="{{S37}}" alt="Мысли по кругу"><img src="{{S17}}" alt="Злость"><img src="{{S08}}" alt="Нет сил"></div>
+            <div class="k-label">Кто здесь?</div>
+            <div class="k-who"><img src="{{S34}}" alt="Страж"><img class="on" src="{{S19}}" alt="Пожарный"><img src="{{S18}}" alt="Угодник"><span class="unk">?</span></div>
+            <div class="k-go"><button class="p-btn ghost" type="button">Потянуть нить</button><button class="p-btn" type="button" id="tieBtn">Завязать</button></div>
+          </div>
+          <div class="knot-fx" id="knotFx" aria-hidden="true"><svg viewBox="0 0 150 150"><path class="loop" pathLength="100" d="M10 95 C40 95 50 40 80 45 C110 50 105 95 75 95 C50 95 55 60 85 62 C110 64 120 80 140 80" fill="none" stroke="#F6C744" stroke-width="5" stroke-linecap="round"/><circle class="pop" cx="75" cy="75" r="40" fill="none" stroke="#F6C744" stroke-width="3"/></svg></div>
+          <div class="p-toast" id="knotToast" role="status"><span>Узелок завязан</span><button type="button" id="untieBtn">Распустить</button></div>
+        </div>
+        <figcaption><b>Узелок · live</b><span>One handwritten line, a feeling sticker, and who is here. «Завязать» ties the knot, and it flies up to your sky. «Распустить» undoes it.</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="p-pad">
+            <div style="font:600 11.5px/1.3 var(--body);color:var(--p-dim)">Снять мерку</div>
+            <div style="font:800 21px/1.12 var(--display);letter-spacing:-.02em;margin-top:4px">Выберите нитку по силам</div>
+            <div class="spools">
+              <div class="spool"><svg viewBox="0 0 60 80" aria-hidden="true"><use href="#sym-spool-s"/></svg><div><b>Один момент</b><span>Своими словами, без баллов</span><span class="time">≈ 2 мин</span></div></div>
+              <div class="spool"><svg viewBox="0 0 60 80" aria-hidden="true"><use href="#sym-spool-m"/></svg><div><b>Мерка отношений</b><span>64 утверждения, можно с перерывами</span><span class="time">≈ 15 мин</span></div></div>
+              <div class="spool"><svg viewBox="0 0 60 80" aria-hidden="true"><use href="#sym-spool-l"/></svg><div><b>Полная мерка</b><span>147 утверждений, вся карта частей</span><span class="time">3 × 10 мин</span></div></div>
+            </div>
+            <div class="pattern-strip"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#sym-scissors"/></svg><span>Посмотреть на примере · это выкройка, не ваш результат</span></div>
+          </div>
+        </div>
+        <figcaption><b>Мерка · spools</b><span>Effort you can see: a short, medium or long thread. The 54-word paragraph becomes one line. The sample sits on pattern paper.</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="p-pad">
+            <div class="f-top"><span class="cup" aria-label="Пауза"><svg viewBox="0 0 24 24" width="20" height="20"><use href="#sym-cup"/></svg></span><span class="lbl">Примерка I<br>18 из 49</span></div>
+            <div class="seam"><svg viewBox="0 0 264 18" preserveAspectRatio="none" aria-hidden="true"><path d="M2 9 H262" stroke="rgba(244,236,222,.18)" stroke-width="2" stroke-dasharray="4 3"/><path d="M2 9 H99" stroke="#F6C744" stroke-width="3" stroke-dasharray="5 3" stroke-linecap="round"/><circle cx="100" cy="9" r="4" fill="#F6C744"/></svg></div>
+            <div class="f-card"><p>Даже под давлением во мне остаётся внутренняя опора.</p></div>
+            <div class="moonscale" id="moonscale" role="group" aria-label="Насколько это про вас">{{MOON_SCALE}}</div>
+            <div class="ms-ends"><span>Совсем не про меня</span><span>Точно про меня</span></div>
+            <p class="f-note" id="msNote" aria-live="polite">Ответ сохраняется после каждого выбора</p>
+          </div>
+          <img class="companion" src="{{S41}}" alt="">
+        </div>
+        <figcaption><b>Примерка · live</b><span>The moon-phase scale is gender-neutral and auto-advances. Every answer gets the same feedback, so play never rewards a score direction. A companion plush sits with you.</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="story-bars"><i class="done"></i><i class="done"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="story-k">Ваша карта · 3 из 8</div>
+          <div class="story-t">Ваше Солнце</div>
+          {{PETAL_SUN}}
+          <p class="story-p"><span class="hand">ярче всего — Любопытство</span>Тише всего сейчас Смелость. Это погода, а не приговор: петали меняются вместе с днями.</p>
+          <div class="story-more"><button class="p-btn ghost" type="button">Подробнее</button><button class="p-btn" type="button">Дальше</button></div>
+        </div>
+        <figcaption><b>Ваша карта · story</b><span>The report becomes eight story chapters. Self-энергия is eight petals with a number on request; full detail stays in «Подробнее».</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="p-head"><div><div class="d">12 частей · поиск</div><div class="t" data-plain="Части">Свои</div></div><button class="p-btn" type="button" style="min-height:34px;padding:0 12px;font-size:12px">+ Сшить</button></div>
+          <div class="tabs-felt"><span class="on">Все</span><span>Менеджеры</span><span>Пожарные</span><span>Изгн.</span></div>
+          <div class="shelves">
+            <div class="shelf"><div class="slot"><img class="squishy" src="{{S34}}" alt="Страж"><span class="nt">Страж</span><svg class="pin" aria-hidden="true"><use href="#sym-pin"/></svg></div><div class="slot"><img class="squishy" src="{{S18}}" alt="Угодник"><span class="nt">Угодник</span></div><div class="slot"><img class="squishy" src="{{S41}}" alt="Коуч"><span class="nt">Коуч</span></div></div>
+            <div class="shelf"><div class="slot"><img class="squishy" src="{{S01}}" alt="Капелька"><span class="nt">Капелька</span></div><div class="slot"><img class="squishy" src="{{S29}}" alt="Сладкоежка"><span class="nt">Сладкоежка</span></div><div class="slot"><img class="squishy" src="{{S28}}" alt="Первый урок"><span class="nt">Первый урок</span></div></div>
+            <div class="shelf"><div class="slot"><img class="squishy" src="{{S36}}" alt="Малыш"><span class="nt">Малыш</span></div><div class="slot"><img class="squishy" src="{{S26}}" alt="Свидетель"><span class="nt">Свидетель</span></div><div class="slot"><img class="squishy" src="{{S14}}" alt="Хранитель"><span class="nt">Хранитель</span></div></div>
+          </div>
+        </div>
+        <figcaption><b>Свои · tap a plush</b><span>A toy cupboard: handwritten name tags, a star pin for favourites. Tap squishes; in the app the plush then lifts off the shelf into its page.</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="pp-hero"><span class="bubble pp-bub">Я всё держу под контролем!</span><img class="pp-plush squishy" src="{{S34}}" alt="Страж, a blue felt frog with a gold ring; tap to squish"><div class="pp-ped"></div></div>
+          <div class="pp-name">Страж</div>
+          <div class="pp-tags"><span class="rib">Менеджеры</span><span>с 7 лет</span><span>активен сегодня</span></div>
+          <div class="pp-secs">
+            <div class="pp-sec"><b>Суперсила</b><span>Замечает риски раньше всех и держит всё в порядке.</span></div>
+            <div class="pp-sec"><b>Что тяжело</b><span>Нагрузка: «если я остановлюсь, всё развалится»</span></div>
+            <div class="pp-sec"><b>Чего просит</b><span>Потребность: разрешение передать часть забот</span></div>
+            <div class="pp-sec"><b>Можно спросить</b><div class="pp-ask"><span>«Чего ты боишься, если перестанешь?»</span><span>«Что тебе нужно от меня?»</span></div></div>
+          </div>
+          <div class="pp-actions"><button class="p-btn ghost" type="button">Узелок</button><button class="p-btn" type="button">Поговорить</button></div>
+        </div>
+        <figcaption><b>Part page</b><span>From the boards: superpower first, then what is hard and what it needs, using the glossary's «нагрузка» and «потребность». «Можно спросить» chips open Луна with the question ready.</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="p-head"><div><div class="d">Этот лунный месяц</div><div class="t" data-plain="Практики">Путь</div></div></div>
+          <div class="rhythm" aria-label="Лунный ритм: дни с практикой светятся">{{RHYTHM_PHONE}}</div>
+          <div class="rhythm-l">Золотые — дни с практикой. Тёмные — просто ночи: ничего не сгорает.</div>
+          <div class="quilt-mini"><div class="q"><i style="background:#4A74D9"></i><i style="background:#EF7B35"></i><i style="background:#4FC79B"></i><i style="background:#E792B4"></i><i style="background:#F6C744"></i><i style="background:#6F55C2"></i><i style="background:#4FC79B"></i><i style="background:#4A74D9"></i><i style="background:#2B2452"></i><i style="background:#EF7B35"></i><i style="background:#F6C744"></i><i style="background:#E792B4"></i></div><div><b>Лоскутное одеяло · 12</b><span>Растёт, но никогда не рвётся</span></div></div>
+          <svg class="path-svg" viewBox="0 0 300 300" aria-label="Path of practice with five stations; Клубок rests at the third" role="img">
+            <path d="M60 290 C 60 240, 240 250, 240 200 S 60 160, 60 110 S 240 70, 240 20" fill="none" stroke="#F6C744" stroke-width="3" stroke-dasharray="7 5" stroke-linecap="round"/>
+            <g font-family="Onest, sans-serif" font-size="10.5" font-weight="700" fill="#F4ECDE">
+              <circle cx="60" cy="262" r="20" fill="#4FC79B" stroke="#21875F" stroke-width="2" stroke-dasharray="4 3"/><text x="88" y="266">Земля, приём</text>
+              <circle cx="232" cy="208" r="20" fill="#4A74D9" stroke="#2c4f9c" stroke-width="2" stroke-dasharray="4 3"/><text x="150" y="212" text-anchor="end">Встреча</text>
+              <circle cx="66" cy="132" r="22" fill="#2E2757" stroke="#F6C744" stroke-width="2.5" stroke-dasharray="4 3"/><text x="96" y="136">Забота · сейчас</text>
+              <circle cx="232" cy="62" r="18" fill="none" stroke="rgba(244,236,222,.45)" stroke-width="2" stroke-dasharray="4 3"/><text x="232" y="98" text-anchor="middle" fill="rgba(244,236,222,.7)">Отношения</text>
+            </g>
+            <svg x="44" y="106" width="44" height="44" viewBox="0 0 64 64"><use href="#sym-klubok"/></svg>
+          </svg>
+        </div>
+        <figcaption><b>Путь</b><span>Lunar rhythm instead of streaks; a quilt that only grows; a winding thread with Клубок resting on the current station. No padlocks: upcoming stations can be previewed.</span></figcaption>
+      </figure>
+
+      <figure class="ph-fig">
+        <div class="phone">
+          <div class="luna-top"><img src="{{S15}}" alt=""><div><b data-plain="ИИ-коуч">Луна</b><span>слушает · всё, что вы скажете, остаётся у вас</span></div></div>
+          <div class="chat">
+            <div class="bub l">Потянем за ниточку? Что сегодня зацепило?</div>
+            <div class="bub u">Опять сорвалась на коллегу, хотя обещала себе</div>
+            <div class="bub l">Похоже, тут говорит кто-то, кто защищает. Позовём его?</div>
+            <div class="bub part"><img src="{{S19}}" alt=""><div><span class="fire">Я просто тушил пожар!</span><small>догадка Луны · на живую нитку</small></div></div>
+          </div>
+          <div class="l-chips"><span>Разобрать ситуацию</span><span>Помочь части</span><span>К сессии</span></div>
+          <div class="l-shelf"><div><img src="{{S07}}" alt="">Шкатулка</div><div><img src="{{S25}}" alt="">Позвать человека</div><div class="sos"><img src="{{S16}}" alt="">Если очень тяжело</div></div>
+        </div>
+        <figcaption><b>Луна</b><span>A guide with a face. When she voices a part, the bubble is basted and labelled as her guess. Crisis support is always one tap away and never paywalled.</span></figcaption>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="system">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Visual system</p>
+      <h2>Night felt, oat linen, moon gold</h2>
+      <p class="lede">Felt is the material, so the palette comes from craft-felt swatches rather than candy. Exiles move from hot magenta to a tender pastel rose. A CI script validates every text and surface pair for contrast.</p>
+    </div>
+    <div class="swatches">
+      <div class="sw"><i style="background:#17132F"></i><div><b>Ночной фетр</b><code>#17132F</code></div></div>
+      <div class="sw"><i style="background:#211B40"></i><div><b>Felt surface</b><code>#211B40</code></div></div>
+      <div class="sw"><i style="background:#F4ECDF"></i><div><b>Овсяный лён</b><code>#F4ECDF</code></div></div>
+      <div class="sw"><i style="background:#FFFAF2"></i><div><b>Linen surface</b><code>#FFFAF2</code></div></div>
+      <div class="sw"><i style="background:#F6C744"></i><div><b>Moon gold</b><code>#F6C744</code></div></div>
+      <div class="sw"><i style="background:#D9473F"></i><div><b>Red thread</b><code>#D9473F</code></div></div>
+      <div class="sw"><i style="background:#4A74D9"></i><div><b>Менеджеры</b><code>#4A74D9</code></div></div>
+      <div class="sw"><i style="background:#EF7B35"></i><div><b>Пожарные</b><code>#EF7B35</code></div></div>
+      <div class="sw"><i style="background:#E792B4"></i><div><b>Изгнанники</b><code>#E792B4</code></div></div>
+      <div class="sw"><i style="background:#4FC79B"></i><div><b>Ресурсы</b><code>#4FC79B</code></div></div>
+      <div class="sw"><i style="background:linear-gradient(135deg,#FFB547,#FFD978)"></i><div><b>Солнце</b><code>#FFB547→#FFD978</code></div></div>
+      <div class="sw"><i style="background:linear-gradient(90deg,#BFDDF5 0 33%,#7FCDB9 33% 66%,#6F55C2 66%)"></i><div><b>Frost · calm · storm</b><code>weather</code></div></div>
+    </div>
+    <div class="type-spec" style="margin-top:22px">
+      <div class="ts"><small>Display · Rubik Black, felt-cut</small><div class="ts-d"><span class="sr">Кто говорит внутри?</span><span class="cutf jitter" aria-hidden="true">Кто говорит внутри?</span></div></div>
+      <div class="ts"><small>Alternative · Unbounded 800</small><div class="ts-d" style="font-family:'Unbounded', 'Arial Black', sans-serif;font-weight:800">Ночная карта · Поехали!</div></div>
+      <div class="ts"><small>UI and body · Onest</small><div class="ts-b">Отметьте, где вы сейчас. Это займёт десять секунд и ничего не оценивает. Можно пропустить — Луна не обидится.</div></div>
+      <div class="ts"><small>Your words · Caveat</small><div class="ts-h">«на работе коллега резко оборвал…» — узелок на память</div></div>
+    </div>
+    <p class="muted" style="font-size:14.5px;margin-top:12px">Every face here has full Cyrillic (checked in the Fontsource packages), so Russian finally gets a display voice. Felt-cut lettering (a subtle roughen filter plus per-letter jitter, words never broken) is for hero titles only and switches off with the texture toggle. Handwriting is reserved for words you wrote yourself.</p>
+    <h3 style="margin-top:34px">Three illustration tiers, one rule</h3>
+    <div class="tiers" style="margin-top:12px">
+      <div class="tier"><b>Felt</b><div class="ans">кто ваш</div><div class="imgs"><img src="{{S01}}" alt=""><img src="{{S34}}" alt=""><img src="{{S15}}" alt=""></div><p class="muted" style="font-size:14px">Your parts, Луна, Клубок, the Sun. 3D plush from the engine and hero renders.</p></div>
+      <div class="tier"><b>Sketch</b><div class="ans">как и что бывает</div><div class="imgs"><img src="{{S02}}" alt=""><img src="{{S42}}" alt=""><img src="{{S37}}" alt=""></div><p class="muted" style="font-size:14px">Feelings, life moments, the Атлас archetypes, examples, the sample map, bubbles and ornaments. Ink line, flat fill, paper.</p></div>
+      <div class="tier"><b>Object</b><div class="ans">что</div><div class="imgs"><img src="{{S09}}" alt=""><img src="{{S27}}" alt=""><img src="{{S35}}" alt=""></div><p class="muted" style="font-size:14px">Tools and features. Glossy soft 3D objects. UI icons are a custom stitched line set.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="motion">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Motion</p>
+      <h2>Every motion reports a truth</h2>
+      <p class="lede">Physics over curves, transform and opacity only, nothing over a second blocks input. Springs ship as CSS <code>linear()</code> curves; GSAP (already a dependency) choreographs; the View Transitions API carries a part from shelf to page. Reduced motion always wins.</p>
+    </div>
+    <div class="lab">
+      <div class="demo"><div class="stage"><button class="felt-btn" type="button">Снять мерку</button></div><b>Squish</b><p>Press: scale 1.06 × .92, then a spring through .98 × 1.03. Felt has give.</p></div>
+      <div class="demo"><div class="stage"><div class="si-card" id="siCard"><svg viewBox="0 0 170 96" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="siMask"><rect class="si-m" x="7" y="7" width="156" height="82" rx="11" pathLength="100"/></mask></defs><rect class="si-line" x="7" y="7" width="156" height="82" rx="11" mask="url(#siMask)"/></svg><span>Новая карточка</span></div></div><b>Stitch-in</b><p>A running stitch traces the outline, then the content rises 6 px.</p><button class="replay" type="button" data-replay="siCard">Replay</button></div>
+      <div class="demo"><div class="stage"><div class="knot-fx" id="knotDemo" aria-hidden="true"><svg viewBox="0 0 150 150"><path class="loop" pathLength="100" d="M10 95 C40 95 50 40 80 45 C110 50 105 95 75 95 C50 95 55 60 85 62 C110 64 120 80 140 80" fill="none" stroke="#F6C744" stroke-width="5" stroke-linecap="round"/><circle class="pop" cx="75" cy="75" r="40" fill="none" stroke="#F6C744" stroke-width="3"/></svg></div></div><b>Knot-tie</b><p>The loop draws, tightens and pops. Saving feels like something was tied.</p><button class="replay" type="button" data-knot="knotDemo">Replay</button></div>
+      <div class="demo"><div class="stage"><div class="up-card" id="upCard"><div class="half l">Удалить</div><div class="half r">запись</div><div class="seamline"></div></div></div><b>Unpick</b><p>Delete pulls the stitches and the card falls apart. «Заштопать обратно» undoes it.</p><button class="replay" type="button" data-replay="upCard">Replay</button></div>
+      <div class="demo"><div class="stage"><div class="roll-track" id="rollTrack"><div class="trail"></div><svg class="ball" viewBox="0 0 64 64" aria-hidden="true"><use href="#sym-klubok"/></svg></div></div><b>Roll</b><p>Клубок rolls toward the next step and leaves a thread you can follow.</p><button class="replay" type="button" data-replay="rollTrack">Replay</button></div>
+      <div class="demo"><div class="stage"><img class="squishy" src="{{S18}}" alt="A purple felt heart plush; tap to squish" style="width:110px;cursor:pointer"></div><b>Tap to squish</b><p>Characters answer touch. Exiles hide from fast taps and peek out for a gentle hold.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="voice">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Voice and humour</p>
+      <h2>Jokes about the world, never about you</h2>
+      <p class="lede">Always «вы», gender-neutral phrasing, the glossary («Self-энергия», «сравнение», «ИИ-коуч», «потребность», «нагрузка», «копия», «практика»). Humour lives in thread, moon and sky, and it switches off when the content is heavy.</p>
+    </div>
+    <div class="registers">
+      <div class="reg"><b>Play</b><p class="muted" style="font-size:14px">Default. Springs, puns, babble, full colour.</p></div>
+      <div class="reg"><b>Calm</b><p class="muted" style="font-size:14px">Check-in at −1 or +1 and beyond, exile pages, practices. Slower, no puns, softer.</p></div>
+      <div class="reg"><b>Gravity</b><p class="muted" style="font-size:14px">Distress or «Если очень тяжело». Essential motion only, no jokes, crisis resources first.</p></div>
+    </div>
+    <div class="puns" style="margin-top:16px">
+      <div class="pun"><small>Start</small><b>«Поехали!»</b><span>Before the 147: «Ключ на старт»</span></div>
+      <div class="pun"><small>Delete and undo</small><b>«Распороть?»</b><span>Then «Заштопать обратно»</span></div>
+      <div class="pun"><small>A guess</small><b>«на живую нитку»</b><span>Label for every tentative reading</span></div>
+      <div class="pun"><small>Privacy</small><b>«Всё шито-крыто»</b><span>…карта хранится на этом устройстве</span></div>
+      <div class="pun"><small>147 finished</small><b>«Семь раз отмерили»</b><span>All three fittings: «Не лыком шиты!»</span></div>
+      <div class="pun"><small>First part sewn</small><b>«С иголочки!»</b><span>A patch for the quilt</span></div>
+      <div class="pun"><small>Overwhelm</small><b>«Клубок запутался»</b><span>«Распутаем по ниточке?»</span></div>
+      <div class="pun"><small>Moon calendar</small><b>«Луна не влияет на ваши части»</b><span>«…но напоминает заглянуть к ним»</span></div>
+      <div class="pun"><small>EN check-in</small><b>"Houston, we have a feeling."</b><span>EN rest day: "Knot today."</span></div>
+      <div class="pun"><small>EN share card</small><b>"Felt cute, might unburden later."</b><span>EN undo: "Darn it back."</span></div>
+    </div>
+    <h3 style="margin-top:30px">Rewrites</h3>
+    <div class="grid" style="margin-top:12px">
+      <div class="rewrite"><div class="was">«Три отдельных варианта. Каждый показывает, что даёт и сколько усилий требует. Рефлексия из 64 пунктов и батарея из 147 пунктов — разные инструменты…»</div><div class="now">«Выберите нитку по силам.» Three spools with minutes on each.</div></div>
+      <div class="rewrite"><div class="was">«Шлюз карты» · «Карта станет богаче после первого теста. Пройти сейчас или осмотреть сырое небо?»</div><div class="now">«Небо пока пустое. Снимем мерку — и ваши свои появятся здесь.»</div></div>
+      <div class="rewrite"><div class="was">«Закрыто · Сначала завершите полное погружение из 147 пунктов.»</div><div class="now">«Откроется после "Полной мерки"» with a preview, never a padlock.</div></div>
+      <div class="rewrite"><div class="was">«Вселенная не проснулась»</div><div class="now">«Небо зацепилось за гвоздик.» [Попробовать ещё] [Показать списком]</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="rhythm">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Motivation without guilt</p>
+      <h2>Moon phases instead of streaks</h2>
+      <p class="lede">The month resets with the real moon, so nothing is ever lost. Practice sews patches into a quilt that only grows, and a rest patch is there when you choose to rest. No leaderboards; «Вместе» quests are cooperative and opt-in.</p>
+    </div>
+    <div class="card"><h3>This lunar month</h3><div class="rhythm-big" style="margin-top:10px" aria-label="Lunar rhythm strip">{{RHYTHM_BIG}}</div><p class="faint" style="font-size:13px;margin-top:10px">Each icon is that day's real moon phase. Gold means a practice or check-in happened. Dark days are just nights.</p></div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card"><h3>Лоскутное одеяло</h3><div class="quilt" style="margin-top:10px"><i style="background:#4A74D9"></i><i style="background:#EF7B35"></i><i style="background:#4FC79B"></i><i style="background:#E792B4"></i><i style="background:#F6C744"></i><i style="background:#6F55C2"></i><i style="background:#4FC79B"></i><i style="background:#4A74D9"></i><i style="background:#2B2452"></i><i style="background:#EF7B35"></i><i style="background:#F6C744"></i><i style="background:#E792B4"></i><i style="background:#4FC79B"></i><i style="background:#6F55C2"></i></div></div>
+      <div class="card"><h3>Patches for acts, never for scores</h3><div class="chips" style="margin-top:10px"><span class="chip">Узелок на память</span><span class="chip">С иголочки</span><span class="chip">Красной нитью</span><span class="chip">Семь раз отмерь</span><span class="chip">Земля, приём</span><span class="chip">Тихий день</span></div><p style="margin-top:12px;font-size:14px" class="muted">Scored answers get direction-neutral feedback, checked by a test.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="access">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Neurodivergent-first</p>
+      <h2>Comfort controls, each one independent</h2>
+      <p class="lede">These extend the existing sensory model (preset plus independent controls). Every gesture has a button, every sound has a visual, and the diorama is narrated for screen readers.</p>
+    </div>
+    <div class="nd">
+      <div><b>«Говорить проще»</b><span>Every metaphor swaps to its literal twin. Луна says «Скажу проще:» once.</span></div>
+      <div><b>«По одному»</b><span>One card at a time, the dock hidden, an obvious exit.</span></div>
+      <div><b>«Выбери за меня»</b><span>Клубок picks and says why. Less choice paralysis.</span></div>
+      <div><b>«Посидим вместе»</b><span>A companion plush sits with you during long tasks (body doubling).</span></div>
+      <div><b>Visible time</b><span>Minutes on every action; long tasks show a shortening thread.</span></div>
+      <div><b>Low-energy mode</b><span>After «Низко» or «Мало сил»: one-tap knots, short practices, no typing.</span></div>
+      <div><b>Тихий уголок</b><span>Squish a plush, breathe with the moon, pull a thread that winds itself back.</span></div>
+      <div><b>No surprises</b><span>No auto-opening modals, fixed positions, transitions that show where things go.</span></div>
+      <div><b>Gentle copy</b><span>No "you missed", no badges for absence, reminders worded «если хочется».</span></div>
+      <div><b>Deep-dive drawers</b><span>«Подробнее» everywhere and the long-form report for people who love detail.</span></div>
+      <div><b>Text, contrast, spacing</b><span>Text S–XL, high contrast, wider letter spacing, less transparency.</span></div>
+      <div><b>Literal labels stay</b><span>The canonical label sits beside every metaphor, such as the weather window.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="render">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">SIGGRAPH tier</p>
+      <h2>A miniature felt world, lit like toy photography</h2>
+      <p class="lede">Rendering and interaction R&amp;D on top of the Felt Atelier engine. Three adaptive tiers keep low-end phones comfortable: a live WebGL diorama, pre-rendered sprites, or a plain list.</p>
+    </div>
+    <div class="rd">
+      <div><small>R1</small><b>Felt shading</b><span>Sheen BRDF for the velvet rim, fibre-normal noise, fuzz shells at hero size.</span></div>
+      <div><small>R2</small><b>Toy-photo pipeline</b><span>Warm key from your Sun, cool sky rim, contact shadows, tilt-shift blur.</span></div>
+      <div><small>R3</small><b>Cross-stitch stars</b><span>Instanced X-stitch quads that twinkle in a shader, in parallax layers.</span></div>
+      <div><small>R4</small><b>Yarn threads</b><span>Twisted-yarn tubes that sway. Short and tight means anxious, long and loose avoidant.</span></div>
+      <div><small>R5</small><b>Tonight's moon</b><span>The real lunar phase, computed locally, drives the moon's terminator.</span></div>
+      <div><small>R6</small><b>Eye contact and squish</b><span>Felt eyes follow your finger; taps make a damped soft-body dent.</span></div>
+      <div><small>R7</small><b>Adaptive tiers</b><span>Live → Still → List, gated by a GPU probe and your motion setting.</span></div>
+      <div><small>R9</small><b>Cross-stitch sampler</b><span>Your cast quantised into X stitches for a share card, deterministic from your profile.</span></div>
+      <div><small>R10</small><b>2.5D → 3D in one move</b><span>The home sky dissolves into the 3D scene with a matched camera.</span></div>
+      <div><small>R11</small><b>Sew it for real</b><span>Export your part's выкройка as a printable sewing pattern. A nod to <i>Plushie</i> (SIGGRAPH 2007).</span></div>
+    </div>
+    <div class="hoop-fig">
+      <svg viewBox="0 0 360 240" role="img" aria-label="Embroidery-hoop slicer: a hoop plane sweeps the fourth axis; parts inside are bright and labelled, parts outside fade">
+        <g stroke="var(--line)" stroke-width="1" style="stroke: var(--line)"><path d="M30 210 H340"/><path d="M30 210 V20"/><path d="M30 210 L120 150"/></g>
+        <g font-family="Onest, sans-serif" font-size="10" style="fill: var(--ink-faint)"><text x="300" y="226">Agency</text><text x="34" y="18">Temperature</text><text x="120" y="144">Focus</text></g>
+        <ellipse cx="200" cy="118" rx="88" ry="38" fill="rgba(246,199,68,.08)" stroke="#C79A63" stroke-width="7" transform="rotate(-14 200 118)"/>
+        <ellipse cx="200" cy="118" rx="80" ry="31" fill="none" stroke="#8E6A3E" stroke-width="1.5" stroke-dasharray="4 3" transform="rotate(-14 200 118)"/>
+        <g><circle cx="180" cy="116" r="8" fill="#4A74D9"/><circle cx="230" cy="104" r="8" fill="#EF7B35"/><circle cx="206" cy="132" r="8" fill="#4FC79B"/></g>
+        <g opacity=".22"><circle cx="90" cy="60" r="7" fill="#E792B4"/><circle cx="300" cy="60" r="7" fill="#4A74D9"/><circle cx="110" cy="182" r="7" fill="#EF7B35"/><circle cx="310" cy="176" r="7" fill="#E792B4"/></g>
+        <g font-family="Onest, sans-serif" font-size="10" font-weight="700" style="fill: var(--ink)"><text x="168" y="100">Критик −.7</text><text x="236" y="90">Ярость +.6</text><text x="214" y="150">Свидетель +.1</text></g>
+        <text x="40" y="236" font-family="Onest, sans-serif" font-size="10" style="fill: var(--moon-text)">Attachment slice −0.8…−0.4 · legend always visible</text>
+      </svg>
+      <div><h3>Обсерватория: the 3+1 workspace</h3><p class="muted" style="margin-top:8px;font-size:15px">The same scene, re-lit flat and cool for specialists: graph-paper gridlines, axis labels, per-part readouts. Therapists pick any three axes. A felt embroidery hoop sweeps the fourth: parts inside are bright and labelled, parts outside fade. A linked table and full-vector comparison keep every coordinate's provenance in stitch grammar.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="assets">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Assets</p>
+      <h2>All 42 of your stickers have a job</h2>
+      <p class="lede">Renamed by role in <code>docs/plans/felt-cosmos/assets/</code>. Only the pinched-fingers emoji is retired along with the emoji scale. Below are the sets I'd like you to generate, with copy-ready prompts.</p>
+    </div>
+    <div class="agrid">{{ASSET_GRID}}</div>
+    <h3 style="margin-top:34px">Please generate</h3>
+    <div class="req" style="margin-top:12px">
+      <div class="rq"><div class="rq-top"><b>A · Луна expression sheet</b><span class="prio">P0</span></div><pre id="pA">Eight separate images of the same character: a butter-yellow felt crescent moon plush with cream blanket-stitch seams, sleepy lids, tiny rosy cheek, matching the reference sticker. Expressions: 1 sleepy (eyes closed, soft smile), 2 yawning, 3 curious (one eye open, head tilted), 4 laughing (eyes squeezed, open smile), 5 concerned and kind (soft worried brows, small smile), 6 proud (chin up, little sparkle), 7 threading a needle with golden thread, 8 peeking from behind a navy felt cloud. Soft flocked-felt plush toy, handmade, visible blanket-stitch seams, glossy black bead eyes when open, toy-photography lighting (warm key from upper left, cool rim light), soft contact shadow, isolated on a transparent background, centred, 1024×1024 PNG, no text.</pre><button class="copy" type="button" data-copy="pA">Copy prompt</button></div>
+      <div class="rq"><div class="rq-top"><b>B · Клубок, the yarn ball</b><span class="prio">P0</span></div><pre id="pB">A golden-yellow yarn ball plush character with visible yarn wraps, two glossy black bead eyes, tiny rosy cheeks, a loose thread end. Four poses: 1 idle, 2 rolling (motion, thread trailing behind), 3 tangled (thread looped around itself, worried eyes), 4 proud (thread end curled into a heart). Soft felt and wool texture, handmade, toy-photography lighting (warm key from upper left, cool rim light), soft contact shadow, isolated on a transparent background, centred, 1024×1024 PNG, no text.</pre><button class="copy" type="button" data-copy="pB">Copy prompt</button></div>
+      <div class="rq"><div class="rq-top"><b>C · Солнце, the Self</b><span class="prio">P0</span></div><pre id="pC">A warm golden-orange felt sun plush with eight rounded felt petals around a round face, calm closed-smile eyes, tiny rosy cheeks, cream blanket-stitch seams, a soft inner glow. Four variants of brightness from dim (muted, little glow) to radiant (bright, warm halo). Soft flocked-felt plush toy, handmade, toy-photography lighting, soft contact shadow, isolated on a transparent background, centred, 1024×1024 PNG, no text.</pre><button class="copy" type="button" data-copy="pC">Copy prompt</button></div>
+      <div class="rq"><div class="rq-top"><b>D · Sky layers</b><span class="prio p1">P1</span></div><pre id="pD">Three handmade felt sky backdrops for a phone app, each delivered as three separate transparent layers (far, mid, near) for parallax, 1290×2796. Night: deep indigo felt with tiny hand-embroidered cross-stitch stars, soft felt clouds, rolling felt hills at the bottom. Dusk: peach to lavender to indigo felt gradient. Day: oat linen texture with a pale blue felt sky and soft felt clouds, sage felt hills. Visible stitching, cosy and calm, lots of empty space in the middle, no characters, no text.</pre><button class="copy" type="button" data-copy="pD">Copy prompt</button></div>
+      <div class="rq"><div class="rq-top"><b>E · Objects</b><span class="prio p1">P1</span></div><pre id="pE">Glossy soft 3D icon objects in the same style as the reference compass, open book and ringed planet icons, each separate on a transparent background, 1024×1024: wooden spools of golden thread (small, medium, large), a needle with golden thread, a felt quilt patch, an embroidery hoop, a felt envelope with a moon-shaped wax seal, a small keepsake box, a wooden window frame with curtains in three versions (frost patterns, clear night, storm), a small felt puppet theatre stage, a felt campfire, a small felt sack, a teacup with steam, a paper tag on a string. Soft studio lighting, no text.</pre><button class="copy" type="button" data-copy="pE">Copy prompt</button></div>
+      <div class="rq"><div class="rq-top"><b>F · Feeling stickers</b><span class="prio p1">P1</span></div><pre id="pF">Flat painterly die-cut stickers with a thick white border, in the same style as the reference mint calm blob, self-soothing blob and rainy overwhelm blob: soft round blob characters showing joy, fear, shame (hiding face), loneliness, frustration, numbness (in fog), relief (exhaling), pride, curiosity (with a magnifying glass), confusion (tangled yarn), boredom, gratitude, and a neutral storm (a blob under a small storm cloud, not angry). Each separate on a transparent background, 1024×1024, no text.</pre><button class="copy" type="button" data-copy="pF">Copy prompt</button></div>
+      <div class="rq"><div class="rq-top"><b>G · App icon</b><span class="prio p1">P1</span></div><pre id="pG">An app icon: a butter-yellow felt crescent moon trailing a golden thread that ends in a small star-shaped knot, on deep indigo felt with two tiny cross-stitch stars. Soft flocked felt, visible stitches, centred within a maskable safe zone, 1024×1024, no text.</pre><button class="copy" type="button" data-copy="pG">Copy prompt</button></div>
+      <div class="rq"><div class="rq-top"><b>H · Chapter art</b><span class="prio p1">P2</span></div><pre id="pH">Five flat painterly die-cut sticker illustrations with a white border, matching the reference sticker of a person resting on a grassy hill: 1 Grounding (feet on soft ground, roots), 2 Meeting (a person greeting a small shy blob), 3 Care (hugging a small heart), 4 Relationships (two people and their small blobs side by side), 5 Integration (a person with several blobs sitting together under the stars). Cosy, gentle, no text.</pre><button class="copy" type="button" data-copy="pH">Copy prompt</button></div>
+      <div class="rq"><div class="rq-top"><b>I · Атлас archetypes (doodle style)</b><span class="prio p1">P1</span></div><pre id="pI">Ink-outlined doodle sticker characters in the same style as the reference stickers (a blue blob huddled under a scribble cloud, an orange blob hugging a shield, a tiger with a laptop): thick black outline, flat saturated fills, simple round bodies with expressive faces, a few doodle sparkles. Each character separate on a transparent background, 1024×1024, no text: 1 Explorer (green blob with a backpack, mid-stride), 2 Planner (blue blob holding a clipboard checklist), 3 People-pleaser (pink blob hugging a big heart), 4 Free spirit (yellow blob in sunglasses, arms up), 5 Creator (purple blob splashed with paint), 6 Observer (calm mint blob with wide eyes), 7 Little one (small pastel blob under a blanket), 8 Angry one (orange-red blob letting off steam, not monstrous), 9 a round blob holding up a blank hand-drawn sign.</pre><button class="copy" type="button" data-copy="pI">Copy prompt</button></div>
+    </div>
+    <p class="muted" style="margin-top:14px;font-size:14.5px">The «Это нормально!» lettering is added in code, so the sign stays blank in the image. Built in code instead: the stitched icon set, stitches, threads and knots, moon phases, felt noise, window weather, body map, quilt and cross-stitch generators, the hoop, and every sound (Web Audio).</p>
+  </div>
+</section>
+
+<section class="sec" id="plan">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Roadmap</p>
+      <h2>Ten phases, each one shippable</h2>
+      <p class="lede">Everything lands behind <code>?ui=felt</code> until a route inventory proves parity; then the classic UI goes. Logic modules stay as they are, so only the presentation changes. M is about a week of focused agent work, L about two, XL about three.</p>
+    </div>
+    <div class="road">
+      <div class="ph"><span class="n">P0</span><div><b>The felt is real</b><span>Tokens (day, night, auto), fonts, kit primitives, motion, sound and haptics libraries, the 42-asset pipeline, the fake status bar removed, the flag.</span><span class="acc">Accepted when a kit page renders in RU/EN × day/night × still/lively, contrast passes and the classic UI is unchanged.</span></div><span class="size">M</span></div>
+      <div class="ph"><span class="n">P1</span><div><b>Everything has a home</b><span>New dock, places, the «Вы» sheet, the Lab, View Transitions, panels moved rather than rewritten, no auto-modals.</span><span class="acc">Accepted when the route inventory is green and deep links, back/forward and focus order work.</span></div><span class="size">M</span></div>
+      <div class="ph"><span class="n">P2</span><div><b>The daily loop</b><span>Небо (2.5D sky and Сегодня), Окно, Узелок, garland, red-thread suggestions.</span><span class="acc">Accepted when a check-in takes ≤10 s and a knot ≤20 s, both work in Still and Plain, and data models are unchanged.</span></div><span class="size">L</span></div>
+      <div class="ph"><span class="n">P3</span><div><b>Meet your own</b><span>Свои shelves, part page, family behaviours, the Мастерская ritual, AI Studio drafts shown basted.</span><span class="acc">Accepted when a part can be sewn in ≤60 s, characterSeed stays stable and nothing from the old sheets is missing.</span></div><span class="size">L</span></div>
+      <div class="ph"><span class="n">P4</span><div><b>Measured with care</b><span>Spools, promise card, fitting screen, tea break, reveal, story report, stitch grammar everywhere.</span><span class="acc">Accepted when 64/147 golden fixtures are identical, feedback is direction-neutral and the sample is unmistakable.</span></div><span class="size">L</span></div>
+      <div class="ph"><span class="n">P5</span><div><b>Rhythm without guilt</b><span>Путь, quilt, lunar rhythm, patches, Театр, Костёр, Тихий уголок, pocket cards and wallpaper, goal, review.</span><span class="acc">Accepted when there are no streak counters, rest can be recorded and safety gates are unchanged.</span></div><span class="size">L</span></div>
+      <div class="ph"><span class="n">P6</span><div><b>A guide with a face</b><span>Луна's expressions, chat, basted part voices, Шкатулка, booking, crisis always visible, honest Plus.</span><span class="acc">Accepted when AI states are truthful, memory is inspectable and crisis is ≤2 taps from anywhere.</span></div><span class="size">M</span></div>
+      <div class="ph"><span class="n">P7</span><div><b>SIGGRAPH pass</b><span>R1–R10 and the Обсерватория with the hoop slicer.</span><span class="acc">Accepted at 60 fps or a graceful tier, with no coordinate drift, a full table fallback and therapist rule tests green.</span></div><span class="size">XL</span></div>
+      <div class="ph"><span class="n">P8</span><div><b>Worth showing</b><span>Felt sounds and babble, easter eggs, seasons, the cross-stitch share card, Telegram stickers, «Год в узелках», sewing patterns.</span><span class="acc">Accepted when everything is optional, every share is previewed and Gravity silences every gag.</span></div><span class="size">M</span></div>
+      <div class="ph"><span class="n">P9</span><div><b>Earn the 10</b><span>Performance traces, manual VoiceOver and TalkBack, neurodivergent review sessions, blind comparisons, classic UI removed.</span><span class="acc">Accepted on the 11/10 rubric with evidence, and when an independent critic prefers Felt Cosmos on every core task.</span></div><span class="size">M</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="decisions">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Your call</p>
+      <h2>Ten decisions before any code</h2>
+      <p class="lede">Each has my recommended default. Approve as a whole, or change any line.</p>
+    </div>
+    <div class="decs">
+      <div class="dec"><b>Core concept</b><span>Felt Cosmos with the thread grammar: Луна-швея, Клубок, узелки, stitches.</span><span class="def">Default: yes</span></div>
+      <div class="dec"><b>Dock</b><span>Небо · Свои · Узелок · Путь · Луна, with plain twins; settings move to «Вы».</span><span class="def">Default: yes</span></div>
+      <div class="dec"><b>Display face</b><span>Rubik Black with felt-cut lettering (closest to your doodle boards) or Unbounded (wider, more geometric).</span><span class="def">Default: Rubik Black</span></div>
+      <div class="dec"><b>Theme</b><span>«Авто по времени суток» as the default.</span><span class="def">Default: yes</span></div>
+      <div class="dec"><b>Real lunar calendar</b><span>Tonight's moon in the rhythm strip, with the self-aware joke.</span><span class="def">Default: yes</span></div>
+      <div class="dec"><b>Brand</b><span>«Иннерверс» with the moon-and-thread mark, replacing «PARTS.», «Иннерсфера» and «картограф частей» in the UI.</span><span class="def">Default: yes</span></div>
+      <div class="dec"><b>Exports</b><span>Telegram sticker pack and the printable sewing pattern, in P8.</span><span class="def">Default: yes</span></div>
+      <div class="dec"><b>Assets</b><span>Which sets you'll generate. P0 needs A (Луна), B (Клубок) and C (Солнце).</span><span class="def">Needed: A, B, C first</span></div>
+      <div class="dec"><b>Обсерватория</b><span>The specialist workspace in this program (P7) or later.</span><span class="def">Default: P7</span></div>
+      <div class="dec"><b>Sketch layer</b><span>Ink doodles for common patterns, feelings, examples and the Атлас; felt for your own parts; sketch→felt as the signature moment.</span><span class="def">Default: yes</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Full specification: <code>docs/plans/felt-cosmos-redesign.md</code> on branch <code>claude/hopeful-franklin-jkny8n</code>, with the audit and proposal contact sheets and the renamed asset pack in <code>docs/plans/felt-cosmos/</code>. Nothing is implemented until you approve.</p>
+  </div>
+</footer>

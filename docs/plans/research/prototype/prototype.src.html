@@ -348,7 +348,7 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
 
   /* State lives only in this browser. */
   var KEY = 'innerverse-proto-v1';
-  var blank = function () { return { answers: [], cover: '', acts: {}, days: {}, today: null, moments: [], waitlist: false, plain: false }; };
+  var blank = function () { return { answers: [], cover: '', acts: {}, days: {}, today: null, moments: [], waitlist: false, plain: false, start: null, tasksDone: 0, shares: 0, plus: null, code: '' }; };
   var S = blank();
   try { var raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
   var save = function () { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
@@ -382,6 +382,9 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     return ORDER.slice().sort(function (a, b) { return sc[b] - sc[a] || ORDER.indexOf(a) - ORDER.indexOf(b); }).slice(0, 3);
   };
   var hasSky = function () { return S.answers.length === SCENES.length; };
+  var dayIndex = function () { return S.start ? Math.floor((Date.now() - S.start) / 86400000) : 0; };
+  var plusDue = function () { return S.start && !S.plus && dayIndex() >= 6; };
+  var median = function (xs) { if (!xs.length) return null; var s = xs.slice().sort(function (a, b) { return a - b; }), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
   var stageOf = function (id) { var n = S.acts[id] || 0, s = 0; LEVELS.forEach(function (lv, i) { if (n >= lv) s = i; }); return s; };
   var act = function (id) { if (!id || !PARTS[id]) return; S.acts[id] = (S.acts[id] || 0) + 1; };
 
@@ -469,6 +472,13 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       h += '<div class="card warm"><p class="kicker">Карточка дня</p><div class="daycard" style="margin-top:8px">' + img(P.img, '') + '<div><p class="h2" style="font-size:18px">Сегодня главный — ' + esc(P.short) + '</p><p class="muted" style="font-size:13.5px;margin-top:4px">Суперсила: ' + esc(P.power.toLowerCase()) + '.</p><p class="task">' + esc(P.tasks[today.task % P.tasks.length]) + '</p></div></div>' +
         (today.done ? '<p class="hand" style="margin-top:10px">Сделано. ' + esc(P.short) + ' это заметил.</p>' :
           '<div class="row" style="margin-top:12px"><button class="btn small" type="button" data-act="done">Сделано</button><button class="btn small ghost" type="button" data-act="other-task">Другое задание</button></div>') + '</div>';
+    }
+    if (plusDue()) {
+      if (!S.plusPrice) { S.plusPrice = [199, 299, 399][Math.floor(Math.random() * 3)]; save(); }
+      h += '<div class="card soft"><p class="kicker">Неделя с вами</p><h2 class="h2" style="margin-top:4px">Innerverse Plus · ' + S.plusPrice + ' ₽ в месяц</h2>' +
+        '<ul style="margin:8px 0 0;padding-left:18px;display:grid;gap:5px" class="muted"><li>Подробный портрет вашего неба</li><li>Разговоры с частями вместе с Луной</li><li>Договоры с частями и итоги недели</li><li>Полный «Два неба» для пары</li></ul>' +
+        '<div class="row" style="margin-top:12px"><button class="btn small" type="button" data-act="plus-yes">Оформить</button><button class="btn small ghost" type="button" data-act="plus-no">Не сейчас</button></div>' +
+        '<p class="faint" style="margin-top:8px">Это прототип: оплаты нет, мы только узнаём, нужно ли это.</p></div>';
     }
     h += '<div class="card"><p class="kicker">Лунный ритм</p><div class="moon">';
     for (var i = 6; i >= 0; i--) {
@@ -603,9 +613,38 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       '<div class="toggle"><span><b>Говорить проще</b><br><span class="faint">Без метафор: «Мои части» вместо «Небо»</span></span><button class="sw" type="button" role="switch" aria-checked="' + S.plain + '" aria-label="Говорить проще" data-act="plain"></button></div>' +
       '<div class="toggle"><span><b>Тема</b><br><span class="faint" id="theme-name">' + themeName() + '</span></span><button class="btn small ghost" type="button" data-act="theme">Сменить</button></div></div>' +
       '<div class="card dash stack"><p class="kicker">Для интервью</p>' +
+      '<button class="btn small" type="button" data-go="report">Отчёт для исследования</button>' +
       '<button class="btn small ghost" type="button" data-act="retake">Пройти тест заново</button>' +
       (resetArmed ? '<p class="muted">Стереть ответы, моменты и отметки в этом браузере?</p><div class="row"><button class="btn small" type="button" data-act="reset-yes">Да, стереть</button><button class="btn small ghost" type="button" data-act="reset-no">Отмена</button></div>' : '<button class="btn small ghost" type="button" data-act="reset">Сбросить прототип</button>') +
-      '<p class="faint">Ссылки на экраны: добавьте к адресу #test, #sky, #sos, #two, #stars или #luna.</p></div>';
+      '<p class="faint">Ссылки на экраны: добавьте к адресу #test, #sky, #sos, #two, #stars, #luna или #report.</p></div>';
+  };
+
+  /* Diary report: participants copy this and send it to the researcher on day 7 and day 14. Nothing leaves the browser on its own. */
+  var reportText = function () {
+    var dkStart = S.start ? new Date(S.start) : null;
+    var checkDays = Object.keys(S.days).length;
+    var lateCheck = dkStart ? Object.keys(S.days).some(function (k) { var p = k.split('-'); return (new Date(+p[0], +p[1] - 1, +p[2]) - new Date(dkStart.getFullYear(), dkStart.getMonth(), dkStart.getDate())) / 86400000 >= 6; }) : false;
+    var shifts = S.moments.map(function (m) { return m.after - m.before; });
+    var lines = [
+      'Innerverse · отчёт прототипа',
+      'Код участника: ' + (S.code || '—'),
+      'Начало: ' + (dkStart ? dkStart.toLocaleDateString('ru-RU') : '—') + ' · день ' + (dayIndex() + 1),
+      'Небо: ' + (hasSky() ? top().map(function (p) { return PARTS[p].short; }).join(', ') : 'тест не пройден') + (S.cover ? ' · обложка: ' + S.cover : ''),
+      'Дней с отметкой «Кто сегодня главный?»: ' + checkDays + ' · возвращение на 7-й день или позже: ' + (lateCheck ? 'да' : 'нет'),
+      'Заданий сделано: ' + S.tasksDone,
+      'Моментов «Накрыло»: ' + S.moments.length + (shifts.length ? ' · медиана сдвига: ' + (median(shifts) > 0 ? '+' : '') + median(shifts) : ''),
+      'Приглашений скопировано: ' + S.shares,
+      'Plus: ' + (S.plus ? (S.plus === 'yes' ? 'оформить' : 'не сейчас') + ' (' + S.plusPrice + ' ₽)' : 'не показан') + ' · созвездия: ' + (S.waitlist ? 'в списке' : 'нет')
+    ];
+    S.moments.forEach(function (m, i) { lines.push('Момент ' + (i + 1) + ': ' + (m.part ? PARTS[m.part].short : 'не знаю') + ', ' + m.before + '→' + m.after + ', шаг: ' + m.move); });
+    return lines.join('\n');
+  };
+  screens.report = function () {
+    return '<button class="link" type="button" data-go="luna">← Назад</button><p class="kicker">Для исследования</p><h1 class="h2">Отчёт для исследователя</h1>' +
+      '<p class="muted">Скопируйте текст и отправьте исследователю на 7-й и 14-й день. Здесь только счётчики и ваши моменты, без текстов о том, что случилось.</p>' +
+      '<label class="faint" for="code">Ваш код участника (например, P07)</label><input type="text" id="code" maxlength="12" value="' + esc(S.code) + '">' +
+      '<textarea id="report" readonly style="min-height:220px;font-size:13px">' + esc(reportText()) + '</textarea>' +
+      '<button class="btn" type="button" data-act="copy" data-target="report">Скопировать отчёт</button>';
   };
 
   var themeName = function () {
@@ -618,7 +657,7 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
   var partId = null;
   var TABS = [['sky', 'ic-sky'], ['two', 'ic-two'], ['stars', 'ic-stars'], ['luna', 'ic-moon']];
   var renderTabs = function (name) {
-    var base = name === 'two-sample' ? 'two' : name === 'part' ? 'sky' : name;
+    var base = name === 'two-sample' ? 'two' : name === 'part' ? 'sky' : name === 'report' ? 'luna' : name;
     tabs.querySelector('.in').innerHTML = TABS.map(function (t) {
       return '<button type="button" data-go="' + t[0] + '"' + (base === t[0] ? ' aria-current="page"' : '') + '><svg aria-hidden="true"><use href="#' + t[1] + '"/></svg>' + esc(L(t[0])) + '</button>';
     }).join('');
@@ -648,6 +687,8 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
       var el = document.getElementById(k);
       if (el) el.addEventListener('input', function () { sos[k] = +el.value; document.getElementById(k + '-out').textContent = el.value; });
     });
+    var code = document.getElementById('code');
+    if (code) code.addEventListener('input', function () { S.code = code.value.trim(); save(); document.getElementById('report').value = reportText(); });
     var what = document.getElementById('sos-what');
     if (what) what.addEventListener('input', function () { sos.what = what.value; });
   };
@@ -658,12 +699,13 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     if (el.dataset.go) { go(el.dataset.go); return; }
     var a = el.dataset.act, id = el.dataset.id;
     if (a === 'start') { if (hasSky()) S.answers = []; save(); go('test'); }
-    else if (a === 'answer') { S.answers.push(+el.dataset.i); save(); go(S.answers.length >= SCENES.length ? 'result' : 'test'); }
+    else if (a === 'answer') { S.answers.push(+el.dataset.i); if (hasSky() && !S.start) S.start = Date.now(); save(); go(S.answers.length >= SCENES.length ? 'result' : 'test'); }
     else if (a === 'back') { S.answers.pop(); save(); go('test'); }
     else if (a === 'share') go('share');
     else if (a === 'copy') {
       var ta = document.getElementById(el.dataset.target);
       var done = function () { toast('Скопировано'); };
+      if (el.dataset.target !== 'report') { S.shares++; save(); }
       var fallback = function () { ta.focus(); ta.select(); toast('Выделено — скопируйте вручную'); };
       try { navigator.clipboard.writeText(ta.value).then(done, fallback); } catch (err) { fallback(); }
     }
@@ -672,7 +714,8 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
     else if (a === 'more-today') { var m = document.getElementById('more-today'); m.hidden = !m.hidden; }
     else if (a === 'today') { S.today = { day: dayKey(), part: id, task: 0, done: false }; S.days[dayKey()] = true; act(id); save(); go('sky', { keepScroll: true }); }
     else if (a === 'other-task') { S.today.task++; save(); go('sky', { keepScroll: true }); }
-    else if (a === 'done') { S.today.done = true; act(S.today.part); save(); go('sky', { keepScroll: true }); toast('Отмечено'); }
+    else if (a === 'done') { S.today.done = true; S.tasksDone++; act(S.today.part); save(); go('sky', { keepScroll: true }); toast('Отмечено'); }
+    else if (a === 'plus-yes' || a === 'plus-no') { S.plus = a === 'plus-yes' ? 'yes' : 'no'; save(); go('sky', { keepScroll: true }); toast(S.plus === 'yes' ? 'Спасибо! Оплаты в прототипе нет — мы учтём ваш ответ.' : 'Хорошо. Всё бесплатное остаётся с вами.'); }
     else if (a === 'sos-new') { var sm = document.getElementById('sos-more'); sm.hidden = !sm.hidden; }
     else if (a === 'sos-part') { sos.part = id || null; sos.what = (document.getElementById('sos-what') || {}).value || ''; sos.step = 'near'; go('sos'); }
     else if (a === 'apart') { sos.apart = true; go('sos', { keepScroll: true }); }
@@ -705,7 +748,7 @@ input[type="text"] { width: 100%; min-height: 46px; border: 2px solid var(--line
 
   var fromHash = function () {
     var h = location.hash.slice(1);
-    var ok = ['test', 'result', 'share', 'sky', 'sos', 'two', 'stars', 'luna'];
+    var ok = ['test', 'result', 'share', 'sky', 'sos', 'two', 'stars', 'luna', 'report'];
     if (ok.indexOf(h) >= 0) { if (h === 'sos') sos = null; go(h); }
     else go(hasSky() ? 'sky' : 'welcome');
   };

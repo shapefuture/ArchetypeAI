@@ -1,6 +1,6 @@
 # Loading identity reference
 
-Source audit snapshot: repository commit `bfbffc4` (`docs: capture Stage 0 baseline evidence`), branch `codex/stage0-loading-reference`. Scope follows [80-20 plan §8.1](../80-20-plan.md#81-step-by-step-baseline), item 6, and Bead `ArchetypeAI-28h.1.3`. This is a source-only reference: neither app was launched, and no runtime, device, account, or network behavior was observed.
+Source audit snapshot: repository commit `610d2a0` (`docs: capture Stage 0 baseline evidence`), branch `codex/stage0-loading-reference`. Scope follows [80-20 plan §8.1](../80-20-plan.md#81-step-by-step-baseline), item 6, and Bead `ArchetypeAI-28h.1.3`. This is a source-only reference: neither app was launched, and no runtime, device, account, or network behavior was observed.
 
 ## Source evidence
 

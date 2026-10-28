@@ -1,11 +1,11 @@
 # B09.S01 — Current ownership and actual reuse: accessible bounded practice runner
 <!-- cite-ref: d17aaa6 -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the "unit-tested" wording conflicted with §13. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The reviewer found anchors that matched neither the HEAD line nor the base line they named. Corrected: the `src/parts-cartographer/screens/innerverse.jsx` call site (`:581`), the immutability rule (HEAD `firestore.rules:572@3683b0f`), the RED-gate `redAllowed` call at `src/parts-cartographer/screens/practice.jsx:53`, and the header, which now states HEAD as the basis. Not re-verified: `src/parts-cartographer/screens/practice.jsx:101`, `:211`, `:228` and `src/parts-cartographer/screens/innerverse.jsx:546-547`, and roughly half of the table citations. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `f8746dc`: FAIL (minor), the "unit-tested" wording conflicted with §13. Round 2 at `f8746dc`: FAIL. Round 3 at `8751dad`: FAIL. The reviewer found anchors that matched neither the HEAD line nor the base line they named. Corrected: the `src/parts-cartographer/screens/innerverse.jsx` call site (`:581`), the immutability rule (HEAD `firestore.rules:572@3683b0f`), the RED-gate `redAllowed` call at `src/parts-cartographer/screens/practice.jsx:53`, and the header, which now states HEAD as the basis. Not re-verified: `src/parts-cartographer/screens/practice.jsx:101`, `:211`, `:228` and `src/parts-cartographer/screens/innerverse.jsx:546-547`, and roughly half of the table citations. Status is still **candidate, not accepted**; re-review is required.
 
 **Status: candidate awaiting independent review. Not an acceptance claim.**
 
-- Evidence basis: static reading of the repository at base commit `09194df5f48326bff14e42a1e4eb8d66c457186d`, plus parsing of the planning JSON files. No runner behavior was executed.
+- Evidence basis: static reading of the repository at base commit `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`, plus parsing of the planning JSON files. No runner behavior was executed.
 - Participant, unprompted-user, device or manual assistive-technology, live Firestore/account, practitioner, tradition/source, and independent-verifier evidence: **pending. None was collected.**
 - Scope: inventory and reuse reconciliation only. No app source, rules, locales, package files, CI, or Beads state was changed.
 
@@ -19,7 +19,7 @@
 | Owned slot (epic) | `practice.runner` |
 | Role / mutation / risk (S01 metadata) | slot-owner / M0 / R2 (epic B09 metadata says R1) |
 | Reuse packages named in metadata | `C02`, `C08` (reconciled in §2) |
-| Base | git commit `09194df5f48326bff14e42a1e4eb8d66c457186d`, branch `worktree-agent-a01db783e51b2a4d9`, clean at inspection |
+| Base | git commit `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`, branch `worktree-agent-a01db783e51b2a4d9`, clean at inspection |
 | `base_generation` / `contract_versions` | `null` / `[]`. No immutable generation and no published predecessor contract exist. |
 | Leases | None. Metadata `workcell_status`: proposal requiring resolved base, contracts, capabilities and a lease. This artifact does not claim a lease. |
 | Successor | `ArchetypeAI-ivlh` — [B09.S02] Specify authoritative state, grants and effects (blocked by this step) |
@@ -220,7 +220,7 @@ Severity is a planning label for this inventory, not a product or safety judgmen
 
 | Source | Identifier | Notes |
 | --- | --- | --- |
-| Base commit | `09194df5f48326bff14e42a1e4eb8d66c457186d` | Branch `worktree-agent-a01db783e51b2a4d9`; `git status --short` empty at inspection |
+| Base commit | `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365` | Branch `worktree-agent-a01db783e51b2a4d9`; `git status --short` empty at inspection |
 | Bead text | Task file `cs6n.txt` in the session scratchpad (`tasks/cs6n.txt`) | Read in full; acceptance criteria and execution requirements used as stated |
 | Social planning JSON | `docs/plans/social-creative-practice-beads-plan.json`, blob `d7acf515c30d95c11028085baf360feaa35b46fe` | Parsed: 1807 nodes, 4240 edges; `prepared_date` 2026-10-06; `planning_bead` `ArchetypeAI-cyqe`; 15,058,952 bytes |
 | Creative-commons plan | `docs/plans/creative-commons-beads-plan.md` (blob `6e64b476009052c2a1e9460e4ec2015ad3782e48`), `.json` (blob `cbe2605ef4f32b4f4c66c24787b47d02a1be8d8c`) | Prepared 2026-10-10 |

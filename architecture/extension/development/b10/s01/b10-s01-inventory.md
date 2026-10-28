@@ -1,7 +1,7 @@
 # B10.S01 — Inventory: personal meaning, context and accommodations
 <!-- cite-ref: 45c24ed -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because "no personal meaning notes" was false at HEAD. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The deletion row said `deleteWithDerived` removes shares, which was false, and the sharing row cited a server rule that does not exist. Both are corrected, along with the generic rows. Base note: `src/parts-cartographer/core/personal-memory.ts@3683b0f` and `src/parts-cartographer/screens/memory-panel.jsx@3683b0f` are HEAD paths (commit 3670a3a), not present at base 45c24ed. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `f8746dc`: FAIL, because "no personal meaning notes" was false at HEAD. Round 2 at `f8746dc`: FAIL. Round 3 at `8751dad`: FAIL. The deletion row said `deleteWithDerived` removes shares, which was false, and the sharing row cited a server rule that does not exist. Both are corrected, along with the generic rows. Base note: `src/parts-cartographer/core/personal-memory.ts@3683b0f` and `src/parts-cartographer/screens/memory-panel.jsx@3683b0f` are HEAD paths (commit f3decec), not present at base 45c24ed. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-cpfa` (B10.S01).
 - Base checked: `git:45c24ed` on `claude/full-plan-handoff-gmgpkq`.
@@ -11,7 +11,7 @@
 
 ## 1. Finding
 
-Accommodations partly exist: sensory and reduced-motion preferences are implemented and tested. At the base 45c24ed, personal meaning and context notes did not exist. HEAD adds a personal memory module (`src/parts-cartographer/core/personal-memory.ts@3683b0f`, commit 3670a3a) with `addMemory` and `contextMemories`, shown in `src/parts-cartographer/screens/memory-panel.jsx@3683b0f`. Whether it meets the meaning-note and context requirements is not assessed here. `meaning` appears only as a measured need category, which must not be confused with a person's own meaning notes.
+Accommodations partly exist: sensory and reduced-motion preferences are implemented and tested. At the base 45c24ed, personal meaning and context notes did not exist. HEAD adds a personal memory module (`src/parts-cartographer/core/personal-memory.ts@3683b0f`, commit f3decec) with `addMemory` and `contextMemories`, shown in `src/parts-cartographer/screens/memory-panel.jsx@3683b0f`. Whether it meets the meaning-note and context requirements is not assessed here. `meaning` appears only as a measured need category, which must not be confused with a person's own meaning notes.
 
 ## 2. Existing code and reuse
 
@@ -21,7 +21,7 @@ Accommodations partly exist: sensory and reduced-motion preferences are implemen
 | Reduced-motion gating | `src/parts-cartographer/core/sensory-preferences.ts` (`sceneClockStep`) | Implemented: the ambient clock stops for Still and for system reduced motion. |
 | Ambience suspension | `src/parts-cartographer/services/ambience-gate.ts` | Implemented: suspends ambience for hidden pages, text entry, and errors. |
 | Measured need category `meaning` | `src/shared/core/data/parts.ts:25@3683b0f` (HEAD), `src/shared/core/data/scoring-v2.ts:208@3683b0f` (HEAD) | A scored need. Must not be treated as personal meaning notes. |
-| Personal meaning notes and context | At base 45c24ed: none. At HEAD: `src/parts-cartographer/core/personal-memory.ts@3683b0f` (commit 3670a3a), not assessed against meaning-note semantics | Partly present at HEAD; not assessed. |
+| Personal meaning notes and context | At base 45c24ed: none. At HEAD: `src/parts-cartographer/core/personal-memory.ts@3683b0f` (commit f3decec), not assessed against meaning-note semantics | Partly present at HEAD; not assessed. |
 
 **Reuse packages named by the task.** The planning documents define these codes inconsistently across streams (the B01 inventory recorded the same ambiguity). Each code is an unresolved reuse claim until the coordinator confirms its mapping.
 
@@ -37,7 +37,7 @@ Accommodations partly exist: sensory and reduced-motion preferences are implemen
 
 ## 4. Scenario matrix (planned, not exercised)
 
-Each row is planned behaviour for personal meaning notes and context. HEAD has a personal memory module (`src/parts-cartographer/core/personal-memory.ts@3683b0f`, commit 3670a3a) that the design builds on. It has no meaning-note type, and no Firestore rule covers memory notes.
+Each row is planned behaviour for personal meaning notes and context. HEAD has a personal memory module (`src/parts-cartographer/core/personal-memory.ts@3683b0f`, commit f3decec) that the design builds on. It has no meaning-note type, and no Firestore rule covers memory notes.
 
 | Scenario | Expected behaviour (planned) | Exercised today |
 |---|---|---|

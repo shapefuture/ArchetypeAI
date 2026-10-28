@@ -1,7 +1,7 @@
 # B08.S01 — Inventory: reviewed source and practice catalogue
 <!-- cite-ref: 45c24ed -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), "no review workflow" was false for AI suggestions. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The §1 finding said no practice library exists, which is wrong: `src/app/core/data/exercises.ts` and the `EXERCISE_COPY` step copy are practices. The catalogue commit is 4508d49 (71261d0 marked it draft). §§1-5 are corrected. Base note: `src/parts-cartographer/screens/suggestion-review.jsx@3683b0f` and `src/shared/core/data/constellations.ts@3683b0f` are HEAD paths under a 45c24ed header. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `f8746dc`: FAIL (minor), "no review workflow" was false for AI suggestions. Round 2 at `f8746dc`: FAIL. Round 3 at `8751dad`: FAIL. The §1 finding said no practice library exists, which is wrong: `src/app/core/data/exercises.ts` and the `EXERCISE_COPY` step copy are practices. The catalogue commit is 7841799 (2013071 marked it draft). §§1-5 are corrected. Base note: `src/parts-cartographer/screens/suggestion-review.jsx@3683b0f` and `src/shared/core/data/constellations.ts@3683b0f` are HEAD paths under a 45c24ed header. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-z5qy` (B08.S01).
 - Base checked: `git:45c24ed` on `claude/full-plan-handoff-gmgpkq`.
@@ -11,7 +11,7 @@
 
 ## 1. Finding
 
-At base 45c24ed the codebase had a practice library but no practice catalogue with source references or review status. The library is `src/shared/core/data/exercises.ts@3683b0f` (base path `src/app/core/data/exercises.ts`), with step copy in `src/shared/i18n/strings.ts@3683b0f` (`EXERCISE_COPY`, 56 entries). Neither holds source references or a review record. HEAD adds `src/parts-cartographer/core/practice-catalog.ts@3683b0f`, created in commit 4508d49 and marked draft in 71261d0. It has one status constant, `CATALOG_REVIEW.status`, set to `'draft'`, and `availablePractices` in `src/parts-cartographer/core/contextual-checkin.ts:12@3683b0f` offers only entries whose status is `reviewed`. No code checks a review record.
+At base 45c24ed the codebase had a practice library but no practice catalogue with source references or review status. The library is `src/shared/core/data/exercises.ts@3683b0f` (base path `src/app/core/data/exercises.ts`), with step copy in `src/shared/i18n/strings.ts@3683b0f` (`EXERCISE_COPY`, 56 entries). Neither holds source references or a review record. HEAD adds `src/parts-cartographer/core/practice-catalog.ts@3683b0f`, created in commit 7841799 and marked draft in 2013071. It has one status constant, `CATALOG_REVIEW.status`, set to `'draft'`, and `availablePractices` in `src/parts-cartographer/core/contextual-checkin.ts:12@3683b0f` offers only entries whose status is `reviewed`. No code checks a review record.
 
 ## 2. Existing code and reuse
 

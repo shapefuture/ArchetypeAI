@@ -1,7 +1,7 @@
 # B07.S01 — Inventory: authored presentation and creative continuity
 <!-- cite-ref: 45c24ed -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the continuity search omitted the draft-backup resume. Round 2 at `b36bde2`: FAIL (minor). Round 3 at `930edc1`: FAIL. The copy-aside was described as a refusal, which is wrong: the draft is copied aside, then overwritten. The §4 and §5 rows were generic and now name `src/parts-cartographer/core/assessment-draft.ts`. Base note: `src/shared/core/data/parts.ts@3683b0f` is a HEAD path; it was `src/app/core/data/parts.ts` at base 45c24ed. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `f8746dc`: FAIL (minor), the continuity search omitted the draft-backup resume. Round 2 at `f8746dc`: FAIL (minor). Round 3 at `8751dad`: FAIL. The copy-aside was described as a refusal, which is wrong: the draft is copied aside, then overwritten. The §4 and §5 rows were generic and now name `src/parts-cartographer/core/assessment-draft.ts`. Base note: `src/shared/core/data/parts.ts@3683b0f` is a HEAD path; it was `src/app/core/data/parts.ts` at base 45c24ed. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-h13n` (B07.S01).
 - Base checked: `git:45c24ed` on `claude/full-plan-handoff-gmgpkq`.

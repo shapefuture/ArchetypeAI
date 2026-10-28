@@ -76,7 +76,7 @@ describe.skipIf(!EMULATOR)('round27: the therapist can only write a string linke
     ));
   });
 
-  // Expected by the neighbouring rules (linkedAt must be a string). Observed on 2991ad9: the write is accepted.
+  // Expected by the neighbouring rules (linkedAt must be a string). Observed on 44f85d5: the write is accepted.
   it('the therapist cannot write a numeric linkedAt on a booking roster row', async () => {
     await seedRoster(C_NUM);
     await assertFails(setDoc(

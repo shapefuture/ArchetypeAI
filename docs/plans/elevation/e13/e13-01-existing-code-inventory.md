@@ -2,7 +2,7 @@
 
 **Candidate status:** private source-only proposal; no task acceptance is claimed.
 **Task reference supplied for this work:** `ArchetypeAI-n215`. No live tracker query was made.
-**Pinned source generation:** `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+**Pinned source generation:** `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 **Candidate output:** `docs/plans/elevation/e13/e13-01-existing-code-inventory.md`.
 
 ## Workcell and source identity

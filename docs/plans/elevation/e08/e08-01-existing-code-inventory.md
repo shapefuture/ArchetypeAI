@@ -4,7 +4,7 @@
 
 ## Scope and source identity
 
-- Workcell: `/tmp/innerverse-e08-workcell`, detached at `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+- Workcell: `/tmp/innerverse-e08-workcell`, detached at `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 - Workcell cell manifest: `.delivery/runtime/cells.json`, SHA-256 `a4a3ce51ed40981a924c8ed0f09a760bc20908739b5b952f0cd996f4d10f46ec`.
 - Local reservation: `bba5b651c73b47389f5e4afe1622e5a1`, owner `codex-e08-author`. This is local coordination only; it does not bind task metadata or establish a broker lease.
 - The allowed app/plan read set was `practice.jsx`, `replay.jsx`, `docs/80-20-plan.md`, and `architecture/contracts/**`. The exact `replay.jsx` path is absent at this baseline. The `architecture/contracts/` path is also absent. No alternate source paths were searched.

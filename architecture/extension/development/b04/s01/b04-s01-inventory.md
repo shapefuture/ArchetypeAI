@@ -1,7 +1,7 @@
 # B04.S01 — Inventory: messages, invitations and reviewed contributions
 <!-- cite-ref: 45c24ed -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because the "no matches for contribution or reviewed" premise was false at HEAD. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The §4 and §5 rows were still generic, and the quiet-hours row overstated B05. Both are rewritten to name files and identifiers. Base note: `src/parts-cartographer/screens/elevation/e02-entry.jsx@3683b0f` and `src/parts-cartographer/screens/suggestion-review.jsx@3683b0f` are HEAD paths, not present at base 45c24ed. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `f8746dc`: FAIL, because the "no matches for contribution or reviewed" premise was false at HEAD. Round 2 at `f8746dc`: FAIL. Round 3 at `8751dad`: FAIL. The §4 and §5 rows were still generic, and the quiet-hours row overstated B05. Both are rewritten to name files and identifiers. Base note: `src/parts-cartographer/screens/elevation/e02-entry.jsx@3683b0f` and `src/parts-cartographer/screens/suggestion-review.jsx@3683b0f` are HEAD paths, not present at base 45c24ed. Status is still **candidate, not accepted**; re-review is required.
 
 - Bead: `ArchetypeAI-3mdv` (B04.S01).
 - Base checked: `git:45c24ed` on `claude/full-plan-handoff-gmgpkq`.

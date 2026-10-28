@@ -4,7 +4,7 @@
 
 ## Evidence boundary
 
-- Pinned base: `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+- Pinned base: `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 - `src/parts-cartographer/screens/assessment-entry.jsx`: **absent** at the pinned base; no source hash exists. No assessment-entry behavior is inferred from its name or from other files.
 - `src/parts-cartographer/screens/landing.jsx`: present; SHA-256 `a9790d35d8aeeb5486afb1538a157f786c556fc9e26e09c252b4c85dded4a6da`.
 - `docs/80-20-plan.md`: present; SHA-256 `7857691284f337ab2f5119292097a2eae603b296860eeb8584e9d8060fcbf370`.

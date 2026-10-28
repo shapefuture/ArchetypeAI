@@ -113,7 +113,7 @@ describe.skipIf(!EMULATOR)('round26: the roster row follows the booking share af
 
   it('after the therapist declines the carrying booking, the therapist can still assign a practice to the client', async () => {
     // Expected: the share now names appt_b (approved), and the roster row describes the same access.
-    // Actual on ba7c5bb: the roster row still names the declined appt_a, so hasTrustedTherapistClientLink() is false.
+    // Actual on 8c77953: the roster row still names the declined appt_a, so hasTrustedTherapistClientLink() is false.
     await seedTwoBookings();
     state.db = asUser(T, TEMAIL);
     await setAppointmentStatus('appt_a', 'declined', 'therapist');

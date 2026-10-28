@@ -1,7 +1,7 @@
 # B03.S01 candidate inventory: membership, moderation and recipient authority
 <!-- cite-ref: d17aaa6 -->
 
-> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `42116d6`. Verdict: **FAIL**, because two premises are false at HEAD (the "report" word search and the emailVerified gate) and one test was described as run when it was not. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
+> **Independent review (2026-10-16).** A separate read-only reviewer checked this document at `f8746dc`. Verdict: **FAIL**, because two premises are false at HEAD (the "report" word search and the emailVerified gate) and one test was described as run when it was not. Corrections are in place. Status is still **candidate, not accepted**, and re-review is required.
 >
 > - Base note: citations to `src/...` paths that moved in the refactor are HEAD paths. The rename map is `d17aaa6..HEAD`.
 > - Not corrected in this pass: the §11 note that nine citations match only within one or two lines was not rechecked, and the "block" search was not repeated.

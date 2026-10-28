@@ -2,7 +2,7 @@
 // (worker.ts) applied the IP bucket only `if (ipLimiter && ip)`, so a deployment whose AI_IP_RATE_LIMITER binding is absent skipped
 // the IP bucket and served the request. The per-identity bucket still applied, but every anonymous Firebase sign-in is a new
 // identity, so with no IP bucket the per-identity limit alone does not bound unauthenticated AI traffic.
-// Expected: the same fail-closed 503 as a missing per-identity binding. Actual on 4fa5bc4: the request reached the AI providers.
+// Expected: the same fail-closed 503 as a missing per-identity binding. Actual on b5483c5: the request reached the AI providers.
 // Fixed: the IP bucket always applies, and the real checkRateLimit() answers 'unavailable' (503) for a missing binding.
 // This probe no longer mocks checkRateLimit: the first version returned 'allowed' for every binding, which hid the defect.
 import { beforeEach, describe, expect, it, vi } from 'vitest';

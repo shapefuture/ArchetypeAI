@@ -1,7 +1,7 @@
 # B12.S01 inventory: current ownership and actual reuse for community.inquiry
 <!-- cite-ref: 45c24ed -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL (minor), the deletion-survey omission. Round 2 at `b36bde2`: FAIL (minor). Round 3 at `930edc1`: FAIL (minor). R-9 implied the consent.provenance module had been added at HEAD. The module added in 3670a3a is a memory module with no consent logic. Base note: several citations, including `src/parts-cartographer/core/personal-memory.ts@3683b0f`, are HEAD paths. The checker results depend on scripts outside the repository and were not re-verified. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `f8746dc`: FAIL (minor), the deletion-survey omission. Round 2 at `f8746dc`: FAIL (minor). Round 3 at `8751dad`: FAIL (minor). R-9 implied the consent.provenance module had been added at HEAD. The module added in f3decec is a memory module with no consent logic. Base note: several citations, including `src/parts-cartographer/core/personal-memory.ts@3683b0f`, are HEAD paths. The checker results depend on scripts outside the repository and were not re-verified. Status is still **candidate, not accepted**; re-review is required.
 
 **Status: candidate awaiting independent review.** This is a document-only inventory. It is not an acceptance claim and does not show that any B12 feature exists or works. No participant, device, live-account, community, tradition or practitioner evidence was collected or implied.
 
@@ -14,7 +14,7 @@
 | Slot | community.inquiry (proposed platform package B12; no owned slot; no published contract) |
 | Reuse package in metadata | C08. Ambiguous across plan files; see H1. |
 | Role / mutation / risk | slot-owner / M0 / R2 |
-| Immutable base | Not bound by a broker (Bead metadata `base_generation: null`). Citations pin to git HEAD `09194df5f48326bff14e42a1e4eb8d66c457186d` on branch `worktree-agent-a0865831b40acd04f`, which was clean when this step started. |
+| Immutable base | Not bound by a broker (Bead metadata `base_generation: null`). Citations pin to git HEAD `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365` on branch `worktree-agent-a0865831b40acd04f`, which was clean when this step started. |
 | Predecessors | None in the planning graph for S01. Published predecessor contracts: none. |
 
 Purpose from the Bead: voluntary observations, comparisons, contrary results, contributor control and noncausal labels.
@@ -43,7 +43,7 @@ Line citations use `path:line` or `path L<n>`. Paths are relative to the worktre
 - The social plan (prepared 2026-10-06) uses the elevation namespace elsewhere. Across B01 to B12 the reuse codes are C01, C02, C03, C04, C08 and C09, which are the elevation slot migrations for auth, storage, scoring, projection, consent and artifacts. Its feature reuse codes E05, E12, E13, E19 and X02 match elevation streams "Useful action under uncertainty", "Beautiful quiet and accessible presentation", "Universal interaction grammar", "Extensions that earn complexity" and "Permissioned shared conversation". [PLAN]
 - The social JSON also records an edge from B12 to ArchetypeAI-v2tj (consent.provenance). [PLAN]
 - Conclusion: the most consistent reading of B12's reuse package is the elevation consent.provenance slot. This is an inference from namespace consistency. The coordinator must confirm it. This inventory covers both readings where they touch.
-- At the base commit d17aaa6 the consent.provenance module path (`src/parts-cartographer/core/personal-memory.ts@3683b0f`) did not exist. HEAD adds it (commit 3670a3a) with `addMemory`, `contextMemories`, `correctMemory` and `deleteWithDerived`. Its lineage and consent fields are not assessed here. [GAP at base; superseded at HEAD]
+- At the base commit d17aaa6 the consent.provenance module path (`src/parts-cartographer/core/personal-memory.ts@3683b0f`) did not exist. HEAD adds it (commit f3decec) with `addMemory`, `contextMemories`, `correctMemory` and `deleteWithDerived`. Its lineage and consent fields are not assessed here. [GAP at base; superseded at HEAD]
 
 **H2. community.inquiry has no implementation.** [GAP] No port, collection, Worker route, screen or test names it. Searches for the feature concepts (expedition, interest constellation, parallel play, creative jam, mini-game, community.inquiry) found no code hit. The word "inquiry" appears in product copy at HEAD: a route title and purpose (`src/parts-cartographer/i18n/strings.ts:31-35`), a component name (`src/parts-cartographer/screens/check-in.jsx:21`) and a practice stop-rule (`src/shared/i18n/strings.ts@3683b0f` L2172, base path `src/i18n/strings.ts`). None is a community inquiry feature. No published slot output exists to consume. This step therefore reconciles mechanisms that could be reused, not a feature.
 
@@ -176,7 +176,7 @@ Effect classes follow the AAA V7 source, section 9 (`docs/plans/references/AAA-V
 | R-6 Public discovery by chosen fields | CMP-04 allowlist; CMP-16 summary | Pattern | The public identity directory (CMP-15) must not be used |
 | R-7 Server-side recipient authority | Rules for `shareCodes`, `therapistLinks`, `clientShares` | Pattern | Bearer codes; anonymous principals (H7); no expiry; no revocation cascade |
 | R-8 Quiet and declined paths without social debt | CMP-13 quiet presets; CMP-20 offline fallback; CMP-09 advisory flags | Partial | No social path exists; pause logic is dormant (H10) |
-| R-9 Source and provenance | CMP-03 legacy `source` field (`src/parts-cartographer/core/cloud-storage.ts` L26); CMP-06 `shareCodeUsed`; CMP-16 | Partial | No lineage model for contributions; the consent.provenance module was absent at base d17aaa6 (H1). HEAD adds a memory module (`personal-memory.ts@3683b0f`, 3670a3a) that has no consent logic |
+| R-9 Source and provenance | CMP-03 legacy `source` field (`src/parts-cartographer/core/cloud-storage.ts` L26); CMP-06 `shareCodeUsed`; CMP-16 | Partial | No lineage model for contributions; the consent.provenance module was absent at base d17aaa6 (H1). HEAD adds a memory module (`personal-memory.ts@3683b0f`, f3decec) that has no consent logic |
 
 ## 7. Scenario matrix
 
@@ -231,13 +231,13 @@ The operations are: contribute an observation or comparison; read others' contri
 | `docs/plans/creative-commons-beads-plan.md` | `f49ea73427a25e4313a4b3a728608a9238604ed93d3f33e603940284d48983db` | Read in part (C08 row) |
 | `docs/plans/elevation-aaa-v7-beads-plan.json` | `88f5ffef002676450518f1cec4e526c9abf0452ecc5023d85613d3d00b39d82e` | Queried (C01 to C10, E05, E12, E13, E19, X02, slot streams, beads IDs) |
 | `docs/plans/references/AAA-V7-SPEC.source.md` | `e85d85f962c8da8ed110122b4fa236f934b16cdbbc9108f80ca2f32b50be75dc` (matches the pin in the AAA plan) | Sections 9 and 11C.2 |
-| `.beads/issues.jsonl` (passive export) | `e6d2b38ac2c44bd1824c03847cdd9afc98e00284849effa21060d632780eb5a5` | 128 records; last commit `4d672dcf` dated 2026-10-04 |
+| `.beads/issues.jsonl` (passive export) | `e6d2b38ac2c44bd1824c03847cdd9afc98e00284849effa21060d632780eb5a5` | 128 records; last commit `778f07df` dated 2026-10-04 |
 
 The tracker export does not contain ArchetypeAI-7sj4, nje6, wq9i, cyqe, 4bs4, v2tj, the C08 reuse Beads (pxk9, 6nzhj, nsrho, ktaon, xwzgu, ot4ky), or the E05 and E19 streams (muh, or8b) that the social plan reuses. Their status is unknown in this step.
 
 ### 8.3 Source code and data
 
-- Source citations are at git HEAD `09194df5f48326bff14e42a1e4eb8d66c457186d`. The worktree was clean when the step started.
+- Source citations are at git HEAD `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`. The worktree was clean when the step started.
 - No user, participant, therapist or community data was read, created or copied.
 - No share code, credential, email address or private record appears in this document. Identifiers in tests and fixtures are not reproduced.
 
@@ -259,7 +259,7 @@ The tracker export does not contain ArchetypeAI-7sj4, nje6, wq9i, cyqe, 4bs4, v2
 1. **Provenance.** `sha256sum` of every file in section 8. Values are recorded in those tables.
 2. **Planning JSON against the Bead.** The social JSON parses. The B12 platform entry has name "Participant-led inquiries and contextual knowledge", scope `community.inquiry`, reuse `[C08]`, related `[B03, B08]`. For node B12.S01, the acceptance-criteria text is identical to the Bead after whitespace normalization (767 characters each). The read set and write set match the Bead, mutation is M0, risk is R2, reuse is `[C08]`, and base generation and contract versions are null and empty.
 3. **Citation check.** A script asserted that each `path:line` citation in this document contains the cited token at that line. First pass: 256 checked, 11 failed. The draft was then corrected at nine citations (line offsets, one quote line in `docs/80-20-plan.md`, and one emulator line). Two checker entries that the draft does not cite were removed, and three checker tokens were aligned to the exact phrase on the cited line. Final pass: 254 of 254 match.
-4. **Negative searches.** Concept names (inquiry, expedition, interest constellation, parallel play, creative jam, mini-game, community.inquiry, lineage) returned no implementation hits in `src`, `worker*.ts` or `firestore.rules`. `personal-memory` is the exception: it matches a module added at HEAD (commit 3670a3a), after the base.
+4. **Negative searches.** Concept names (inquiry, expedition, interest constellation, parallel play, creative jam, mini-game, community.inquiry, lineage) returned no implementation hits in `src`, `worker*.ts` or `firestore.rules`. `personal-memory` is the exception: it matches a module added at HEAD (commit f3decec), after the base.
 5. **Runtime call sites.** Outside `src/app/core/data/state-v2.ts` and its spec, `adjustTriggerWeights`, `attributionWorsening` and `pauseNonRegulation` have zero call sites. `shutdownStreak` is called only by `pauseNonRegulation`. `resistantMetrics` is used only by the Angular therapist panel.
 6. **Deletion survey.** Client delete calls are listed in section 4. None targets synastry, connection, history, assessment or therapist-link documents.
 7. **Whitespace and characters.** `git diff --check` on the new file. The document contains no emoji.

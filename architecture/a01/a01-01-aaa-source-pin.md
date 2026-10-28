@@ -5,7 +5,7 @@
 **Bead:** ArchetypeAI-9ulr (A01.S01, planning key of the A01.01 step)
 **Status:** CANDIDATE, awaiting independent review. Not accepted. No AAA conformance is claimed.
 **Output contract:** `aaa-source-pin` v1 (new; no predecessor contract consumed)
-**Immutable base:** worktree HEAD `09194df5f48326bff14e42a1e4eb8d66c457186d`, observed. This is not a reconciled generation; `base_generation` stays unresolved.
+**Immutable base:** worktree HEAD `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`, observed. This is not a reconciled generation; `base_generation` stays unresolved.
 
 "Snapshot L<n>" below means a line of `docs/plans/references/AAA-V7-SPEC.source.md`, the pinned file.
 
@@ -19,7 +19,7 @@
 | SHA-256 | `e85d85f962c8da8ed110122b4fa236f934b16cdbbc9108f80ca2f32b50be75dc` |
 | Size | 46531 bytes, 1445 lines |
 | Git blob at base | `2eb18f3f77257b492df1fe1484f8237a930c508e` |
-| Introducing commit | `17a0f34`. The file's bytes at that commit hash to the same SHA-256. |
+| Introducing commit | `3ab4b52`. The file's bytes at that commit hash to the same SHA-256. |
 
 The pin binds bytes, not names. The upstream file is named `AAA-V7-SPEC.md` and the local copy carries `.source.md`. The pin does not make the draft final. Test T1 recomputes the digest.
 
@@ -43,7 +43,7 @@ Source text: "A system conforming to AAA v7.1 SHALL be able to answer, mechanica
 | 8 | Autonomous versus approved adaptation | The runtime autonomy level is not declared; the AAA plan (line 44) rejects calling the model-enabled product AG0. Dev changes are governed by Beads and review. Live model calls exist (section 4, O-1). | Partial |
 | 9 | Return to legitimate state | This candidate: `git revert`. No app runtime recovery is declared. | Partial |
 | 10 | Which optional mechanisms are enabled | Runtime-agentic flag not declared. Live model calls exist. | Open conflict, O-1 |
-| 11 | Workcells, write sets, parallel safety | Write set declared; the diff was checked against it, except the CI step in `52002da`, which is outside the write set and is recorded as an exception in §7. Shared-checkout reservations only (C-M7). | Partial |
+| 11 | Workcells, write sets, parallel safety | Write set declared; the diff was checked against it, except the CI step in `ad291bb`, which is outside the write set and is recorded as an exception in §7. Shared-checkout reservations only (C-M7). | Partial |
 | 12 | Swappable components | React and Angular AI ports differ. `AiPortV1` is frozen with additive versioning. | Partial, G-8 |
 
 The candidate adds two files and no runtime mechanism or service, so it applies the "least powerful mechanism" rule to itself.
@@ -95,7 +95,7 @@ L1357 says "A small ordinary application can conform without becoming infrastruc
 | 5 | Typed effects for external and state mutations | MUST | No effect registry found. `src/parts-cartographer/elevation/e17-operation-status.ts:17@3683b0f` (HEAD 3683b0f only) defines a three-class `EffectClass` (`read`, `idempotent-write`, `non-idempotent-write`) for retry only, not the six classes of §9. | Not met, G-9 |
 | 6 | Immutable build and version identity | MUST | Build identity is partly wall-clock: see 2.4 for the two stamp scripts. | Not met, G-6 |
 | 7 | Rollback path | MUST | No app rollback procedure found. `src/parts-cartographer/core/backup.ts:134` rolls back partial local writes on quota or storage failure; that is not a release rollback. | Not met, G-6 |
-| 8 | Architecture, contract and swap-compatibility tests | MUST | This candidate adds the first architecture test (T1 to T3). `src/app/core/adapters/ai-port.contract.spec.ts` exists. CI runs `tests/architecture/a01` in the guard job (moved from verify in `e3d4a0b`) (`.github/workflows/ci.yml`, step added in `52002da`). | Partial, G-2 |
+| 8 | Architecture, contract and swap-compatibility tests | MUST | This candidate adds the first architecture test (T1 to T3). `src/app/core/adapters/ai-port.contract.spec.ts` exists. CI runs `tests/architecture/a01` in the guard job (moved from verify in `b77e3d6`) (`.github/workflows/ci.yml`, step added in `ad291bb`). | Partial, G-2 |
 | 9 | Control journal for deployments and incidents | MUST | None at base. The AAA plan plans an append-only or tamper-evident journal. | Not met, G-6 |
 | 10 | Explicit risk classification | MUST | Bead metadata classifies this candidate R1 and M0. Source risk classes at L846 (section 21). No repo-level classification. | Partial, G-12 |
 
@@ -132,7 +132,7 @@ Referenced by §44 item 2 and by L125. Not traced beyond these clauses in this c
 
 - **C-S1** Everything else replaceable (P1, L39).
 - **C-S2** Minimal disturbance (P4, L51).
-- **C-S3** Complexity pays rent (P11, L79). Applied: this candidate is removable with two reverts: the artifact and test in `1384694`, and the CI step in `52002da`.
+- **C-S3** Complexity pays rent (P11, L79). Applied: this candidate is removable with two reverts: the artifact and test in `1384694`, and the CI step in `ad291bb`.
 - **C-S4** Content-addressed `generation_id` (§7, L276). The pin is a content address for the specification input, not a generation id. C-S4 is not met for the application.
 - **C-S5** "Everything else is activated by need" (L1372). Applied in section 4.
 
@@ -172,7 +172,7 @@ Gate status for this candidate is PENDING unless marked otherwise. Planned step 
 | Gate | Requirement | Status | Owner or planned step |
 | --- | --- | --- | --- |
 | G-1 | Independent review of the pin, traceability, classes, I-1 and I-2 | PENDING | Independent reviewer, not the producing workcell |
-| G-2 | Run `python3 -I -m unittest discover -s tests/architecture/a01 -p 'test_*.py'` in CI | PENDING (step present in `52002da`; broker review needed) | One step added to the guard job of `.github/workflows/ci.yml` (moved from verify in `e3d4a0b`), outside this candidate's write set; the broker must accept it before acceptance |
+| G-2 | Run `python3 -I -m unittest discover -s tests/architecture/a01 -p 'test_*.py'` in CI | PENDING (step present in `ad291bb`; broker review needed) | One step added to the guard job of `.github/workflows/ci.yml` (moved from verify in `b77e3d6`), outside this candidate's write set; the broker must accept it before acceptance |
 | G-3 | Re-run T1 to T3 in a fresh clone | PENDING | Independent verifier |
 | G-4 | Drift check of the snapshot against the upstream URL | PENDING (no network used) | Verifier with network access |
 | G-5 | Constitution and invariant registry (§5, §44.1) | NOT MET | Planned `a09p` (`ArchetypeAI-znk3` to `ArchetypeAI-ayt6`) |
@@ -196,16 +196,16 @@ T1, T2 and T3 name the three test methods in `tests/architecture/a01/test_source
 | F4 | Conflict: upstream differs from the snapshot | Local pin stays authoritative. An upstream change needs a new artifact version. | Not exercised (no network) | PENDING G-4 |
 | F5 | Stale: artifact cites a different digest | T2 fails | T2 assertion present; drift not injected | Not exercised |
 | F6 | Missing snapshot or artifact | Explicit assertion failure, not a skip | T1 and T2 assertions present | Not exercised |
-| F7 | Recovery: working-copy snapshot corrupted | Restore from `17a0f34`, verify the digest equals the pin. Never edit the pin to match. | Hash of the file at `17a0f34` checked as a restore source | Not exercised by a recorded test; this review reproduced the hash and it matches |
+| F7 | Recovery: working-copy snapshot corrupted | Restore from `3ab4b52`, verify the digest equals the pin. Never edit the pin to match. | Hash of the file at `3ab4b52` checked as a restore source | Not exercised by a recorded test; this review reproduced the hash and it matches |
 | F8 | Recovery: upstream legitimately revised | New artifact version with new digest, clause-level diff against section 2, independent review. Version 1 and its digest stay addressable in git. | Not exercised | PENDING |
 | F9 | Undeclared write by the producing workcell | Reject. Diff must contain only the write set. | `git diff --name-only` checked against the write set before commit | Checked before commit; see candidate report |
 | F10 | Stale base: uncommitted application changes exist outside HEAD (AAA plan) | This inventory does not describe them. A01.03 reconciles before any app-scoped claim. | Not exercised | PENDING A01.03 |
-| F11 | Rollback of this candidate | `git revert` of `1384694` removes the artifact and the test; the CI step added in `52002da` must be reverted with it, or CI points at a missing directory. No runtime state, migration or external effect is involved. Beads status is separate and is reverted by the coordinator in the tracker. | Not exercised | Limitation: after a push, revert adds a commit. Git does not undo tracker state. |
+| F11 | Rollback of this candidate | `git revert` of `1384694` removes the artifact and the test; the CI step added in `ad291bb` must be reverted with it, or CI points at a missing directory. No runtime state, migration or external effect is involved. Beads status is separate and is reverted by the coordinator in the tracker. | Not exercised | Limitation: after a push, revert adds a commit. Git does not undo tracker state. |
 
 ## 7. Record: contracts, state, effects, risk, evidence
 
 - **Read set:** `docs/plans/references/AAA-V7-SPEC.source.md`; `docs/80-20-plan.md` (scanned: no AAA or A01 references); `.github/workflows/ci.yml`; `src/**` (paths checked for the surfaces named above, not read in full); `docs/plans/aaa-v7-architecture-and-agent-sweeps.md` and `docs/plans/elevation-aaa-v7-beads-plan.json` (plan snapshots, not authority); `docs/eleven-out-of-ten-plan.md` (points to the AAA plan).
-- **Write set:** `architecture/a01/**`, `tests/architecture/a01/**`. One change sits outside it: the CI step in `.github/workflows/ci.yml`, added in `52002da`. It is broker-owned, so it is recorded here as an exception that the broker must accept before this candidate is accepted.
+- **Write set:** `architecture/a01/**`, `tests/architecture/a01/**`. One change sits outside it: the CI step in `.github/workflows/ci.yml`, added in `ad291bb`. It is broker-owned, so it is recorded here as an exception that the broker must accept before this candidate is accepted.
 - **Changed contracts:** none existing. New: `aaa-source-pin` v1, consisting of the section 1 values and the constants in the test. Consumer: A01.02, read-only.
 - **State ownership:** no runtime state. Git holds the artifacts; Beads holds task status.
 - **Effect class:** reads of the source file, pure hash computation, reversible file creation inside the write set. No network, service, or migration.
@@ -222,6 +222,6 @@ A01.S02 consumes this file as an immutable input:
 3. The exclusions in section 4. A01.S02 must resolve O-1 (G-10).
 4. The gates in section 5. A01.S02 must not mark G-5 to G-12 satisfied without fresh evidence of its own.
 
-A01.S02 must not edit this file. A change needs a new version through the same write set, or a broker-owned request. The CI wiring (G-2) was made in `52002da`, outside this candidate's write set; the broker must accept it.
+A01.S02 must not edit this file. A change needs a new version through the same write set, or a broker-owned request. The CI wiring (G-2) was made in `ad291bb`, outside this candidate's write set; the broker must accept it.
 
 This file does not establish AAA v7.1 conformance.

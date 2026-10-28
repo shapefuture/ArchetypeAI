@@ -6,7 +6,7 @@ This bounded review compares the experiment descriptions present in the permitte
 
 ## Workcell identity and scope
 
-- Base checkout: `git:09194df5f48326bff14e42a1e4eb8d66c457186d` in a fresh isolated clone at `/tmp/innerverse-e19-workcell`.
+- Base checkout: `git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365` in a fresh isolated clone at `/tmp/innerverse-e19-workcell`.
 - Candidate output: `docs/plans/elevation/e19/e19-01-existing-code-inventory.md` in that workcell only.
 - Proposed manifest: `.delivery/runtime/e19-proposed-manifest.json`, SHA-256 `e9c96b08ac5b5da35466e15d142d2eff08d241fac9f0017e293ce421cb72704f`. It is a local proposal, not a validated lease, tracker readiness check, task claim, or permission grant.
 - No Beads reads/writes or task claim were made. No application changes, tests, builds, experiments, participant/community contact, hardware access, or data collection occurred.

@@ -1,5 +1,5 @@
 // Round 31 probe (critic), pure. The share screen states what the code exposes (STRINGS.therapistShareConsent).
-// Reproduced on 3c69799: the summary built by toTherapistSummary (therapist-link.ts) also carried burden and selfEnergy, which
+// Reproduced on 9437189: the summary built by toTherapistSummary (therapist-link.ts) also carried burden and selfEnergy, which
 // the copy did not name and the dashboard shows as chips.
 // Fixed: the copy now names burden and self-energy scores, and this probe checks that the copy names every summary field.
 import { describe, expect, it } from 'vitest';

@@ -1,6 +1,6 @@
 // Round 31 probe (critic), pure. The therapist's "assign practice" dropdown (innerverse.jsx, the exerciseIds map) lists the
 // exercise IDs of the shared catalog. Each option's title must come from the same shared copy, in both languages.
-// Reproduced on 3c69799: the dropdown read EXERCISE_COPY from this app's i18n/strings.ts, keyed e1 to e20, which holds none of
+// Reproduced on 9437189: the dropdown read EXERCISE_COPY from this app's i18n/strings.ts, keyed e1 to e20, which holds none of
 // the shared IDs, so every option rendered as an uppercase ID followed by nothing.
 // Fixed: the dropdown reads the shared copy's title (src/shared/i18n/strings.ts), and this probe now checks that table.
 import { describe, expect, it } from 'vitest';

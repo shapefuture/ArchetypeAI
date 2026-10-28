@@ -1,4 +1,4 @@
-// Gauntlet round 11 scratch reproductions (critic). Each test is expected to FAIL on 18b92d9.
+// Gauntlet round 11 scratch reproductions (critic). Each test is expected to FAIL on 6359e0d.
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

@@ -32,7 +32,7 @@
     ]
   },
   "immutable_source": {
-    "revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+    "revision": "git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365",
     "clean_checkout_at_manifest_capture": true,
     "source_file_sha256": {
       "docs/plans/elevation-aaa-v7-beads-plan.json": "88f5ffef002676450518f1cec4e526c9abf0452ecc5023d85613d3d00b39d82e",
@@ -1179,7 +1179,7 @@
     "manifest_cell": [
       {
         "task_id": "ArchetypeAI-hjq1",
-        "base_revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+        "base_revision": "git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365",
         "read_paths": [
           "docs/plans/elevation-aaa-v7-beads-plan.json",
           "docs/plans/aaa-v7-architecture-and-agent-sweeps.md",
@@ -1246,7 +1246,7 @@
         "cells": [
           {
             "task_id": "ArchetypeAI-hjq1",
-            "base_revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+            "base_revision": "git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365",
             "read_paths": [
               "docs/plans/elevation-aaa-v7-beads-plan.json",
               "docs/plans/aaa-v7-architecture-and-agent-sweeps.md",
@@ -1307,7 +1307,7 @@
     "filesystem_fencing": "not enforced; no OS-enforced task-scoped filesystem fence was available",
     "native_task_claim_distinct_from_local_advisory_lease": true,
     "live_beads_base_generation": null,
-    "coordination_bound_clone_base": "git:09194df5f48326bff14e42a1e4eb8d66c457186d"
+    "coordination_bound_clone_base": "git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365"
   },
   "candidate_artifacts": {
     "markdown_path": "architecture/development/sweeps/s0/S0.01-eligible-antichain.md",

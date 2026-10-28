@@ -2,7 +2,7 @@
 
 **Candidate status:** source-only proposal; independent review pending; task acceptance is on hold.
 **Live task:** `ArchetypeAI-aft` (`[E10.01] Audit existing behavior and reconcile original Beads`).
-**Pinned source generation:** `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+**Pinned source generation:** `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 **Actual output:** `docs/plans/elevation/e10/e10-01-existing-code-inventory.md`.
 
 ## Scope and execution record

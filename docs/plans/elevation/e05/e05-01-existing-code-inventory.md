@@ -4,7 +4,7 @@
 
 ## Scope and evidence boundary
 
-- Pinned base: `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+- Pinned base: `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 - Read only the workcell-bound paths: `src/parts-cartographer/screens/quick-scan.jsx`, `src/parts-cartographer/screens/practice.jsx`, `docs/80-20-plan.md`, and the exact `architecture/contracts/**` scope.
 - `architecture/contracts/**` is absent at this base.
 - Source SHA-256: `quick-scan.jsx` `d12ce6003cdd7310b5d71f98206bac6e7f4e78ddee96490b7c925b1fb472f9e2`; `practice.jsx` `c3506563cf272fdfdcc0f2e1421a247713bf8aacaf6e1e3e260c1aa61f51958f`; `80-20-plan.md` `7857691284f337ab2f5119292097a2eae603b296860eeb8584e9d8060fcbf370`.

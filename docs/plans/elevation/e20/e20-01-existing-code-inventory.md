@@ -6,7 +6,7 @@
 
 The assignment identifies `ArchetypeAI-wvtm` as open and asks for an inventory of exact-generation rubric evidence, with explicit rejection of score transfer, candidate-authored acceptance, missing manual accessibility/live evidence, and averaging that hides hard failures. This pass did not query or mutate Beads, claim the task, inspect predecessor output, or resolve old-Bead bindings.
 
-The workcell is a fresh detached clone at base `09194df5f48326bff14e42a1e4eb8d66c457186d`, created from the earlier isolated clone’s Git history and checked out clean at that commit. The only permitted source paths read were:
+The workcell is a fresh detached clone at base `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`, created from the earlier isolated clone’s Git history and checked out clean at that commit. The only permitted source paths read were:
 
 - `tests/browser/parity.spec.mjs` — present; SHA-256 `3ac4bd4fe0e73e959aa245044d220f2b1d5e3a3e4540361bc15357e09c9fd83c`
 - `docs/content-evidence-register.md` — absent at this base; no file contents or hash available

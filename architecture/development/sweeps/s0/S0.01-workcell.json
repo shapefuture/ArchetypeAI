@@ -62,7 +62,7 @@
     ]
   },
   "immutable_source": {
-    "revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+    "revision": "git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365",
     "checkout_root": "/tmp/innerverse-s0-workcell-20261014",
     "git_toplevel": "/tmp/innerverse-s0-workcell-20261014",
     "git_dir": ".git",
@@ -71,7 +71,7 @@
   },
   "actual_workcell_manifest": {
     "task_id": "ArchetypeAI-hjq1",
-    "base_revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+    "base_revision": "git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365",
     "read_paths": [
       "docs/plans/elevation-aaa-v7-beads-plan.json",
       "docs/plans/aaa-v7-architecture-and-agent-sweeps.md",
@@ -130,7 +130,7 @@
   "manifest_provenance": {
     "path": ".delivery/runtime/s0-cells.json",
     "sha256": "4f8358df4692fbc96bb3c0b5694df2b7ae2f2c3cea4c6cf1ccb1d986af700ec1",
-    "recorded_base": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+    "recorded_base": "git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365",
     "lease_registry_path": ".delivery/runtime/leases.json",
     "lease_registry_sha256": "53b7e712fe0ccfdf6905f7cf37ba837bf21d3f1d00f75d6645e7a89ea844f20a"
   },
@@ -139,7 +139,7 @@
     "owner": "codex-s0-coordinator",
     "created_at": "2026-10-14T17:57:45.502561+00:00",
     "task_id": "ArchetypeAI-hjq1",
-    "base_revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+    "base_revision": "git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365",
     "kind": "local advisory reservation",
     "fencing_or_runner_enforcement": "not demonstrated by this record; do not treat as a central AAA lease"
   },
@@ -186,7 +186,7 @@
   "beads_claim_and_base_discrepancy": {
     "beads_task_status": "in_progress",
     "beads_metadata_base_generation": null,
-    "local_workcell_base_revision": "git:09194df5f48326bff14e42a1e4eb8d66c457186d",
+    "local_workcell_base_revision": "git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365",
     "note": "The isolated local workcell record pins the requested immutable base; the live Beads metadata still has base_generation=null. This is recorded as a coordination-bound base, not represented as a mutation to Beads or as an accepted generation."
   },
   "candidate_result": {

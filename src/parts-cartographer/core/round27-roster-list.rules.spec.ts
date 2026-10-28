@@ -3,9 +3,9 @@
 // invite rows, resource.data.linkCode) with no query constraint on those fields. The list query the dashboard runs,
 // where('therapistUid', '==', uid), is then rejected by the rules engine: "Property clientUid is undefined on object.
 // for 'list' @ L638". A single document read by id is accepted (control), and so are the client's own list and the
-// therapist's appointment and assignment lists (controls). The clause was added in 78649d1 (twentieth gauntlet pass);
-// the rules at 78649d1^ pass the defect assertions. Set ROUND27_RULES to a rules file to run the same assertions against
-// another revision, for example: ROUND27_RULES=<path to 78649d1^:firestore.rules>.
+// therapist's appointment and assignment lists (controls). The clause was added in 9bb56c4 (twentieth gauntlet pass);
+// the rules at 9bb56c4^ pass the defect assertions. Set ROUND27_RULES to a rules file to run the same assertions against
+// another revision, for example: ROUND27_RULES=<path to 9bb56c4^:firestore.rules>.
 // innerverse.jsx (therapist refresh, Promise.allSettled) turns a rejected linkedClients() into setClients([]) and the
 // therapistLoadFailed message, so the therapist sees no clients.
 import { readFileSync } from 'node:fs';
@@ -79,7 +79,7 @@ describe.skipIf(!EMULATOR)('round27: a therapist can list the roster rows the da
     await assertSucceeds(getDocs(query(collection(asUser(T, TEMAIL), 'assignments'), where('therapistUid', '==', T))));
   });
 
-  // Expected: the therapist's roster list (the query behind linkedClients) returns the one row. Observed on 2991ad9: the rules
+  // Expected: the therapist's roster list (the query behind linkedClients) returns the one row. Observed on 44f85d5: the rules
   // reject the query with permission-denied, "Property clientUid is undefined on object. for 'list' @ L638".
   it('the therapist can list their own booking roster rows (the query the dashboard runs)', async () => {
     await seedOneRow();

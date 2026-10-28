@@ -88,7 +88,7 @@ describe.skipIf(!EMULATOR)('round27: a therapist who stepped back cannot move th
     ));
   });
 
-  // Expected by firestore.rules:181 and 199: a stepped-back therapist holds no booking-based rights. Observed on 2991ad9: the
+  // Expected by firestore.rules:181 and 199: a stepped-back therapist holds no booking-based rights. Observed on 44f85d5: the
   // share update is accepted, because hasOpenBooking() does not test exists(/therapists/{uid}).
   it('a stepped-back therapist cannot re-point the booking share at the open booking B', async () => {
     await seedSteppedBack();

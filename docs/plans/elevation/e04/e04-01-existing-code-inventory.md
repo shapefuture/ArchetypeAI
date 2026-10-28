@@ -2,7 +2,7 @@
 
 **Task:** ArchetypeAI-1hj (E04.01)
 **Disposition:** This source audit began as a private proposal; the final documentation artifact is now at the authorized output path. No acceptance claim is made.
-**Pinned repository HEAD:** 09194df5f48326bff14e42a1e4eb8d66c457186d
+**Pinned repository HEAD:** d17aaa68a15b40c4e13eb7e9d7b93b4b08860365
 **Proposal-drafting context:** The audit author relied on supplied open/ready metadata and did not query Beads or read the target acceptance. The coordinator later read the target task’s own filtered metadata and exact acceptance, then claimed and rechecked the task; those later facts are recorded below. No linked task body/comment/output was opened.
 **Read scope:** src/parts-cartographer/screens/quick-scan.jsx; docs/80-20-plan.md; architecture/contracts/** only. No other source files were read.
 
@@ -100,7 +100,7 @@ The coordinator read the target task’s own acceptance text before the atomic c
 
 - Workcell manifest: `.delivery/runtime/cells.json`, SHA-256 `712ebab074d93d6f97f5711451e9e06c0a7b84b8752d40fcfccc6be8fcdde8a0`.
 - Local coordinator lease: `ddc2640b4b00453c870521ece23895df`. This reservation is local coordination metadata; it is not a broker lease or filesystem sandbox.
-- Immutable base: `git:09194df5f48326bff14e42a1e4eb8d66c457186d`. Exact output: `docs/plans/elevation/e04/e04-01-existing-code-inventory.md`.
+- Immutable base: `git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`. Exact output: `docs/plans/elevation/e04/e04-01-existing-code-inventory.md`.
 - Manifest task revision at reservation: `7905177372038034830`. Native Beads claim and pre-dispatch recheck: task is `in_progress`; live revision `2198894848446111209`.
 - Contract reads/writes: none. The declared `architecture/contracts/**` input had no tracked or worktree matches at the pinned base.
 - Quality check: `git diff --check` passed in the clean workcell. No tests, build, runtime, account, network service, or participant evidence was collected.

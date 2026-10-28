@@ -337,7 +337,7 @@ v1's visual system (felt, colour, motion, sound) applies inside each step as nee
 5. **«Вы» or «ты».** Keep «вы» (your earlier decision), or test «ты» for this audience. **Approved by the owner on 2026-10-28: keep «вы», test «ты» in T10.**
 6. **Social scope.** «Два неба» with people you know in Step 1; «Созвездия», then matching, only after T8 and a safety plan. **Approved by the owner on 2026-10-28.**
 7. **Market and payments.** **Market approved by the owner on 2026-10-28: Russia and the Russian-speaking diaspora.** So payments need two paths: Russian acquiring for cards issued in Russia, and Stripe for everyone else. **Legal form approved on 2026-10-28: самозанятый** for Russian acquiring. Before Step 2 (Plus payments): confirm which acquirers accept самозанятых for recurring subscriptions, and plan a switch to ИП before income nears the НПД annual cap (2.4M ₽ at the time of writing; check the current limit). Telegram Stars stays optional.
-8. **Research.** Who recruits and talks to people. I can draft screeners, the prototype, outreach copy and the diary flow. *Your answer needed.*
+8. **Research.** **Approved by the owner on 2026-10-28: the owner recruits and runs the interviews**, using the drafts in [research/step0-research-kit.md](research/step0-research-kit.md) (screener, outreach copy, interview guide, diary flow, note and synthesis templates).
 9. **Safety.** A clinician reviews the flows, and a moderation plan exists before any circle. **Approved by the owner on 2026-10-28.**
 
 Nothing is implemented until you approve. After approval, the steps become Beads under `ArchetypeAI-d6d`.

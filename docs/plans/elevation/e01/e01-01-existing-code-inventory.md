@@ -5,7 +5,7 @@
 **Target Bead:** `ArchetypeAI-epv` — `[E01.01] Audit existing behavior and reconcile original Beads`
 **Observed revision at proposal drafting:** `-6511896860445505556`
 **Observed status at proposal drafting:** `open`, unassigned, and in the blocker-aware ready list. A later native claim and pre-dispatch recheck are recorded below.
-**Pinned repository HEAD:** `09194df5f48326bff14e42a1e4eb8d66c457186d`
+**Pinned repository HEAD:** `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`
 **Task metadata at proposal drafting:** `base_generation=null`; `contract_versions=[]`; the task required a resolved base and lease. The later documentation workcell and local reservation are recorded below.
 **Declared output requested:** existing-code inventory, old-Bead reconciliation, gap/evidence map, and smallest useful slice. The private proposal under `/tmp` was outside the write set; this final output is at the authorized `docs/plans/elevation/e01/**` path.
 
@@ -128,7 +128,7 @@ Before dispatch, provide the missing published contract paths, exact role/write/
 
 - Workcell manifest: `.delivery/runtime/cells.json`, SHA-256 `712ebab074d93d6f97f5711451e9e06c0a7b84b8752d40fcfccc6be8fcdde8a0`.
 - Local coordinator lease: `ddc2640b4b00453c870521ece23895df`. This reservation is local coordination metadata; it is not a broker lease or filesystem sandbox.
-- Immutable base: `git:09194df5f48326bff14e42a1e4eb8d66c457186d`. Exact output: `docs/plans/elevation/e01/e01-01-existing-code-inventory.md`.
+- Immutable base: `git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`. Exact output: `docs/plans/elevation/e01/e01-01-existing-code-inventory.md`.
 - Manifest task revision at reservation: `-6511896860445505556`. Native Beads claim and pre-dispatch recheck: task is `in_progress`; live revision `-4108336959995190846`.
 - Contract reads/writes: none. The declared `architecture/contracts/**` input had no tracked or worktree matches at the pinned base.
 - Quality check: `git diff --check` passed in the clean workcell. No tests, build, runtime, account, network service, or participant evidence was collected.

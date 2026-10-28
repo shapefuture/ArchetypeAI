@@ -1,7 +1,7 @@
 # E07.01 — Existing-code inventory (source-only partial evidence)
 
 **Disposition:** proposal and plan evidence only; acceptance remains **HOLD**.
-**Pinned inspection base:** `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+**Pinned inspection base:** `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 **Selected output:** `docs/plans/elevation/e07/e07-01-existing-code-inventory.md`.
 **Inspection boundary:** only `src/parts-cartographer/screens/memory-library.jsx`, `docs/80-20-plan.md`, and `architecture/contracts/**` were considered. The exact screen path is absent at the pinned base; the plan exists; the contracts directory is absent. No predecessor artifacts, prior Beads records/comments, runtime behavior, fixtures, or other sources were inspected.
 
@@ -9,9 +9,9 @@
 
 | Evidence | Result | SHA-256 / locator | Evidence class |
 |---|---|---|---|
-| `src/parts-cartographer/screens/memory-library.jsx` | Exact-path check at the pinned base found no file. There is no component source here to inventory. | Absent at `09194df5f48326bff14e42a1e4eb8d66c457186d` | Repository observation (absence only) |
+| `src/parts-cartographer/screens/memory-library.jsx` | Exact-path check at the pinned base found no file. There is no component source here to inventory. | Absent at `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365` | Repository observation (absence only) |
 | `docs/80-20-plan.md` | Describes Stage 4 memory, a future user-controlled evidence library, source/retention requirements, selective retrieval, and a design-state checklist. It explicitly labels the evidence library a future capability. | `7857691284f337ab2f5119292097a2eae603b296860eeb8584e9d8060fcbf370`; relevant lines 516–551, 684 | Repository observation of a plan; not implementation evidence |
-| `architecture/contracts/**` | Exact-path check found no contracts directory in the inspected base, so no published technical schema, API, or versioned contract was available. Ownership, retention, and retrieval requirements do appear in the plan, but remain plan intent rather than a technical contract. | Absent at `09194df5f48326bff14e42a1e4eb8d66c457186d` | Repository observation (absence only) |
+| `architecture/contracts/**` | Exact-path check found no contracts directory in the inspected base, so no published technical schema, API, or versioned contract was available. Ownership, retention, and retrieval requirements do appear in the plan, but remain plan intent rather than a technical contract. | Absent at `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365` | Repository observation (absence only) |
 
 ## What the bound plan says
 

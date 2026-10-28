@@ -4,7 +4,7 @@
 
 ## Evidence boundary
 
-- Pinned source base: `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+- Pinned source base: `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 - The only application sources reviewed were `src/parts-cartographer/screens/practice.jsx` and `src/parts-cartographer/screens/cabinet.jsx`; the only planning source reviewed was `docs/80-20-plan.md`.
 - Source hashes at that base: `practice.jsx` `c3506563cf272fdfdcc0f2e1421a247713bf8aacaf6e1e3e260c1aa61f51958f`; `cabinet.jsx` `38ec41be52062ecea90e346e9ae501feefc2473d25ae21d6b2c55cb2dd941c03`; `80-20-plan.md` `7857691284f337ab2f5119292097a2eae603b296860eeb8584e9d8060fcbf370`.
 - `architecture/contracts/` is absent at this source base. No contract file was available to validate an artifact, event, storage, or replay schema.

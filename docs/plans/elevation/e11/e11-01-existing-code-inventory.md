@@ -5,7 +5,7 @@
 ## Scope and provenance
 
 - Live task: `ArchetypeAI-qtbi` — “[E11.01] Audit existing behavior and reconcile original Beads.” The task is claimed `in_progress`; this candidate does not close it or change dependencies.
-- Immutable workcell base: `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+- Immutable workcell base: `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 - Declared read set: `src/parts-cartographer/pal/FeltCharacter.tsx`; `src/parts-cartographer/screens/replay.jsx`; `docs/80-20-plan.md`; `architecture/contracts/**`.
 - Declared write scope: `docs/plans/elevation/e11/**`. Actual candidate output: this file only.
 - The `replay.jsx` path and `architecture/contracts/**` are absent at the pinned base. The two available files were read at that base; their hashes are recorded below. No other application source, helper, old Bead, predecessor output, task comment, or plan file was read. The live task metadata classifies the task R1/M0; this candidate is document-only.
@@ -73,7 +73,7 @@ After the read-set and contract bindings are resolved, trace one selected charac
 
 ## Workcell execution record
 
-- Exact manifest: `.delivery/runtime/cells.json`; it binds the metadata read/write paths, one concrete output, `git:09194df5f48326bff14e42a1e4eb8d66c457186d`, no contract reads/writes, no shared resources, and document-only capabilities. Manifest SHA-256: `cee3bc98fcdce20102dd60a999bb3750f641f126d76e8fac3c2974c87bfafea3`.
+- Exact manifest: `.delivery/runtime/cells.json`; it binds the metadata read/write paths, one concrete output, `git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`, no contract reads/writes, no shared resources, and document-only capabilities. Manifest SHA-256: `cee3bc98fcdce20102dd60a999bb3750f641f126d76e8fac3c2974c87bfafea3`.
 - Local reservation: `0b4d7976764746deaa40ed92d44f60b4` (owner `codex-e11-author`, stored in this isolated workcell). This reservation is local coordination metadata, not a broker lease, sandbox, task claim, or permission grant.
 - Native Beads claim: `ArchetypeAI-qtbi` was claimed after the sweep/reservation and rechecked as `in_progress`, assigned to `Виктор П`; metadata read/write paths and dependency/parent were unchanged. Task metadata still reports a null base generation and no contract versions.
 - Artifact quality check: `git diff --cached --check` passed after staging this single document. Rollback is deletion of this candidate document from the isolated workcell; it has no app or external effect. No tests, builds, browser/runtime runs, service access, participant contact, or data collection were performed.

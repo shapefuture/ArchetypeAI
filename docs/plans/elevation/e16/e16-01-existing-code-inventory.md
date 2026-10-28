@@ -6,7 +6,7 @@ This inventory compares the declared E16 source paths with the applicable `docs/
 
 ## Workcell identity and scope
 
-- Base checkout: `git:09194df5f48326bff14e42a1e4eb8d66c457186d` in a fresh isolated clone at `/tmp/innerverse-e16-workcell`.
+- Base checkout: `git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365` in a fresh isolated clone at `/tmp/innerverse-e16-workcell`.
 - Candidate output: `docs/plans/elevation/e16/e16-01-existing-code-inventory.md` in that workcell only.
 - Proposed manifest: `.delivery/runtime/e16-proposed-manifest.json`, SHA-256 `96b3dbc243ba690bc6c9ad0a8b2d3c13b8b23568f2ec664568d9c2135be62025`. This is a local proposal, not a validated lease, readiness check, tracker claim, or permission grant.
 - The candidate was not copied to the root checkout. No Beads reads/writes or task claims were made for this E16 slice. No app-code changes, tests, builds, service/device access, participant contact, or data collection occurred.

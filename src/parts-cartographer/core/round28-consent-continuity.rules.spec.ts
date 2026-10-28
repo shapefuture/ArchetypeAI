@@ -1,7 +1,7 @@
 // Round 28 control (critic), emulator + the real createBooking() and setAppointmentStatus() (booking.ts, keepBookingAccess).
 // Checks the booking consent copy (i18n bookingShareConsent): "Cancelling this appointment revokes that access; if another
 // appointment with this therapist is still open, access continues through it." Each test is a control that should PASS
-// on f0dec06: the share moves to the open appointment when the one carrying it closes, and access ends only when none is open.
+// on b37e5f0: the share moves to the open appointment when the one carrying it closes, and access ends only when none is open.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';

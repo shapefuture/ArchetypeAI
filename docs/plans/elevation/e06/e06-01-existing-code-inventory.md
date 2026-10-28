@@ -4,7 +4,7 @@
 
 ## Scope and baseline
 
-- Pinned source base: `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+- Pinned source base: `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 - Allowed source read set: `src/parts-cartographer/screens/memory-library.jsx`, `src/parts-cartographer/screens/quick-scan.jsx`, `docs/80-20-plan.md`, and `architecture/contracts/**`.
 - Selected output: `docs/plans/elevation/e06/e06-01-existing-code-inventory.md`.
 - Workcell metadata reports `base_generation: null`, no pinned contract versions, and `proposal_requires_resolved_base_and_lease`. The local reservation is `8ceff622991448c5ba7c12bd77078614`; it is local coordination metadata, not a broker lease, permission grant, or sandbox.

@@ -1,5 +1,5 @@
 // Round 31 probe (critic), emulator + the real claimTherapistLink() (therapist-link.ts) and the real rules.
-// Reproduced on 3c69799: the attestation copy (STRINGS.attestB2) said "License is verified on the first incoming claim
+// Reproduced on 9437189: the attestation copy (STRINGS.attestB2) said "License is verified on the first incoming claim
 // request." Nothing checks a license: no license field exists on therapists/{uid}, the claim path records no verification,
 // and the Worker has no such route. A verified-email account with a therapist profile claims the code and receives the
 // client's summary.

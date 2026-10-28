@@ -1,5 +1,5 @@
 // Round 32 probe (critic). telemetry.record(itemId, value) counts distributions per value, with the value stored as String(value).
-// Reproduced on 4fa5bc4: the assessment screens passed an object as the value (screens/assessment.jsx: telemetry.record('assessment_item',
+// Reproduced on b5483c5: the assessment screens passed an object as the value (screens/assessment.jsx: telemetry.record('assessment_item',
 // { partId, ...answers }); screens/assessment.jsx and screens/full-assessment.jsx: telemetry.record('result', {...})). Every such count
 // landed under the single key "[object Object]", which the Statistics screen (screens/landing.jsx, telemetry.dump()) showed.
 // Fixed: the store refuses object values, and the screens record bucket labels (the felt bucket per part; crisis and validity flags).

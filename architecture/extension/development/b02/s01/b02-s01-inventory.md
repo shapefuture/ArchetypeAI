@@ -1,7 +1,7 @@
 # B02.S01 inventory: current ownership and actual reuse for opt-in explainable matching
 <!-- cite-ref: d17aaa6 -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL. Round 2 at `b36bde2`: FAIL (minor). The consent-seam and eligibility corrections are accurate. The provenance-store sentence was not base-qualified and is now corrected. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `f8746dc`: FAIL. Round 2 at `f8746dc`: FAIL (minor). The consent-seam and eligibility corrections are accurate. The provenance-store sentence was not base-qualified and is now corrected. Status is still **candidate, not accepted**; re-review is required.
 >
 > - Base note: citations to `src/shared/...` or `src/parts-cartographer/...` paths that moved are HEAD paths (rename map `d17aaa6..HEAD`).
 
@@ -16,7 +16,7 @@ No participant, device, live-account, community, practitioner or independent-rev
 | Successor | ArchetypeAI-2q6p, [B02.S02] Specify authoritative state, grants and effects (blocked by this Bead) |
 | Stage / role | planning / slot-owner |
 | Mutation / risk | M0 / R2, as assigned in planning metadata (see note in section 12) |
-| Base | commit `09194df5f48326bff14e42a1e4eb8d66c457186d` on branch `worktree-agent-a33e74034facfd2a7`; working tree clean before this file was added |
+| Base | commit `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365` on branch `worktree-agent-a33e74034facfd2a7`; working tree clean before this file was added |
 | Immutable base generation | null. Not resolved; this run binds no generation |
 | Published contract versions | none |
 | Active leases | none. Planning paths and null generations are proposals, not leases |
@@ -30,7 +30,7 @@ No participant, device, live-account, community, practitioner or independent-rev
 - **Booking is the strongest grant precedent.** A booking grant (`clientShares`, `therapistClients`) is tied to a live appointment. A deterministic busy-slot document acts as a concurrency lock. Decline or cancel revokes read access through rules. The create path has a non-atomic write window (F-03).
 - **Bearer codes carry copies.** Map share codes and therapist invite codes contain copies of the data they expose. Neither has an expiry. Neither follows the source when it changes. A code issued by one account cannot be revoked by another (F-02, F-04).
 - **Synastry is the existing "compatibility" feature.** The shipped React path uses the canonical scored-profile and 64-item bridges. A hash-seeded generator (`code-seed-v1`) also exists in `src/parts-cartographer/core/synastry-v2.ts`. It has no React call site in this tree and must not be reused as matching evidence (F-07).
-- **The reuse keys C01 and C08 are ambiguous.** Three planning documents use them for different packages. This inventory adopts the reading supported by the social plan's own graph edges: the elevation plan's slot packages C01 (auth identity, ArchetypeAI-zzmm) and C08 (consent and provenance, ArchetypeAI-v2tj). Only `src/parts-cartographer/core/auth.service.ts` exists as a seam. The consent seam path `src/parts-cartographer/core/personal-memory.ts@3683b0f` was absent at the base d17aaa6 (F-08, F-11). HEAD adds it in commit 3670a3a; it is not reviewed against this inventory.
+- **The reuse keys C01 and C08 are ambiguous.** Three planning documents use them for different packages. This inventory adopts the reading supported by the social plan's own graph edges: the elevation plan's slot packages C01 (auth identity, ArchetypeAI-zzmm) and C08 (consent and provenance, ArchetypeAI-v2tj). Only `src/parts-cartographer/core/auth.service.ts` exists as a seam. The consent seam path `src/parts-cartographer/core/personal-memory.ts@3683b0f` was absent at the base d17aaa6 (F-08, F-11). HEAD adds it in commit f3decec; it is not reviewed against this inventory.
 - **Several required states are absent.** Eligibility, decline and block suppression, revocation propagation, quiet discovery and criteria provenance have no implementation. Section 5 records each with its nearest analogue.
 - **No tests were executed.** Claims marked *static trace* come from reading source and rules. The worktree has no installed dependencies, and installing them would write outside the write set.
 
@@ -57,7 +57,7 @@ The coordinator should confirm the intended referent before S02 is dispatched (F
 ### 3.2 What the adopted packages contain
 
 - **C01 (auth.identity).** The seam exists at `src/parts-cartographer/core/auth.service.ts` (148 lines). It covers anonymous bootstrap, Google and email sign-in, linking an anonymous account while keeping its UID, and sign-out (`src/parts-cartographer/core/auth.service.ts:81-147`). The only contract is `AUTH_PORT` (`src/parts-cartographer/core/ports.ts:6-13`). No versioned contract, compatibility suite or registry entry was found. Server-side identity is Firebase ID-token verification (`worker-security.ts:30-79`), which yields `uid`, `email` and `email_verified`.
-- **C08 (consent.provenance).** The seam path `src/parts-cartographer/core/personal-memory.ts@3683b0f` was absent at the base d17aaa6 (added at HEAD in 3670a3a). Consent exists only as UI controls and copy:
+- **C08 (consent.provenance).** The seam path `src/parts-cartographer/core/personal-memory.ts@3683b0f` was absent at the base d17aaa6 (added at HEAD in f3decec). Consent exists only as UI controls and copy:
   - share-code checkbox (`src/parts-cartographer/overlays.jsx:503`; copy `src/parts-cartographer/i18n/strings.ts:193`);
   - booking checkbox that gates the confirm button (`src/parts-cartographer/overlays.jsx:842-852`; copy `src/parts-cartographer/i18n/strings.ts:351`);
   - therapist consent text (`src/parts-cartographer/core/therapist-link.ts:201`);
@@ -280,7 +280,7 @@ No behavior was changed. Severity is for S02 input only.
 - **F-08 (high for planning). Ambiguous reuse keys.** See section 3.1. The adopted reading is supported by graph edges, but the three planning sources must be reconciled before S02 uses `C01` or `C08`.
 - **F-09 (medium). Reuse list may be incomplete.** `C04` (creative commons) names B02; B02.S01 does not list it.
 - **F-10 (low). Write-set mismatch.** The B02 epic metadata lists `docs/plans/extension/b02/**` (node `B02`); B02.S01 lists `architecture/extension/development/b02/s01/**`. This artifact follows the S01 value. No proposed conflicts involve B02.S01 in the 16,341-entry snapshot.
-- **F-11 (medium). Consent seam absent at the base.** `src/parts-cartographer/core/personal-memory.ts@3683b0f` (the seam for `consent.provenance`) did not exist at d17aaa6. HEAD adds it (3670a3a), so this finding is superseded pending reconciliation. The C08 audit step (`C08.S01`, elevation plan) is the sibling reconciliation for this inventory.
+- **F-11 (medium). Consent seam absent at the base.** `src/parts-cartographer/core/personal-memory.ts@3683b0f` (the seam for `consent.provenance`) did not exist at d17aaa6. HEAD adds it (f3decec), so this finding is superseded pending reconciliation. The C08 audit step (`C08.S01`, elevation plan) is the sibling reconciliation for this inventory.
 - **F-12 (medium). No port for consent or matching.** Section 5.8.
 - **F-13 (low). Silent local write failure.** `store.save` swallows quota errors (`src/parts-cartographer/core/local-store.ts:22-23`). Matching state would inherit this unless handled.
 - **F-14 (high). No eligibility or entitlement gate.** No age, adult or minor logic exists in `src/parts-cartographer`, the rules or the worker (grep). Entitlement is a client-side cached receipt (`src/parts-cartographer/core/billing.service.ts:12`, `:58`; `src/parts-cartographer/core/ports.ts:42-44`). The AI handler authenticates and rate-limits but does not check entitlement as read (`worker.ts:185-`). Eligibility must be server-side.
@@ -297,7 +297,7 @@ No behavior was changed. Severity is for S02 input only.
 
 | Source | Path | Identity | Used for |
 |---|---|---|---|
-| Base repository state | branch `worktree-agent-a33e74034facfd2a7` | commit `09194df5f48326bff14e42a1e4eb8d66c457186d`; tree clean before this file | All code and doc reads |
+| Base repository state | branch `worktree-agent-a33e74034facfd2a7` | commit `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`; tree clean before this file | All code and doc reads |
 | Social planning graph | `docs/plans/social-creative-practice-beads-plan.json` | sha256 `cca4609c380a0fb5028a8ed46ac453d63d7f7d1fa65eeb8dc12b7167b68eba5c`; prepared 2026-10-06; `authority`: "Beads; planning snapshot, not live status"; `immutable_generation`: null | Task metadata, platform B02, features F05 F06 F07 F22 F23, B02 nodes and edges |
 | Social planning narrative | `docs/plans/social-creative-practice-beads-plan.md` | sha256 `9c079c78f0a778d89b92a2b50149678744be37279c50fee4791ff22f0e35d2d9` | Slot table (`:131`), consent gate (`:208-212`), reuse rules |
 | Social generator | `scripts/planning/build-social-creative-practice-plan.py` | 722 lines; read only | Confirms the graph is generated, not live |
@@ -419,7 +419,7 @@ Searches were run in this worktree at commit `d17aaa6`. Word-boundary matches we
 | `matching`, `matchmaking`, `discovery`, `discoverable`, `blocked`, `block list`, `decline` (`src/`, non-spec) | Only appointment decline in therapist UI and copy (`src/parts-cartographer/i18n/strings.ts:418`) | No opt-in matching or discovery feature <!-- cite-ids: none --> |
 | `block`, `report`, `mute`, `unfollow`, `purpose` (`firestore.rules`) | 0 hits | No block, report or purpose concept in rules |
 | `expedition`, `shared experience`, `theme space` (`src/`, `firestore.rules`) | 0 hits | Creative-commons feature families not implemented |
-| `personal-memory`, `personalMemory`; filenames matching `personal`, `consent`, `provenance` (`src/`) | 0 source hits at base d17aaa6; at HEAD `src/parts-cartographer/core/personal-memory.ts@3683b0f` matches (3670a3a) | Consent and provenance seam absent at base (F-11, superseded) |
+| `personal-memory`, `personalMemory`; filenames matching `personal`, `consent`, `provenance` (`src/`) | 0 source hits at base d17aaa6; at HEAD `src/parts-cartographer/core/personal-memory.ts@3683b0f` matches (f3decec) | Consent and provenance seam absent at base (F-11, superseded) |
 | `deleteUser`, `delete account`, `deleteAccount`, `deleteAll` (`src/`) | 0 hits | No account deletion path |
 | `adult`, `minor`, `eligib`, `dateOfBirth`, `age verification` (`src/parts-cartographer`, rules, worker) | 0 person-eligibility hits at base d17aaa6; at HEAD `eligib` matches only action eligibility (`src/parts-cartographer/elevation/e05-uncertainty-action.ts:39-56@3683b0f`) | No person-eligibility gate (F-14) <!-- cite-ids: none --> |
 | `deleteDoc`, `deleteUser` (`src/parts-cartographer/core/user-directory.ts`, `src/services/user-directory.service.ts`) | 0 hits | No in-app withdrawal of `publicProfiles` (F-01) |

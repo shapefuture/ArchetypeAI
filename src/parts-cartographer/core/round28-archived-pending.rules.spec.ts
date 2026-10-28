@@ -5,7 +5,7 @@
 // keeps every field it does not name). The dashboard then hides every appointment of an archived client, so the new
 // pending request is listed nowhere: not in the appointments tab, not in the pending count, and it has no approve or
 // decline button. The request keeps the slot locked (therapistBusySlots) until the client cancels it.
-// Expected: the therapist can see the new pending request. Observed on f0dec06: it is filtered out.
+// Expected: the therapist can see the new pending request. Observed on b37e5f0: it is filtered out.
 // Control: the same booking for a client that was not archived is shown.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';

@@ -1,7 +1,7 @@
 # B11.S01 inventory: current ownership and actual reuse for shared presence and finite group activities
 <!-- cite-ref: d17aaa6 -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: PASS. Round 2 at `b36bde2`: FAIL on one absence claim, scoped to base. Round 3 at `930edc1`: FAIL (minor). The E16 grant type has an expiry field, but its only app caller passes none, so the grant-expired check cannot fire in the app. The body now says so. Test counts were not verified. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `f8746dc`: PASS. Round 2 at `f8746dc`: FAIL on one absence claim, scoped to base. Round 3 at `8751dad`: FAIL (minor). The E16 grant type has an expiry field, but its only app caller passes none, so the grant-expired check cannot fire in the app. The body now says so. Test counts were not verified. Status is still **candidate, not accepted**; re-review is required.
 
 **Status: candidate awaiting independent review.** This is a static source trace at a fixed base. No acceptance is claimed. No runtime, emulator, browser, device, live-service, participant, community, or practitioner evidence was collected for this step. Those rows are marked *pending* or *not collected*.
 
@@ -12,7 +12,7 @@
 | Next consumer | ArchetypeAI-ludh, `[B11.S02] Specify authoritative state, grants and effects` (BLOCKS edge from 92wk) |
 | Slot named by the epic | `social.presence` (`owned_slots` is empty for this step) |
 | Mutation / risk (task metadata) | M0 / R2 |
-| Base | Branch `worktree-agent-a6ca915b6bc11030d`; base `09194df5f48326bff14e42a1e4eb8d66c457186d`; worktree clean when inspection started |
+| Base | Branch `worktree-agent-a6ca915b6bc11030d`; base `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`; worktree clean when inspection started |
 | `base_generation` | `null`. No immutable generation exists for this base. |
 | Published contract versions | None for `social.presence` |
 | Write set | `architecture/extension/development/b11/s01/**`. This file is the only artifact. No app source, package, lockfile, CI, rules, or locale file was changed. |
@@ -398,7 +398,7 @@ These are candidate defects or gaps from static reading. None is fixed here. Eac
 
 ## 11. Source and data provenance
 
-### 11.1 Sources (blob IDs at base `09194df5f483`)
+### 11.1 Sources (blob IDs at base `d17aaa68a15b`)
 
 | Source | Path | Blob (12 chars) | Used for |
 | --- | --- | --- | --- |
@@ -450,7 +450,7 @@ These are candidate defects or gaps from static reading. None is fixed here. Eac
 
 ## 13. Limitations
 
-- Static trace at base `09194df5f483`. Nothing was executed.
+- Static trace at base `d17aaa68a15b`. Nothing was executed.
 - Rules-derived findings (F1, F3, F17, F18, and the "Not tested" rows) are inferences from rule text until an emulator run confirms them.
 - Live Bead status for the 12 reuse IDs under C01 and C08, for B03, B04, `ArchetypeAI-lub7`, `ArchetypeAI-92wk`, and `ArchetypeAI-ludh` is unknown. `bd` was not run and the passive export lacks them.
 - `base_generation` is `null`. No contract version, immutable base, workcell, or lease exists.
@@ -493,4 +493,4 @@ These are candidate defects or gaps from static reading. None is fixed here. Eac
 
 **Bead update text for the coordinator** (this step cannot write the Bead):
 
-> B11.S01 (ArchetypeAI-92wk) candidate, awaiting independent review. Artifact: `architecture/extension/development/b11/s01/b11-s01-inventory.md@3683b0f` at commit <SHA from reply>. Base: HEAD 09194df5f483, `base_generation` null. Evidence: static source trace only; no tests executed in this worktree. Checks: read set 5 of 5; AAA snapshot hash matches; citation anchors 237 of 237 (section 12); write set limited to this file; whitespace clean. Not run: npm test, test:rules, browser, builds, any bd command. Limitations: section 13. Reuse: C01 and C08 are design-stage; B03 and B04 absent as models. Findings F1 to F20 are candidates needing verification. Acceptance: not claimed. Participant, device, live-account, community, and practitioner evidence: pending. Rollback or undo: documentation only; delete the file to revert. Next handoff: ArchetypeAI-ludh, consuming sections 4, 5, 8, 9, 10 and the decisions in section 14.
+> B11.S01 (ArchetypeAI-92wk) candidate, awaiting independent review. Artifact: `architecture/extension/development/b11/s01/b11-s01-inventory.md@3683b0f` at commit <SHA from reply>. Base: HEAD d17aaa68a15b, `base_generation` null. Evidence: static source trace only; no tests executed in this worktree. Checks: read set 5 of 5; AAA snapshot hash matches; citation anchors 237 of 237 (section 12); write set limited to this file; whitespace clean. Not run: npm test, test:rules, browser, builds, any bd command. Limitations: section 13. Reuse: C01 and C08 are design-stage; B03 and B04 absent as models. Findings F1 to F20 are candidates needing verification. Acceptance: not claimed. Participant, device, live-account, community, and practitioner evidence: pending. Rollback or undo: documentation only; delete the file to revert. Next handoff: ArchetypeAI-ludh, consuming sections 4, 5, 8, 9, 10 and the decisions in section 14.

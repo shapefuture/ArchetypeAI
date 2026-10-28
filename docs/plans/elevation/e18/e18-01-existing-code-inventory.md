@@ -1,7 +1,7 @@
 # E18.01 — Existing code inventory: map re-entry and device performance
 
 **Candidate status:** private source-only proposal; not an accepted inventory, implementation, device test, or task closure.
-**Source base:** `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+**Source base:** `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 **Task reference supplied by coordinator:** `ArchetypeAI-l8d0` (reported open); this workcell did not query or claim it.
 **Workcell:** `/tmp/innerverse-e18-workcell` at the source base above.
 **Proposed manifest/state:** `/tmp/innerverse-e18-workcell-manifest.json` and `/tmp/innerverse-e18-workcell-state.json`. These are worker-authored operational records, not broker leases or acceptance evidence.

@@ -5,7 +5,7 @@
 ## Scope and provenance
 
 - Task reference supplied by the coordinator: `ArchetypeAI-1kgk`.
-- Immutable source base: `09194df5f48326bff14e42a1e4eb8d66c457186d`.
+- Immutable source base: `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 - Declared read set: `src/parts-cartographer/screens/memory-library.jsx`; `src/parts-cartographer/screens/practice.jsx`; `docs/80-20-plan.md`; `architecture/contracts/**`.
 - Candidate output: `docs/plans/elevation/e14/e14-01-existing-code-inventory.md` in `/tmp/innerverse-e14-workcell`.
 - External proposed manifest: `/tmp/innerverse-e14-proposed-manifest.json`, SHA-256 `c6b4dd133d8bc4e1cc312f6a9ab4f405a73acf6bc62a8a8928b52a406e246da4`. It records the proposed paths and base only; it was not passed to a sweep or reservation and is not a validated workcell lease or acceptance record.
@@ -67,7 +67,7 @@ After the missing screen and contract boundary are resolved, trace one user-sele
 
 ## Candidate execution record
 
-- Source base: `git:09194df5f48326bff14e42a1e4eb8d66c457186d`.
+- Source base: `git:d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`.
 - Declared paths and one output are recorded in the external proposed manifest above; it was not validated by the workcell scheduler and creates no lease.
 - This candidate is private and remains outside the root checkout. No Beads operation, app-code change, test, build, service access, participant contact, or data collection occurred.
 - Independent review is pending. No task acceptance, task status change, or dependency change is claimed.

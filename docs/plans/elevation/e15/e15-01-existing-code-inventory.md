@@ -6,7 +6,7 @@
 
 The assignment identifies `ArchetypeAI-ypmu` as open and names five behaviors to inventory: prepare an agenda without sending, preview the exact share scope, distinguish a booking request from confirmation, revoke before therapist access, and retain only a user-chosen post-session next step. This pass did not query or mutate Beads, claim the task, inspect predecessor output, or reconcile old-Bead bindings.
 
-The workcell is a clean detached clone at base `09194df5f48326bff14e42a1e4eb8d66c457186d`. The only source paths read were:
+The workcell is a clean detached clone at base `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`. The only source paths read were:
 
 - `src/parts-cartographer/overlays.jsx` — SHA-256 `6ac5477144078bd6bb102ecfc08aac0109af0c2c14beeee9359d633a3c5458dd`
 - `src/parts-cartographer/screens/cabinet.jsx` — SHA-256 `38ec41be52062ecea90e346e9ae501feefc2473d25ae21d6b2c55cb2dd941c03`

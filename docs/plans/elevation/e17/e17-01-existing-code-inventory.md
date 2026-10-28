@@ -2,7 +2,7 @@
 
 **Status:** private source-only candidate; plan intent and hypotheses only. This is not implementation, runtime verification, reconciliation, or acceptance evidence.
 
-**Pinned source base:** `09194df5f48326bff14e42a1e4eb8d66c457186d`
+**Pinned source base:** `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`
 **Task reference supplied by coordinator:** `ArchetypeAI-ugua`
 **Read boundary:** `src/parts-cartographer/app.jsx`, `src/parts-cartographer/overlays.jsx`, `docs/80-20-plan.md`, and `architecture/contracts/**`. The contracts directory is absent at this base. No other source or task-tracker records were inspected for this candidate.
 

@@ -5,7 +5,7 @@
 // so claimTherapistLink() rejects instead of resolving to null. innerverse.jsx claim() then reports therapistLoadFailed
 // ("Could not load therapist data. Check your connection") for a code that is simply taken.
 // Controls: a code that does not exist resolves to null; the first claim and a repeat claim by the same therapist succeed.
-// Expected (probe assertion): the second therapist gets { ok: true, value: null }. Observed on 0f59c14: { ok: false, code: 'permission-denied' }.
+// Expected (probe assertion): the second therapist gets { ok: true, value: null }. Observed on 6cab69a: { ok: false, code: 'permission-denied' }.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';

@@ -1,6 +1,6 @@
 # Core journeys and data baseline
 
-Audit snapshot: repository commit `d8940b7` (`Merge pull request #3 from shapefuture/plan/authored-world-beads`), branch `codex/stage0-journey-baseline`. Scope follows [80-20 plan §8.1](../80-20-plan.md#81-step-by-step-baseline). This is a source/documentation audit only: no app was launched, no endpoint queried, and no account or device was exercised.
+Audit snapshot: repository commit `cfd4d8e` (`Merge pull request #3 from shapefuture/plan/authored-world-beads`), branch `codex/stage0-journey-baseline`. Scope follows [80-20 plan §8.1](../80-20-plan.md#81-step-by-step-baseline). This is a source/documentation audit only: no app was launched, no endpoint queried, and no account or device was exercised.
 
 ## Evidence boundary
 
@@ -13,7 +13,7 @@ Audit snapshot: repository commit `d8940b7` (`Merge pull request #3 from shapefu
 | Mock / test fixtures | Source only | Unit/contract specs and deterministic adapter code describe intended behavior; they do not establish service integration or real-device behavior. No tests were run. |
 | Device/account/fixture | Not captured | No device class, OS/browser, account role, user fixture, or data fixture can be attributed to an observed journey. Do not interpret the maps below as walkthrough results. |
 
-Build entry points in `package.json` make `npm run build` the Vite build and expose a separate `build:angular` script ([package scripts](../../package.json#L6)). The `src/environments/environment*.ts` values below belong to the retained Angular build; they do not establish React/Vite runtime or deployment configuration. Angular `environment.ts` declares `production: false`, Gemini routing, `/api/ai`, and a Firebase project identifier; `environment.prod.ts` declares `production: true` and a Worker URL. These are compile-time declarations only. No deploy target/origin, selected build, live Worker configuration, or Firebase rules were verified. The development Firebase setup must not be mistaken for an emulator. Current working tree base was clean at `d8940b7`; this audit did not inspect environment files for secrets or read any `.env`/credential files.
+Build entry points in `package.json` make `npm run build` the Vite build and expose a separate `build:angular` script ([package scripts](../../package.json#L6)). The `src/environments/environment*.ts` values below belong to the retained Angular build; they do not establish React/Vite runtime or deployment configuration. Angular `environment.ts` declares `production: false`, Gemini routing, `/api/ai`, and a Firebase project identifier; `environment.prod.ts` declares `production: true` and a Worker URL. These are compile-time declarations only. No deploy target/origin, selected build, live Worker configuration, or Firebase rules were verified. The development Firebase setup must not be mistaken for an emulator. Current working tree base was clean at `cfd4d8e`; this audit did not inspect environment files for secrets or read any `.env`/credential files.
 
 ## Primary React/Vite assessment routes and data authority
 

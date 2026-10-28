@@ -116,7 +116,7 @@ describe.skipIf(!EMULATOR)('round26: a therapist cannot re-grant access through 
 
   it('the therapist cannot point the share at the long-past approved booking after the client cancelled the carrying one', async () => {
     // Expected by the app model (approved long past does not count as open) and the consent text (cancelling revokes).
-    // Actual on ba7c5bb: firestore.rules hasActiveAppointment() accepts any approved appointment, so the write succeeds.
+    // Actual on 8c77953: firestore.rules hasActiveAppointment() accepts any approved appointment, so the write succeeds.
     await seedBookings(false);
     state.db = asUser(C, CEMAIL);
     await setAppointmentStatus('appt_now', 'cancelled', 'client');

@@ -2,7 +2,7 @@
 <!-- cite-ref: d17aaa6 -->
 <!-- cite-external: dist/sw.js -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because the quiet-hours absence was false for the in-app note. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The §13 set of five files gave 47 under the candidate's run and 48 at HEAD, and my earlier "37" set was a guess, now removed. The reminder settings screen also has a configurable quiet-hours control (`src/parts-cartographer/screens/reminder-settings.jsx:16@3683b0f`, `:35`), which the body does not mention. All five spec paths exist at base d17aaa6. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `f8746dc`: FAIL, because the quiet-hours absence was false for the in-app note. Round 2 at `f8746dc`: FAIL. Round 3 at `8751dad`: FAIL. The §13 set of five files gave 47 under the candidate's run and 48 at HEAD, and my earlier "37" set was a guess, now removed. The reminder settings screen also has a configurable quiet-hours control (`src/parts-cartographer/screens/reminder-settings.jsx:16@3683b0f`, `:35`), which the body does not mention. All five spec paths exist at base d17aaa6. Status is still **candidate, not accepted**; re-review is required.
 
 **Status: candidate awaiting independent review.** This file records what the code, documents and local unit checks show. It is not an acceptance claim. No participant, device, real-service, live-account, practitioner or independent-review evidence was collected. No `bd` command was run and no Beads status was changed; the coordinator owns the tracker.
 
@@ -20,7 +20,7 @@ Evidence tags used below:
 | Next Bead | `ArchetypeAI-uffz` (B05.S02, authoritative state, grants and effects) |
 | Slot | `notification.delivery`. Proposed in `docs/plans/social-creative-practice-beads-plan.json`. No implementation, port or contract for it exists in this checkout. |
 | Role / risk / mutation | slot-owner (inventory) / R2 / M0 |
-| Immutable base | Not bound by a broker (`base_generation: null`). Observed worktree HEAD `09194df5f48326bff14e42a1e4eb8d66c457186d`, branch `worktree-agent-aaa4d8ae9b4a1157d`, clean before this file was added. |
+| Immutable base | Not bound by a broker (`base_generation: null`). Observed worktree HEAD `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`, branch `worktree-agent-aaa4d8ae9b4a1157d`, clean before this file was added. |
 | Inventory date | 2026-10-15 |
 | Source reference | AAA v7.1.0 draft normative specification; pinned SHA-256 `e85d85f962c8da8ed110122b4fa236f934b16cdbbc9108f80ca2f32b50be75dc` (as recorded in the social plan JSON `baseline`); in-repo snapshot `docs/plans/references/AAA-V7-SPEC.source.md`, git blob `2eb18f3f7725`. |
 
@@ -32,7 +32,7 @@ Evidence tags used below:
 - Every failure and every refused or dismissed prompt is reported as `denied`, and the React button is disabled for the rest of the session (`src/parts-cartographer/screens/check-in.jsx:329-331`). (N-04)
 - The local nudge fallback exists in both React and Angular code but has no runtime caller. Its unit tests pass, but the product cannot reach it. (N-06)
 - Real background delivery, the sender, and the VAPID key rotation are unverified. A key-exposure incident is recorded in `docs/push-key-rotation.md`. (N-16, N-20)
-- Checks: §13 records 47 passing tests across five spec files (`src/parts-cartographer/core/push.spec.ts` 5, `src/services/push.service.spec.ts` 2, `src/parts-cartographer/core/backup.spec.ts` 8, `firestore.rules.spec.ts` 8, `src/app/core/data/state-v2.spec.ts` 24), reported with vitest 3.2.7 at base d17aaa6. The 5 files and 47 are the candidate's own record; this review re-ran the same five files at commit `930edc1` with vitest 4.1.12 and got **48 passing**. Both results are recorded and neither is a regression.
+- Checks: §13 records 47 passing tests across five spec files (`src/parts-cartographer/core/push.spec.ts` 5, `src/services/push.service.spec.ts` 2, `src/parts-cartographer/core/backup.spec.ts` 8, `firestore.rules.spec.ts` 8, `src/app/core/data/state-v2.spec.ts` 24), reported with vitest 3.2.7 at base d17aaa6. The 5 files and 47 are the candidate's own record; this review re-ran the same five files at commit `8751dad` with vitest 4.1.12 and got **48 passing**. Both results are recorded and neither is a regression.
 
 ## 2. Reuse reconciliation: packages C01 and C08
 
@@ -303,7 +303,7 @@ These are the inputs S02 must resolve. This worker did not decide them.
 
 ## 12. Source and data provenance
 
-**Repository state.** Base `09194df5f48326bff14e42a1e4eb8d66c457186d` on branch `worktree-agent-aaa4d8ae9b4a1157d`. Git blob IDs (abbreviated, `git ls-files -s`) for the cited files:
+**Repository state.** Base `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365` on branch `worktree-agent-aaa4d8ae9b4a1157d`. Git blob IDs (abbreviated, `git ls-files -s`) for the cited files:
 
 | Blob | File |
 |---|---|
@@ -390,7 +390,7 @@ Not run: `firestore.rules.emulator.spec.ts` (requires the Firestore emulator, pe
 
 Draft Beads note for the coordinator (not posted by this worker):
 
-> B05.S01 candidate awaiting independent review. Artifact: `architecture/extension/development/b05/s01/b05-s01-inventory.md@3683b0f` on branch `worktree-agent-aaa4d8ae9b4a1157d`, commit recorded in the worker report. Base `09194df5f48326bff14e42a1e4eb8d66c457186d`. Checks (candidate's report): 47 existing unit tests passed in five specs (mocked; static rules). Not run: rules emulator, browser, build, device, sender. Pending: real FCM delivery, participant J05, independent review. Findings N-01 to N-23 recorded. Rollback: revert the commit. Next handoff: B05.S02 (`ArchetypeAI-uffz`), inputs listed in section 11, prerequisites C01 contract (`ArchetypeAI-bgdg`) and C08 seam (absent).
+> B05.S01 candidate awaiting independent review. Artifact: `architecture/extension/development/b05/s01/b05-s01-inventory.md@3683b0f` on branch `worktree-agent-aaa4d8ae9b4a1157d`, commit recorded in the worker report. Base `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`. Checks (candidate's report): 47 existing unit tests passed in five specs (mocked; static rules). Not run: rules emulator, browser, build, device, sender. Pending: real FCM delivery, participant J05, independent review. Findings N-01 to N-23 recorded. Rollback: revert the commit. Next handoff: B05.S02 (`ArchetypeAI-uffz`), inputs listed in section 11, prerequisites C01 contract (`ArchetypeAI-bgdg`) and C08 seam (absent).
 
 ## 17. Next handoff: B05.S02 (`ArchetypeAI-uffz`)
 

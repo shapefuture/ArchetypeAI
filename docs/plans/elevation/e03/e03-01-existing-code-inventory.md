@@ -1,6 +1,6 @@
 # E03.01 — Existing-code inventory (source-only partial)
 
-**Disposition:** documentation candidate only; task acceptance **HOLD**. This inventory is limited to the declared source files at base `09194df5f48326bff14e42a1e4eb8d66c457186d`. It does not establish runtime behavior or reconcile the task with predecessor work.
+**Disposition:** documentation candidate only; task acceptance **HOLD**. This inventory is limited to the declared source files at base `d17aaa68a15b40c4e13eb7e9d7b93b4b08860365`. It does not establish runtime behavior or reconcile the task with predecessor work.
 
 ## Scope and provenance
 

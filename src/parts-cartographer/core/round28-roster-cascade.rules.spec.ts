@@ -6,7 +6,7 @@
 // one client whose row broke.
 // The client owns each code and the rules let the client delete any one of them (therapistLinks `allow delete`). The app
 // deletes all codes at once (revokeTherapistAccess), so this state is reached through a single-code delete, not the UI.
-// Expected: the other client's booking row still shows. Observed on f0dec06: the promise rejects.
+// Expected: the other client's booking row still shows. Observed on b37e5f0: the promise rejects.
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';

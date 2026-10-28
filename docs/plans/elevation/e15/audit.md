@@ -1,7 +1,7 @@
 # E15.01 audit: Session preparation and sharing scope
 
 - Bead: `ArchetypeAI-ypmu` (E15.01). Tracker status at audit: open.
-- Checked at: HEAD `675118c`, corrected after the second and third independent reviews.
+- Checked at: HEAD `3683b0f`, corrected after the second and third independent reviews.
 - Disposition: **candidate audit, awaiting a final independent review.** Read-only. No implementation changed. No acceptance is claimed.
 - Method: file inventory, test-name listing, mount search, and the bead's own scenario list. The gap notes in §5 are judgement, not measurement.
 

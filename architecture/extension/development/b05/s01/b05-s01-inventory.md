@@ -1,8 +1,8 @@
 # B05.S01 inventory: notification policy, scheduling and delivery
-<!-- cite-ref: 09194df -->
+<!-- cite-ref: d17aaa6 -->
 <!-- cite-external: dist/sw.js -->
 
-> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because the quiet-hours absence was false for the in-app note. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The §13 set of five files gave 47 under the candidate's run and 48 at HEAD, and my earlier "37" set was a guess, now removed. The reminder settings screen also has a configurable quiet-hours control (`src/parts-cartographer/screens/reminder-settings.jsx:16@675118c`, `:35`), which the body does not mention. All five spec paths exist at base 09194df. Status is still **candidate, not accepted**; re-review is required.
+> **Independent review (2026-10-16).** Round 1 at `42116d6`: FAIL, because the quiet-hours absence was false for the in-app note. Round 2 at `b36bde2`: FAIL. Round 3 at `930edc1`: FAIL. The §13 set of five files gave 47 under the candidate's run and 48 at HEAD, and my earlier "37" set was a guess, now removed. The reminder settings screen also has a configurable quiet-hours control (`src/parts-cartographer/screens/reminder-settings.jsx:16@3683b0f`, `:35`), which the body does not mention. All five spec paths exist at base d17aaa6. Status is still **candidate, not accepted**; re-review is required.
 
 **Status: candidate awaiting independent review.** This file records what the code, documents and local unit checks show. It is not an acceptance claim. No participant, device, real-service, live-account, practitioner or independent-review evidence was collected. No `bd` command was run and no Beads status was changed; the coordinator owns the tracker.
 
@@ -26,13 +26,13 @@ Evidence tags used below:
 
 ## 1. Summary
 
-- The repository has no `notification.delivery` slot, port, versioned contract, sender, scheduler, per-stream preference, or delivery ledger, and no quiet-hours rule applied to delivery. Quiet hours do exist for the in-app due-task note: `reminderDecision` in `src/parts-cartographer/core/reminder-policy.ts@675118c` (quiet check at line 74; HEAD 675118c only) is called from `src/parts-cartographer/app.jsx:355` (HEAD 675118c only). What exists is one opt-in Firebase Cloud Messaging (FCM) "daily check-in" reminder: a client token registry in Firestore, a service worker that displays background messages, and timing rules that run only while the app is open.
+- The repository has no `notification.delivery` slot, port, versioned contract, sender, scheduler, per-stream preference, or delivery ledger, and no quiet-hours rule applied to delivery. Quiet hours do exist for the in-app due-task note: `reminderDecision` in `src/parts-cartographer/core/reminder-policy.ts@3683b0f` (quiet check at line 74; HEAD 3683b0f only) is called from `src/parts-cartographer/app.jsx:355` (HEAD 3683b0f only). What exists is one opt-in Firebase Cloud Messaging (FCM) "daily check-in" reminder: a client token registry in Firestore, a service worker that displays background messages, and timing rules that run only while the app is open.
 - "Enabled" is decided on the device: a localStorage token plus browser permission (`src/parts-cartographer/core/push.ts:24-29`). It is never reconciled with the Firestore registry or with the FCM token's validity.
 - Withdrawal (`disablePushReminder`) runs from the check-in Disable button (`src/parts-cartographer/screens/check-in.jsx:196`) and from the React `src/parts-cartographer/core/auth.service.ts` `signOut` (`src/parts-cartographer/core/auth.service.ts:144`). No production caller of that `signOut` was found. Angular logout and direct account switches leave the token owned by the previous Firebase uid. (N-03)
 - Every failure and every refused or dismissed prompt is reported as `denied`, and the React button is disabled for the rest of the session (`src/parts-cartographer/screens/check-in.jsx:329-331`). (N-04)
 - The local nudge fallback exists in both React and Angular code but has no runtime caller. Its unit tests pass, but the product cannot reach it. (N-06)
 - Real background delivery, the sender, and the VAPID key rotation are unverified. A key-exposure incident is recorded in `docs/push-key-rotation.md`. (N-16, N-20)
-- Checks: §13 records 47 passing tests across five spec files (`src/parts-cartographer/core/push.spec.ts` 5, `src/services/push.service.spec.ts` 2, `src/parts-cartographer/core/backup.spec.ts` 8, `firestore.rules.spec.ts` 8, `src/app/core/data/state-v2.spec.ts` 24), reported with vitest 3.2.7 at base 09194df. The 5 files and 47 are the candidate's own record; this review re-ran the same five files at commit `930edc1` with vitest 4.1.12 and got **48 passing**. Both results are recorded and neither is a regression.
+- Checks: §13 records 47 passing tests across five spec files (`src/parts-cartographer/core/push.spec.ts` 5, `src/services/push.service.spec.ts` 2, `src/parts-cartographer/core/backup.spec.ts` 8, `firestore.rules.spec.ts` 8, `src/app/core/data/state-v2.spec.ts` 24), reported with vitest 3.2.7 at base d17aaa6. The 5 files and 47 are the candidate's own record; this review re-ran the same five files at commit `930edc1` with vitest 4.1.12 and got **48 passing**. Both results are recorded and neither is a regression.
 
 ## 2. Reuse reconciliation: packages C01 and C08
 
@@ -41,7 +41,7 @@ The B05 metadata names reuse packages `C01` and `C08`. The social plan builder (
 | Package | Resolved meaning (elevation graph) | Seam named by the plan | Stream and publication Beads (planning map) | Present in this checkout | What B05.S01 can reuse now |
 |---|---|---|---|---|---|
 | C01 | `[C01] Slot migration: Auth identity and account lifecycle`, slot `auth.identity` | `src/parts-cartographer/core/auth.service.ts` | stream `ArchetypeAI-zzmm`; contract step `ArchetypeAI-bgdg` (C01.S02); publication `ArchetypeAI-7253` (`docs/plans/aaa-v7-architecture-and-agent-sweeps.md:73`) | Seam file present (148 lines). No published contract: `architecture/` does not exist in the tree and the B05 metadata lists `contract_versions: []`. | Conceptual only. The notification-relevant hook (withdraw before sign-out) is a React-only function outside `AUTH_PORT` (`src/parts-cartographer/core/ports.ts:6-13`). There is no published version to depend on. |
-| C08 | `[C08] Slot migration: Consent, source lineage and corrections`, slot `consent.provenance` | `src/parts-cartographer/core/personal-memory.ts@675118c` | stream `ArchetypeAI-v2tj`; contract step `ArchetypeAI-abz4` (C08.S02); publication `ArchetypeAI-9q4d` (`docs/plans/aaa-v7-architecture-and-agent-sweeps.md:80`) | **Seam file absent** (not tracked by git). Consent-like code exists elsewhere, for example share-code revocation in `src/parts-cartographer/core/cloud-storage.ts:281-287`, but not as a slot. | Conceptual only. The push opt-in is a device boolean (token presence), not a consent record with provenance. |
+| C08 | `[C08] Slot migration: Consent, source lineage and corrections`, slot `consent.provenance` | `src/parts-cartographer/core/personal-memory.ts@3683b0f` | stream `ArchetypeAI-v2tj`; contract step `ArchetypeAI-abz4` (C08.S02); publication `ArchetypeAI-9q4d` (`docs/plans/aaa-v7-architecture-and-agent-sweeps.md:80`) | **Seam file absent** (not tracked by git). Consent-like code exists elsewhere, for example share-code revocation in `src/parts-cartographer/core/cloud-storage.ts:281-287`, but not as a slot. | Conceptual only. The push opt-in is a device boolean (token presence), not a consent record with provenance. |
 
 Read-set files named in the B05.S01 metadata:
 
@@ -71,7 +71,7 @@ Surfaces: **React** is `src/parts-cartographer/**` (active). **Angular** is `src
 | C-10 | Rules tests | `firestore.rules.spec.ts:47-54` (static text assertions); `firestore.rules.emulator.spec.ts:245-258` (emulator) | Test | Static spec run in section 13. Emulator spec not run. |
 | C-11 | Logout hook for withdrawal | React `src/parts-cartographer/core/auth.service.ts:141-147`; Angular `src/app/core/adapters/firebase-auth.adapter.ts:90-92` (no hook); Angular logout `src/app.component.ts:1331-1336` | Both | React hook has no production caller (N-03). Angular has none. |
 | C-12 | Backup allowlist | `src/parts-cartographer/core/backup.ts:10-18` (`BASE_KEYS`, `PORTABLE_KEYS`); push keys not listed | React | Excludes the token (positive, see N-14). |
-| C-13 | In-app timing rules | `src/shared/core/data/state-v2.ts:84-91@675118c` (HEAD) (day helpers), `:136@675118c` (`sameLocalDay`), `:143-152@675118c` (verdict lock), `:162-171@675118c` (48-hour seal and resurfacing), `:239-241@675118c` (24-hour card cap) | Shared | Used by `src/app/features/checkin-panel/checkin-panel.component.ts:76-103, 138-146` and imported by `src/parts-cartographer/screens/check-in.jsx:17`. |
+| C-13 | In-app timing rules | `src/shared/core/data/state-v2.ts:84-91@3683b0f` (HEAD) (day helpers), `:136@3683b0f` (`sameLocalDay`), `:143-152@3683b0f` (verdict lock), `:162-171@3683b0f` (48-hour seal and resurfacing), `:239-241@3683b0f` (24-hour card cap) | Shared | Used by `src/app/features/checkin-panel/checkin-panel.component.ts:76-103, 138-146` and imported by `src/parts-cartographer/screens/check-in.jsx:17`. |
 | C-14 | Port layer | `src/parts-cartographer/core/ports.ts` (AUTH, STORAGE, AI, BILLING); `src/app/core/ports/auth.port.ts, src/app/core/ports/ai.port.ts, src/app/core/ports/storage.port.ts` | Both | No notification port on either surface. (N-17) |
 | C-15 | Worker (Cloudflare) | `worker.ts:168-180`: routes `/api/ai`, `/api/stripe-checkout`, `/api/stripe-verify`, `/api/gemini`. No `scheduled` export. | Server | No notification route, scheduled handler or sender. <!-- cite-ids: none --> |
 | C-16 | Sender and scheduler | Not in repository: no `functions/` directory, no cron in `wrangler.toml` or `wrangler.api.toml`. `src/services/push.service.ts:3-6` says the sending side (a scheduled function) "is the only deploy-time step left". | External | [X] Owner and deployment status unknown. |
@@ -136,7 +136,7 @@ The booking flow identifies the device clock and keeps naive wall-clock appointm
 |---|---|---|---|
 | Local decision versus external delivery | not separated. The React and Angular modules mix permission, token issuance, registry writes and display. | `src/parts-cartographer/core/push.ts`, `src/services/push.service.ts` | Need a pure decision layer and a delivery adapter (S02, S05). |
 | Device authority | the browser profile, through S-2 and S-3; the server registry (S-4) is not reconciled with it | S-2 to S-4 | Need a stated authority and reconciliation rule (N-02). |
-| Quiet hours for delivery | none | not present | New work (N-11). The in-app due-task note has a quiet check (`reminder-policy.ts:74@675118c`, HEAD 675118c only). |
+| Quiet hours for delivery | none | not present | New work (N-11). The in-app due-task note has a quiet check (`reminder-policy.ts:74@3683b0f`, HEAD 3683b0f only). |
 | Timezone | device clock, implicitly | `src/app/core/data/state-v2.ts` | Need a stored policy and DST semantics (N-12). |
 | Dedupe | constant display tag; per-device 20-hour cap that is unwired; token-keyed document | E-10, S-5, S-4 | Need occurrence-level identity and a send ledger (N-07, S-10). |
 | Cancellation | token withdrawal only; cancellation of queued sends has no mechanism because no sends are scheduled in repo | `src/parts-cartographer/core/push.ts:87-99` | Need an external sender contract and a send-cancellation path (B05.S03, S05). |
@@ -208,7 +208,7 @@ Each finding ID (N-xx) is defined in section 10. Status values: **specified** (s
 |---|---|---|---|
 | Offline enable | `getToken` needs the network. Failure becomes `denied` (`src/parts-cartographer/core/push.ts:80-83`). Firestore `setDoc` resolves only after server acknowledgement [S, SDK behaviour to verify]. No timeout exists. | none | gap (N-21) |
 | In-app fallback while offline | verdict resurfacing and card caps are local and run on app open (`src/app/features/checkin-panel/checkin-panel.component.ts:138-146`). The nudge that would use the browser notification is unwired. | [T] for rules; the nudge is untested in the product path | partly exercised; no notification fallback (N-06) |
-| Quiet alternative | none. Quiet mode (`docs/80-20-plan.md:530@675118c`) and quiet hours (`docs/oldplan.md:279-295@675118c`) are not implemented for delivery; the in-app due-task note has a quiet check (`reminder-policy.ts:74@675118c`, HEAD 675118c only). The only delivery quiet alternative is disabling reminders, which has the ordering issues in section 8.5. | [T] withdrawal test only | gap (N-11) |
+| Quiet alternative | none. Quiet mode (`docs/80-20-plan.md:530@3683b0f`) and quiet hours (`docs/oldplan.md:279-295@3683b0f`) are not implemented for delivery; the in-app due-task note has a quiet check (`reminder-policy.ts:74@3683b0f`, HEAD 3683b0f only). The only delivery quiet alternative is disabling reminders, which has the ordering issues in section 8.5. | [T] withdrawal test only | gap (N-11) |
 | Service-worker offline shell | `src/sw.js:61-75` and `public/sw.js:29-38` serve the cached shell. Neither covers FCM. | none | specified |
 
 ### 8.7 Six compatibility dimensions for `notification.delivery`
@@ -270,7 +270,7 @@ Severity is a planning judgement for B05.S02 prioritisation, not a release gate.
 | N-08 | No `notificationclick` handler exists in any worker, so tapping a reminder has no app-defined destination or action. | grep over `src/sw.js`, `public/sw.js`, `src/firebase-messaging-sw.js` | Medium |
 | N-09 | Two app-shell workers share the URL `/sw.js` and the output path `dist/sw.js`. The Firebase config is copied into the FCM worker by hand. Two hosting targets serve `dist`. | `public/sw.js:2-5`; `src/sw.js:16-18` (build stamp and cache names, not the output path); `angular.json` assets; `firebase.json`; `src/firebase-messaging-sw.js:5-12` | Medium |
 | N-10 | Worker defaults are English-only; the worker has no language signal. | `public/firebase-messaging-sw.js:16, 25` | Low-Medium |
-| N-11 | No delivery quiet hours, digest, budget, pause, per-stream control or delivery timezone exists. An in-app quiet check exists for the due-task note (`src/parts-cartographer/core/reminder-policy.ts:74@675118c`, HEAD 675118c only). Quiet mode and quiet hours are required by the plans for delivery. | section 6; `docs/80-20-plan.md:484, 530`; `docs/oldplan.md:279-295@675118c` | High for B05 scope (new work) |
+| N-11 | No delivery quiet hours, digest, budget, pause, per-stream control or delivery timezone exists. An in-app quiet check exists for the due-task note (`src/parts-cartographer/core/reminder-policy.ts:74@3683b0f`, HEAD 3683b0f only). Quiet mode and quiet hours are required by the plans for delivery. | section 6; `docs/80-20-plan.md:484, 530`; `docs/oldplan.md:279-295@3683b0f` | High for B05 scope (new work) |
 | N-12 | In-app timing is correct on its own terms (absolute 48-hour and 24-hour intervals, local-day helpers). It has no DST-boundary or timezone-change tests. | `state-v2.ts:86-91, 158, 162-171, 239-241`; `src/app/core/data/state-v2.spec.ts` | Low |
 | N-13 | The registry schema is fixed in rules with `hasOnly`, and has no version field. Any schema change needs coordinated rules, clients and sender changes. | `firestore.rules:200-214` | Medium |
 | N-14 | Positive: the device token is excluded from backups; registry writes are owner-bound and client reads are denied. | `src/parts-cartographer/core/backup.ts:10-18`; `firestore.rules:198-215`; `src/parts-cartographer/core/backup.spec.ts:38-54` | Positive |
@@ -354,7 +354,7 @@ All runs used the parent checkout's installed `vitest` 3.2.7 (`/home/user/Archet
 | Registry rules, static | `vitest run firestore.rules.spec.ts --cache=false` | 8 passed | Regex over the rules text, not rule evaluation |
 | In-app timing | `vitest run src/app/core/data/state-v2.spec.ts --cache=false` | 24 passed | No DST or timezone-change cases |
 
-Total: 47 passed across five spec files, as the candidate reported at base 09194df. At HEAD on 2026-10-16 the same files gave 48 passed with vitest 4.1.12. No code was changed for the candidate's run.
+Total: 47 passed across five spec files, as the candidate reported at base d17aaa6. At HEAD on 2026-10-16 the same files gave 48 passed with vitest 4.1.12. No code was changed for the candidate's run.
 
 Not run: `firestore.rules.emulator.spec.ts` (requires the Firestore emulator, pending); `tests/browser` (Playwright); production builds; `tsc`; any FCM, service-worker or device runtime; the sender.
 
@@ -371,7 +371,7 @@ Not run: `firestore.rules.emulator.spec.ts` (requires the Firestore emulator, pe
 
 - **Role:** slot-owner (inventory). Mutation M0, risk R2.
 - **Read set:** the five files in section 2, plus the files cited in sections 3 to 12.
-- **Write set:** `architecture/extension/development/b05/s01/b05-s01-inventory.md@675118c` only.
+- **Write set:** `architecture/extension/development/b05/s01/b05-s01-inventory.md@3683b0f` only.
 - **Owned slots:** none.
 - **Contracts consumed:** none published (`contract_versions: []`). **Contracts produced:** none.
 - **Capabilities used:** repository read; local unit test execution with no cache writes.
@@ -390,7 +390,7 @@ Not run: `firestore.rules.emulator.spec.ts` (requires the Firestore emulator, pe
 
 Draft Beads note for the coordinator (not posted by this worker):
 
-> B05.S01 candidate awaiting independent review. Artifact: `architecture/extension/development/b05/s01/b05-s01-inventory.md@675118c` on branch `worktree-agent-aaa4d8ae9b4a1157d`, commit recorded in the worker report. Base `09194df5f48326bff14e42a1e4eb8d66c457186d`. Checks (candidate's report): 47 existing unit tests passed in five specs (mocked; static rules). Not run: rules emulator, browser, build, device, sender. Pending: real FCM delivery, participant J05, independent review. Findings N-01 to N-23 recorded. Rollback: revert the commit. Next handoff: B05.S02 (`ArchetypeAI-uffz`), inputs listed in section 11, prerequisites C01 contract (`ArchetypeAI-bgdg`) and C08 seam (absent).
+> B05.S01 candidate awaiting independent review. Artifact: `architecture/extension/development/b05/s01/b05-s01-inventory.md@3683b0f` on branch `worktree-agent-aaa4d8ae9b4a1157d`, commit recorded in the worker report. Base `09194df5f48326bff14e42a1e4eb8d66c457186d`. Checks (candidate's report): 47 existing unit tests passed in five specs (mocked; static rules). Not run: rules emulator, browser, build, device, sender. Pending: real FCM delivery, participant J05, independent review. Findings N-01 to N-23 recorded. Rollback: revert the commit. Next handoff: B05.S02 (`ArchetypeAI-uffz`), inputs listed in section 11, prerequisites C01 contract (`ArchetypeAI-bgdg`) and C08 seam (absent).
 
 ## 17. Next handoff: B05.S02 (`ArchetypeAI-uffz`)
 

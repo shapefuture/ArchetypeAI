@@ -1,7 +1,7 @@
 # F02.S01 — Inventory: finite life-event gatherings and cohorts (reconciliation)
 
 - Bead: `ArchetypeAI-3byv` (F02.S01).
-- Base checked: `git:10d9608` on `claude/full-plan-handoff-gmgpkq`.
+- Base checked: `git:45c24ed` on `claude/full-plan-handoff-gmgpkq`.
 - Disposition: **candidate inventory; awaiting independent review.** No acceptance is claimed. No application code changed.
 - Write set: `docs/plans/extension/features/f02/s01/**` (this file only).
 - Contracts: none published. `base_generation: null`. No lease.

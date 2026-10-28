@@ -1,5 +1,5 @@
 # A01.01 AAA v7.1 source pin, adoption claims and optional-profile exclusions
-<!-- cite-ref: 09194df -->
+<!-- cite-ref: d17aaa6 -->
 <!-- cite-external: AAA-V7-SPEC.md .source.md -->
 
 **Bead:** ArchetypeAI-9ulr (A01.S01, planning key of the A01.01 step)
@@ -77,7 +77,7 @@ The candidate adds two files and no runtime mechanism or service, so it applies 
 | Source clause | Strength | Repo evidence and status |
 | --- | --- | --- |
 | "Every meaningful deployable state SHALL have a `GenerationManifest`." (L256) | SHALL | Not met, G-6. Deployables at base: `wrangler.toml` (worker `archetypeai-worker`, main `worker.ts`), the React/Vite build, the retained Angular build, and `firestore.rules`. This candidate is not a deployable state. |
-| Manifest fields (L259-273): `source_hash`, `build_hash`, `dependency_lock_hash`, `configuration_hash`, `schema_hashes`, `policy_hash`, `component_graph_hash`, `feature_configuration_hash`, `evidence_root`, `parent_ids`, `signer` and others | SHALL, via the manifest clause | The pin supplies `source_hash` for the specification input only. Build identity is partly content-addressed: `scripts/stamp-sw.mjs@675118c` uses the short git HEAD plus a content hash, with `Date.now()` only as a fallback; `scripts/stamp-parts-cartographer-sw.mjs@675118c` embeds a wall-clock value (`Date.now()`, line 23). Neither is a GenerationManifest (per the AAA plan). Not met, G-6. |
+| Manifest fields (L259-273): `source_hash`, `build_hash`, `dependency_lock_hash`, `configuration_hash`, `schema_hashes`, `policy_hash`, `component_graph_hash`, `feature_configuration_hash`, `evidence_root`, `parent_ids`, `signer` and others | SHALL, via the manifest clause | The pin supplies `source_hash` for the specification input only. Build identity is partly content-addressed: `scripts/stamp-sw.mjs@3683b0f` uses the short git HEAD plus a content hash, with `Date.now()` only as a fallback; `scripts/stamp-parts-cartographer-sw.mjs@3683b0f` embeds a wall-clock value (`Date.now()`, line 23). Neither is a GenerationManifest (per the AAA plan). Not met, G-6. |
 | "`generation_id` SHOULD be content-addressed." (L276) | SHOULD | Not met for the application. The pin is a SHA-256 content address for the specification input only. No app generation IDs exist. |
 | "Activation MUST be atomic from the control plane perspective" (L278) | MUST | Not met. No activation mechanism exists, G-6. |
 | "The previous generation SHALL remain addressable for rollback..." (L284) | SHALL | Partial. Git retains the pinned blob (case F7). No app rollback target is declared, G-6. |
@@ -92,7 +92,7 @@ L1357 says "A small ordinary application can conform without becoming infrastruc
 | 2 | Mandatory Agentic Development Fabric, isolated workcells, no shared mutable workspace | MUST | `.agents/skills/full-plan-delivery` (reservations, `.agents/skills/full-plan-delivery/templates/workcell.json`) and the roadmap continuity guard in CI. The skill's README says reservations "coordinate cooperating agents in one checkout." | Partial, G-7 |
 | 3 | Component slots plus versioned contracts | MUST | `src/app/core/ports/ai.port.ts` (`AiPortV1` frozen, additive versioning, AAA-05); `src/parts-cartographer/core/ports.ts` ("frozen V1"). React and Angular ports diverge (AAA plan). No slot registry. | Partial, G-8 |
 | 4 | Domain/adapter boundary | MUST | Adapters at `src/app/core/adapters/*` and `src/parts-cartographer/core/*adapter*.ts`. React wiring imports concrete adapters (AAA plan). | Partial, G-8 |
-| 5 | Typed effects for external and state mutations | MUST | No effect registry found. `src/parts-cartographer/elevation/e17-operation-status.ts:17@675118c` (HEAD 675118c only) defines a three-class `EffectClass` (`read`, `idempotent-write`, `non-idempotent-write`) for retry only, not the six classes of §9. | Not met, G-9 |
+| 5 | Typed effects for external and state mutations | MUST | No effect registry found. `src/parts-cartographer/elevation/e17-operation-status.ts:17@3683b0f` (HEAD 3683b0f only) defines a three-class `EffectClass` (`read`, `idempotent-write`, `non-idempotent-write`) for retry only, not the six classes of §9. | Not met, G-9 |
 | 6 | Immutable build and version identity | MUST | Build identity is partly wall-clock: see 2.4 for the two stamp scripts. | Not met, G-6 |
 | 7 | Rollback path | MUST | No app rollback procedure found. `src/parts-cartographer/core/backup.ts:134` rolls back partial local writes on quota or storage failure; that is not a release rollback. | Not met, G-6 |
 | 8 | Architecture, contract and swap-compatibility tests | MUST | This candidate adds the first architecture test (T1 to T3). `src/app/core/adapters/ai-port.contract.spec.ts` exists. CI runs `tests/architecture/a01` in the guard job (moved from verify in `e3d4a0b`) (`.github/workflows/ci.yml`, step added in `52002da`). | Partial, G-2 |
@@ -142,7 +142,7 @@ Referenced by §44 item 2 and by L125. Not traced beyond these clauses in this c
 - **LP-2** The pin test uses Python standard library `unittest`, in the style of `scripts/roadmap/test_continuity.py`, run with `python3 -I`. It needs no network and no npm.
 - **LP-3** Beads is the task-status authority. This file records no status.
 - **LP-4** The pin identifies the local snapshot bytes. The upstream URL is provenance only. Nothing at runtime depends on it.
-- **LP-5** Artifact and test paths: `architecture/a01/a01-01-aaa-source-pin.md@675118c` and `tests/architecture/a01/test_source_pin.py@675118c`.
+- **LP-5** Artifact and test paths: `architecture/a01/a01-01-aaa-source-pin.md@3683b0f` and `tests/architecture/a01/test_source_pin.py@3683b0f`.
 - **LP-6** Candidate classification M0 and R1 (Bead). This candidate does not change the active generation, authority, evaluator or promotion policy, so no M4 or R4 governance transaction is triggered.
 
 ### 3.4 Interpretations for independent review
@@ -157,7 +157,7 @@ Referenced by §44 item 2 and by L125. Not traced beyond these clauses in this c
 | Cellular/distributed (§27, L959) | Excluded | No cell membership. No blast-radius requirement declared. | A measured failure-domain requirement | Control-plane cell membership and failure drills |
 | Plugin-runtime (§28, L967) | Excluded | No plugin host: a search of `src/` and `worker*.ts` for "plugin" finds nothing. | Third-party or user-installed extensions | Typed services, capabilities, compatibility checks (§28) |
 | Runtime-agentic (§29, L982) | **Not declared; open conflict O-1** | No runtime-agentic flag is declared in the repo. The spec's example at L987-989 is not repo state. But live model calls exist: `src/services/gemini.service.ts`, imported by the synastry panel, universe controls, results panel and `src/app.component.ts`; the coach panel does not import it. Live calls also run through `worker.ts:388-389` (Ollama, OpenRouter). The AAA plan requires a narrowly declared AG1 scope for these calls when enabled. | A01.02 decides whether the shipped model calls count as enabled. This candidate does not change the flag. | AG1 additions: tool capability broker, model/tool execution journal, context provenance, effect-appropriate sandbox (L1004-1009) |
-| AG2 persistent learning (L1011) | Excluded | No model-to-memory write path was found (HEAD 675118c; the memory paths in this row are absent at 09194df). The personal-memory module defines a `model-inference` source (`src/parts-cartographer/core/personal-memory.ts:5@675118c`), but the memory panel writes only user entries (`src/parts-cartographer/screens/memory-panel.jsx:116@675118c`, `:152@675118c`, `:156@675118c`). Model-creatable correction nodes are set `saved` in `src/parts-cartographer/elevation/e06-corrections.ts:138@675118c`, persist under `INNERVERSE_CORRECTIONS_V1` (`src/parts-cartographer/screens/elevation/e06-corrections.jsx:8@675118c`), and are added only with `actor: 'user'` (`e06-corrections.jsx:69@675118c`). No skill promotion found. | Any feature that stores model-derived experience as trusted memory or skills | Evidence-promotion firewall, quarantine, poisoning checks, rollbackable versions (L1015-1021) |
+| AG2 persistent learning (L1011) | Excluded | No model-to-memory write path was found (HEAD 3683b0f; the memory paths in this row are absent at d17aaa6). The personal-memory module defines a `model-inference` source (`src/parts-cartographer/core/personal-memory.ts:5@3683b0f`), but the memory panel writes only user entries (`src/parts-cartographer/screens/memory-panel.jsx:116@3683b0f`, `:152@3683b0f`, `:156@3683b0f`). Model-creatable correction nodes are set `saved` in `src/parts-cartographer/elevation/e06-corrections.ts:138@3683b0f`, persist under `INNERVERSE_CORRECTIONS_V1` (`src/parts-cartographer/screens/elevation/e06-corrections.jsx:8@3683b0f`), and are added only with `actor: 'user'` (`e06-corrections.jsx:69@3683b0f`). No skill promotion found. | Any feature that stores model-derived experience as trusted memory or skills | Evidence-promotion firewall, quarantine, poisoning checks, rollbackable versions (L1015-1021) |
 | AG3 harness self-improvement (L1023) | Excluded | The AAA plan keeps AG3 and AG4 disabled under this adoption. | A separate governed adoption decision | L1027-1035 |
 | AG4 bounded recursive self-improvement (L1037) | Excluded; at least R4 (L1052) | As for AG3. | As for AG3, under R4 governance | L1041-1050 |
 | Resilience, distributed, incremental, adaptive (L118-122; §§12-18; §27 is in the row above) | Not adopted; activated by need (L1372) | Not in the §44 floor. No demonstrated need in this candidate. | Demonstrated failure or performance need | Profile-specific evidence |
@@ -186,7 +186,7 @@ Gate status for this candidate is PENDING unless marked otherwise. Planned step 
 
 ## 6. Failure and recovery cases
 
-T1, T2 and T3 name the three test methods in `tests/architecture/a01/test_source_pin.py@675118c`, in order: snapshot digest, artifact present and recording the pin, and the deliberately wrong digest.
+T1, T2 and T3 name the three test methods in `tests/architecture/a01/test_source_pin.py@3683b0f`, in order: snapshot digest, artifact present and recording the pin, and the deliberately wrong digest.
 
 | # | Case | Expected behavior | How exercised | Result |
 | --- | --- | --- | --- | --- |

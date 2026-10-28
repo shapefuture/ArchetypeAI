@@ -73,7 +73,7 @@ export async function addAdminEmail(email: string, createdByUid: string): Promis
 
 export async function removeAdminEmail(email: string): Promise<void> {
   const normalized = normalizeEmail(email);
-  if (!normalized || normalized === BOOTSTRAP_ADMIN_EMAIL) return;
+  if (!normalized) return;
   await deleteDoc(doc(getFirestoreDb(), 'adminAllowlist', normalized));
 }
 

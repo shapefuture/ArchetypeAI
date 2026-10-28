@@ -43,6 +43,7 @@
     "firebase-tools": "^15.32.1",
     "jsdom": "^24.1.3",
     "postcss": "^8.5.28",
+    "tsx": "^4.23.15",
     "typescript": "~5.8.2",
     "vite": "^6.4.3",
     "vitest": "^4.1.11",

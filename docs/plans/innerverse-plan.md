@@ -330,14 +330,14 @@ v1's visual system (felt, colour, motion, sound) applies inside each step as nee
 
 ## 12. Decisions for you
 
-1. **Focus.** Approve the jobs-first focus and the cut list, even though it departs from implementing the entire approved program. *Recommended: yes.*
-2. **Audience.** Adopt your description (test and astrology lovers, Jung readers, intuitive types, ND, creative) as the working audience, validated in Step 0. *Recommended: yes.*
+1. **Focus.** Approve the jobs-first focus and the cut list, even though it departs from implementing the entire approved program. **Approved by the owner on 2026-10-28.**
+2. **Audience.** Adopt your description (test and astrology lovers, Jung readers, intuitive types, ND, creative) as the working audience, validated in Step 0. **Approved by the owner on 2026-10-28.**
 3. **Names.** «Кто живёт внутри?», «Ваше небо», «Кто сегодня главный?», «Рядом», «Два неба», «Созвездия». **Approved by the owner on 2026-10-28.**
-4. **Covers.** MBTI, Enneagram and sun sign as optional covers the person types in, never measured. *Recommended: yes.*
-5. **«Вы» or «ты».** Keep «вы» (your earlier decision), or test «ты» for this audience. *Recommended: keep «вы», test in T10.*
-6. **Social scope.** «Два неба» with people you know in Step 1; «Созвездия», then matching, only after T8 and a safety plan. *Recommended: yes.*
+4. **Covers.** MBTI, Enneagram and sun sign as optional covers the person types in, never measured. **Approved by the owner on 2026-10-28.**
+5. **«Вы» or «ты».** Keep «вы» (your earlier decision), or test «ты» for this audience. **Approved by the owner on 2026-10-28: keep «вы», test «ты» in T10.**
+6. **Social scope.** «Два неба» with people you know in Step 1; «Созвездия», then matching, only after T8 and a safety plan. **Approved by the owner on 2026-10-28.**
 7. **Market and payments.** **Market approved by the owner on 2026-10-28: Russia and the Russian-speaking diaspora.** So payments need two paths: Russian acquiring for cards issued in Russia, and Stripe for everyone else. **Legal form approved on 2026-10-28: самозанятый** for Russian acquiring. Before Step 2 (Plus payments): confirm which acquirers accept самозанятых for recurring subscriptions, and plan a switch to ИП before income nears the НПД annual cap (2.4M ₽ at the time of writing; check the current limit). Telegram Stars stays optional.
 8. **Research.** Who recruits and talks to people. I can draft screeners, the prototype, outreach copy and the diary flow. *Your answer needed.*
-9. **Safety.** A clinician reviews the flows, and a moderation plan exists before any circle. *Recommended: yes.*
+9. **Safety.** A clinician reviews the flows, and a moderation plan exists before any circle. **Approved by the owner on 2026-10-28.**
 
 Nothing is implemented until you approve. After approval, the steps become Beads under `ArchetypeAI-d6d`.

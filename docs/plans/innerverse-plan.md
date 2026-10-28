@@ -428,7 +428,7 @@ A psychologist the client invites sees the client's results in the app's own 3+1
 
 ### 4.7 What the prototype covers
 
-Ты → Карта прототипа lists every function found in the app, with where it lives in the prototype and one of three statuses: **full** (works), **simple** (present, reduced) or **plan** (described, not built). The page is generated from the same list as this table.
+Ты → Карта прототипа lists every function found in the app, with where it lives in the prototype and one of three statuses: **full** (works), **simple** (present, reduced) or **plan** (described, not built). The page is generated from the feature list in `app/copy.js`; this table summarises it.
 
 | Area | Functions | Prototype |
 |---|---|---|

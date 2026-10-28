@@ -148,7 +148,9 @@ Show «Ваше небо» from the prototype, or a screenshot, with no explanat
 
 ## 5. 14-day diary (after the interview, with the prototype)
 
-**Format:** the clickable prototype behind a flag, or a simple Telegram or Max bot, or a form if neither is ready. One reminder a day, at a time the participant chooses.
+**Format:** the clickable prototype. Each participant's data stays in their own browser. On day 7 and day 14 they open «Луна» → «Отчёт для исследования», enter their participant code and send you the copied text in a messenger. The report holds counts, ratings and chosen steps, never what happened in their own words. You send one reminder a day by messenger, at a time the participant chooses.
+
+**Access:** participants open the prototype by its link, so share it from the page's Share menu, using link access if they don't have Claude accounts. Outside viewers can only read shared data, which is why the diary travels as a copied report and not through a shared database.
 
 **Daily, under 1 minute:**
 1. «Кто сегодня главный?» (choose a part from your card, «кто-то новый» or «не знаю»)
@@ -159,7 +161,7 @@ Show «Ваше небо» from the prototype, or a screenshot, with no explanat
 
 **Day 7:**
 4. «Что запомнилось за неделю?»
-5. The Plus offer at 299 ₽ (or 199 / 399 in a randomised split). Record intent and actual payment. This is the T6 signal.
+5. The Plus offer at 299 ₽ (or 199 / 399 in a randomised split). The prototype shows it on its own from day 7 and records the answer in the report. It takes no payment, so treat it as intent; for a real T6 signal, follow up with a payment link once Russian acquiring is set up.
 
 **Day 14:**
 6. «Что изменилось, если что-то изменилось?»

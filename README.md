@@ -32,7 +32,7 @@ STRIPE_PRICE_ID
 
 AI provider keys must be set for cloud AI; the React client falls back locally if the Worker or providers are unavailable. Stripe secrets are only needed for paid checkout. `FIREBASE_PROJECT_ID` and the rate-limit bindings are non-secret Worker configuration in `wrangler.toml`. Never put secret values in frontend environment files.
 
-Firestore admin access is limited to users with a verified Firebase email that is either the bootstrap account (`admin@example.com`) or present in `adminAllowlist`. The bootstrap account may manage the allowlist; normal users cannot grant themselves admin access. Confirm the intended bootstrap email before deploying the rules.
+Firestore admin access is limited to users with a verified Firebase email that either carry the `admin` custom claim or are present in `adminAllowlist`. Grant the claim with `GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json node scripts/admin/set-admin-claim.mjs <email>`, using a service account key kept outside the repo. Revoke with `--revoke`. Normal users cannot grant themselves admin access.
 
 ## Build, preview, and tests
 

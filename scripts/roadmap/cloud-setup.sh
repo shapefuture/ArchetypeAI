@@ -14,6 +14,9 @@ if ! command -v bd >/dev/null 2>&1; then
   if ! dpkg -s libicu-dev >/dev/null 2>&1; then
     apt-get install -y -q libicu-dev || { apt-get update -q && apt-get install -y -q libicu-dev; }
   fi
-  GOBIN=/usr/local/bin GOFLAGS=-mod=mod go install "github.com/gastownhall/beads/cmd/bd@${BD_VERSION}"
+  # The v1.x tags declare their module path as github.com/steveyegge/beads, so
+  # installing through the gastownhall path fails with a version constraint
+  # conflict. Install the module under the path its go.mod declares.
+  GOBIN=/usr/local/bin GOFLAGS=-mod=mod go install "github.com/steveyegge/beads/cmd/bd@${BD_VERSION}"
 fi
 bd --version

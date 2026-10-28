@@ -11,11 +11,11 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
+import { getAuth, getIdTokenResult } from 'firebase/auth';
+import { getFirebaseApp } from '../../environments/firebase-init';
 import { getFirestoreDb } from '../../environments/firebase-init';
 import { withResilience } from '../../shared/core/adapters/resilience';
 import type { AuthUser } from './ports';
-
-const BOOTSTRAP_ADMIN_EMAIL = 'admin@example.com';
 
 export interface AdminAllowlistEntry {
   email: string;
@@ -42,7 +42,8 @@ function normalizeEmail(email: string): string {
 export async function checkAdminAccess(user: AuthUser | null): Promise<boolean> {
   const email = normalizeEmail(user?.email ?? '');
   if (!user?.linked || !user.emailVerified || !email) return false;
-  if (email === BOOTSTRAP_ADMIN_EMAIL) return true;
+  const current = getAuth(getFirebaseApp()).currentUser;
+  if (current && (await getIdTokenResult(current)).claims.admin === true) return true;
   const entry = await getDoc(doc(getFirestoreDb(), 'adminAllowlist', email));
   return entry.exists();
 }
@@ -72,7 +73,7 @@ export async function addAdminEmail(email: string, createdByUid: string): Promis
 
 export async function removeAdminEmail(email: string): Promise<void> {
   const normalized = normalizeEmail(email);
-  if (!normalized || normalized === BOOTSTRAP_ADMIN_EMAIL) return;
+  if (!normalized) return;
   await deleteDoc(doc(getFirestoreDb(), 'adminAllowlist', normalized));
 }
 

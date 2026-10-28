@@ -57,3 +57,4 @@ __pycache__/
 /.beads/interactions.jsonl
 /DNMS Book2020.txt
 /advanced*.txt
+*.pdf

@@ -264,7 +264,7 @@ New work: the test, the card, the daily card and task library, the SOS flow, par
 
 **Free forever:** the test, «Ваше небо», the daily card, the SOS loop and a first «Два неба». Identity, habit and the safety net are never paywalled.
 
-**Payments must change first.** The market is Russia and the diaspora (§12), so both paths are needed. Stripe stays for users outside Russia. In Russia, the options are Russian acquiring (ЮKassa, CloudPayments, T-Bank, Prodamus; needs an ИП, самозанятый or ООО) or Telegram Stars, which carries platform risk.
+**Payments must change first.** The market is Russia and the diaspora (§12), so both paths are needed. Russian acquiring runs as самозанятый, switching to ИП before the income cap. Stripe stays for users outside Russia. In Russia, the options are Russian acquiring (ЮKassa, CloudPayments, T-Bank, Prodamus; needs an ИП, самозанятый or ООО) or Telegram Stars, which carries platform risk.
 
 ---
 
@@ -336,7 +336,7 @@ v1's visual system (felt, colour, motion, sound) applies inside each step as nee
 4. **Covers.** MBTI, Enneagram and sun sign as optional covers the person types in, never measured. *Recommended: yes.*
 5. **«Вы» or «ты».** Keep «вы» (your earlier decision), or test «ты» for this audience. *Recommended: keep «вы», test in T10.*
 6. **Social scope.** «Два неба» with people you know in Step 1; «Созвездия», then matching, only after T8 and a safety plan. *Recommended: yes.*
-7. **Market and payments.** **Market approved by the owner on 2026-10-28: Russia and the Russian-speaking diaspora.** So payments need two paths: Russian acquiring for cards issued in Russia, and Stripe for everyone else. Still needed: the legal form for Russian acquiring (ИП, самозанятый or ООО), and whether to add Telegram Stars. *Your answer needed on the legal form.*
+7. **Market and payments.** **Market approved by the owner on 2026-10-28: Russia and the Russian-speaking diaspora.** So payments need two paths: Russian acquiring for cards issued in Russia, and Stripe for everyone else. **Legal form approved on 2026-10-28: самозанятый** for Russian acquiring. Before Step 2 (Plus payments): confirm which acquirers accept самозанятых for recurring subscriptions, and plan a switch to ИП before income nears the НПД annual cap (2.4M ₽ at the time of writing; check the current limit). Telegram Stars stays optional.
 8. **Research.** Who recruits and talks to people. I can draft screeners, the prototype, outreach copy and the diary flow. *Your answer needed.*
 9. **Safety.** A clinician reviews the flows, and a moderation plan exists before any circle. *Recommended: yes.*
 

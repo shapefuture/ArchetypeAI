@@ -2,12 +2,14 @@
 import { getMissingApiKeys, hasAnyApiKey } from './worker-helpers';
 import {
   authenticateFirebaseRequest,
+  bearerTokenMatches,
   checkRateLimit,
   corsHeaders,
   getAllowedStripeReturnOrigin,
   type FirebaseIdentity,
   type RateLimiterBinding,
 } from './worker-security';
+import { runReminderSweep } from './worker-reminder-sweep';
 
 const OPENROUTER_TIMEOUT_MS = 100_000;
 const MAX_AI_BODY_BYTES = 256_000;
@@ -180,6 +182,7 @@ export default {
     if (url.pathname === '/api/ai') return this.handleAI(request, env);
     if (url.pathname === '/api/stripe-checkout') return this.handleStripeCheckout(request, env);
     if (url.pathname === '/api/stripe-verify') return this.handleStripeVerify(request, env);
+    if (url.pathname === '/internal/reminders/run') return this.handleReminderRun(request, env);
 
     // Retire the old raw Gemini proxy. All supported cloud AI requests now use
     // the authenticated, rate-limited /api/ai route.
@@ -190,6 +193,29 @@ export default {
     // The API-only deploy (wrangler.api.toml) has no static assets binding.
     if (!env.ASSETS) return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
     return env.ASSETS.fetch(request);
+  },
+
+  /**
+   * Runs the reminder sweep for the GitHub Actions schedule (.github/workflows/reminders.yml).
+   * Without REMINDER_RUN_TOKEN the route does not exist, so nothing else can reach it.
+   */
+  async handleReminderRun(request: Request, env: Env): Promise<Response> {
+    const headers = { 'Cache-Control': 'no-store' };
+    if (!env.REMINDER_RUN_TOKEN) return new Response('Not found', { status: 404, headers });
+    if (request.method !== 'POST') {
+      return new Response('Method Not Allowed', { status: 405, headers: { ...headers, Allow: 'POST' } });
+    }
+    if (!bearerTokenMatches(request.headers.get('Authorization'), env.REMINDER_RUN_TOKEN)) {
+      return new Response('Unauthorized', { status: 401, headers: { ...headers, 'WWW-Authenticate': 'Bearer' } });
+    }
+    try {
+      const summary = await runReminderSweep(env, Date.now());
+      console.log(`[reminders] sweep ${JSON.stringify(summary)}`);
+      return Response.json(summary, { headers });
+    } catch {
+      console.error('[reminders] sweep failed before any schedule was read');
+      return new Response('Sweep failed', { status: 500, headers });
+    }
   },
 
   async handleAI(request: Request, env: Env): Promise<Response> {
@@ -673,6 +699,10 @@ interface Env {
   OPENROUTER_MODEL: string;
   AI_PROVIDER_DEFAULT: string;
   FIREBASE_PROJECT_ID: string;
+  /** Google service account JSON for the reminder sender. Without it no reminder is sent. */
+  FIREBASE_SERVICE_ACCOUNT_JSON?: string;
+  /** Bearer token for POST /internal/reminders/run. Set as a Worker secret and as a GitHub Actions secret. */
+  REMINDER_RUN_TOKEN?: string;
   ALLOWED_APP_ORIGINS?: string;
   AI_RATE_LIMITER?: RateLimiterBinding;
   AI_IP_RATE_LIMITER?: RateLimiterBinding;

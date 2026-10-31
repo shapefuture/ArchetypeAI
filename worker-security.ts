@@ -158,6 +158,16 @@ export function corsHeaders(request: Request, configured?: string): Record<strin
   };
 }
 
+/** Constant-time check of an `Authorization: Bearer <token>` header against the expected token. */
+export function bearerTokenMatches(header: string | null, token: string): boolean {
+  const presented = new TextEncoder().encode(header ?? '');
+  const expected = new TextEncoder().encode(`Bearer ${token}`);
+  if (presented.length !== expected.length) return false;
+  let difference = 0;
+  for (let i = 0; i < expected.length; i++) difference |= presented[i] ^ expected[i];
+  return difference === 0;
+}
+
 /** Fail-closed wrapper around Cloudflare's Workers Rate Limiting binding. */
 export async function checkRateLimit(
   binding: RateLimiterBinding | undefined,

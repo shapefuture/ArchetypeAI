@@ -1,0 +1,28 @@
+name: Reminder sweep
+
+# Calls the Worker every 15 minutes. The Worker sends the reminders that are due.
+# GitHub starts scheduled workflows only from the default branch.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reminder-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run the reminder sweep
+        env:
+          REMINDER_RUN_TOKEN: ${{ secrets.REMINDER_RUN_TOKEN }}
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 120 \
+            -X POST "https://archetypeai-worker.wmobilas.workers.dev/internal/reminders/run" \
+            -H "Authorization: Bearer ${REMINDER_RUN_TOKEN}"

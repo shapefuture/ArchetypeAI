@@ -47,3 +47,13 @@ describe('app Worker config (wrangler.toml)', () => {
     expect(defaults).toContain('http://localhost:5174');
   });
 });
+
+// The reminder sweep is called from GitHub Actions, not a cron trigger: the Free account's cron slots are used up, and a
+// deploy that declares a cron fails. Neither deploy file may declare one.
+describe('reminder sweep is not a cron trigger', () => {
+  it('declares no [triggers] block in either deploy file', () => {
+    for (const file of ['wrangler.toml', 'wrangler.api.toml']) {
+      expect(readFileSync(file, 'utf8'), file).not.toMatch(/^\[triggers\]/m);
+    }
+  });
+});

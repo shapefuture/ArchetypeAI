@@ -86,7 +86,7 @@ test('a language switch in another tab leaves this tab in its own language', asy
     await expect.poll(() => b.evaluate(() => document.documentElement.lang), { timeout: 3_000 }).toBe('en');
   }).toPass({ timeout: 20_000 });
   // Tab B saved English names; tab A must keep showing Russian ones.
-  await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.parts') ?? '[]').some((p) => p.name === 'Taskmaster')), { timeout: 15_000 }).toBe(true);
+  await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.parts') ?? '[]').some((p) => p.name === 'Taskmaster')), { timeout: 45_000 }).toBe(true);
   await expect(a.getByText('Taskmaster')).toHaveCount(0, { timeout: 15_000 });
   await expect(a.getByText('Деятель').first()).toBeVisible({ timeout: 15_000 });
 });

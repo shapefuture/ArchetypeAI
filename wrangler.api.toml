@@ -39,3 +39,6 @@ simple = { limit = 50, period = 60 }
 name = "BILLING_RATE_LIMITER"
 namespace_id = "1003"
 simple = { limit = 10, period = 60 }
+
+# The reminder sweep is called every 15 minutes from .github/workflows/reminders.yml, not from a cron trigger.
+# Declare no [triggers] here: the Free account's cron slots are used up, and a deploy that declares one fails.

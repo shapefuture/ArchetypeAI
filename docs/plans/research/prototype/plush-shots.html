@@ -1,0 +1,17 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Plush shots</title>
+<!-- Renders every cast plush with the app's own thumbnail renderer and posts it to the dev server (plush.vite.config.mjs). -->
+<pre id="log">rendering…</pre>
+<script type="module">
+import { feltThumbnail } from '/src/parts-cartographer/services/felt-engine.ts';
+import { PARTS } from '/docs/plans/research/prototype/cast.ts';
+
+const log = document.getElementById('log');
+for (const [id, traits] of Object.entries(PARTS)) {
+  const url = await feltThumbnail(traits);
+  const res = await fetch('/__plush/' + id, { method: 'POST', body: url });
+  log.textContent += '\n' + id + ' ' + res.status;
+}
+log.textContent += '\ndone';
+</script>

@@ -157,7 +157,8 @@ describe('reminder sweep: sending', () => {
 
     const exchange = calls.find((call) => call.url === TOKEN_URL);
     const assertion = (exchange?.body as URLSearchParams).get('assertion') ?? '';
-    const { payload } = await jwtVerify(assertion, publicKey, { issuer: CLIENT_EMAIL, audience: TOKEN_URL });
+    // The token is issued from the sweep's clock (dueAt), so verify it at that instant, not the wall clock.
+    const { payload } = await jwtVerify(assertion, publicKey, { issuer: CLIENT_EMAIL, audience: TOKEN_URL, currentDate: new Date(dueAt) });
     expect(payload.sub).toBe(CLIENT_EMAIL);
     expect(String(payload.scope)).toContain('https://www.googleapis.com/auth/datastore');
     expect(String(payload.scope)).toContain('https://www.googleapis.com/auth/firebase.messaging');

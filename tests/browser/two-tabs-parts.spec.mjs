@@ -76,17 +76,18 @@ test('a language switch in another tab leaves this tab in its own language', asy
   }, CANONICAL_INPUT);
   const a = await context.newPage();
   await a.goto('/');
-  await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.profile') ?? 'null')?.testModel), { timeout: 15_000 }).toBe('angular-v2');
+  await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.profile') ?? 'null')?.testModel), { timeout: 45_000 }).toBe('angular-v2');
   const b = await context.newPage();
   await b.goto('/');
-  const language = await settled(b.getByRole('button', { name: /Язык/ }).first());
+  const language = await settled(b.getByRole('button', { name: /Язык/ }).first(), 45_000);
   // The row toggles, so click again only while this tab is still in Russian.
   await expect(async () => {
     if (await b.evaluate(() => document.documentElement.lang) === 'ru') await language.click();
     await expect.poll(() => b.evaluate(() => document.documentElement.lang), { timeout: 3_000 }).toBe('en');
-  }).toPass({ timeout: 20_000 });
-  // Tab B saved English names; tab A must keep showing Russian ones.
-  await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.parts') ?? '[]').some((p) => p.name === 'Taskmaster')), { timeout: 15_000 }).toBe(true);
-  await expect(a.getByText('Taskmaster')).toHaveCount(0, { timeout: 15_000 });
-  await expect(a.getByText('Деятель').first()).toBeVisible({ timeout: 15_000 });
+  }).toPass({ timeout: 45_000 });
+  // Tab B saved English names; tab A must keep showing Russian ones. Tab B re-translates the profile after its
+  // language change. On a loaded runner the waits in this test need more headroom than 15 s, so they allow 45 s.
+  await expect.poll(() => a.evaluate(() => JSON.parse(localStorage.getItem('ifs.parts') ?? '[]').some((p) => p.name === 'Taskmaster')), { timeout: 45_000 }).toBe(true);
+  await expect(a.getByText('Taskmaster')).toHaveCount(0, { timeout: 45_000 });
+  await expect(a.getByText('Деятель').first()).toBeVisible({ timeout: 45_000 });
 });

@@ -26,6 +26,14 @@ describe('assessment route contract', () => {
     expect(route('battery-147').itemCount).toBe(buildItemSequence().length);
   });
 
+  it('marks only the 64-item and 147-item instruments as measured, and keeps Assessment 2.0 canonical but unmeasured', () => {
+    expect(ASSESSMENT_ROUTES.filter((item) => item.measured).map((item) => item.id)).toEqual(['reflection-64', 'battery-147']);
+    expect(ASSESSMENT_ROUTES.filter((item) => item.canonical).map((item) => item.id)).toEqual(['parts-two', 'reflection-64', 'battery-147']);
+    expect(route('parts-two')).toMatchObject({ canonical: true, measured: false });
+    expect(route('situation-inquiry')).toMatchObject({ canonical: false, measured: false });
+    expect(route('quick-map-sample')).toMatchObject({ canonical: false, measured: false });
+  });
+
   it('offers the situation inquiry as its own route, never as a scored instrument', () => {
     expect(route('situation-inquiry')).toMatchObject({
       tier: 'primary', canonical: false, available: true, itemCount: null, produces: 'none',
@@ -42,7 +50,7 @@ describe('assessment route contract', () => {
 
   it('gives the 64-item and 147-item routes disjoint storage keys', () => {
     const reflection = Object.values(ROUTE_KEYS.reflection64);
-    const battery = Object.values(ROUTE_KEYS.battery147);
+    const battery: string[] = Object.values(ROUTE_KEYS.battery147);
     const all = [...reflection, ...battery, ROUTE_KEYS.quickMap.draft];
     expect(new Set(all).size).toBe(all.length);
     expect(reflection.some((key) => battery.includes(key))).toBe(false);

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ASSESSMENT_ROUTES, type AssessmentRoute, type RouteId } from '../core/assessment-routes';
+import { ASSESSMENT_ROUTES, sampleSavePlan, type AssessmentRoute, type RouteId } from '../core/assessment-routes';
 import type { Practice } from '../core/contextual-checkin';
 import { DESCENT_DRAFT_SCHEMA, DESCENT_ITEM_IDS, type DescentDraft } from '../core/assessment-draft';
 import {
-  NEEDS, SUPPORT, reduceEntry, resumeSaved, routeForNeed, startEntry,
+  NEEDS, SUPPORT, parseDeepLink, reduceEntry, resumeSaved, routeForNeed, startEntry,
   type Choice, type EntryContext, type EntryState, type Need, type SavedTool,
 } from './e02-entry';
 
@@ -21,7 +21,12 @@ const base = (over: Partial<EntryContext> = {}): EntryContext => ({
 const without = (id: RouteId): AssessmentRoute[] => ASSESSMENT_ROUTES.map((r) => (r.id === id ? { ...r, available: false } : r));
 const choiceOf = (need: Need, ctx = base()): Choice => {
   const r = routeForNeed(need, ctx);
-  if (!r.ok) throw new Error(`no route for ${need}: ${r.notice}`);
+  if (r.ok === false) throw new Error(`no route for ${need}: ${r.notice}`);
+  return r.choice;
+};
+const deepChoiceOf = (query: string, ctx = base()): Choice => {
+  const r = parseDeepLink(query, ctx);
+  if (r.ok === false) throw new Error(`no deep link for ${query}: ${r.notice}`);
   return r.choice;
 };
 const stepsOf = (c: Choice): ReadonlyArray<string> => (c.destination.kind === 'practice' ? c.destination.steps : []);
@@ -40,6 +45,16 @@ describe('E02 need-based entry and first useful result', () => {
 
   it('routes the situation need to the situation inquiry while that route is available', () => {
     expect(choiceOf('situation').destination).toMatchObject({ kind: 'assessment', routeId: 'situation-inquiry', canonical: false, produces: 'none' });
+  });
+
+  it('gives the situation inquiry no save rule, because it writes no result, with or without a canonical map', () => {
+    expect(choiceOf('situation').saveRule).toBeNull();
+    expect(choiceOf('situation', base({ profile: { testModel: 'angular-v2', clinical: {} } })).saveRule).toBeNull();
+  });
+
+  it('records the Assessment 2.0 choice as an observation with no save rule, because it is kept but is not a measurement', () => {
+    expect(choiceOf('pattern').labels).toEqual({ need: 'user-authored', route: 'hypothesis', result: 'observation' });
+    expect(choiceOf('pattern').saveRule).toBeNull();
   });
 
   it('recovers an unavailable view: the situation need falls back to a labelled calm start, or to the chooser with a notice', () => {
@@ -64,6 +79,16 @@ describe('E02 need-based entry and first useful result', () => {
     }
   });
 
+  it('lists only the measured routes as deeper options, so Assessment 2.0 is never offered as a deeper option', () => {
+    const measured: RouteId[] = ['reflection-64', 'battery-147'];
+    expect(choiceOf('calm-now').deeper).toEqual(measured);
+    expect(choiceOf('situation').deeper).toEqual(measured);
+    expect(choiceOf('pattern').deeper).toEqual(measured);
+    expect(deepChoiceOf('route=quick-map-sample').deeper).toEqual(measured);
+    expect(deepChoiceOf('route=reflection-64').deeper).toEqual(['battery-147']);
+    expect(deepChoiceOf('route=battery-147').deeper).toEqual(['reflection-64']);
+  });
+
   it('never assumes a profile: a canonical route saves only when finished, a sample never replaces a canonical map, and a missing map is not invented', () => {
     expect(choiceOf('pattern').saveRule).toBeNull();
     const canonical = { testModel: 'angular-v2', clinical: {} };
@@ -71,6 +96,20 @@ describe('E02 need-based entry and first useful result', () => {
     expect(sample.state.step).toMatchObject({ kind: 'route', choice: { saveRule: 'archive-only' } });
     const battery = reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'route=battery-147' }, base({ profile: canonical }));
     expect(battery.state.step).toMatchObject({ kind: 'route', choice: { saveRule: null, labels: { result: 'canonical-measurement' } } });
+  });
+
+  it('gives the quick-map sample the save rule that sampleSavePlan returns for the same profile', () => {
+    for (const profile of [null, { testModel: 'angular-v2', clinical: {} }]) {
+      expect(deepChoiceOf('route=quick-map-sample', base({ profile })).saveRule).toBe(sampleSavePlan(profile));
+    }
+  });
+
+  it('keeps the 64 and 147 choices as canonical measurements with no save rule, whatever the profile', () => {
+    for (const profile of [null, { testModel: 'angular-v2', clinical: {} }]) {
+      for (const routeId of ['reflection-64', 'battery-147']) {
+        expect(deepChoiceOf(`route=${routeId}`, base({ profile }))).toMatchObject({ labels: { result: 'canonical-measurement' }, saveRule: null });
+      }
+    }
   });
 
   it('finishing the first step reaches a useful stop that names what is still unknown, and Back returns to the step', () => {
@@ -158,7 +197,7 @@ describe('E02 need-based entry and first useful result', () => {
     const teaser = reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'route=parts-two' }, base());
     expect(teaser.state.step).toMatchObject({
       kind: 'route',
-      choice: { need: null, labels: { need: null, route: 'user-authored', result: 'canonical-measurement' }, destination: { routeId: 'parts-two' } },
+      choice: { need: null, labels: { need: null, route: 'user-authored', result: 'observation' }, destination: { routeId: 'parts-two' } },
     });
     const practice = reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'practice=paced-breath' }, base());
     expect(practice.state.step).toMatchObject({ kind: 'route', choice: { labels: { route: 'user-authored' }, destination: { practiceId: 'paced-breath' } } });

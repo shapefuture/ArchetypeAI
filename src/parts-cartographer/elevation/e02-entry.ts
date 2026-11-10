@@ -35,10 +35,10 @@ export interface Choice {
   /** Set when the need's own route is unavailable and a calm start is offered instead. */
   fallback: 'route-unavailable' | null;
   labels: { need: 'user-authored' | null; route: 'hypothesis' | 'user-authored'; result: 'observation' | 'canonical-measurement' };
-  /** Teaser results: replace the current map, or archive only when a canonical map exists. Null for practices and canonical routes. */
+  /** Sample results only: replace the current map, or archive only when a canonical map exists. Null for practices and for routes that write no sample. */
   saveRule: 'replace-current' | 'archive-only' | null;
   stillUnknown: string[];
-  /** Canonical routes, offered only after a stop and never auto-selected. */
+  /** Measured routes (the 64 and 147), offered only after a stop and never auto-selected. */
   deeper: RouteId[];
   offline: boolean;
 }
@@ -98,9 +98,9 @@ const routeById = (id: string, ctx: EntryContext) => ctx.routes.find((r) => r.id
 /** Completion is not known to the entry, so only prerequisite-free practices are offered. */
 const readyPractices = (ctx: EntryContext): Practice[] => availablePractices(ctx.practices, []);
 
-/** Canonical routes that are available, other than the one chosen for the need. The 64 and 147 are only ever deeper options. */
+/** Measured routes that are available, other than the one chosen for the need. Assessment 2.0 is the default, so it is never deeper. */
 const deeperFor = (ctx: EntryContext, except: RouteId | null): RouteId[] =>
-  ctx.routes.filter((r) => r.canonical && r.available && r.id !== except).map((r) => r.id);
+  ctx.routes.filter((r) => r.measured && r.available && r.id !== except).map((r) => r.id);
 
 const UNKNOWN: Partial<Record<RouteId, string[]>> = {
   'parts-two': ['how-this-applies-over-time'],
@@ -128,8 +128,8 @@ function assessmentChoice(
   return {
     need, destination: { kind: 'assessment', routeId: route.id, canonical: route.canonical, produces: route.produces },
     stepIndex, fallback: null,
-    labels: { need: need ? 'user-authored' : null, route: routeBy, result: route.canonical ? 'canonical-measurement' : 'observation' },
-    saveRule: route.canonical ? null : sampleSavePlan(ctx.profile),
+    labels: { need: need ? 'user-authored' : null, route: routeBy, result: route.measured ? 'canonical-measurement' : 'observation' },
+    saveRule: route.produces === 'sample' ? sampleSavePlan(ctx.profile) : null,
     stillUnknown: UNKNOWN[route.id] ?? [], deeper: deeperFor(ctx, route.id), offline: !ctx.online,
   };
 }

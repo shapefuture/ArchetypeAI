@@ -19,7 +19,7 @@ const COPY = {
     previewTitle: 'What would be shared',
     none: 'Nothing would be shared yet.',
     notIncluded: 'Never included',
-    labels: { 'canonical-measurement': 'Your standard instrument results', 'coach-context': 'Coach conversations', 'general-journal': 'Your general journal' },
+    labels: { 'canonical-measurement': 'Your standard instrument results', 'coach-context': 'Coach conversations', 'general-journal': 'Your general journal', 'parts-two-result': 'Your Parts map 2.0 result' },
     stored: 'Saved on this device only.',
   },
   ru: {
@@ -31,7 +31,7 @@ const COPY = {
     previewTitle: 'Что было бы передано',
     none: 'Пока ничего не было бы передано.',
     notIncluded: 'Никогда не включается',
-    labels: { 'canonical-measurement': 'Результаты стандартных инструментов', 'coach-context': 'Разговоры с ИИ-коучем', 'general-journal': 'Ваш общий дневник' },
+    labels: { 'canonical-measurement': 'Результаты стандартных инструментов', 'coach-context': 'Разговоры с ИИ-коучем', 'general-journal': 'Ваш общий дневник', 'parts-two-result': 'Ваш результат «Карта частей 2.0»' },
     stored: 'Сохранено только на этом устройстве.',
   },
 };

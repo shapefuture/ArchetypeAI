@@ -69,6 +69,8 @@ function chunksFor(count: number, pauses: readonly number[]): number[][] {
 export function presentationPlan(route: RouteMode, capacity: CapacityLevel): PresentationPlan {
   const entry = ASSESSMENT_ROUTES.find((r) => r.id === route);
   const canonical = entry?.canonical ?? false;
+  // Measurement follows the measured flag, not canonical: Assessment 2.0 is kept but is not a measurement.
+  const measured = entry?.measured ?? false;
   const itemCount = entry?.itemCount ?? null;
   const base = {
     route,
@@ -79,7 +81,7 @@ export function presentationPlan(route: RouteMode, capacity: CapacityLevel): Pre
     provenance: {
       capacity: 'user-choice' as const,
       steps: 'presentation-only' as const,
-      measurement: canonical ? ('canonical' as const) : ('none' as const),
+      measurement: measured ? ('canonical' as const) : ('none' as const),
       scores: 'unchanged' as const,
     },
     supportAvailable: true as const,

@@ -7,6 +7,7 @@ vi.mock('../../app.jsx', () => ({ useApp: () => appMock.current }));
 
 import { SessionPrepPanel, SESSION_PREP_KEY } from './e15-session-prep.jsx';
 import { store } from '../../core/local-store';
+import { NOT_INCLUDED } from '../../elevation/e15-session-continuity';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -41,6 +42,22 @@ afterEach(() => {
   host = null;
 });
 
+/** The label each never-included category shows in each language, as the panel copy has it. */
+const NEVER_INCLUDED_LABELS = {
+  en: {
+    'canonical-measurement': 'Your standard instrument results',
+    'coach-context': 'Coach conversations',
+    'general-journal': 'Your general journal',
+    'parts-two-result': 'Your Parts map 2.0 result',
+  },
+  ru: {
+    'canonical-measurement': 'Результаты стандартных инструментов',
+    'coach-context': 'Разговоры с ИИ-коучем',
+    'general-journal': 'Ваш общий дневник',
+    'parts-two-result': 'Ваш результат «Карта частей 2.0»',
+  },
+} as const;
+
 describe('E15 session preparation panel', () => {
   it('shows exactly the agenda the person wrote, and says what is never included', () => {
     render();
@@ -49,6 +66,12 @@ describe('E15 session preparation panel', () => {
     expect(host?.textContent).toContain('Feeling stuck at work');
     expect(host?.textContent).toContain('Never included');
     expect(host?.textContent).toContain('Your standard instrument results');
+  });
+
+  it.each(['en', 'ru'] as const)('shows the label of every never-included category in the %s panel', (lang) => {
+    appMock.current = { lang };
+    render();
+    for (const key of NOT_INCLUDED) expect(host?.textContent).toContain(NEVER_INCLUDED_LABELS[lang][key]);
   });
 
   it('keeps the draft on this device and says so', () => {

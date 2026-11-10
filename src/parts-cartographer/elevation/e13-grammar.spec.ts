@@ -19,6 +19,7 @@ import {
   predict,
   predictAll,
   provenanceOf,
+  provenanceOfCoordinates,
   provenanceOfMemory,
   reconcile,
   resume,
@@ -41,15 +42,15 @@ const withHelp: NavView = { route: 'assessment', overlay: 'help', sheet: null };
 const helpEntry = navEntry(withHelp, base);
 
 describe('E13.04 primitives: prediction, provenance and canonical gates', () => {
-  it('predicts save, undo, pause, inspect and return on all four core paths, with a reason for each refusal', () => {
+  it('predicts save, undo, pause, inspect and return on all five core paths, with a reason for each refusal', () => {
     const rows = predictAll();
-    expect(rows).toHaveLength(20);
+    expect(rows).toHaveLength(25);
     for (const row of rows) {
       if (row.support.supported) expect(row.support.owner.length).toBeGreaterThan(0);
       else expect(row.support.reason.length).toBeGreaterThan(0);
     }
     const refused = rows.filter((row) => !row.support.supported).map((row) => `${row.path}.${row.primitive}`);
-    expect(refused).toEqual(['map.pause', 'coach.undo', 'booking.undo', 'booking.pause']);
+    expect(refused).toEqual(['map.pause', 'coach.undo', 'booking.undo', 'booking.pause', 'parts-two.undo']);
   });
 
   it('keeps coach pause, return and inspect available without a completed assessment', () => {
@@ -61,7 +62,13 @@ describe('E13.04 primitives: prediction, provenance and canonical gates', () => 
   });
 
   it('distinguishes observation, hypothesis, user authorship and canonical measurement', () => {
-    expect(provenanceOf('map', 'coordinates')).toBe('canonical-measurement');
+    expect(provenanceOfCoordinates('response-derived-64')).toBe('canonical-measurement');
+    expect(provenanceOfCoordinates('self-placed-2')).toBe('user-authorship');
+    expect(provenanceOfCoordinates('family-default-2')).toBe('hypothesis');
+    expect(provenanceOfCoordinates('fixed-reference-147')).toBe('hypothesis');
+    expect(provenanceOfCoordinates('unknown-basis')).toBe('hypothesis');
+    expect(provenanceOfCoordinates(undefined)).toBe('hypothesis');
+    expect(provenanceOf('map', 'coordinates')).toBeNull();
     expect(provenanceOf('map', 'name')).toBe('user-authorship');
     expect(provenanceOf('coach', 'reply')).toBe('hypothesis');
     expect(provenanceOf('booking', 'status')).toBe('observation');
@@ -71,6 +78,21 @@ describe('E13.04 primitives: prediction, provenance and canonical gates', () => 
     expect(provenanceOfMemory('user-entry')).toBe('user-authorship');
     const used = new Set(Object.values(REGISTRY).flatMap((contract) => Object.values(contract.provenance)));
     expect([...used].sort()).toEqual(['canonical-measurement', 'hypothesis', 'observation', 'user-authorship']);
+  });
+
+  it('never reads a 2.0 position, or a missing basis, as a canonical measurement', () => {
+    expect(provenanceOfCoordinates('self-placed-2')).not.toBe('canonical-measurement');
+    expect(provenanceOfCoordinates(undefined)).not.toBe('canonical-measurement');
+  });
+
+  it('keeps parts-two answers as observation, with no assessment needed', () => {
+    expect(provenanceOf('parts-two', 'answers')).toBe('observation');
+    expect(assessmentFree('parts-two')).toBe(true);
+  });
+
+  it('supports save and return on parts-two, as the registry records them', () => {
+    expect(predict('parts-two', 'save').supported).toBe(true);
+    expect(predict('parts-two', 'return').supported).toBe(true);
   });
 
   it('produces no canonical result from an incomplete assessment and resumes at the stored item', () => {

@@ -442,3 +442,32 @@ describe('skipped timing is unknown, not a default (plan §3.1, D1)', () => {
     expect(isAssessment2Result(tampered)).toBe(false);
   });
 });
+
+describe('exile need source (plan §4 stage 5, G15)', () => {
+  const base = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'inner_critic' as const }, fears: { inner_critic: 'ashamed' as const } };
+  const ashamed = (input: Assessment2Input) => buildAssessment2Result(input).parts.find((p) => p.exile === 'ashamed')!;
+
+  it("marks a need the person stored as 'user'", () => {
+    const part = ashamed({ ...base, exileNeed: { ashamed: 'safety' as const } });
+    expect(part.need).toBe('safety');
+    expect(part.needSource).toBe('user');
+  });
+
+  it("marks the table need as 'table' when nothing is stored", () => {
+    const part = ashamed(base);
+    expect(part.need).toBe(EXILE_NEED.ashamed);
+    expect(part.needSource).toBe('table');
+  });
+
+  it('validates an exile part with or without needSource, and rejects any other value', () => {
+    const result = JSON.parse(JSON.stringify(buildAssessment2Result({ ...base, exileNeed: { ashamed: 'safety' as const } })));
+    const withSource = (value: unknown) => ({ ...result, parts: result.parts.map((p: any) => (p.kind === 'exile' ? { ...p, needSource: value } : p)) });
+    const withoutSource = JSON.parse(JSON.stringify(result));
+    for (const part of withoutSource.parts) delete part.needSource;
+    expect(isAssessment2Result(withoutSource)).toBe(true);
+    expect(isAssessment2Result(withSource('user'))).toBe(true);
+    expect(isAssessment2Result(withSource('table'))).toBe(true);
+    expect(isAssessment2Result(withSource('guess'))).toBe(false);
+    expect(isAssessment2Result(withSource(null))).toBe(false);
+  });
+});

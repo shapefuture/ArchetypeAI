@@ -158,6 +158,10 @@ export function confidenceOf(score: number, level: number | null, skipped: boole
 /** Whether the person answered depth: set it, said not sure, or left it unanswered. */
 export type DepthState = 'set' | 'unsure' | 'unanswered';
 
+/** Where an exile's need came from: a need the person stored on the wants screen, or the table default (plan §4 stage 5). */
+export const NEED_SOURCES = ['user', 'table'] as const;
+export type NeedSource = (typeof NEED_SOURCES)[number];
+
 export interface MapPart {
   key: string;
   kind: 'protector' | 'exile' | 'capacity';
@@ -177,6 +181,8 @@ export interface MapPart {
   guards: ExileId[];
   costume: CostumeId | null;
   need?: NeedId;
+  /** Exile parts only. Absent on results saved before this field existed. */
+  needSource?: NeedSource;
   provider?: { access: ProviderAccess; form: ProviderForm | null };
   placement: 'placed' | 'default';
   coordinates: MapCoordinates;
@@ -317,9 +323,10 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
       const blending = input.blending[key] ?? null;
       const coords = coordsFor(key, exileDefault(exile), input.placed, blending);
       const provider = input.providers[exile];
+      const chosenNeed = input.exileNeed[exile];
       parts.push({
         key, kind: 'exile', exile, classKnown: true, rank: null, level: input.exileLevel[exile] ?? null, confidence: null,
-        guards: [], costume: null, need: input.exileNeed[exile] ?? EXILE_NEED[exile],
+        guards: [], costume: null, need: chosenNeed ?? EXILE_NEED[exile], needSource: chosenNeed ? 'user' : 'table',
         provider: provider ? { access: provider.access, form: provider.form ?? null } : undefined,
         placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes, depthState: coords.depthState,
         blending, mapFamily: 'exile',
@@ -396,6 +403,7 @@ export function isAssessment2Result(value: unknown): value is Assessment2Result 
     && (part.placement === 'placed' || part.placement === 'default')
     && (part.kind !== 'protector' || (oneOf(MEMBERS, part.member) && oneOf(FAMILIES, part.family) && (part.timing === null || oneOf(TIMINGS, part.timing)) && oneOf(TARGETS, part.target)))
     && (part.kind !== 'exile' || oneOf(EXILES, part.exile) && oneOf(NEEDS, part.need))
+    && (part.needSource === undefined || (part.kind === 'exile' && oneOf(NEED_SOURCES, part.needSource)))
     && (part.kind !== 'capacity' || oneOf(CAPACITIES, part.capacity))
     && (!part.provider || (oneOf(PROVIDER_ACCESS, part.provider.access) && (part.provider.form === null || oneOf(PROVIDER_FORMS, part.provider.form))))
     && (part.blending === null || oneOf(BLENDING_OPTIONS, part.blending))

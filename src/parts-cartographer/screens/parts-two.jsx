@@ -210,9 +210,8 @@ function FearScreen({ T, tx, frame, screen, input, setFear }) {
 function ExileScreen({ T, tx, frame, screen, input, commit, onNext }) {
   const exile = screen.exile;
   const level = input.exileLevel[exile] ?? null;
-  const need = input.exileNeed[exile] ?? EXILE_NEED[exile];
   return (
-    <Frame {...frame} title={tx(EXILE_COPY[exile].name)} kicker={`${tx(EXILE_COPY[exile].feeling)} · ${tx(EXILE_COPY[exile].belief)}`} onNext={() => onNext({ level, need })} nextDisabled={level === null}>
+    <Frame {...frame} title={tx(EXILE_COPY[exile].name)} kicker={`${tx(EXILE_COPY[exile].feeling)} · ${tx(EXILE_COPY[exile].belief)}`} onNext={() => onNext({ level })} nextDisabled={level === null}>
       <p className="p2-kicker">{T('levelQ')}</p>
       <div className="p2-choices" role="radiogroup" aria-label={T('levelQ')}>
         {[1, 2, 3, 4, 5].map((value) => (
@@ -220,14 +219,24 @@ function ExileScreen({ T, tx, frame, screen, input, commit, onNext }) {
             onClick={() => commit('exileLevel', exile, value)}>{value}. {tx(UI_COPY.levelLabels)[value - 1]}</button>
         ))}
       </div>
-      <p className="p2-kicker">{T('needQ')}</p>
-      <div className="p2-chips">
+      <button type="button" className="btn ghost block" onClick={() => onNext({ level: null })}>{T('skip')}</button>
+    </Frame>
+  );
+}
+
+/** Stage 5: what the exile wants. The table need is preselected. Only Next stores a need, so Skip writes nothing. */
+export function WantsScreen({ T, tx, frame, screen, input, setNeed, onSkip }) {
+  const exile = screen.exile;
+  const [need, setLocalNeed] = useState(input.exileNeed[exile] ?? EXILE_NEED[exile]);
+  return (
+    <Frame {...frame} title={tx(EXILE_COPY[exile].name)} kicker={T('wantsQ')} onNext={() => setNeed(need)} nextDisabled={!need}>
+      <div className="p2-chips" role="group" aria-label={T('wantsQ')}>
         {NEEDS.map((value) => (
           <button key={value} type="button" aria-pressed={need === value} className={`btn small p2-chip${need === value ? ' on' : ''}`}
-            onClick={() => commit('exileNeed', exile, value)}>{tx(NEED_COPY[value])}</button>
+            onClick={() => setLocalNeed(value)}>{tx(NEED_COPY[value])}</button>
         ))}
       </div>
-      <button type="button" className="btn ghost block" onClick={() => onNext({ level: null, need })}>{T('skip')}</button>
+      <button type="button" className="btn ghost block" onClick={onSkip}>{T('skip')}</button>
     </Frame>
   );
 }
@@ -525,12 +534,18 @@ export function PartsTwo() {
     case 'exile':
       return (
         <ExileScreen T={T} tx={tx} input={input} frame={frame} screen={screen} commit={patch}
-          onNext={({ level, need }) => { patch('exileLevel', screen.exile, level); patch('exileNeed', screen.exile, need); forward(); }} />
+          onNext={({ level }) => { patch('exileLevel', screen.exile, level); forward(); }} />
       );
     case 'blend':
       return (
         <BlendScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
           setBlending={(key, value) => { patch('blending', key, value); forward(); }} />
+      );
+    case 'wants':
+      return (
+        <WantsScreen key={screen.exile} T={T} tx={tx} input={input} frame={frame} screen={screen}
+          setNeed={(value) => { patch('exileNeed', screen.exile, value); forward(); }}
+          onSkip={() => forward()} />
       );
     case 'provider':
       return (

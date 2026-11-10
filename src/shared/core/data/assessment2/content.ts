@@ -351,7 +351,7 @@ export const UI_COPY = {
   fearQ: { en: 'If this part stopped doing its job, what would it fear would happen?', ru: 'Если бы эта часть перестала выполнять свою работу, чего бы она боялась?' },
   levelQ: { en: 'When this feeling comes up, how strong is it?', ru: 'Когда это чувство появляется, насколько оно сильное?' },
   levelLabels: { en: ['Faint', 'Light', 'Clear', 'Strong', 'Overwhelming'], ru: ['Едва заметно', 'Слабо', 'Ясно', 'Сильно', 'Переполняет'] },
-  needQ: { en: 'What does this exile most need?', ru: 'Что больше всего нужно этому изгнаннику?' },
+  wantsQ: { en: 'What does this exile want most?', ru: 'Чего больше всего хочет этот изгнанник?' },
   feelQ: { en: 'How do you feel toward this part?', ru: 'Как вы относитесь к этой части?' },
   providerQ: { en: 'Is there anyone or anything, real or imagined, that gives this?', ru: 'Есть ли кто-то или что-то, реальное или воображаемое, что даёт это?' },
   providerFormQ: { en: 'Who or what could give it? Choose the form that feels right.', ru: 'Кто или что могло бы это дать? Выберите подходящую форму.' },

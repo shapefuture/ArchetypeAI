@@ -137,6 +137,12 @@ export function Innerverse() {
     uniRef.current.setDimensions(dimensions);
     uniRef.current.setView?.({ axes, isolation, selectedId });
   }, [uniReady, uniRef, dimensions, axes, isolation, selectedId]);
+  // The guides carry the end words of the plotted axes, in the reader's language. Sent again only when the language changes.
+  useEffect(() => {
+    if (!uniReady || !uniRef?.current) return;
+    const copy = UNIVERSE_DIMENSIONS_COPY[lang];
+    uniRef.current.setGuides?.(Object.fromEntries(DIMENSION_AXES.map((axis) => [axis.key, { low: copy[axis.low], high: copy[axis.high], color: axis.color }])));
+  }, [uniReady, uniRef, lang]);
   useEffect(() => {
     let active = true;
     if (uniReady) uniRef?.current?.xrSupported?.().then((supported) => { if (active) setXrSupported(supported); });
@@ -334,6 +340,11 @@ export function Innerverse() {
                 {lang === 'ru'
                   ? 'Подсветка показывает близость частей к выбранным координатам. Ответы и показатели не меняются.'
                   : 'Highlight parts by their affinity to these coordinates. Answers and scores stay unchanged.'}
+              </p>
+              <p className="faint mt6" style={{ fontSize: 10, lineHeight: 1.5 }}>
+                {lang === 'ru'
+                  ? 'Три оси задают положение части. Кольцо вокруг неё показывает слитность: холодное — «Могу быть рядом», тёплое — «Это управляет мной», слабое — близко к нейтральному. Без кольца — не задано. Выцветшая часть имеет ось, которую вы ещё не задали.'
+                  : 'The three axes set a part’s position. The ring shows blending: cool means I can be with it, warm means it runs me, faint means near neutral, and no ring means not set. A faded part has an axis you have not set yet.'}
               </p>
               {DIMENSION_AXES.map((axis) => (
                 <div key={axis.key} className="mt12">

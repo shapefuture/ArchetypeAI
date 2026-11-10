@@ -10,7 +10,7 @@
 **In scope**
 - Defects D1–D6 found in the verification (§3).
 - Gaps B1–B11: things `plan.md` §2–§8 describe that the code does not do, or that §14 lists as open (§4–§5).
-- Optional items O1–O4, each with a default decision (§6).
+- Optional items O1–O3, each with a default decision (§6). O4, the 3+1 3D view, is in scope now as B12. The owner decided not to wait for the pilot.
 - Corrections to `plan.md`: §14 (D6), §3.4 and §7 (M5, M10), and the §6 shape (B5).
 
 **Out of scope**
@@ -143,7 +143,7 @@ After these edits, re-run the grep for «ты» forms across the Russian copy. O
 - §14, "Built", timing: say timing is stored as unknown only after D1 lands.
 - §14, confidence: say the narrow-lead rule applies on every path only after D2 lands.
 - §14, "Quick Scan removed": true for the routes. Add "and its copy keys (M9)".
-- §14, open decisions 1–4: link each to B8, B9 and B2 once built. Decision 5 stays with the owner.
+- §14, open decisions 1–4: link decisions 1 and 2 to B12, decision 3 to B9, and decision 4 to B2, once built. Decision 5 stays with the owner.
 - §14, departures: add the ones in §5 that §14 does not list (exile need timing, ground list, provider forms, capacity name, coordinate shape).
 - §3.5: record the 64 projection (`src/shared/core/data/map-axes.ts:54`) and its sign convention. Mark the formula a guess, checked against the 64 pole labels (the test is in B5).
 - §6: replace the `coords: {value, status}` shape with the one that was built (B5).
@@ -225,11 +225,11 @@ Do these after Phase 2. B9 comes first, because it reads the stored result that 
 - **Tests:** easy or effort gives a point; none gives none; clamp at ±1; an exile's unknown axis stays unknown on its provider.
 - **Size:** M.
 
-### B8 Unknown axes on the 3D map (`plan.md` §14 open decisions 1 and 2)
-- **Choice** (G22): ghost them, do not hide them. A part with any unmeasured axis is drawn at half its opacity. `services/universe-scene.ts:228–229` sets opacity from affinity, so the ghost multiplies that value. The label lists "Not set: Depth" and any other unset axis. Selected parts stay fully opaque.
-- 64-derived parts keep the middle depth plane and get the same ghost style.
+### B8 Unknown axes on the 3D map (`plan.md` §14 open decisions 1 and 2): delivered in B12
+- **Choice** (G22, refined by G31 and G32): ghost, do not hide. The first rule faded every part with an unmeasured axis, which would have faded every 64 and 147 part. The rule that shipped is in B12.
+- 64-derived parts keep the middle depth plane. They are labelled, not faded (G31).
 - Why not hide: hiding removes parts from every 64 user's map (`plan.md` §14).
-- **Tests:** a pure function `presentationFor(part)` returns `{ ghost, notSet }`. A screenshot at deviceScaleFactor 2 is for owner review, not a test.
+- **Tests:** `services/universe-3plus1.spec.ts` covers `presentationFor`. The screenshot check is for owner review, not a test.
 - **Size:** M.
 
 ### B10 E16 comparison for 2.0 parts (`plan.md` §6)
@@ -247,6 +247,21 @@ Do these after Phase 2. B9 comes first, because it reads the stored result that 
 - **Test:** the typical path is at most 55 taps. The longest path (four protectors, four exiles, lighter off) is at most 70. Run the test after B6, because the Centre is in the count.
 - **Size:** S.
 
+### B12 The 3+1 3D view (`plan.md` §3.5, §9 phase 6): built now, replaces the planned B8 and O4
+
+Built on 2026-11-10 by owner decision, without waiting for the pilot.
+
+- **Axes:** the three plotted axes (energy along x, depth up y, direction along z) draw as guide lines through the origin, with the end words beside each line (G35). The guides follow the axes the person chooses, and they are hidden in isolation mode.
+- **+1 channel:** blending is a halo ring around each part whose blending is known. The hue shows the sign: cool blue for "I can be with it", warm amber for "it runs me". The opacity shows the strength, so a neutral value is a faint ring (G29). A part whose blending is unknown has no ring.
+- **Fade (B8):** a part fades only when one of its spatial axes is one the person can still set and has not set. That is a 2.0 part that is unplaced, or whose depth is "not sure". Axes no answer could set, such as depth on a 64 part or blending on a 147 part, are labelled, not faded (G31). A faded part keeps half its normal opacity (G32).
+- **Lens:** the lens highlights parts by affinity, for every part. It no longer moves family-only parts, so no part moves with the lens (G30). The old lens offset formula and its tests are removed.
+- **Overlaps:** parts within 2 units of each other are spread on a small ring, in id order, so none hides another. Stored coordinates never change (G33).
+- **Camera:** the default view is slightly oblique, from (13, 9, 42), so the direction axis does not point at the viewer. "Show full map" returns to that view (G34).
+- **Legend:** two sentences in the lens card explain the ring and the fade, in English and Russian (G36).
+- **Limits:** provider points (B7) are not drawn yet, so providers do not appear in 3D. The placement defaults still wait for the pilot, as `plan.md` §9 phase 6 says ("decide on defaults").
+- **Checks:** `services/universe-3plus1.spec.ts` (the rules), `services/universe-lens.spec.ts` (the lens) and `services/universe-scene.spec.ts` (a mixed scene builds, relays out and renders a frame). The full unit suite passed: 234 test files and 1624 tests, with the existing skips. Type checking passed. The five browser specs that touch the universe passed (20 tests). A screenshot of a synthetic 2.0 map and one of the default example cast were checked by eye. Both were throwaway and are not committed.
+- **Size:** L (guess: about 3 days).
+
 ## 6. Optional and deferred (Phase 4)
 
 | ID | Item | Default | Size |
@@ -254,7 +269,7 @@ Do these after Phase 2. B9 comes first, because it reads the stored result that 
 | O1 | Rank-weighted person summary (`plan.md` §6, "if wanted") | Defer (G25). If wanted: weight 1/rank over protectors with a known axis; the axis is null when no part has it; labelled `derived`; shown only with two or more protectors. | S, if wanted |
 | O2 | Transpersonal opt-in layer (`plan.md` §3.3) | Defer (G26). It needs its own wording review and an opt-in switch. | Not sized |
 | O3 | Pilot analysis tools (`plan.md` §10–11) | Build now, run later. Pure functions in `assessment2/pilot-metrics.ts`: `completionRate`, `medianMinutes`, `retestTopThree(a, b)` (two of the top three repeat), `agreementWith147`, `axisCorrelations(placed)` (pairwise, flag above 0.6), `reframeWithdrawCorrelation`, and `fitsMeDelta` (mean "fits me" rating of 2.0's top three minus the 147's). Tests use fixtures named `synthetic-*`. The file header states that no results exist. | M |
-| O4 | 3+1 3D view (`plan.md` §9 phase 6) | After the pilot. | Not sized |
+| O4 | 3+1 3D view (`plan.md` §9 phase 6) | Built now as B12. The owner decided not to wait for the pilot. | Done in B12 |
 
 ## 7. Guesses and decisions
 
@@ -283,19 +298,27 @@ Defaults stand unless the owner changes them. The owner answers Phase 0 before P
 | G19 | Centre inputs | Awareness 1–5; will 1–5; up to three of eight qualities; all skippable | Smallest set that reuses `SELF_QUALITIES` | Owner and copy review |
 | G20 | Centre on the map | Not in v1 | The map is busy; the result carries it | Owner, after the pilot |
 | G21 | Provider point offset | +0.25 energy, +0.25 direction, the exile's depth | "Beside" its exile, a small step | Visual check |
-| G22 | Unknown axes on the 3D map | Ghost at half opacity; list "Not set" | Hiding changes every 64 user's map | Owner (`plan.md` §14 decision 1) |
+| G22 | Unknown axes on the 3D map | Ghost, do not hide. Refined by G31 (what fades) and G32 (how much). | Hiding changes every 64 user's map | Owner, `plan.md` §14 decision 1 |
 | G23 | Stored result shape | `{savedAt, result}`; the bare shape still reads | Adds a date without changing the pure result | Owner |
 | G24 | E16 screen | None until the owner decides | No consumer exists | Owner |
 | G25 | Person summary | Deferred | Optional in `plan.md` §6 | Owner |
 | G26 | Transpersonal layer | Deferred | Needs its own wording review | Owner |
 | G27 | Results saved before D1 | Marked "timing may be a default" | Those timings were defaults | Owner |
 | G28 | Tap weights | As in B11 | Estimates, not measurements | Pilot timing (`plan.md` §11) |
+| G29 | Blending as the +1 channel | A halo ring around each part with known blending. The hue shows the sign: cool for "I can be with it", warm for "it runs me". The opacity is 0.12 + 0.68 × the strength. No ring when blending is unknown. | The plan makes blending the +1, not a position | Owner review of the 3D view |
+| G30 | The lens | Highlight only, for every part. Family-only parts keep their ring layout and no longer move with the lens. | Coordinate parts never moved, so a lens that moved some parts looked broken | Owner |
+| G31 | What fades | A part fades only when a spatial axis is one the person can still set and has not set: a 2.0 part that is unplaced, or whose depth is "not sure". Axes no answer could set (64 depth, 147 blending) are labelled, not faded. | Fading every 64 and 147 part would dim the canonical maps for something the person cannot change | Owner, `plan.md` §14 decision 1 |
+| G32 | How much a faded part fades | Half the normal opacity | At 0.6 the fade was hard to see at phone size | Owner review |
+| G33 | Display spread | Parts within 2 units of each other spread on a ring whose neighbours are 2 units apart. Stored coordinates never change. | Figures are about 3 units wide, so near neighbours hide each other | Owner review; only overlapping parts move |
+| G34 | Default camera | Slightly oblique, at (13, 9, 42), not straight on at (0, 0, 46) | Straight on, the direction axis points at the viewer and its label covers the centre | Owner review |
+| G35 | Axis guides | Lines through the origin along the three chosen axes, with the end words beside each line. Hidden in isolation mode. | Readers need the axis names where the parts are | Owner review |
+| G36 | Legend | Two sentences in the lens card, in English and Russian, explain the ring and the fade | Readers need the key where the lens is | Copy review |
 
 **Owner tasks (no code can do these):**
 1. Name a reviewer for the Russian copy. This blocks the final Russian text.
 2. Confirm or change G7 (therapist shares).
 3. Review the practice map and name a reviewer for the catalog. This blocks B1's titles.
-4. Confirm G22 (ghosting).
+4. Confirm G22, G31 (what fades) and G32 (how much).
 5. Decide where E16 comparisons appear, if anywhere (G24).
 
 ## 8. Sequencing, PRs and checks
@@ -303,8 +326,8 @@ Defaults stand unless the owner changes them. The owner answers Phase 0 before P
 - **Phase 0** (owner, one day): answer the five owner tasks, and confirm or change G1–G28.
 - **Phase 1** (defects): D1, D2, D3 and D4 in parallel, then D5, then D6.
 - **Phase 2** (gaps): B3, B1, B2, B4, B5.
-- **Phase 3** (builds): B9, B6, B7, B8, B10, then B11, whose test needs B6.
-- **Phase 4:** O3 can start at any time, since it has no dependencies. O1, O2 and O4 only on request.
+- **Phase 3** (builds): B9, B6, B7, B10, B12, then B11, whose test needs B6. B12 covers the 3D view and the planned B8.
+- **Phase 4:** O3 can start at any time, since it has no dependencies. O1 and O2 only on request. O4 is done in B12.
 
 **PRs:** new commits on this branch, reviewed as stacked draft PRs. Split them by phase if the owner wants each reviewed alone. PR #40 already carries the restore fix, which is separate from this plan.
 
@@ -323,7 +346,7 @@ Defaults stand unless the owner changes them. The owner answers Phase 0 before P
 - `elevation/e02-entry.spec.ts` and `core/assessment-routes.spec.ts`: D4 labels, `measured`, and the save rule.
 - `elevation/e13-grammar.spec.ts`: D4 per-source provenance.
 - The `e15` specs: `NOT_INCLUDED`.
-- New: `screens/parts-two-provisional` (B2), `assessment2/pilot-metrics.spec.ts` (O3), and a presentation test (B8).
+- New: `screens/parts-two-provisional` (B2), `assessment2/pilot-metrics.spec.ts` (O3), and `services/universe-3plus1.spec.ts` (B12).
 
 ## 9. Risks
 
@@ -336,7 +359,8 @@ Defaults stand unless the owner changes them. The owner answers Phase 0 before P
 | R5 | E16 has no screen, so B10 does nothing for users yet | Accepted. It is a module change until G24 is decided. |
 | R6 | New strings drift between English and Russian | `copyCoverage`, and the Russian draft flag. |
 | R7 | Browser timeouts under load | Re-run only the failing specs, with `--trace off`. |
+| R8 | The 3D view changed for every map: camera, guides, halos, fades and spreading | The screenshot checks on a 2.0 map and the default example cast, the five universe browser specs, and owner review of G29–G36. |
 
 ## 10. Estimate (a guess)
 
-Phases 1–3 are about 18 working days for one developer: Phase 1 about 5, Phase 2 about 4, and Phase 3 about 9, with B11 included. O3 adds about 2 more. With about 20 per cent for review and fixes, the total is **about four to five weeks**. Phase 4 items are extra. The sizes are guesses, to be checked after the first PR.
+B12, the 3D view, is already built. The remaining work is Phase 1 (about 5 days), Phase 2 (about 4), B9 (2), B6 (2), B7 (1.5), B10 (1.5), B11 (0.5) and O3 (2): about 18.5 working days for one developer. With about 20 per cent for review and fixes, the remainder is **about four to five weeks**. Phase 4 items are extra. The sizes are guesses, to be checked after the first PR.

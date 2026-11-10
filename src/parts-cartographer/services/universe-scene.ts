@@ -8,7 +8,6 @@ import { bindReducedMotionDamping } from './reduced-motion';
 import { ambience } from './ambience-gate';
 import {
   archetypeCoordinatePosition,
-  dimensionalLensOffset,
   sanitizeArchetypeCoordinates,
   ZERO_DIMENSIONS,
   coordinateAffinity, DEFAULT_AXES, normalizeAxes,
@@ -16,6 +15,10 @@ import {
   type ArchetypeCoordinates,
   type UniverseDimensions,
 } from './universe-lens';
+import { GHOST_FACTOR, overlapOffsets, presentationFor } from './universe-3plus1';
+
+/** The words at each end of a plotted axis, and its colour (a CSS hex string), in the reader's language. */
+export type GuideSpec = Partial<Record<DimensionKey, { low: string; high: string; color: string }>>;
 
 export interface UniverseAPI {
   wake(): void;
@@ -23,6 +26,7 @@ export interface UniverseAPI {
   setParts(parts: Part[]): void;
   setDimensions(dimensions: UniverseDimensions): void;
   setView(options: { axes?: UniverseAxes; isolation?: DimensionKey | null; selectedId?: string | null }): void;
+  setGuides(guides: GuideSpec): void;
   focus(id: string | null): void;
   xrSupported(): Promise<boolean>;
   enterXR(): Promise<void>;
@@ -38,17 +42,25 @@ type MapNode = {
   basePosition: [number, number, number];
   coordinates?: ArchetypeCoordinates;
   phase: number;
+  /** An axis the person has not set yet: the part is drawn faded. */
+  ghost: boolean;
+  /** The +1 channel: a ring for blending, absent when blending is not known. */
+  halo: THREE.Mesh | null;
 };
 let api: UniverseAPI | null = null;
 let dimensionalExpressions: UniverseDimensions = { ...ZERO_DIMENSIONS };
+const HALO_RADIUS = 2.3;
+const HALO_TUBE = 0.07;
+/** How far the axis guides reach from the origin. Parts sit within ±10. */
+const GUIDE_REACH = 10.6;
+/** Where the end words sit. The canvas is phone-width, so they stay inside about ±13 at the middle distance. */
+const GUIDE_LABEL_AT = 9;
 
-function disposeGroup(group: THREE.Group) {
+function disposeGroup(group: THREE.Object3D) {
   group.traverse((object: any) => {
-    if (object.isMesh) {
-      object.geometry.dispose();
-      const materials = Array.isArray(object.material) ? object.material : [object.material];
-      materials.forEach((material: THREE.Material) => material.dispose());
-    }
+    object.geometry?.dispose?.();
+    const materials = Array.isArray(object.material) ? object.material : object.material ? [object.material] : [];
+    materials.forEach((material: any) => { material.map?.dispose?.(); material.dispose?.(); });
   });
 }
 
@@ -74,7 +86,8 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(55, host.clientWidth / Math.max(host.clientHeight, 1), 0.1, 400);
-  camera.position.set(0, 0, 46);
+  // Slightly oblique, so the direction axis does not point straight at the viewer and its words stay clear of the centre.
+  camera.position.set(13, 9, 42);
   renderer.xr.enabled = true;
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.minDistance = 8;
@@ -85,6 +98,11 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
   let axes: UniverseAxes = [...DEFAULT_AXES];
   let isolation: DimensionKey | null = null;
   let selectedId: string | null = null;
+  let layoutOffsets = new Map<string, [number, number, number]>();
+  let guides: GuideSpec = {};
+  const guideGroup = new THREE.Group();
+  scene.add(guideGroup);
+  const labelColour = isDark ? 0xf4efe6 : 0x2b2640;
 
   // --- star dust ---
   const starGeo = new THREE.BufferGeometry();
@@ -118,6 +136,66 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     nodes.length = 0; meshes.length = 0;
   }
 
+  function clearGuides() {
+    for (const child of [...guideGroup.children]) {
+      guideGroup.remove(child);
+      disposeGroup(child);
+    }
+  }
+
+  function labelSprite(text: string, colour: number, at: [number, number, number]): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 112;
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.font = '600 46px system-ui, sans-serif';
+      context.fillStyle = `#${colour.toString(16).padStart(6, '0')}`;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(text, canvas.width / 2, canvas.height / 2);
+    }
+    const material = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthTest: false, opacity: 0.92 });
+    const sprite = new THREE.Sprite(material);
+    sprite.position.set(...at);
+    sprite.scale.set(6.4, 1.2, 1);
+    return sprite;
+  }
+
+  /** The three plotted axes with their end words. Hidden in isolation, where the view is one axis against another. */
+  function rebuildGuides() {
+    clearGuides();
+    if (isolation) return;
+    axes.forEach((key, index) => {
+      const copy = guides[key];
+      if (!copy) return;
+      const colour = Number.parseInt(copy.color.replace('#', ''), 16);
+      const along = (value: number): [number, number, number] => {
+        const point: [number, number, number] = [0, 0, 0];
+        point[index] = value;
+        return point;
+      };
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([...along(-GUIDE_REACH), ...along(GUIDE_REACH)]), 3));
+      guideGroup.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: colour, transparent: true, opacity: 0.5 })));
+      // Labels sit beside the line, not on it: to the right of the vertical axis, above the others.
+      const labelAt = (value: number): [number, number, number] => {
+        const point = along(value);
+        return index === 1 ? [point[0] + 1.6, point[1], point[2]] : [point[0], point[1] + 0.9, point[2]];
+      };
+      guideGroup.add(labelSprite(copy.high, labelColour, labelAt(GUIDE_LABEL_AT)));
+      guideGroup.add(labelSprite(copy.low, labelColour, labelAt(-GUIDE_LABEL_AT)));
+    });
+  }
+
+  /** Where each part sits, with overlapping parts spread for display. Stored coordinates are never changed. */
+  function relayout() {
+    layoutOffsets = overlapOffsets(nodes.map((node) => ({
+      id: node.part.id,
+      position: node.coordinates ? archetypeCoordinatePosition(node.coordinates, axes, isolation) : node.basePosition,
+    })));
+  }
+
   function build(parts: Part[]) {
     const signature = JSON.stringify(parts);
     if (signature === partsSignature) return;
@@ -145,12 +223,33 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       group.scale.setScalar(scale);
       partGroup.add(group);
 
+      const presentation = presentationFor({
+        coordinates: coordinates ?? null,
+        unmeasuredAxes: part.archetype?.unmeasuredAxes,
+        coordinateBasis: part.archetype?.coordinateBasis,
+      });
+      let halo: THREE.Mesh | null = null;
+      if (presentation.halo) {
+        const haloMaterial = new THREE.MeshBasicMaterial({
+          color: presentation.halo.color,
+          transparent: true,
+          opacity: presentation.halo.opacity * (presentation.ghost ? GHOST_FACTOR : 1),
+          depthWrite: false,
+        });
+        halo = new THREE.Mesh(new THREE.TorusGeometry(HALO_RADIUS, HALO_TUBE, 8, 56), haloMaterial);
+        halo.rotation.x = Math.PI / 2;
+        halo.userData.halo = true;
+        group.add(halo);
+      }
+
       const node: MapNode = {
         part,
         group,
         basePosition,
         coordinates: coordinates ?? undefined,
         phase,
+        ghost: presentation.ghost,
+        halo,
       };
       nodes.push(node);
       void feltGroup(part).then((felt) => {
@@ -163,6 +262,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       }).catch((error) => { if (!disposed) console.warn('Felt character could not be sewn', error); });
 
     });
+    relayout();
   }
 
   // lights
@@ -215,18 +315,18 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     stars.rotation.y = t * 0.05;
     nodes.forEach((node) => {
       const position = node.coordinates ? archetypeCoordinatePosition(node.coordinates, axes, isolation) : node.basePosition;
-      const [dx, dy, dz] = node.coordinates ? [0, 0, 0] : dimensionalLensOffset(node.part.family, dimensionalExpressions);
-      node.group.position.set(position[0] + dx, position[1] + dy, position[2] + dz);
+      const offset = layoutOffsets.get(node.part.id) ?? [0, 0, 0];
+      node.group.position.set(position[0] + offset[0], position[1] + offset[1], position[2] + offset[2]);
       const affinity = node.coordinates ? coordinateAffinity(node.coordinates, dimensionalExpressions, node.part.family === 'resource', node.part.archetype?.unmeasuredAxes ?? []) : 0.5;
       const selected = node.part.id === selectedId;
       const scale = (node.part.archetype?.size ?? 0.8) / 0.8 * (0.6 + (node.part.archetype?.prominence ?? 40) / 100) * (selected ? 1.15 : 1);
       node.group.scale.setScalar(scale);
       node.group.traverse((object: any) => {
-        if (!object.isMesh) return;
+        if (!object.isMesh || object.userData.halo) return;
         const materials = Array.isArray(object.material) ? object.material : [object.material];
         for (const material of materials) {
           material.transparent = true;
-          material.opacity = selected ? 1 : .45 + affinity * .55;
+          material.opacity = selected ? 1 : (.45 + affinity * .55) * (node.ghost ? GHOST_FACTOR : 1);
           if ('emissiveIntensity' in material) material.emissiveIntensity = selected ? .25 : affinity * .1;
         }
       });
@@ -246,13 +346,21 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       if (options.axes) axes = normalizeAxes(options.axes);
       if ('isolation' in options) isolation = options.isolation ?? null;
       if ('selectedId' in options) selectedId = options.selectedId ?? null;
+      if (options.axes || 'isolation' in options) {
+        relayout();
+        rebuildGuides();
+      }
+    },
+    setGuides(next) {
+      guides = next;
+      rebuildGuides();
     },
     focus(id) {
       selectedId = id;
       const node = nodes.find((entry) => entry.part.id === id);
       const target = node ? node.group.position : new THREE.Vector3(0, 0, 0);
       controls.target.copy(target);
-      camera.position.copy(target).add(new THREE.Vector3(0, 0, node ? 14 : 46));
+      camera.position.copy(target).add(node ? new THREE.Vector3(0, 0, 14) : new THREE.Vector3(13, 9, 42));
       controls.update();
     },
     async xrSupported() {
@@ -283,6 +391,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       motionDamping.dispose();
       controls.dispose();
       clearParts();
+      clearGuides();
       window.removeEventListener('resize', onResize);
       renderer.domElement.removeEventListener('pointerdown', onPointerStart);
       renderer.domElement.removeEventListener('pointerup', onPointer);

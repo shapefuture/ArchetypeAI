@@ -1,7 +1,9 @@
-import type { Part } from '../pal/traits';
 import { MAP_AXIS_KEYS, MAP_DEFAULT_PLOT, type MapAxisKey } from '../../shared/core/data/map-axes';
 
-/** The user's visual lens over the map: one expression per map axis (plan §3.5). Not evidence, only a view. */
+/**
+ * The user's visual lens over the map: one expression per map axis (plan §3.5). Not evidence, only a view.
+ * The lens changes how strongly each part is highlighted. It never moves a part (build-and-fix-plan G30).
+ */
 export interface UniverseDimensions {
   ENERGY: number;
   DIRECTION: number;
@@ -38,14 +40,6 @@ export const ZERO_DIMENSIONS: UniverseDimensions = {
   BLENDING: 0,
 };
 
-/** Fallback placement for ordinary parts that predate coordinate data, in map-axis order. */
-const FAMILY_DIMENSIONS: Record<Part['family'], [number, number, number, number]> = {
-  manager: [0.4, 0.0, 0.6, 0],
-  firefighter: [0.5, 0.2, 0.3, 0],
-  exile: [-0.4, -0.2, -0.7, 0],
-  resource: [0.4, 0.4, 0.4, 0],
-};
-
 export function sanitizeArchetypeCoordinates(value: unknown): ArchetypeCoordinates | null {
   if (!Array.isArray(value) || value.length !== 4) return null;
   if (value.some((entry) => typeof entry !== 'number' || !Number.isFinite(entry))) return null;
@@ -57,7 +51,7 @@ function boundedCoordinates(coordinates: ArchetypeCoordinates): ArchetypeCoordin
   return sanitizeArchetypeCoordinates(coordinates) ?? [0, 0, 0, 0];
 }
 
-/** Project a 4D archetype point to the stable 3D scene axes. */
+/** Project a 4D archetype point to the stable 3D scene axes. Blending is never a position unless it is chosen as an axis. */
 export function archetypeCoordinatePosition(
   coordinates: ArchetypeCoordinates,
   axes: UniverseAxes = DEFAULT_AXES,
@@ -85,33 +79,6 @@ export function coordinateAffinity(
   const point = boundedCoordinates(coordinates);
   return expressions.reduce((sum, expression, index) =>
     known[index] ? sum + Math.abs(expression) * Math.exp(-Math.pow(expression - point[index], 2) * 2) : sum, 0) / magnitude;
-}
-
-/** Apply the user's visual lens to a coordinate-bearing archetype, rather than to its family average. */
-export function archetypeLensOffset(
-  coordinates: ArchetypeCoordinates,
-  dimensions: UniverseDimensions,
-): [number, number, number] {
-  const [energy, direction, depth, blending] = boundedCoordinates(coordinates);
-  return lensProjection(energy, direction, depth, blending, dimensions);
-}
-
-function lensProjection(energy: number, direction: number, depth: number, blending: number, dimensions: UniverseDimensions): [number, number, number] {
-  const projected: [number, number, number] = [
-    (dimensions.ENERGY * energy + dimensions.DEPTH * depth) * 3.2,
-    (dimensions.DIRECTION * direction + dimensions.BLENDING * blending) * 3.2,
-    (dimensions.BLENDING * blending - dimensions.ENERGY * energy) * 3.2,
-  ];
-  return projected.map((value) => value === 0 ? 0 : value) as [number, number, number];
-}
-
-/** Family-weighted fallback for ordinary React Parts that predate coordinate data. */
-export function dimensionalLensOffset(
-  family: Part['family'],
-  dimensions: UniverseDimensions,
-): [number, number, number] {
-  const [energy, direction, depth, blending] = FAMILY_DIMENSIONS[family];
-  return lensProjection(energy, direction, depth, blending, dimensions);
 }
 
 export type { MapAxisKey };

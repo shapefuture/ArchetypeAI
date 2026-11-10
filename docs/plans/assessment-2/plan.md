@@ -241,7 +241,7 @@ Wording rules:
 | 3 | Stages 3–5 screens; conflict derivation; result screen | 1.5 weeks |
 | 4 | Stage 6 placement; coordinates panel on the new axes; 3+1 as a table | 1 week |
 | 5 | Pilot (§10) | 3 weeks elapsed |
-| 6 | Decide on defaults; 3D scene for the 3+1 view | after the pilot |
+| 6 | Decide on defaults; 3D scene for the 3+1 view | The 3D scene is built now, by owner decision (2026-11-10; see build-and-fix-plan.md B12). The defaults still wait for the pilot. |
 
 Suggested locations, to be confirmed against the code at build time: data and scoring under `src/shared/core/data/`, screens under `src/parts-cartographer/screens/`.
 

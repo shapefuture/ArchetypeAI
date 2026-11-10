@@ -127,11 +127,6 @@ export function levelOf(items: Array<number | null> | undefined): number | null 
 
 export type Confidence = 'high' | 'medium' | 'low';
 
-/**
- * high: the confirm level is at least 3 and the family score is at least 0.25.
- * medium: a skipped confirm (scenes alone), or a confirmed level that disagrees with a weak score.
- * low: the confirm level is below 3.
- */
 /** The lead of each family over the next-ranked family. The lowest-ranked family keeps its full score as its lead. */
 export function leadsOf(scores: FamilyScores): Partial<Record<FamilyId, number>> {
   const ordered = FAMILIES
@@ -144,14 +139,18 @@ export function leadsOf(scores: FamilyScores): Partial<Record<FamilyId, number>>
 }
 
 /**
- * high: the confirm level is at least 3, the score is at least 0.25, and the lead over the next family is at least RANK_MARGIN.
- * medium: a skipped confirm (scenes alone), or a confirmed level that disagrees with a weak score.
- * low: the confirm level is below 3, or the lead over the next family is narrower than RANK_MARGIN.
+ * Confidence for one protector. The checks run in this order, and the first one that applies decides (plan §5, G3):
+ * 1. The lead over the next family is narrower than RANK_MARGIN: low, on every path.
+ * 2. The confirm items were skipped (scenes alone): medium.
+ * 3. The confirm items were not answered: null.
+ * 4. The confirm level is below 3: low.
+ * 5. Otherwise high when the score is at least 0.25, and medium when it is below.
  */
 export function confidenceOf(score: number, level: number | null, skipped: boolean, lead = Number.POSITIVE_INFINITY): Confidence | null {
-  if (skipped) return 'medium';
-  if (level === null) return null;
-  if (level < 3 || lead < RANK_MARGIN) return 'low';
+  if (lead < RANK_MARGIN) return 'low';   // G3: a narrow margin is low on every path
+  if (skipped) return 'medium';           // scenes alone, wide margin
+  if (level === null) return null;        // confirm items not answered
+  if (level < 3) return 'low';
   return score >= 0.25 ? 'high' : 'medium';
 }
 
@@ -281,8 +280,9 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     const timing = input.timing[pick] ?? def.defaultTiming;
     const skipped = skipsConfirm(family, input.scenes);
     const level = skipped ? null : levelOf(input.confirm[pick]);
+    // The lighter path has no stage 4, so a stored fear guards nothing there. The answer stays in the input (plan §3.3, G4).
     const fear = input.fears[pick];
-    const guards = fear && fear !== 'none' ? [fear] : [];
+    const guards = !input.lighter && fear && fear !== 'none' ? [fear] : [];
     const key = keyFor('member', pick);
     const blending = input.blending[key] ?? null;
     const placedCoords = coordsFor(key, protectorDefault(pick, timing), input.placed, blending);

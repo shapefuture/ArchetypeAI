@@ -5,7 +5,7 @@ import {
   exileDefault, protectorDefault, capacityDefault, mapFamilyFor, type MemberId,
 } from './taxonomy';
 import {
-  SCENES, SCENE_FAMILIES, buildAssessment2Result, confidenceOf, deriveConflicts, isAssessment2Result, levelOf, rankFamilies,
+  SCENES, SCENE_FAMILIES, buildAssessment2Result, confidenceOf, deriveConflicts, isAssessment2Result, leadsOf, levelOf, rankFamilies,
   scoreFamilies, skipsConfirm, type Assessment2Input, type MapPart, type SceneAnswer,
 } from './scoring';
 import { CONFIRM_COPY, CAPACITY_COPY, copyCoverage, REACTION_COPY, UI_COPY } from './content';
@@ -21,6 +21,16 @@ const blank = (): Assessment2Input => ({
 /** Answers every scene with the same most and least card, so one family wins clearly. */
 const scenesFavouring = (most: (typeof FAMILIES)[number], least: (typeof FAMILIES)[number]): SceneAnswer[] =>
   SCENES.map((scene) => ({ scene, most: SCENE_FAMILIES[scene].includes(most) ? most : SCENE_FAMILIES[scene][0], least: SCENE_FAMILIES[scene].includes(least) ? least : SCENE_FAMILIES[scene][1] }));
+
+/** Stage 1 answers that make pursue the top family, with a narrow lead over attack: pursue 0.75, attack 0.67, lead 0.083. */
+const scenesNarrowPursue: SceneAnswer[] = [
+  { scene: 'criticised', most: 'attack', least: null },
+  { scene: 'leftOut', most: 'appease', least: null },
+  { scene: 'lineCrossed', most: 'attack', least: null },
+  { scene: 'fellThrough', most: 'pursue', least: null },
+  { scene: 'planChanged', most: 'pursue', least: null },
+  { scene: 'freeEvening', most: 'pursue', least: null },
+];
 
 describe('taxonomy invariants (plan §3)', () => {
   it('has 8 families, 28 members, 8 exiles, 6 needs and 8 capacities', () => {
@@ -142,6 +152,29 @@ describe('stage 3 level and confidence (plan §5)', () => {
     // A narrow lead over the next family makes the result low, however strong the level (plan §5).
     expect(confidenceOf(0.5, 4, false, 0.05)).toBe('low');
   });
+
+  it('is low for a skipped confirm with a narrow lead, because the lead is checked first', () => {
+    expect(confidenceOf(0.75, null, true, 0.083)).toBe('low');
+  });
+
+  it('keeps a skipped confirm with a wide lead at medium', () => {
+    expect(confidenceOf(0.75, null, true, 0.33)).toBe('medium');
+  });
+
+  it('is low for a confirmed level of 5 with a narrow lead', () => {
+    expect(confidenceOf(0.5, 5, false, 0.1)).toBe('low');
+  });
+
+  it('is high for a confirmed level of 5, a wide lead and a score of 0.67', () => {
+    expect(confidenceOf(0.67, 5, false, 0.33)).toBe('high');
+  });
+
+  it('is low for a skipped pursue part with a narrow lead in the built result', () => {
+    expect(skipsConfirm('pursue', scenesNarrowPursue)).toBe(true);
+    expect(leadsOf(scoreFamilies(scenesNarrowPursue)).pursue).toBeCloseTo(0.083, 3);
+    const part = buildAssessment2Result({ ...blank(), scenes: scenesNarrowPursue, picks: { pursue: 'charmer' as const } }).parts.find((p) => p.key === 'member:charmer')!;
+    expect(part.confidence).toBe('low');
+  });
 });
 
 describe('result building (plan §4, §6)', () => {
@@ -172,6 +205,15 @@ describe('result building (plan §4, §6)', () => {
     const base = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'inner_critic' as const }, fears: { inner_critic: 'ashamed' as const } };
     expect(buildAssessment2Result(base).parts.some((p) => p.kind === 'exile' && p.exile === 'ashamed')).toBe(true);
     expect(buildAssessment2Result({ ...base, lighter: true }).parts.some((p) => p.kind === 'exile')).toBe(false);
+  });
+
+  it('gives no guards and no exile parts on the lighter path, and restores the guard when lighter is turned off', () => {
+    const input = { ...blank(), scenes: scenesNarrowPursue, picks: { pursue: 'charmer' as const }, fears: { charmer: 'frightened' as const } };
+    const light = buildAssessment2Result({ ...input, lighter: true });
+    expect(light.parts.find((p) => p.key === 'member:charmer')!.guards).toEqual([]);
+    expect(light.parts.some((p) => p.kind === 'exile')).toBe(false);
+    const full = buildAssessment2Result({ ...input, lighter: false });
+    expect(full.parts.find((p) => p.key === 'member:charmer')!.guards).toContain('frightened');
   });
 
   it('defaults an exile need to its mapped need and keeps a person choice', () => {

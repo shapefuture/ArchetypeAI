@@ -21,7 +21,9 @@ describe('cross-version local backup and cloud boundaries', () => {
     expect(validClinicalScore(profile.clinical)).toBe(true);
     for (const part of prepared.entries[KEYS.parts] as any[]) {
       const reference = IV_PARTS.find((item) => item.id === part.id)!;
-      expect(part.archetype.coordinates).toEqual([reference.ax.ag, reference.ax.te, reference.ax.fo, reference.ax.at].map((v) => (v - 50) / 50));
+      // Map axes: energy, direction, depth from the reference template; blending is unmeasured and stored as 0 (plan §3.5).
+      expect(part.archetype.coordinates).toEqual([reference.ax.en, reference.ax.di, reference.ax.de, 0]);
+      expect(part.archetype.unmeasuredAxes).toEqual(['BLENDING']);
     }
     expect(profile.headlineRu).not.toBe(profile.headlineConstellation);
   });

@@ -217,7 +217,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       const position = node.coordinates ? archetypeCoordinatePosition(node.coordinates, axes, isolation) : node.basePosition;
       const [dx, dy, dz] = node.coordinates ? [0, 0, 0] : dimensionalLensOffset(node.part.family, dimensionalExpressions);
       node.group.position.set(position[0] + dx, position[1] + dy, position[2] + dz);
-      const affinity = node.coordinates ? coordinateAffinity(node.coordinates, dimensionalExpressions, node.part.family === 'resource') : 0.5;
+      const affinity = node.coordinates ? coordinateAffinity(node.coordinates, dimensionalExpressions, node.part.family === 'resource', node.part.archetype?.unmeasuredAxes ?? []) : 0.5;
       const selected = node.part.id === selectedId;
       const scale = (node.part.archetype?.size ?? 0.8) / 0.8 * (0.6 + (node.part.archetype?.prominence ?? 40) / 100) * (selected ? 1.15 : 1);
       node.group.scale.setScalar(scale);
@@ -265,10 +265,10 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     },
     setDimensions(dimensions) {
       dimensionalExpressions = {
-        AGENCY: Math.max(-1, Math.min(1, Number(dimensions.AGENCY) || 0)),
-        TEMPERATURE: Math.max(-1, Math.min(1, Number(dimensions.TEMPERATURE) || 0)),
-        FOCUS: Math.max(-1, Math.min(1, Number(dimensions.FOCUS) || 0)),
-        ATTACHMENT: Math.max(-1, Math.min(1, Number(dimensions.ATTACHMENT) || 0)),
+        ENERGY: Math.max(-1, Math.min(1, Number(dimensions.ENERGY) || 0)),
+        DIRECTION: Math.max(-1, Math.min(1, Number(dimensions.DIRECTION) || 0)),
+        DEPTH: Math.max(-1, Math.min(1, Number(dimensions.DEPTH) || 0)),
+        BLENDING: Math.max(-1, Math.min(1, Number(dimensions.BLENDING) || 0)),
       };
     },
     onPick(callback) { pickCb = callback; },

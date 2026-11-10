@@ -40,13 +40,14 @@ const CLUSTER_LABELS = {
 const clusterName = (id, lang) => CLUSTER_LABELS[id]?.[lang === 'ru' ? 1 : 0] ?? id.replaceAll('_', ' ');
 
 const DIMENSION_AXES = [
-  { key: 'AGENCY', label: 'agency', low: 'agencyHypo', high: 'agencyHyper', icon: '⚡', color: '#6ED6FF' },
-  { key: 'TEMPERATURE', label: 'temperature', low: 'temperatureHypo', high: 'temperatureHyper', icon: '🔥', color: '#FF8A1F' },
-  { key: 'FOCUS', label: 'focus', low: 'focusHypo', high: 'focusHyper', icon: '🎯', color: '#8BE03A' },
-  { key: 'ATTACHMENT', label: 'attachment', low: 'attachmentHypo', high: 'attachmentHyper', icon: '🧲', color: '#FFD000' },
+  { key: 'ENERGY', label: 'energy', low: 'energyHypo', high: 'energyHyper', icon: '⚡', color: '#6ED6FF' },
+  { key: 'DIRECTION', label: 'direction', low: 'directionHypo', high: 'directionHyper', icon: '🧭', color: '#FF8A1F' },
+  { key: 'DEPTH', label: 'depth', low: 'depthHypo', high: 'depthHyper', icon: '🌊', color: '#8BE03A' },
+  { key: 'BLENDING', label: 'blending', low: 'blendingHypo', high: 'blendingHyper', icon: '🧲', color: '#FFD000' },
 ];
-const DIMENSION_KEY = 'ifs.universe.dimensions.v1';
-const ZERO_DIMENSIONS = { AGENCY: 0, TEMPERATURE: 0, FOCUS: 0, ATTACHMENT: 0 };
+// v2: the axes changed meaning in Assessment 2.0, so a lens saved under the v1 axes is not reused.
+const DIMENSION_KEY = 'ifs.universe.dimensions.v2';
+const ZERO_DIMENSIONS = { ENERGY: 0, DIRECTION: 0, DEPTH: 0, BLENDING: 0 };
 
 function readUniverseDimensions() {
   try {
@@ -426,7 +427,7 @@ function ArchetypeStudio({ initialIdea = '', onClose, onCreate }) {
       setDraft({
         id: pid(), name: nm,
         family: fam, traits, role: desc,
-        archetype: { schema: 'archetype-map.v1', sourceAssessment: 'studio', coordinates: sanitizeArchetypeCoordinates(model?.coordinates) ?? [0, 0, 0, 0], cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[fam], prominence: 55, size: 0.8, description: String(model?.description ?? desc).slice(0, 2000), invitation: String(model?.invitation ?? '').slice(0, 2000), shadow: String(model?.shadow ?? '').slice(0, 2000) },
+        archetype: { schema: 'archetype-map.v1', sourceAssessment: 'studio', axisVersion: 2, coordinates: sanitizeArchetypeCoordinates(model?.coordinates) ?? [0, 0, 0, 0], cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[fam], prominence: 55, size: 0.8, description: String(model?.description ?? desc).slice(0, 2000), invitation: String(model?.invitation ?? '').slice(0, 2000), shadow: String(model?.shadow ?? '').slice(0, 2000) },
         blurb: '', energy: 55, burden: '—', need: '—', voice: '—', star: false, since: 'today',
       });
     } catch {

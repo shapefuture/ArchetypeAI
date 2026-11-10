@@ -25,9 +25,14 @@ export const STRINGS = {
   skip: s('Skip', 'Пропустить'),
   next: s('Next', 'Далее'),
   startTest: s('Start the full 147-item map', 'Начать полную карту из 147 пунктов'),
+  routeTwoTitle: s('Parts map 2.0 · about nine minutes', 'Карта частей 2.0 · около девяти минут'),
+  routeDefaultTag: s('Recommended', 'Рекомендуем'),
+  routeDeepTag: s('Optional deep battery', 'Необязательная глубокая батарея'),
+  routeTwoPurpose: s('Finds the protector strategies you use most, what they guard, and where your parts sit on the map. Reflective, not a diagnosis.', 'Находит стратегии защиты, которыми вы пользуетесь чаще всего, что они охраняют и где ваши части находятся на карте. Рефлексия, а не диагноз.'),
+  routeTwoEffort: s('About nine minutes · seven short steps · you can stop and resume', 'Около девяти минут · семь коротких шагов · можно остановиться и продолжить'),
   quickAssessment: s('Sample map · 8 generated parts', 'Пример карты · 8 сгенерированных частей'),
   chooseTitle: s('Choose how to begin', 'Выберите, с чего начать'),
-  chooseSub: s('Three separate options. Each says what it gives you and how much effort it takes. The 64-item reflection and the 147-item battery are different instruments with separate results.', 'Три отдельных варианта. Каждый показывает, что даёт и сколько усилий требует. Рефлексия из 64 пунктов и батарея из 147 пунктов — разные инструменты с отдельными результатами.'),
+  chooseSub: s('Four separate options, the first recommended. Each says what it gives you and how much effort it takes. The 64-item reflection and the 147-item battery are different instruments with separate results.', 'Четыре отдельных варианта, первый рекомендуем. Каждый показывает, что даёт и сколько усилий требует. Рефлексия из 64 пунктов и батарея из 147 пунктов — разные инструменты с отдельными результатами.'),
   routeInquiryTitle: s('Think through one situation', 'Разобрать одну ситуацию'),
   routeInquiryTag: s('Not a test', 'Не тест'),
   routeInquiryPurpose: s('Start from one moment in your own words and get a short reflection you can correct.', 'Начните с одного момента своими словами и получите короткое описание, которое можно поправить.'),
@@ -702,21 +707,21 @@ export const STRINGS = {
 export type StrKey = keyof typeof STRINGS;
 export const t = (k: StrKey, lang: Lang) => STRINGS[k][lang];
 
-/** Localized poles used by the React universe sliders without loading the Angular catalog eagerly. */
+/** Localized map axes and poles used by the React universe sliders and the coordinates panel (plan §3.5). */
 export const UNIVERSE_DIMENSIONS_COPY = {
   en: {
-    agency: 'Agency', temperature: 'Temperature', focus: 'Focus', attachment: 'Attachment',
-    agencyHypo: 'Active', agencyHyper: 'Receptive',
-    temperatureHypo: 'Composed', temperatureHyper: 'Expressive',
-    focusHypo: 'Pragmatic', focusHyper: 'Empathic',
-    attachmentHypo: 'Avoidant', attachmentHyper: 'Anxious',
+    energy: 'Energy', direction: 'Direction', depth: 'Depth', blending: 'Blending',
+    energyHypo: 'Shut down', energyHyper: 'Mobilised',
+    directionHypo: 'Away from people', directionHyper: 'Toward people',
+    depthHypo: 'Deep, hidden', depthHyper: 'Surface, visible',
+    blendingHypo: 'I can be with it', blendingHyper: 'It runs me',
   },
   ru: {
-    agency: 'Инициативность', temperature: 'Эмоциональность', focus: 'Фокус внимания', attachment: 'Близость и дистанция',
-    agencyHypo: 'Ведёт за собой', agencyHyper: 'Идёт за другими',
-    temperatureHypo: 'Сдержанный', temperatureHyper: 'Выразительный',
-    focusHypo: 'Прагматичный', focusHyper: 'Эмпатичный',
-    attachmentHypo: 'Ценит независимость', attachmentHyper: 'Ищет подтверждений',
+    energy: 'Энергия', direction: 'Направление', depth: 'Глубина', blending: 'Слитность',
+    energyHypo: 'Оцепенение', energyHyper: 'Мобилизация',
+    directionHypo: 'От людей', directionHyper: 'К людям',
+    depthHypo: 'Глубоко, скрыто', depthHyper: 'На поверхности, заметно',
+    blendingHypo: 'Могу быть рядом', blendingHyper: 'Это управляет мной',
   },
 } as const;
 

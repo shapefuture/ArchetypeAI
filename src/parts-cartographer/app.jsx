@@ -23,7 +23,7 @@ const FullAssessment = lazy(() => import('./screens/full-assessment.jsx').then((
 const Legacy64Assessment = lazy(() => import('./screens/legacy-assessment.jsx').then((module) => ({ default: module.Legacy64Assessment })));
 const Practice = lazy(() => import('./screens/practice.jsx').then((module) => ({ default: module.Practice })));
 const CheckIn = lazy(() => import('./screens/check-in.jsx').then((module) => ({ default: module.CheckIn })));
-const QuickScan = lazy(() => import('./screens/quick-scan.jsx').then((module) => ({ default: module.QuickScan })));
+const PartsTwo = lazy(() => import('./screens/parts-two.jsx').then((module) => ({ default: module.PartsTwo })));
 const BackupRestore = lazy(() => import('./screens/backup-restore.jsx').then((module) => ({ default: module.BackupRestore })));
 
 /* Everything past the landing screens loads on demand, so the first visit
@@ -475,6 +475,7 @@ export default function App() {
       case 'assessment': return <Assessment />; // retained eight-part quick map
       case 'full-assessment': return <FullAssessment />; // lazy: suspended by RouteFrame
       case 'legacy-assessment': return <Legacy64Assessment />; // lazy: suspended by RouteFrame
+      case 'parts-two': return <PartsTwo />; // Assessment 2.0, the default route; lazy: suspended by RouteFrame
       case 'assessment-gate': return <Gate />;
       case 'descent': return <Descent />;
       case 'assessment-results': return <Results />;
@@ -497,7 +498,6 @@ export default function App() {
       case 'practice': return <Suspense fallback={<Loading />}><Practice /></Suspense>;
       case 'checkin': return <Suspense fallback={<Loading />}><CheckIn /></Suspense>;
       case 'restore': return <Suspense fallback={<Loading />}><BackupRestore /></Suspense>;
-      case 'quickscan': return <Suspense fallback={<Loading />}><QuickScan /></Suspense>;
       case 'therapist': return <Therapist />;
       case 'journal': return <Journal />;
       case 'share': return <Share />;

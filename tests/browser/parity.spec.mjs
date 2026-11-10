@@ -30,20 +30,52 @@ test('a restored Russian profile and light theme survive an offline PWA reload',
   await expect(page.getByRole('button', { name: /ИИ.*пантеон|пантеон.*ИИ/i })).toBeVisible();
 });
 
-test('quick scan uses 14 real answers, leaves the full profile intact, and supports Escape', async ({ page }) => {
+test('Assessment 2.0 is the default route, Quick Scan is gone, and a full pass saves a map without writing the 147 profile', async ({ page }) => {
   const errors = []; page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
-  await page.getByRole('button', { name: /Quick scan/ }).click();
-  const dialog = page.getByRole('dialog').first();
-  await expect(dialog).toBeVisible();
-  for (let i = 0; i < 14; i++) {
-    await expect(dialog.getByRole('status')).toHaveText(`${i + 1} / 14`);
-    await dialog.locator('.ov-body button').first().click();
+  await expect(page.getByRole('button', { name: /Quick scan/ })).toHaveCount(0);
+  const first = page.locator('button.opt').first();
+  await expect(first).toContainText(/Parts map 2\.0/);
+  await first.click();
+  await expect(page.getByRole('heading', { name: /How steady do you feel right now/ })).toBeVisible({ timeout: 20_000 });
+
+  // Drive the screens by their visible controls until the result appears. Bounded, so a stuck screen fails the test.
+  let result = false;
+  for (let step = 0; step < 150 && !result; step++) {
+    if (await page.getByRole('heading', { name: 'Your parts map' }).isVisible()) { result = true; break; }
+    if (await page.locator('.p2-scale').count() > 0) {
+      const rows = page.locator('.p2-scale');
+      for (let row = 0; row < await rows.count(); row++) await rows.nth(row).locator('button').first().click();
+      await page.getByRole('button', { name: 'Next', exact: true }).click();
+    } else if (await page.getByRole('radio').count() > 0) {
+      await page.getByRole('radio').first().click();
+      const next = page.getByRole('button', { name: 'Next', exact: true });
+      if (await next.count() > 0 && await next.isEnabled()) await next.click();
+    } else if (await page.locator('.p2-pad').count() > 0 || (await page.locator('.p2-chips').count() > 0 && await page.locator('.p2-list').count() === 0)) {
+      await page.getByRole('button', { name: 'Next', exact: true }).click();
+    } else if (await page.locator('.p2-list li button').count() > 0) {
+      await page.locator('.p2-list li button').first().click();
+      if (await page.locator('.p2-status').count() > 0 && /least/i.test(await page.locator('.p2-status').innerText())) {
+        await page.locator('.p2-list li button').nth(1).click();
+      }
+    } else {
+      throw new Error('unrecognised Assessment 2.0 screen at step ' + step);
+    }
   }
-  await expect(dialog.locator('h2')).toBeVisible();
-  expect(await page.evaluate(() => localStorage.getItem('ifs.profile'))).toBeNull();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(result).toBe(true);
+  await page.getByRole('button', { name: 'Save and open my map' }).click();
+  const saved = await page.evaluate(() => ({
+    result: JSON.parse(localStorage.getItem('ifs.parts2.result') ?? 'null'),
+    parts: JSON.parse(localStorage.getItem('ifs.parts') ?? '[]'),
+    profile: localStorage.getItem('ifs.profile'),
+  }));
+  expect(saved.result?.instrument).toBe('parts-2');
+  expect(saved.parts.some((part) => part.archetype?.sourceAssessment === 'parts-2')).toBe(true);
+  expect(saved.profile).toBeNull();
+  const partsTwo = saved.parts.filter((part) => part.archetype?.sourceAssessment === 'parts-2');
+  expect(partsTwo.length).toBeGreaterThan(0);
+  // This run skips placement, so no depth was answered: depth must be stored as unknown, not as a default.
+  expect(partsTwo.every((part) => part.archetype.unmeasuredAxes.includes('DEPTH'))).toBe(true);
   expect(errors).toEqual([]);
 });
 
@@ -88,7 +120,7 @@ test('147-answer assessment resumes, completes locally, exports, and opens the c
   const filters = page.getByRole('dialog', { name: 'Filters' });
   await expect(filters).toBeVisible();
   await expect(filters.getByRole('slider')).toHaveCount(5);
-  await filters.getByRole('combobox', { name: 'X', exact: true }).selectOption('ATTACHMENT');
+  await filters.getByRole('combobox', { name: 'X', exact: true }).selectOption('BLENDING');
   await filters.getByRole('slider').nth(1).focus();
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Escape');
@@ -153,7 +185,7 @@ test('sensory style presets and individual controls stay independent and persist
 test('browser Back and Forward restore an open layer and a route, with focus on the main landmark and the URL unchanged', async ({ page }) => {
   await page.goto('/');
   const start = page.url();
-  await page.getByRole('button', { name: /Quick scan/ }).click();
+  await page.getByRole('button', { name: /Book a session/ }).click();
   await expect(page.getByRole('dialog').first()).toBeVisible();
   await page.goBack();
   await expect(page.getByRole('dialog')).toHaveCount(0);

@@ -73,10 +73,10 @@ describe('analytic coordinates panel', () => {
   it('shows the four coordinates of the first part with their statuses and agreeing projections', () => {
     mount();
     expect(rowTexts()).toEqual([
-      ['Axis 1 · Agency', '0.40', 'measured'],
-      ['Axis 2 · Temperature', '-0.20', 'measured'],
-      ['Axis 3 · Focus', '0.10', 'measured'],
-      ['Axis 4 · Attachment', '0.90', 'measured'],
+      ['Axis 1 · Energy', '0.40', 'measured'],
+      ['Axis 2 · Direction', '-0.20', 'measured'],
+      ['Axis 3 · Depth', '0.10', 'measured'],
+      ['Axis 4 · Blending', '0.90', 'measured'],
     ]);
     expect(host?.querySelector('[role="status"]')?.textContent).toBe(PARITY);
   });
@@ -106,10 +106,10 @@ describe('analytic coordinates panel', () => {
     mount();
     choose('p-partial');
     expect(rowTexts()).toEqual([
-      ['Axis 1 · Agency', '0.50', 'derived'],
-      ['Axis 2 · Temperature', 'unknown', 'unknown'],
-      ['Axis 3 · Focus', 'unknown', 'unknown'],
-      ['Axis 4 · Attachment', '-0.50', 'derived'],
+      ['Axis 1 · Energy', '0.50', 'derived'],
+      ['Axis 2 · Direction', 'unknown', 'unknown'],
+      ['Axis 3 · Depth', 'unknown', 'unknown'],
+      ['Axis 4 · Blending', '-0.50', 'derived'],
     ]);
   });
 
@@ -130,7 +130,7 @@ describe('analytic coordinates panel', () => {
   it('renders Russian copy when the app is in Russian', () => {
     mount({ lang: 'ru' });
     expect(host?.querySelector('h2')?.textContent).toBe('Аналитические координаты');
-    expect(host?.textContent).toContain('Ось 1 · Инициативность');
+    expect(host?.textContent).toContain('Ось 1 · Энергия');
   });
 });
 
@@ -146,5 +146,13 @@ describe('coordinate status rules', () => {
   it('returns four unknown coordinates for a part with no basis or only a placeholder', () => {
     expect(coordinatesForPart({ id: 'x' }).map((c) => c.status)).toEqual(['unknown', 'unknown', 'unknown', 'unknown']);
     expect(coordinatesForPart({ id: 'y', archetype: { sourceAssessment: 'studio', coordinates: [0, 0, 0, 0] } }).every((c) => c.value === null)).toBe(true);
+  });
+});
+
+describe('unknown depth in the coordinates panel', () => {
+  it('shows an axis the person did not answer as unknown, even when a reference number is stored', () => {
+    const rows = coordinatesForPart({ id: 'p', archetype: { sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.2, 0.5, 0.3, 0], unmeasuredAxes: ['DEPTH', 'BLENDING'] } });
+    expect(rows[0]).toMatchObject({ axis: 0, value: 0.2, status: 'derived' });
+    expect(rows[2]).toMatchObject({ axis: 2, value: null, status: 'unknown' });
   });
 });

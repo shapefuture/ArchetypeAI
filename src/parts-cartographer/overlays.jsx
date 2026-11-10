@@ -202,7 +202,7 @@ export function InstallPrompt({ deferred, onClose }) {
 
 /* ═══════════ Synastry (compatibility) ═══════════ */
 export function SynastryOv() {
-  const { t, lang, setOverlay, profile, toast, premium, openPaywall, parts, user } = useApp();
+  const { t, lang, setOverlay, go, profile, toast, premium, openPaywall, parts, user } = useApp();
   const [tab, setTab] = useState('gen');
   const [code, setCode] = useState('');
   const [issuedCodes, setIssuedCodes] = useState(() => {
@@ -671,8 +671,8 @@ export function SynastryOv() {
             }}>⧉ {t('copy')}</button>
           </div>
         )}
-        <button className="btn block mt16" onClick={() => (premium ? setOverlay('quickscan') : openPaywall())}>
-          ⚡ {t('quickscan')}
+        <button className="btn block mt16" onClick={() => (premium ? (setOverlay(null), go('parts-two')) : openPaywall())}>
+          ⚡ {t('routeTwoTitle')}
         </button>
       </div>
     </div>

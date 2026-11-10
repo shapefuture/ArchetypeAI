@@ -27,14 +27,14 @@ const choiceOf = (need: Need, ctx = base()): Choice => {
 const stepsOf = (c: Choice): ReadonlyArray<string> => (c.destination.kind === 'practice' ? c.destination.steps : []);
 
 describe('E02 need-based entry and first useful result', () => {
-  it('routes each of the three needs to one first step: a calm practice, a labelled fallback, and the quick scan', () => {
+  it('routes each of the three needs to one first step: a calm practice, a labelled fallback, and the Assessment 2.0 map', () => {
     for (const need of NEEDS) {
       const r = reduceEntry(startEntry(null), { type: 'choose-need', need }, base());
       expect(r.ok).toBe(true);
       expect(r.state.step.kind).toBe('route');
     }
     expect(choiceOf('calm-now').destination).toMatchObject({ kind: 'practice', practiceId: 'paced-breath' });
-    expect(choiceOf('pattern').destination).toMatchObject({ kind: 'assessment', routeId: 'quick-scan-teaser', canonical: false });
+    expect(choiceOf('pattern').destination).toMatchObject({ kind: 'assessment', routeId: 'parts-two', canonical: true });
     expect(choiceOf('calm-now').labels).toEqual({ need: 'user-authored', route: 'hypothesis', result: 'observation' });
   });
 
@@ -56,18 +56,19 @@ describe('E02 need-based entry and first useful result', () => {
     expect(noCalm.state.notice).toBe('no-reviewed-practice');
   });
 
-  it('keeps the 64 and 147 routes as deeper options only, never as a default for any need', () => {
+  it('keeps the 64 and 147 routes as deeper options only: Assessment 2.0 is the one default map', () => {
     expect(choiceOf('pattern').deeper).toEqual(['reflection-64', 'battery-147']);
     for (const need of NEEDS) {
       const d = choiceOf(need).destination;
-      if (d.kind === 'assessment') expect(d.canonical).toBe(false);
+      if (d.kind === 'assessment') expect(d.routeId).not.toMatch(/^(reflection-64|battery-147)$/);
     }
   });
 
-  it('never assumes a profile: a teaser may replace nothing when a canonical map exists, and a missing map is not invented', () => {
-    expect(choiceOf('pattern').saveRule).toBe('replace-current');
+  it('never assumes a profile: a canonical route saves only when finished, a sample never replaces a canonical map, and a missing map is not invented', () => {
+    expect(choiceOf('pattern').saveRule).toBeNull();
     const canonical = { testModel: 'angular-v2', clinical: {} };
-    expect(choiceOf('pattern', base({ profile: canonical })).saveRule).toBe('archive-only');
+    const sample = reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'route=quick-map-sample' }, base({ profile: canonical }));
+    expect(sample.state.step).toMatchObject({ kind: 'route', choice: { saveRule: 'archive-only' } });
     const battery = reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'route=battery-147' }, base({ profile: canonical }));
     expect(battery.state.step).toMatchObject({ kind: 'route', choice: { saveRule: null, labels: { result: 'canonical-measurement' } } });
   });
@@ -154,10 +155,10 @@ describe('E02 need-based entry and first useful result', () => {
   });
 
   it('a valid deep link opens its route directly, and a practice with unmet prerequisites or no review is refused', () => {
-    const teaser = reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'route=quick-scan-teaser' }, base());
+    const teaser = reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'route=parts-two' }, base());
     expect(teaser.state.step).toMatchObject({
       kind: 'route',
-      choice: { need: null, labels: { need: null, route: 'user-authored', result: 'observation' }, destination: { routeId: 'quick-scan-teaser' } },
+      choice: { need: null, labels: { need: null, route: 'user-authored', result: 'canonical-measurement' }, destination: { routeId: 'parts-two' } },
     });
     const practice = reduceEntry(startEntry(null), { type: 'open-deep-link', query: 'practice=paced-breath' }, base());
     expect(practice.state.step).toMatchObject({ kind: 'route', choice: { labels: { route: 'user-authored' }, destination: { practiceId: 'paced-breath' } } });

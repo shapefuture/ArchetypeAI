@@ -2,7 +2,7 @@
 // no auth. The shell applies the result in the same tick it mounts, so navigation
 // never waits for the cloud, and a ready route is never held back by a fixed wait.
 
-export type BootScreen = 'onboarding' | 'intro' | 'full-assessment' | 'assessment' | 'legacy-assessment' | 'universe';
+export type BootScreen = 'onboarding' | 'intro' | 'parts-two' | 'full-assessment' | 'assessment' | 'legacy-assessment' | 'universe';
 export type BootOverlay = 'checkin' | null;
 export type BootRoute = { screen: BootScreen; overlay: BootOverlay };
 
@@ -12,7 +12,9 @@ export const DEEP_LINK_PARAM = 'go';
 export const SLOW_BOOT_AFTER_MS = 12_000;
 
 const DEEP_LINK_ROUTES = new Map<string, { screen?: BootScreen; overlay?: BootOverlay }>([
-  ['assessment', { screen: 'full-assessment' }],
+  ['assessment', { screen: 'parts-two' }],
+  ['parts-two', { screen: 'parts-two' }],
+  ['battery-147', { screen: 'full-assessment' }],
   ['quick-assessment', { screen: 'assessment' }],
   ['legacy-assessment', { screen: 'legacy-assessment' }],
   ['checkin', { overlay: 'checkin' }],

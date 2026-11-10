@@ -734,7 +734,7 @@ export function QuickResults() {
         </div>
         <div className="row mt12" style={{ gap: 10 }}>
           <button className="btn ghost grow" onClick={() => (premium ? go('full-assessment') : go('assessment-gate'))}>⟲ {t('retake')}</button>
-          <button className="btn ghost grow" onClick={() => setOverlay('quickscan')}>⚡ {t('quickscan')}</button>
+          <button className="btn ghost grow" onClick={() => { setOverlay(null); go('parts-two'); }}>⚡ {t('routeTwoTitle')}</button>
         </div>
 
         <div className="card flat mt24">

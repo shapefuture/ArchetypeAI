@@ -70,6 +70,7 @@ export function buildLegacyUniverseParts(report: LegacyAssessmentReport, aiMode 
       schema: 'archetype-map.v1',
       sourceAssessment: 'legacy64',
       coordinateBasis: 'response-derived-64',
+      axisVersion: 2,
       coordinates,
       unmeasuredAxes,
       cluster: base.cluster,

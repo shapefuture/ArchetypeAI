@@ -117,7 +117,8 @@ export function skipsConfirm(family: FamilyId, scenes: SceneAnswer[]): boolean {
 /** Stage 3 level: the mean of at least two 1–5 answers. Fewer answers means unknown. */
 export function levelOf(items: Array<number | null> | undefined): number | null {
   const values = (items ?? []).filter((v): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 5);
-  if (values.length < 2) return null;
+  // The level is the mean of all three confirm items, so a partial set is unknown (plan §5).
+  if (values.length < 3) return null;
   return Math.round((values.reduce((sum, v) => sum + v, 0) / values.length) * 100) / 100;
 }
 
@@ -128,10 +129,26 @@ export type Confidence = 'high' | 'medium' | 'low';
  * medium: a skipped confirm (scenes alone), or a confirmed level that disagrees with a weak score.
  * low: the confirm level is below 3.
  */
-export function confidenceOf(score: number, level: number | null, skipped: boolean): Confidence | null {
+/** The lead of each family over the next-ranked family. The lowest-ranked family keeps its full score as its lead. */
+export function leadsOf(scores: FamilyScores): Partial<Record<FamilyId, number>> {
+  const ordered = FAMILIES
+    .map((family) => ({ family, score: scores[family] }))
+    .filter((entry): entry is { family: FamilyId; score: number } => entry.score !== null)
+    .sort((a, b) => b.score - a.score || FAMILIES.indexOf(a.family) - FAMILIES.indexOf(b.family));
+  const leads: Partial<Record<FamilyId, number>> = {};
+  ordered.forEach((entry, index) => { leads[entry.family] = entry.score - (ordered[index + 1]?.score ?? 0); });
+  return leads;
+}
+
+/**
+ * high: the confirm level is at least 3, the score is at least 0.25, and the lead over the next family is at least RANK_MARGIN.
+ * medium: a skipped confirm (scenes alone), or a confirmed level that disagrees with a weak score.
+ * low: the confirm level is below 3, or the lead over the next family is narrower than RANK_MARGIN.
+ */
+export function confidenceOf(score: number, level: number | null, skipped: boolean, lead = Number.POSITIVE_INFINITY): Confidence | null {
   if (skipped) return 'medium';
   if (level === null) return null;
-  if (level < 3) return 'low';
+  if (level < 3 || lead < RANK_MARGIN) return 'low';
   return score >= 0.25 ? 'high' : 'medium';
 }
 
@@ -208,7 +225,7 @@ export function deriveConflicts(parts: MapPart[]): Conflict[] {
   for (const protector of protectors) {
     if (!protector.blending || BLENDING_VALUE[protector.blending] < 0.4) continue;
     for (const exile of exiles) {
-      if (protector.guards.includes(exile.exile!) && (exile.level ?? 0) >= 4) {
+      if (protector.guards.includes(exile.exile!) && exile.level !== null && exile.level >= 4) {
         conflicts.push({ type: 'protector-against-exile', keys: [protector.key, exile.key] });
       }
     }
@@ -216,7 +233,8 @@ export function deriveConflicts(parts: MapPart[]): Conflict[] {
   const critic = protectors.find((p) => p.member === 'inner_critic' && p.target === 'self');
   const ashamed = exiles.find((e) => e.exile === 'ashamed');
   if (critic && ashamed) conflicts.push({ type: 'critic-against-criticised', keys: [critic.key, ashamed.key] });
-  const top = [...exiles].sort((a, b) => (b.level ?? 0) - (a.level ?? 0)).slice(0, 2);
+  // Only exiles with a measured level can be ranked against each other; an unknown level is never zero.
+  const top = exiles.filter((e) => e.level !== null).sort((a, b) => (b.level as number) - (a.level as number)).slice(0, 2);
   if (top.length === 2 && top[0].need && top[1].need && OPPOSING_NEEDS.some(([x, y]) =>
     (top[0].need === x && top[1].need === y) || (top[0].need === y && top[1].need === x))) {
     conflicts.push({ type: 'need-against-need', keys: top.map((p) => p.key) });
@@ -228,6 +246,7 @@ export function deriveConflicts(parts: MapPart[]): Conflict[] {
 export function buildAssessment2Result(input: Assessment2Input): Assessment2Result {
   const familyScores = scoreFamilies(input.scenes);
   const topFamilies = rankFamilies(familyScores);
+  const leads = leadsOf(familyScores);
   const parts: MapPart[] = [];
 
   for (const { family, rank, score } of topFamilies) {
@@ -244,7 +263,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     const placedCoords = coordsFor(key, protectorDefault(pick, timing), input.placed, blending);
     parts.push({
       key, kind: 'protector', member: pick, family, timing, target: def.defaultTarget,
-      rank, level, confidence: confidenceOf(score, level, skipped), guards, costume: input.costume?.[pick] ?? null,
+      rank, level, confidence: confidenceOf(score, level, skipped, leads[family] ?? 0), guards, costume: input.costume?.[pick] ?? null,
       placement: placedCoords.placement, coordinates: placedCoords.coordinates, unmeasuredAxes: placedCoords.unmeasuredAxes,
       blending, mapFamily: mapFamilyFor('protector', timing),
     } as MapPart);
@@ -252,7 +271,9 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
 
   if (!input.lighter) {
     const named = new Set<ExileId>();
+    // Only members the person picked name an exile. A fear left on a member who was later changed is ignored.
     for (const member of MEMBERS) {
+      if (input.picks[MEMBER_DEFS[member].family] !== member) continue;
       const fear = input.fears[member];
       if (fear && fear !== 'none') named.add(fear);
     }

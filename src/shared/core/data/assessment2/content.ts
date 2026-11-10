@@ -401,6 +401,8 @@ export const UI_COPY = {
   restart: { en: 'Start again', ru: 'Начать заново' },
   remainingSteps: { en: 'steps left', ru: 'шагов осталось' },
   placeBlendingNote: { en: 'Blending is set in the Toward step, not here.', ru: 'Слитность задаётся на шаге «Отношение», а не здесь.' },
+  providerTest: { en: 'The test for any source: after you reach toward it, is this feeling met, or skipped past?', ru: 'Проверка для любого источника: после обращения к нему чувство удовлетворено или его проскочили?' },
+  provisionalNote: { en: 'Provisional, from your first six choices', ru: 'Предварительно, по первым шести выборам' },
   stageLabel: { en: 'Stage', ru: 'Этап' },
   ofLabel: { en: 'of', ru: 'из' },
   familyLabel: { en: 'Family', ru: 'Семья' },

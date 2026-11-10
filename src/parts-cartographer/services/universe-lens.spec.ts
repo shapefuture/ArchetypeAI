@@ -95,3 +95,11 @@ describe('universe dimensional lens (map axes)', () => {
     expect(resource).not.toEqual(manager);
   });
 });
+
+describe('unmeasured axes in the lens', () => {
+  it('leaves an unmeasured axis out of the affinity, so its placeholder cannot move a part', () => {
+    expect(coordinateAffinity([1, 0, 0, 0], dimensions({ ENERGY: 1 }), false, ['ENERGY'])).toBe(0);
+    expect(coordinateAffinity([1, 0, 0, 0], dimensions({ ENERGY: 1, DEPTH: 1 }), false, ['DEPTH']))
+      .toBeCloseTo(coordinateAffinity([1, 0, 0, 0], dimensions({ ENERGY: 1 })));
+  });
+});

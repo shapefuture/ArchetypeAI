@@ -672,7 +672,7 @@ export function SynastryOv() {
           </div>
         )}
         <button className="btn block mt16" onClick={() => (premium ? (setOverlay(null), go('parts-two')) : openPaywall())}>
-          ⚡ {t('quickscan')}
+          ⚡ {t('routeTwoTitle')}
         </button>
       </div>
     </div>

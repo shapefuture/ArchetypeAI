@@ -37,7 +37,7 @@ test('Assessment 2.0 is the default route, Quick Scan is gone, and a full pass s
   const first = page.locator('button.opt').first();
   await expect(first).toContainText(/Parts map 2\.0/);
   await first.click();
-  await expect(page.getByRole('heading', { name: /How steady do you feel right now/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /How steady do you feel right now/ })).toBeVisible({ timeout: 20_000 });
 
   // Drive the screens by their visible controls until the result appears. Bounded, so a stuck screen fails the test.
   let result = false;

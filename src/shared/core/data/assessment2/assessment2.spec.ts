@@ -124,11 +124,12 @@ describe('stage 1 scoring (plan §4.1, §5)', () => {
 });
 
 describe('stage 3 level and confidence (plan §5)', () => {
-  it('needs at least two valid answers for a level, and rounds the mean', () => {
+  it('needs all three valid answers for a level, and rounds the mean', () => {
     expect(levelOf([4, null, null])).toBeNull();
-    expect(levelOf([4, 5, null])).toBe(4.5);
+    expect(levelOf([4, 5, null])).toBeNull();
     expect(levelOf([1, 2, 3])).toBe(2);
-    expect(levelOf([9, 2, 3])).toBe(2.5);
+    expect(levelOf([9, 2, 3])).toBeNull();
+    expect(levelOf([4, 5, 5])).toBe(4.67);
   });
 
   it('is high only when the confirmed level is at least 3 and the score is at least 0.25', () => {
@@ -137,6 +138,8 @@ describe('stage 3 level and confidence (plan §5)', () => {
     expect(confidenceOf(0.5, 2, false)).toBe('low');
     expect(confidenceOf(0.5, null, true)).toBe('medium');
     expect(confidenceOf(0.5, null, false)).toBeNull();
+    // A narrow lead over the next family makes the result low, however strong the level (plan §5).
+    expect(confidenceOf(0.5, 4, false, 0.05)).toBe('low');
   });
 });
 
@@ -262,5 +265,20 @@ describe('copy coverage (plan §7)', () => {
     walk(REACTION_COPY);
     walk(CONFIRM_COPY);
     for (const text of ru) expect(text).not.toMatch(/\bты\b/i);
+  });
+});
+
+describe('review fixes', () => {
+  it('ignores a fear left on a member who was changed to another pick', () => {
+    const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, fears: { inner_critic: 'ashamed' as const } };
+    expect(buildAssessment2Result(input).parts.some((p) => p.kind === 'exile')).toBe(false);
+  });
+
+  it('derives no conflict from exiles whose levels are unknown', () => {
+    const parts = [
+      { key: 'exile:abandoned', kind: 'exile', exile: 'abandoned', need: 'connection', level: null, guards: [], coordinates: [0, 0, 0, 0], unmeasuredAxes: [], blending: null, mapFamily: 'exile' },
+      { key: 'exile:powerless', kind: 'exile', exile: 'powerless', need: 'agency', level: null, guards: [], coordinates: [0, 0, 0, 0], unmeasuredAxes: [], blending: null, mapFamily: 'exile' },
+    ] as unknown as MapPart[];
+    expect(deriveConflicts(parts)).toEqual([]);
   });
 });

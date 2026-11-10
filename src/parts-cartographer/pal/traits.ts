@@ -80,7 +80,7 @@ export interface ArchetypeMapData {
   /**
    * Where the four coordinates come from, in map-axis order (Energy, Direction, Depth, Blending).
    * 'response-derived-64' is placed from the 64-item answers; 'fixed-reference-147' is the shared 147-item
-   * template; 'self-placed-2' is placed by the person in Assessment 2.0; 'family-default-2' is the reference
+   * template; 'self-placed-2' is placed by the person in Assessment 2.0 and shown as derived, not measured; 'family-default-2' is the reference
    * position used until the person places the part. None of the reference bases is a per-person measurement.
    */
   coordinateBasis?: 'response-derived-64' | 'fixed-reference-147' | 'self-placed-2' | 'family-default-2';

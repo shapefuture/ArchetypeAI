@@ -64,7 +64,8 @@ const hasArchetype = (part) => isObject(part?.archetype);
 export function coordinateStatusFor(archetype) {
   if (!isObject(archetype)) return null;
   if (archetype.coordinateBasis === 'response-derived-64') return 'measured';
-  if (archetype.coordinateBasis === 'self-placed-2') return 'measured';
+  // Placed by the person from their own answers: shown as derived, never as an instrument measurement.
+  if (archetype.coordinateBasis === 'self-placed-2') return 'derived';
   if (archetype.coordinateBasis === 'fixed-reference-147') return 'reference';
   if (archetype.coordinateBasis === 'family-default-2') return 'reference';
   if (!archetype.coordinateBasis && archetype.sourceAssessment === 'studio') return 'derived';

@@ -44,7 +44,7 @@ export function namedMembers(input: Assessment2Input): MemberId[] {
 /** Exiles named by a protector's fear answer, in the fixed exile order. */
 export function namedExiles(input: Assessment2Input): ExileId[] {
   const named = new Set<ExileId>();
-  for (const member of MEMBERS) {
+  for (const member of namedMembers(input)) {
     const fear = input.fears[member];
     if (fear && fear !== 'none') named.add(fear);
   }

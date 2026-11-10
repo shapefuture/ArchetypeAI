@@ -217,7 +217,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       const position = node.coordinates ? archetypeCoordinatePosition(node.coordinates, axes, isolation) : node.basePosition;
       const [dx, dy, dz] = node.coordinates ? [0, 0, 0] : dimensionalLensOffset(node.part.family, dimensionalExpressions);
       node.group.position.set(position[0] + dx, position[1] + dy, position[2] + dz);
-      const affinity = node.coordinates ? coordinateAffinity(node.coordinates, dimensionalExpressions, node.part.family === 'resource') : 0.5;
+      const affinity = node.coordinates ? coordinateAffinity(node.coordinates, dimensionalExpressions, node.part.family === 'resource', node.part.archetype?.unmeasuredAxes ?? []) : 0.5;
       const selected = node.part.id === selectedId;
       const scale = (node.part.archetype?.size ?? 0.8) / 0.8 * (0.6 + (node.part.archetype?.prominence ?? 40) / 100) * (selected ? 1.15 : 1);
       node.group.scale.setScalar(scale);

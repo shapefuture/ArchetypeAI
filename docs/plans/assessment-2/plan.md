@@ -326,6 +326,31 @@ Owner decisions applied: Assessment 2.0 is the default route; the four map axes 
 - The confidence thresholds (level 3, score 0.25) are guesses.
 - The Russian copy is a first draft written by the implementing agent. A native speaker has not reviewed it. The owner was asked to assign a reviewer (§12, item 5).
 
+### Review and what changed after it
+
+An independent review of the first build found the issues below. Fixed in this change:
+
+- 64-derived parts were re-projected on every load, because the adapter omitted the axis version marker. Fixed: the marker is written, and a test checks that coordinates survive a reload. AI-created studio parts and the studio base get the marker too.
+- The 3D lens affinity counted an unmeasured axis as a measured zero. Fixed: unmeasured axes are left out of the affinity.
+- Every question could not be skipped. Fixed: steadiness, timing, exile level, blending and provider each have a skip, stored as unknown. Pick and fear use none-fits.
+- A fear left on a member who was later changed still named an exile. Fixed: only the members currently picked name exiles.
+- Conflicts were derived from exiles with unknown levels, which were ranked as zero. Fixed: only measured levels are compared.
+- Confidence ignored the lead over the next family. Fixed: a lead under 0.15 makes the result low. A level now needs all three confirm items, as plan §5 says.
+- The two Quick Scan buttons still read Quick scan. Fixed: they now show the 2.0 title. Self-placed coordinates were labelled measured. Fixed: they are labelled derived.
+- The provider screen did not carry the plan §8 test. Fixed: the test is shown there. Pick screens now show the provisional family ranking from the first six choices.
+
+Departures the review raised, now recorded as decisions:
+
+- Provider forms include your future self, from the resource discussion. Plan §3.3 did not list it.
+- A low ground rating shows a hint and the lighter option. It does not switch the path automatically, because the owner chose exile on by default.
+
+Open decisions for the owner:
+
+- 64-derived parts have depth unmeasured. The 3D map places them on the middle plane, and the coordinates panel shows depth as unknown. The alternative is to hide them from the 3D view until depth is measured. Hiding them would change what every 64 user sees.
+- Stored 2.0 results are written and validated on backup, but nothing reads them back yet. A reader (for example, a last-map view on the route) is still to be built.
+- The provisional view after stage 1 is the family ranking only, not a map. A fuller provisional map needs picks, so it cannot appear before stage 2.
+- The Russian copy still needs a native-speaker review.
+
 ### Gates
 
 - `npx tsc --noEmit`: passes.

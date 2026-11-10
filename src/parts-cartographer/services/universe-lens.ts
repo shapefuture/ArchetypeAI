@@ -68,14 +68,23 @@ export function archetypeCoordinatePosition(
   return axes.map((key) => isolation && key !== isolation ? 0 : point[DIMENSION_KEYS.indexOf(key)] * 10) as [number, number, number];
 }
 
-/** Weighted Gaussian affinity between the lens and one archetype. Unmeasured axes carry a 0 placeholder and so add nothing. */
-export function coordinateAffinity(coordinates: ArchetypeCoordinates, dimensions: UniverseDimensions, resource = false): number {
-  const expressions = DIMENSION_KEYS.map((key) => Math.max(-1, Math.min(1, Number(dimensions[key]) || 0)));
+/**
+ * Weighted Gaussian affinity between the lens and one archetype. An unmeasured axis holds a placeholder number, so it
+ * is left out entirely: it neither raises nor lowers the affinity.
+ */
+export function coordinateAffinity(
+  coordinates: ArchetypeCoordinates,
+  dimensions: UniverseDimensions,
+  resource = false,
+  unmeasured: readonly string[] = [],
+): number {
+  const known = DIMENSION_KEYS.map((key) => !unmeasured.includes(key));
+  const expressions = DIMENSION_KEYS.map((key, index) => (known[index] ? Math.max(-1, Math.min(1, Number(dimensions[key]) || 0)) : 0));
   const magnitude = expressions.reduce((sum, value) => sum + Math.abs(value), 0);
   if (magnitude <= 0.01) return resource ? 0.5 : 0;
   const point = boundedCoordinates(coordinates);
   return expressions.reduce((sum, expression, index) =>
-    sum + Math.abs(expression) * Math.exp(-Math.pow(expression - point[index], 2) * 2), 0) / magnitude;
+    known[index] ? sum + Math.abs(expression) * Math.exp(-Math.pow(expression - point[index], 2) * 2) : sum, 0) / magnitude;
 }
 
 /** Apply the user's visual lens to a coordinate-bearing archetype, rather than to its family average. */

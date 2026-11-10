@@ -427,7 +427,7 @@ function ArchetypeStudio({ initialIdea = '', onClose, onCreate }) {
       setDraft({
         id: pid(), name: nm,
         family: fam, traits, role: desc,
-        archetype: { schema: 'archetype-map.v1', sourceAssessment: 'studio', coordinates: sanitizeArchetypeCoordinates(model?.coordinates) ?? [0, 0, 0, 0], cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[fam], prominence: 55, size: 0.8, description: String(model?.description ?? desc).slice(0, 2000), invitation: String(model?.invitation ?? '').slice(0, 2000), shadow: String(model?.shadow ?? '').slice(0, 2000) },
+        archetype: { schema: 'archetype-map.v1', sourceAssessment: 'studio', axisVersion: 2, coordinates: sanitizeArchetypeCoordinates(model?.coordinates) ?? [0, 0, 0, 0], cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[fam], prominence: 55, size: 0.8, description: String(model?.description ?? desc).slice(0, 2000), invitation: String(model?.invitation ?? '').slice(0, 2000), shadow: String(model?.shadow ?? '').slice(0, 2000) },
         blurb: '', energy: 55, burden: '—', need: '—', voice: '—', star: false, since: 'today',
       });
     } catch {

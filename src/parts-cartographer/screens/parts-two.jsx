@@ -4,7 +4,7 @@ import { store } from '../core/local-store.ts';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
 import { buildParts2UniverseParts, isParts2Part } from '../core/parts2-universe-adapter.ts';
 import { buildScreens, clampIndex, completedStagesFor, stageOf } from '../core/parts-two-flow.ts';
-import { SCENE_FAMILIES, buildAssessment2Result } from '../../shared/core/data/assessment2/scoring.ts';
+import { SCENE_FAMILIES, buildAssessment2Result, rankFamilies, scoreFamilies } from '../../shared/core/data/assessment2/scoring.ts';
 import {
   BLENDING_COPY, CAPACITY_COPY, CONFIRM_COPY, CONFIRM_SCALE, COSTUME_COPY, EXILE_COPY, FAMILY_COPY,
   FEAR_COPY, GROUND_COPY, MEMBER_COPY, NEED_COPY, PROVIDER_COPY, PROVIDER_FORM_COPY, REACTION_COPY, SCENE_COPY, TIMING_COPY,
@@ -53,7 +53,7 @@ function Frame({ T, screens, index, stageNames, children, onBack, onNext, nextLa
   );
 }
 
-function GroundScreen({ T, tx, input, setSteadiness, setLighter, onNext, frame }) {
+function GroundScreen({ T, tx, input, setSteadiness, setLighter, onNext, onSkip, frame }) {
   const steady = input.steadiness;
   return (
     <Frame {...frame} title={T('steadyQ')} onNext={steady ? onNext : null}>
@@ -73,6 +73,7 @@ function GroundScreen({ T, tx, input, setSteadiness, setLighter, onNext, frame }
         <span>{T('lighterOffer')}</span>
       </label>
       <p className="sub">{T('lighterNote')}</p>
+      <button type="button" className="btn ghost block" onClick={onSkip}>{T('skip')}</button>
     </Frame>
   );
 }
@@ -116,6 +117,7 @@ function PickScreen({ T, tx, frame, screen, input, setPick }) {
   return (
     <Frame {...frame} title={tx(FAMILY_COPY[screen.family])} kicker={T('narrowHelp')} onNext={null}>
       <p className="p2-note">{T('memberPickNote')}</p>
+      <p className="p2-note">{T('provisionalNote')}: {rankFamilies(scoreFamilies(input.scenes)).map((entry) => tx(FAMILY_COPY[entry.family])).join(', ')}</p>
       <ul className="p2-list">
         {options.map((member) => (
           <li key={member}>
@@ -135,7 +137,7 @@ function PickScreen({ T, tx, frame, screen, input, setPick }) {
   );
 }
 
-function TimingScreen({ T, tx, frame, screen, input, setTiming, setCostume, onNext }) {
+function TimingScreen({ T, tx, frame, screen, input, setTiming, setCostume, onNext, onSkip }) {
   const member = screen.member;
   const timing = input.timing[member];
   const costume = input.costume?.[member] ?? null;
@@ -154,6 +156,7 @@ function TimingScreen({ T, tx, frame, screen, input, setTiming, setCostume, onNe
             onClick={() => setCostume(costume === value ? null : value)}>{tx(COSTUME_COPY[value])}</button>
         ))}
       </div>
+      <button type="button" className="btn ghost block" onClick={onSkip}>{T('skip')}</button>
     </Frame>
   );
 }
@@ -223,6 +226,7 @@ function ExileScreen({ T, tx, frame, screen, input, commit, onNext }) {
             onClick={() => commit('exileNeed', exile, value)}>{tx(NEED_COPY[value])}</button>
         ))}
       </div>
+      <button type="button" className="btn ghost block" onClick={() => onNext({ level: null, need })}>{T('skip')}</button>
     </Frame>
   );
 }
@@ -241,11 +245,12 @@ function BlendScreen({ T, tx, frame, screen, input, setBlending }) {
         ))}
       </div>
       <p className="p2-note">{T('placeBlendingNote')}</p>
+      <button type="button" className="btn ghost block" onClick={() => setBlending(key, null)}>{T('skip')}</button>
     </Frame>
   );
 }
 
-function ProviderScreen({ T, tx, frame, screen, input, onNext }) {
+function ProviderScreen({ T, tx, frame, screen, input, onNext, onSkip }) {
   const exile = screen.exile;
   const need = input.exileNeed[exile] ?? EXILE_NEED[exile];
   const saved = input.providers[exile];
@@ -253,6 +258,7 @@ function ProviderScreen({ T, tx, frame, screen, input, onNext }) {
   const [form, setForm] = useState(saved?.form ?? null);
   return (
     <Frame {...frame} title={tx(EXILE_COPY[exile].name)} kicker={tx(PROVIDER_COPY[NEED_PROVIDER[need]])} onNext={access ? () => onNext({ access, form: access === 'none' ? undefined : form ?? undefined }) : null}>
+      <p className="p2-note">{T('providerTest')}</p>
       <p className="p2-kicker">{T('providerQ')}</p>
       <div className="p2-choices" role="radiogroup" aria-label={T('providerQ')}>
         {PROVIDER_ACCESS.map((value) => (
@@ -271,6 +277,7 @@ function ProviderScreen({ T, tx, frame, screen, input, onNext }) {
           </div>
         </>
       ) : null}
+      <button type="button" className="btn ghost block" onClick={onSkip}>{T('skip')}</button>
     </Frame>
   );
 }
@@ -468,7 +475,8 @@ export function PartsTwo() {
         <GroundScreen T={T} tx={tx} input={input} frame={frame}
           setSteadiness={(value) => setInput((prev) => ({ ...prev, steadiness: value }))}
           setLighter={(value) => setInput((prev) => ({ ...prev, lighter: value }))}
-          onNext={forward} />
+          onNext={forward}
+          onSkip={forward} />
       );
     case 'scene':
       return (
@@ -486,7 +494,8 @@ export function PartsTwo() {
         <TimingScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
           setTiming={(value) => patch('timing', screen.member, value)}
           setCostume={(value) => patch('costume', screen.member, value)}
-          onNext={forward} />
+          onNext={forward}
+          onSkip={forward} />
       );
     case 'confirm':
       return (
@@ -512,7 +521,8 @@ export function PartsTwo() {
     case 'provider':
       return (
         <ProviderScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
-          onNext={({ access, form }) => { patch('providers', screen.exile, { access, form }); forward(); }} />
+          onNext={({ access, form }) => { patch('providers', screen.exile, { access, form }); forward(); }}
+          onSkip={() => { patch('providers', screen.exile, undefined); forward(); }} />
       );
     case 'capacity':
       return (

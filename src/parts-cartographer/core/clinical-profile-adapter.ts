@@ -153,7 +153,7 @@ export function archetypeOf<T extends { cluster: string; size: number }>(family:
 
 /** The archetype a part gets when the person places it in a family: studio-made, centred, with that family's cluster and size. */
 export function studioArchetypeFor(family: Family): ArchetypeMapData {
-  const base: ArchetypeMapData = { schema: 'archetype-map.v1', sourceAssessment: 'studio', coordinates: [0, 0, 0, 0], prominence: 55, cluster: '', size: 0 };
+  const base: ArchetypeMapData = { schema: 'archetype-map.v1', sourceAssessment: 'studio', axisVersion: 2, coordinates: [0, 0, 0, 0], prominence: 55, cluster: '', size: 0 };
   return archetypeOf(family, base);
 }
 

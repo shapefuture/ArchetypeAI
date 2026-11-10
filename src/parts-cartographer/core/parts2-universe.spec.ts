@@ -1,3 +1,4 @@
+import { buildLegacyUniverseParts } from './legacy-universe-adapter';
 import { describe, expect, it } from 'vitest';
 import { SCENES, SCENE_FAMILIES, buildAssessment2Result, isAssessment2Result, type Assessment2Input, type SceneAnswer } from '../../shared/core/data/assessment2/scoring';
 import { FAMILIES, type FamilyId } from '../../shared/core/data/assessment2/taxonomy';
@@ -113,5 +114,24 @@ describe('stored axes are converted once on load (plan §3.5)', () => {
 describe('FAMILIES is the 2.0 family list', () => {
   it('has eight families', () => {
     expect(FAMILIES).toHaveLength(8);
+  });
+});
+
+describe('map parts keep their coordinates when they are loaded again', () => {
+  it('keeps 64-derived coordinates unchanged on reload', () => {
+    const report = { language: 'en', archetypes: [{ name: 'Gift', description: 'd', wound: 'w', shadow: 's', invitation: 'i', coreBelief: 'c', attracts: 'a', cluster: 'gift_archetypes', partType: 'manager', prominence: 50, size: 0.8, coordinates: [0.5, -0.5, 0.2, 0.4] }] } as any;
+    const once = buildLegacyUniverseParts(report);
+    const reloaded = usableParts(JSON.parse(JSON.stringify(once)));
+    expect(reloaded).toHaveLength(1);
+    expect(reloaded[0].archetype?.coordinates).toEqual(once[0].archetype?.coordinates);
+  });
+
+  it('keeps 2.0 placed coordinates unchanged on reload', () => {
+    const result = buildAssessment2Result({ ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, placed: { 'member:rebel': { energy: 0.25, direction: 0.5, depth: 0.1 } } });
+    const once = buildParts2UniverseParts(result, 'en');
+    const reloaded = usableParts(JSON.parse(JSON.stringify(once)));
+    const before = once.find((p) => p.id === 'parts2_member_rebel');
+    const after = reloaded.find((p) => p.id === 'parts2_member_rebel');
+    expect(after?.archetype?.coordinates).toEqual(before?.archetype?.coordinates);
   });
 });

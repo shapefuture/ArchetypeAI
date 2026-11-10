@@ -81,3 +81,9 @@ describe('Assessment 2.0 screen order (plan §4)', () => {
     expect(stageOf({ kind: 'result' })).toBe(7);
   });
 });
+
+describe('exile names follow the picks', () => {
+  it('names no exile from a fear left on a member who is no longer picked', () => {
+    expect(namedExiles({ ...blank(), picks: { attack: 'inner_critic' as const }, fears: { rebel: 'frightened' as const } })).toEqual([]);
+  });
+});

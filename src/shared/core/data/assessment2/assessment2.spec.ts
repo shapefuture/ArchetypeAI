@@ -321,7 +321,8 @@ describe('copy coverage (plan §7)', () => {
     walk({ scenes: copyCoverage, UI_COPY });
     walk(REACTION_COPY);
     walk(CONFIRM_COPY);
-    for (const text of ru) expect(text).not.toMatch(/\bты\b/i);
+    // \b is ASCII-only in JavaScript, so a Cyrillic word needs Unicode letter lookarounds.
+    for (const text of ru) expect(text).not.toMatch(/(?<!\p{L})ты(?!\p{L})/iu);
   });
 });
 

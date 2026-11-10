@@ -4,10 +4,11 @@ import { store } from '../core/local-store.ts';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
 import { buildParts2UniverseParts, isParts2Part } from '../core/parts2-universe-adapter.ts';
 import { buildScreens, clampIndex, completedStagesFor, stageOf } from '../core/parts-two-flow.ts';
+import { CATALOG_REVIEW, reviewedPractices } from '../core/practice-catalog.ts';
 import { SCENE_FAMILIES, buildAssessment2Result, rankFamilies, sanitizePlaced, scoreFamilies } from '../../shared/core/data/assessment2/scoring.ts';
 import {
   BLENDING_COPY, CAPACITY_COPY, CONFIRM_COPY, CONFIRM_SCALE, COSTUME_COPY, EXILE_COPY, FAMILY_COPY,
-  FEAR_COPY, GROUND_COPY, MEMBER_COPY, NEED_COPY, PROVIDER_COPY, PROVIDER_FORM_COPY, REACTION_COPY, SCENE_COPY, TIMING_COPY,
+  FEAR_COPY, GAP_COPY, GROUND_COPY, MEMBER_COPY, NEED_COPY, NEED_PRACTICE, PROVIDER_COPY, PROVIDER_FORM_COPY, REACTION_COPY, SCENE_COPY, TIMING_COPY,
   UI_COPY, ACCESS_COPY,
 } from '../../shared/core/data/assessment2/content.ts';
 import {
@@ -368,7 +369,20 @@ export function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
   );
 }
 
-function ResultView({ T, tx, input, onSave, onRestart }) {
+/** The gap for an exile whose provider is 'none'. A practice title shows only once the catalog is reviewed. */
+function GapLines({ T, tx, locale, need }) {
+  const practice = CATALOG_REVIEW.status === 'reviewed'
+    ? reviewedPractices(locale).find((entry) => entry.id === NEED_PRACTICE[need])
+    : undefined;
+  return (
+    <>
+      <p>{tx(GAP_COPY).replace('{need}', tx(NEED_COPY[need]))}</p>
+      <p>{practice ? `${T('practiceSuggested')}: ${practice.title}` : T('practiceAfterReview')}</p>
+    </>
+  );
+}
+
+function ResultView({ T, tx, locale, input, onSave, onRestart }) {
   const result = useMemo(() => buildAssessment2Result({ ...input, completedStages: completedStagesFor(input) }), [input]);
   const confidence = { high: T('confHigh'), medium: T('confMedium'), low: T('confLow') };
   return (
@@ -402,6 +416,7 @@ function ResultView({ T, tx, input, onSave, onRestart }) {
               {part.guards.length ? <p>{T('guards')}: {part.guards.map((e) => tx(EXILE_COPY[e].name)).join(', ')}</p> : null}
               {part.need ? <p>{T('needLabel')}: {tx(NEED_COPY[part.need])}</p> : null}
               {part.provider ? <p>{T('providerLabel')}: {tx(ACCESS_COPY[part.provider.access])}{part.provider.form ? ` · ${tx(PROVIDER_FORM_COPY[part.provider.form])}` : ''}</p> : null}
+              {part.kind === 'exile' && part.need && part.provider?.access === 'none' ? <GapLines T={T} tx={tx} locale={locale} need={part.need} /> : null}
               {part.costume ? <p>{tx(COSTUME_COPY[part.costume])}</p> : null}
               {part.blending ? <p>{tx(BLENDING_COPY[part.blending])}</p> : null}
             </li>
@@ -488,7 +503,7 @@ export function PartsTwo() {
   }
 
   if (screen.kind === 'result') {
-    return <ResultView T={T} tx={tx} input={input} onSave={save} onRestart={restart} />;
+    return <ResultView T={T} tx={tx} locale={locale} input={input} onSave={save} onRestart={restart} />;
   }
 
   const frame = { ...frameBase, screens, index: at, onBack: back, onNext: null, nextLabel: null, nextDisabled: false };

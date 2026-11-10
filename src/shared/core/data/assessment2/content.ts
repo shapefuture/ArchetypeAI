@@ -239,6 +239,25 @@ export const NEED_COPY: Record<NeedId, Bi> = {
   aliveness: { en: 'Aliveness', ru: 'Жизненность' },
 };
 
+/** Shown for an exile whose provider access is 'none'. `{need}` is replaced by the need's name in the same language. */
+export const GAP_COPY: Bi = {
+  en: 'Nothing comes to mind for {need} yet. Notice that. It is not a score.',
+  ru: 'Пока ничего не приходит в голову для потребности «{need}». Заметьте это. Это не оценка.',
+};
+
+/**
+ * Draft map from build-and-fix plan B1 (G13). Each id must be in CATALOG_EXERCISE_IDS (core/practice-catalog.ts).
+ * The catalog is still draft, so the result shows a title only after review. connection and aliveness are weak fits.
+ */
+export const NEED_PRACTICE: Record<NeedId, string> = {
+  safety: 'build-safe-place',
+  connection: 'self-compassion-break',
+  attunement: 'what-was-it-like',
+  worth: 'noticing-reframe',
+  agency: 'possible-selves',
+  aliveness: 'body-scan-3min',
+};
+
 export const PROVIDER_COPY: Record<ProviderRole, Bi> = {
   guardian: { en: 'Guardian: stands between you and the threat, and believes you.', ru: 'Страж: встаёт между вами и угрозой и верит вам.' },
   companion: { en: 'Companion: stays, and shows you that you have a place here.', ru: 'Спутник: остаётся рядом и показывает, что вам здесь место.' },
@@ -355,6 +374,8 @@ export const UI_COPY = {
   feelQ: { en: 'How do you feel toward this part?', ru: 'Как вы относитесь к этой части?' },
   providerQ: { en: 'Is there anyone or anything, real or imagined, that gives this?', ru: 'Есть ли кто-то или что-то, реальное или воображаемое, что даёт это?' },
   providerFormQ: { en: 'Who or what could give it? Choose the form that feels right.', ru: 'Кто или что могло бы это дать? Выберите подходящую форму.' },
+  practiceAfterReview: { en: 'Practices for this need appear after review.', ru: 'Практики для этой потребности появятся после проверки.' },
+  practiceSuggested: { en: 'Suggested practice', ru: 'Предлагаемая практика' },
   capacityEasyQ: { en: 'Which of these do you reach for easily?', ru: 'К чему из этого вы обращаетесь легко?' },
   capacityHardQ: { en: 'Which of these is hardest to reach?', ru: 'К чему из этого труднее всего дотянуться?' },
   groundQ: { en: 'What helps you feel steady? Choose any that apply.', ru: 'Что помогает вам чувствовать опору? Отметьте всё подходящее.' },

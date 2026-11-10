@@ -11,10 +11,11 @@ import {
   type Traits,
 } from '../pal/traits';
 import type { ScoredArchetype } from '../../shared/core/data/scoring';
+import { legacy64ToMapPlacement } from '../../shared/core/data/map-axes';
 import type { LegacyAssessmentReport } from '../screens/legacy-report-data';
 import type { LegacyAiArchetype } from './legacy-ai-analysis';
 
-const FAMILY_COLOR: Record<Family, string> = {
+export const FAMILY_COLOR: Record<Family, string> = {
   manager: '#3B9BFF',
   firefighter: '#FF8A1F',
   exile: '#FF2D8A',
@@ -26,15 +27,7 @@ function familyFor(partType: string): Family {
   return 'resource';
 }
 
-function coordinateTuple(value: unknown): [number, number, number, number] {
-  if (!Array.isArray(value) || value.length !== 4) return [0, 0, 0, 0];
-  return value.map((entry) => {
-    const number = Number(entry);
-    return Number.isFinite(number) ? Math.max(-1, Math.min(1, number)) : 0;
-  }) as [number, number, number, number];
-}
-
-function deterministicTraits(id: string, family: Family): Traits {
+export function deterministicTraits(id: string, family: Family): Traits {
   const seed = hashStr(id);
   const take = <T,>(items: readonly T[], offset: number) => items[Math.abs(seed + offset) % items.length];
   return {
@@ -65,7 +58,8 @@ export function buildLegacyUniverseParts(report: LegacyAssessmentReport, aiMode 
   const placement = report.deterministicArchetypes ?? report.archetypes;
   return placement.map((base, index) => {
     const content = aiArchetype(aiPantheon[index], base);
-    const coordinates = coordinateTuple(base.coordinates);
+    // The 64 centres become energy and direction; depth and blending are unmeasured here (plan §3.5, map-axes.ts).
+    const { coordinates, unmeasuredAxes } = legacy64ToMapPlacement(base.coordinates);
     const cluster = String(base.cluster || 'gift_archetypes').replace(/[^a-z0-9_]/gi, '_');
     const coordinateId = coordinates.map((value) => Math.round(value * 100)).join('_');
     const id = `legacy64_${cluster}_${coordinateId}_${index}`;
@@ -77,6 +71,7 @@ export function buildLegacyUniverseParts(report: LegacyAssessmentReport, aiMode 
       sourceAssessment: 'legacy64',
       coordinateBasis: 'response-derived-64',
       coordinates,
+      unmeasuredAxes,
       cluster: base.cluster,
       prominence,
       size,

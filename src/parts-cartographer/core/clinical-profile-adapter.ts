@@ -21,6 +21,7 @@ import { hashStr } from './ports';
 import { FAMILY_LABELS, SEED_PARTS, type ArchetypeMapData, type Family, type Part } from '../pal/traits';
 import { SCORING_NAME_POOLS, type Lang } from '../i18n/strings';
 import { IV_PARTS } from '../../shared/features/landing/stickers';
+import { referenceMapPlacement } from '../../shared/core/data/map-axes';
 
 const PART_NAME_EN: Record<string, string> = {
   taskmaster: 'Taskmaster',
@@ -187,6 +188,8 @@ function projectedPart(
   const tierUi = SHARED_STRINGS.innerverseReport.ui[lang === 'ru' ? 'ru' : 'en'];
   const band = score.band ? ` · ${tierUi.bandNames[score.band] ?? score.band}` : '';
   const reference = IV_PARTS.find((part) => part.id === id)!;
+  // Reference template, not a measurement: energy, direction and depth; blending is unmeasured (plan §3.5).
+  const referencePlacement = referenceMapPlacement(reference.ax.en, reference.ax.di, reference.ax.de);
 
   return {
     id,
@@ -210,8 +213,9 @@ function projectedPart(
       schema: 'archetype-map.v1',
       sourceAssessment: 'descent147',
       coordinateBasis: 'fixed-reference-147',
-      coordinates: [reference.ax.ag, reference.ax.te, reference.ax.fo, reference.ax.at]
-        .map((value) => (value - 50) / 50) as [number, number, number, number],
+      axisVersion: 2,
+      coordinates: referencePlacement.coordinates,
+      unmeasuredAxes: referencePlacement.unmeasuredAxes,
       cluster: FAMILY_ARCHETYPE[family].cluster,
       prominence: Math.max(0, Math.min(100, (score.T - 20) / 60 * 100)),
       size: FAMILY_ARCHETYPE[family].size,

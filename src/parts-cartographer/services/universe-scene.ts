@@ -265,10 +265,10 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     },
     setDimensions(dimensions) {
       dimensionalExpressions = {
-        AGENCY: Math.max(-1, Math.min(1, Number(dimensions.AGENCY) || 0)),
-        TEMPERATURE: Math.max(-1, Math.min(1, Number(dimensions.TEMPERATURE) || 0)),
-        FOCUS: Math.max(-1, Math.min(1, Number(dimensions.FOCUS) || 0)),
-        ATTACHMENT: Math.max(-1, Math.min(1, Number(dimensions.ATTACHMENT) || 0)),
+        ENERGY: Math.max(-1, Math.min(1, Number(dimensions.ENERGY) || 0)),
+        DIRECTION: Math.max(-1, Math.min(1, Number(dimensions.DIRECTION) || 0)),
+        DEPTH: Math.max(-1, Math.min(1, Number(dimensions.DEPTH) || 0)),
+        BLENDING: Math.max(-1, Math.min(1, Number(dimensions.BLENDING) || 0)),
       };
     },
     onPick(callback) { pickCb = callback; },

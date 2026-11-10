@@ -1,17 +1,19 @@
 import type { Part } from '../pal/traits';
+import { MAP_AXIS_KEYS, MAP_DEFAULT_PLOT, type MapAxisKey } from '../../shared/core/data/map-axes';
 
+/** The user's visual lens over the map: one expression per map axis (plan §3.5). Not evidence, only a view. */
 export interface UniverseDimensions {
-  AGENCY: number;
-  TEMPERATURE: number;
-  FOCUS: number;
-  ATTACHMENT: number;
+  ENERGY: number;
+  DIRECTION: number;
+  DEPTH: number;
+  BLENDING: number;
 }
 
 export type ArchetypeCoordinates = [number, number, number, number];
 export type DimensionKey = keyof UniverseDimensions;
-export const DIMENSION_KEYS: DimensionKey[] = ['AGENCY', 'TEMPERATURE', 'FOCUS', 'ATTACHMENT'];
+export const DIMENSION_KEYS: DimensionKey[] = [...MAP_AXIS_KEYS];
 export type UniverseAxes = [DimensionKey, DimensionKey, DimensionKey];
-export const DEFAULT_AXES: UniverseAxes = ['AGENCY', 'TEMPERATURE', 'FOCUS'];
+export const DEFAULT_AXES: UniverseAxes = [...MAP_DEFAULT_PLOT];
 
 /** Three distinct known dimensions, or the default projection. Repeated axes would collapse the 3D view. */
 export function normalizeAxes(value: unknown): UniverseAxes {
@@ -30,17 +32,18 @@ export function setAxisChoice(axes: UniverseAxes, index: number, key: DimensionK
 }
 
 export const ZERO_DIMENSIONS: UniverseDimensions = {
-  AGENCY: 0,
-  TEMPERATURE: 0,
-  FOCUS: 0,
-  ATTACHMENT: 0,
+  ENERGY: 0,
+  DIRECTION: 0,
+  DEPTH: 0,
+  BLENDING: 0,
 };
 
+/** Fallback placement for ordinary parts that predate coordinate data, in map-axis order. */
 const FAMILY_DIMENSIONS: Record<Part['family'], [number, number, number, number]> = {
-  manager: [-0.8, -0.25, 0.15, -0.2],
-  firefighter: [0.3, 0.8, 0.1, 0.5],
-  exile: [0, 0.65, 0.75, 0.85],
-  resource: [0.35, 0.2, 0.35, 0.3],
+  manager: [0.4, 0.0, 0.6, 0],
+  firefighter: [0.5, 0.2, 0.3, 0],
+  exile: [-0.4, -0.2, -0.7, 0],
+  resource: [0.4, 0.4, 0.4, 0],
 };
 
 export function sanitizeArchetypeCoordinates(value: unknown): ArchetypeCoordinates | null {
@@ -61,11 +64,11 @@ export function archetypeCoordinatePosition(
   isolation: DimensionKey | null = null,
 ): [number, number, number] {
   const point = boundedCoordinates(coordinates);
-  if (isolation === 'ATTACHMENT') return [point[0] * 10, point[3] * 10, 0];
+  if (isolation === 'BLENDING') return [point[0] * 10, point[3] * 10, 0];
   return axes.map((key) => isolation && key !== isolation ? 0 : point[DIMENSION_KEYS.indexOf(key)] * 10) as [number, number, number];
 }
 
-/** Same weighted Gaussian affinity as Angular's exploration and report layers. */
+/** Weighted Gaussian affinity between the lens and one archetype. Unmeasured axes carry a 0 placeholder and so add nothing. */
 export function coordinateAffinity(coordinates: ArchetypeCoordinates, dimensions: UniverseDimensions, resource = false): number {
   const expressions = DIMENSION_KEYS.map((key) => Math.max(-1, Math.min(1, Number(dimensions[key]) || 0)));
   const magnitude = expressions.reduce((sum, value) => sum + Math.abs(value), 0);
@@ -80,11 +83,15 @@ export function archetypeLensOffset(
   coordinates: ArchetypeCoordinates,
   dimensions: UniverseDimensions,
 ): [number, number, number] {
-  const [agency, temperature, focus, attachment] = boundedCoordinates(coordinates);
+  const [energy, direction, depth, blending] = boundedCoordinates(coordinates);
+  return lensProjection(energy, direction, depth, blending, dimensions);
+}
+
+function lensProjection(energy: number, direction: number, depth: number, blending: number, dimensions: UniverseDimensions): [number, number, number] {
   const projected: [number, number, number] = [
-    (dimensions.AGENCY * agency + dimensions.FOCUS * focus) * 3.2,
-    (dimensions.TEMPERATURE * temperature + dimensions.ATTACHMENT * attachment) * 3.2,
-    (dimensions.ATTACHMENT * attachment - dimensions.AGENCY * agency) * 3.2,
+    (dimensions.ENERGY * energy + dimensions.DEPTH * depth) * 3.2,
+    (dimensions.DIRECTION * direction + dimensions.BLENDING * blending) * 3.2,
+    (dimensions.BLENDING * blending - dimensions.ENERGY * energy) * 3.2,
   ];
   return projected.map((value) => value === 0 ? 0 : value) as [number, number, number];
 }
@@ -94,11 +101,8 @@ export function dimensionalLensOffset(
   family: Part['family'],
   dimensions: UniverseDimensions,
 ): [number, number, number] {
-  const [agency, temperature, focus, attachment] = FAMILY_DIMENSIONS[family];
-  const projected: [number, number, number] = [
-    (dimensions.AGENCY * agency + dimensions.FOCUS * focus) * 3.2,
-    (dimensions.TEMPERATURE * temperature + dimensions.ATTACHMENT * attachment) * 3.2,
-    (dimensions.ATTACHMENT * attachment - dimensions.AGENCY * agency) * 3.2,
-  ];
-  return projected.map((value) => value === 0 ? 0 : value) as [number, number, number];
+  const [energy, direction, depth, blending] = FAMILY_DIMENSIONS[family];
+  return lensProjection(energy, direction, depth, blending, dimensions);
 }
+
+export type { MapAxisKey };

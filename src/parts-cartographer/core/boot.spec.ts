@@ -10,7 +10,9 @@ describe('resolveBootRoute', () => {
   });
 
   it('applies each shortcut deep link to its requested route, including before onboarding', () => {
-    expect(resolveBootRoute('?go=assessment', true)).toEqual({ screen: 'full-assessment', overlay: null });
+    expect(resolveBootRoute('?go=assessment', true)).toEqual({ screen: 'parts-two', overlay: null });
+    expect(resolveBootRoute('?go=parts-two', true)).toEqual({ screen: 'parts-two', overlay: null });
+    expect(resolveBootRoute('?go=battery-147', true)).toEqual({ screen: 'full-assessment', overlay: null });
     expect(resolveBootRoute('?go=quick-assessment', false)).toEqual({ screen: 'assessment', overlay: null });
     expect(resolveBootRoute('?go=legacy-assessment', true)).toEqual({ screen: 'legacy-assessment', overlay: null });
     expect(resolveBootRoute('?go=universe', false)).toEqual({ screen: 'universe', overlay: null });

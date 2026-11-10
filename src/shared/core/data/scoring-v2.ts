@@ -245,20 +245,3 @@ function buildCopingStack(parts: Record<ShadowPartId, PartScore>): CopingStack {
   return { l1, l2, l3: ff, floor };
 }
 
-// --- §1.13 Quick Scan — 14 items, one per shadow family, provisional only ---
-
-export type QuickScanResult =
-  | { kind: 'family'; family: ShadowPartId; subtypeName: string }
-  | { kind: 'self' };
-
-export function quickScan(items: Partial<Record<ShadowPartId, number>>): QuickScanResult {
-  let best: { family: ShadowPartId; raw: number } | null = null;
-  for (const family of SHADOW_PARTS) {
-    const raw = items[family] ?? 0;
-    if (!best || raw > best.raw) best = { family, raw };
-  }
-  if (best && best.raw >= 4) {
-    return { kind: 'family', family: best.family, subtypeName: SUBTYPES[best.family][0].name };
-  }
-  return { kind: 'self' };
-}

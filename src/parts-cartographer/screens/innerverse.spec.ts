@@ -111,10 +111,10 @@ describe('React Innerverse parity controls', () => {
   });
 
   it('applies saved dimensional expressions to the live scene API', () => {
-    localStorage.setItem('ifs.universe.dimensions.v1', JSON.stringify({ AGENCY: 0.6, TEMPERATURE: 0, FOCUS: -0.2, ATTACHMENT: 0 }));
+    localStorage.setItem('ifs.universe.dimensions.v2', JSON.stringify({ ENERGY: 0.6, DIRECTION: 0, DEPTH: -0.2, BLENDING: 0 }));
     const container = mount();
     const setDimensions = appMock.current?.spies.setDimensions;
-    expect(setDimensions).toHaveBeenCalledWith({ AGENCY: 0.6, TEMPERATURE: 0, FOCUS: -0.2, ATTACHMENT: 0 });
+    expect(setDimensions).toHaveBeenCalledWith({ ENERGY: 0.6, DIRECTION: 0, DEPTH: -0.2, BLENDING: 0 });
     expect(appMock.current?.uniRef.current.setParts).toHaveBeenCalledWith(SEED_PARTS);
     expect(container).toBeTruthy();
   });

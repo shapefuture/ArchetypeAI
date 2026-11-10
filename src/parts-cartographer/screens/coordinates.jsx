@@ -4,6 +4,7 @@ import { useApp } from '../app.jsx';
 import { store, KEYS } from '../core/local-store.ts';
 import { coordinatesFromTuple, project, projectionsAgree } from '../core/analytic-coordinates.ts';
 import { UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
+import { MAP_AXIS_KEYS } from '../../shared/core/data/map-axes.ts';
 import './replay.css';
 
 const COPY = {
@@ -63,12 +64,14 @@ const hasArchetype = (part) => isObject(part?.archetype);
 export function coordinateStatusFor(archetype) {
   if (!isObject(archetype)) return null;
   if (archetype.coordinateBasis === 'response-derived-64') return 'measured';
+  if (archetype.coordinateBasis === 'self-placed-2') return 'measured';
   if (archetype.coordinateBasis === 'fixed-reference-147') return 'reference';
+  if (archetype.coordinateBasis === 'family-default-2') return 'reference';
   if (!archetype.coordinateBasis && archetype.sourceAssessment === 'studio') return 'derived';
   return null;
 }
 
-/** Four coordinates for one part. Missing, invalid or placeholder values become unknown, never zero. */
+/** Four coordinates for one part. Missing, invalid, unmeasured or placeholder values become unknown, never zero. */
 export function coordinatesForPart(part) {
   const archetype = hasArchetype(part) ? part.archetype : null;
   const status = coordinateStatusFor(archetype);
@@ -76,7 +79,10 @@ export function coordinatesForPart(part) {
   // Studio parts saved without a usable description carry an all-zero placeholder. That is not a measurement.
   const placeholder = archetype?.sourceAssessment === 'studio' && tuple.length === 4 && tuple.every((value) => value === 0);
   if (!status || placeholder) return coordinatesFromTuple([], 'derived');
-  return coordinatesFromTuple(tuple, status);
+  // Axes the instrument did not measure (for example depth and blending from the 64) are unknown, not placeholders.
+  const unmeasured = new Set(Array.isArray(archetype.unmeasuredAxes) ? archetype.unmeasuredAxes : []);
+  const known = tuple.map((value, index) => (unmeasured.has(MAP_AXIS_KEYS[index]) ? null : value));
+  return coordinatesFromTuple(known, status);
 }
 
 function readCoordinateParts(contextParts) {
@@ -94,7 +100,7 @@ export function CoordinatesPanel() {
   const selected = parts.find((part) => part.id === chosenId) ?? parts.find(hasArchetype) ?? parts[0] ?? null;
 
   const names = UNIVERSE_DIMENSIONS_COPY[lang];
-  const dimensionNames = [names.agency, names.temperature, names.focus, names.attachment];
+  const dimensionNames = [names.energy, names.direction, names.depth, names.blending];
 
   const header = <h2 id="analytic-coordinates-title">{ui.title}</h2>;
   if (!selected) {

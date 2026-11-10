@@ -73,10 +73,10 @@ describe('analytic coordinates panel', () => {
   it('shows the four coordinates of the first part with their statuses and agreeing projections', () => {
     mount();
     expect(rowTexts()).toEqual([
-      ['Axis 1 · Agency', '0.40', 'measured'],
-      ['Axis 2 · Temperature', '-0.20', 'measured'],
-      ['Axis 3 · Focus', '0.10', 'measured'],
-      ['Axis 4 · Attachment', '0.90', 'measured'],
+      ['Axis 1 · Energy', '0.40', 'measured'],
+      ['Axis 2 · Direction', '-0.20', 'measured'],
+      ['Axis 3 · Depth', '0.10', 'measured'],
+      ['Axis 4 · Blending', '0.90', 'measured'],
     ]);
     expect(host?.querySelector('[role="status"]')?.textContent).toBe(PARITY);
   });
@@ -106,10 +106,10 @@ describe('analytic coordinates panel', () => {
     mount();
     choose('p-partial');
     expect(rowTexts()).toEqual([
-      ['Axis 1 · Agency', '0.50', 'derived'],
-      ['Axis 2 · Temperature', 'unknown', 'unknown'],
-      ['Axis 3 · Focus', 'unknown', 'unknown'],
-      ['Axis 4 · Attachment', '-0.50', 'derived'],
+      ['Axis 1 · Energy', '0.50', 'derived'],
+      ['Axis 2 · Direction', 'unknown', 'unknown'],
+      ['Axis 3 · Depth', 'unknown', 'unknown'],
+      ['Axis 4 · Blending', '-0.50', 'derived'],
     ]);
   });
 
@@ -130,7 +130,7 @@ describe('analytic coordinates panel', () => {
   it('renders Russian copy when the app is in Russian', () => {
     mount({ lang: 'ru' });
     expect(host?.querySelector('h2')?.textContent).toBe('Аналитические координаты');
-    expect(host?.textContent).toContain('Ось 1 · Инициативность');
+    expect(host?.textContent).toContain('Ось 1 · Энергия');
   });
 });
 

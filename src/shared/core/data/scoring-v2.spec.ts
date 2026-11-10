@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import type { ShadowPartId, ResourceId, SelfQuality } from './parts';
 import { SHADOW_PARTS, RESOURCES, SELF_QUALITIES, PROTECTORS } from './parts';
 import {
-  scoreProfile, quickScan, REVERSE_KEYED_INDEXES, type AssessmentInput,
+  scoreProfile, REVERSE_KEYED_INDEXES, type AssessmentInput,
 } from './scoring-v2';
 
 const n8 = (v: number) => Array(8).fill(v) as number[];
@@ -235,19 +235,6 @@ describe('§1.11 coping stack', () => {
     expect(p.copingStack.l2).toBeUndefined();
     expect(p.copingStack.l3).toBeUndefined();
     expect(p.copingStack.floor).toBe('ashamed');
-  });
-});
-
-describe('§1.13 quick scan', () => {
-  it('top family ≥ 4 → that family’s base subtype teaser', () => {
-    const qs = quickScan({ taskmaster: 5, abandoned: 3 } as Record<ShadowPartId, number>);
-    expect(qs.kind).toBe('family');
-    expect(qs.family).toBe('taskmaster');
-    expect(qs.subtypeName).toBe('The Striver');
-  });
-  it('nothing ≥ 4 → Self teaser', () => {
-    const qs = quickScan({ taskmaster: 3, abandoned: 3 } as Record<ShadowPartId, number>);
-    expect(qs.kind).toBe('self');
   });
 });
 

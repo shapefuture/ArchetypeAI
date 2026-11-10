@@ -116,15 +116,16 @@ export function presentItems(items: ReadonlyArray<PresentableItem>, selectedId: 
 }
 
 /** Lens readings as text. Missing or invalid coordinates are unknown (null), never zero. The axes are the three on the map. */
-export function lensRows(axesInput: unknown, coordinatesInput: unknown): { axes: UniverseAxes; rows: LensRow[] } {
+export function lensRows(axesInput: unknown, coordinatesInput: unknown, unmeasuredInput: unknown = []): { axes: UniverseAxes; rows: LensRow[] } {
   const axes = normalizeAxes(axesInput);
   const coordinates = sanitizeArchetypeCoordinates(coordinatesInput);
+  const unmeasured = new Set(Array.isArray(unmeasuredInput) ? unmeasuredInput : []);
   return {
     axes,
     rows: DIMENSION_KEYS.map((key) => ({
       key,
       onMap: axes.includes(key),
-      value: coordinates ? coordinates[DIMENSION_KEYS.indexOf(key)] : null,
+      value: coordinates && !unmeasured.has(key) ? coordinates[DIMENSION_KEYS.indexOf(key)] : null,
     })),
   };
 }

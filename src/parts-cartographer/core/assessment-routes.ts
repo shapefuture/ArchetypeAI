@@ -22,9 +22,14 @@ export const ROUTE_KEYS = {
   quickMap: {
     draft: 'ifs.assessment.draft',
   },
+  /** Assessment 2.0, the default route. Its result never shares a key with the 64 or 147 routes. */
+  parts2: {
+    draft: 'ifs.parts2.draft',
+    result: 'ifs.parts2.result',
+  },
 } as const;
 
-export type RouteId = 'situation-inquiry' | 'reflection-64' | 'battery-147' | 'quick-map-sample' | 'quick-scan-teaser';
+export type RouteId = 'parts-two' | 'situation-inquiry' | 'reflection-64' | 'battery-147' | 'quick-map-sample';
 
 /** `focus` names an element the destination moves focus to on arrival. */
 export type RouteDestination = { kind: 'state'; state: string; focus?: string } | { kind: 'overlay'; overlay: string; focus?: string };
@@ -40,7 +45,7 @@ export interface AssessmentRoute {
   /** Scored item count for item instruments; null for non-item routes. */
   itemCount: number | null;
   /** What a completed route can write. */
-  produces: 'canonical-147' | 'canonical-64' | 'sample' | 'teaser' | 'none';
+  produces: 'canonical-parts-2' | 'canonical-147' | 'canonical-64' | 'sample' | 'none';
   destination: RouteDestination | null;
   /** i18n keys for ordinary-language copy. */
   copy: { title: string; tag: string; purpose: string; effort: string };
@@ -49,6 +54,12 @@ export interface AssessmentRoute {
 }
 
 export const ASSESSMENT_ROUTES: readonly AssessmentRoute[] = [
+  {
+    // The default route (Assessment 2.0, docs/plans/assessment-2/plan.md): stages 0 to 6, about nine minutes.
+    id: 'parts-two', tier: 'primary', canonical: true, available: true, itemCount: null, produces: 'canonical-parts-2',
+    destination: { kind: 'state', state: 'parts-two' },
+    copy: { title: 'routeTwoTitle', tag: 'routeDefaultTag', purpose: 'routeTwoPurpose', effort: 'routeTwoEffort' },
+  },
   {
     // A complete route of its own (docs/80-20-plan.md §9.2, bounded situation inquiry): it opens the
     // inquiry in the check-in layer, writes no score and never funnels into the 64 or 147 items.
@@ -64,17 +75,12 @@ export const ASSESSMENT_ROUTES: readonly AssessmentRoute[] = [
   {
     id: 'battery-147', tier: 'primary', canonical: true, available: true, itemCount: 147, produces: 'canonical-147',
     destination: { kind: 'state', state: 'full-assessment' },
-    copy: { title: 'startTest', tag: 'routeCanonicalTag', purpose: 'route147Purpose', effort: 'route147Effort' },
+    copy: { title: 'startTest', tag: 'routeDeepTag', purpose: 'route147Purpose', effort: 'route147Effort' },
   },
   {
     id: 'quick-map-sample', tier: 'secondary', canonical: false, available: true, itemCount: null, produces: 'sample',
     destination: { kind: 'state', state: 'assessment' },
     copy: { title: 'quickAssessment', tag: 'routeSampleTag', purpose: 'sampleMapPurpose', effort: 'sampleMapEffort' },
-  },
-  {
-    id: 'quick-scan-teaser', tier: 'secondary', canonical: false, available: true, itemCount: 14, produces: 'teaser',
-    destination: { kind: 'overlay', overlay: 'quickscan' },
-    copy: { title: 'quickscan', tag: 'routeTeaserTag', purpose: 'quickScanPurpose', effort: 'quickScanEffort' },
   },
 ];
 

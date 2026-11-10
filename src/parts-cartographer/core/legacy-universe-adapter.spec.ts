@@ -1,3 +1,4 @@
+import { legacy64ToMapPlacement } from '../../shared/core/data/map-axes';
 import { describe, expect, it } from 'vitest';
 import { sanitizeLegacyAiAnalysis } from './legacy-ai-analysis';
 import { buildLegacyUniverseParts } from './legacy-universe-adapter';
@@ -32,7 +33,8 @@ describe('legacy assessment → coordinate-aware universe adapter', () => {
     expect(first).toHaveLength(report.archetypes.length);
     expect(first.map(({ id }) => id)).toEqual(second.map(({ id }) => id));
     expect(first.every((part) => part.archetype?.sourceAssessment === 'legacy64')).toBe(true);
-    expect(first[0].archetype?.coordinates).toEqual(report.archetypes[0].coordinates);
+    expect(first[0].archetype?.coordinates).toEqual(legacy64ToMapPlacement(report.archetypes[0].coordinates).coordinates);
+    expect(first[0].archetype?.unmeasuredAxes).toEqual(['DEPTH', 'BLENDING']);
     expect(first[0].archetype?.cluster).toBe(report.archetypes[0].cluster);
     expect(first[0].energy).toBe(report.archetypes[0].prominence);
   });
@@ -49,7 +51,7 @@ describe('legacy assessment → coordinate-aware universe adapter', () => {
     expect(mapped).toHaveLength(fullPantheon.archetypes.length);
     expect(mapped[0].name).toBe('AI pattern 1');
     expect(mapped[0].role).toBe('AI description 1.');
-    expect(mapped[0].archetype?.coordinates).toEqual(base.archetypes[0].coordinates);
+    expect(mapped[0].archetype?.coordinates).toEqual(legacy64ToMapPlacement(base.archetypes[0].coordinates).coordinates);
     expect(mapped[0].archetype?.prominence).toBe(base.archetypes[0].prominence);
     expect(mapped[4].name).toBe(base.archetypes[4 % base.archetypes.length].name);
     expect(mapped[5].name).toBe(base.archetypes[5 % base.archetypes.length].name);

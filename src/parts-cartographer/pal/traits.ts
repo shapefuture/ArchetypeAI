@@ -76,13 +76,19 @@ export function randomTraits(family?: Family): Traits {
 
 export interface ArchetypeMapData {
   schema: 'archetype-map.v1';
-  sourceAssessment: 'legacy64' | 'descent147' | 'studio';
+  sourceAssessment: 'legacy64' | 'descent147' | 'studio' | 'parts-2';
   /**
-   * Where the four coordinates come from. 'response-derived-64' is placed from the 64-item answers;
-   * 'fixed-reference-147' is the shared 147-item part template, not a per-person measurement.
+   * Where the four coordinates come from, in map-axis order (Energy, Direction, Depth, Blending).
+   * 'response-derived-64' is placed from the 64-item answers; 'fixed-reference-147' is the shared 147-item
+   * template; 'self-placed-2' is placed by the person in Assessment 2.0; 'family-default-2' is the reference
+   * position used until the person places the part. None of the reference bases is a per-person measurement.
    */
-  coordinateBasis?: 'response-derived-64' | 'fixed-reference-147';
+  coordinateBasis?: 'response-derived-64' | 'fixed-reference-147' | 'self-placed-2' | 'family-default-2';
   coordinates: [number, number, number, number];
+  /** Axes the source did not measure. Their slot is a placeholder and must be shown as unknown. */
+  unmeasuredAxes?: Array<'ENERGY' | 'DIRECTION' | 'DEPTH' | 'BLENDING'>;
+  /** 2 once coordinates are in the map-axis order. Absent on records written before the axis change. */
+  axisVersion?: 2;
   cluster: string;
   prominence: number;
   size: number;

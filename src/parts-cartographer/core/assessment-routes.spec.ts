@@ -12,9 +12,9 @@ import { DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY } from './assessment-draft'
 const route = (id: AssessmentRoute['id']) => ASSESSMENT_ROUTES.find((item) => item.id === id)!;
 
 describe('assessment route contract', () => {
-  it('offers exactly three primary entries in order, and labels the rest as secondary tools', () => {
-    expect(primaryRoutes().map((item) => item.id)).toEqual(['situation-inquiry', 'reflection-64', 'battery-147']);
-    expect(secondaryRoutes().map((item) => item.id)).toEqual(['quick-map-sample', 'quick-scan-teaser']);
+  it('offers four primary entries with Assessment 2.0 first, and labels the rest as secondary tools', () => {
+    expect(primaryRoutes().map((item) => item.id)).toEqual(['parts-two', 'situation-inquiry', 'reflection-64', 'battery-147']);
+    expect(secondaryRoutes().map((item) => item.id)).toEqual(['quick-map-sample']);
   });
 
   it('keeps the 64-item and 147-item routes canonical with their real bank sizes', () => {

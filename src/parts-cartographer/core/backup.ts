@@ -9,11 +9,12 @@ import { sanitizeLegacyAiAnalysis } from './legacy-ai-analysis';
 import { SHAPES, EYES, MOUTHS, HEADS, FACES, type Part } from '../pal/traits';
 import { readGoalRecord } from '../elevation/e01-goal';
 import { ladderRung } from '../../shared/core/data/exercises';
+import { isAssessment2Result } from '../../shared/core/data/assessment2/scoring';
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.syn,
-  'ifs.lang', 'ifs.theme', 'ifs.onboarded', 'ifs.assessment.draft', 'ifs.legacy64.result',
-  'ifs.journal', 'ifs.sealed', 'ifs.sealed.verdict', 'ifs.universe.dimensions.v1',
+  'ifs.lang', 'ifs.theme', 'ifs.onboarded', 'ifs.assessment.draft', 'ifs.legacy64.result', 'ifs.parts2.result',
+  'ifs.journal', 'ifs.sealed', 'ifs.sealed.verdict', 'ifs.universe.dimensions.v1', 'ifs.universe.dimensions.v2',
   DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, 'INNERVERSE_FUTURE_SELF_V1', 'INNERVERSE_PROFILE_V1',
   'INNERVERSE_CHECKINS_V1', 'INNERVERSE_SEALED_VERDICTS_V1', 'INNERVERSE_JITAI_V1',
   'INNERVERSE_CHARTER_V1', 'INNERVERSE_EVENTS_V1', 'INNERVERSE_GOAL_V1', 'INNERVERSE_PRACTICE_V1', 'INNERVERSE_SYNASTRY_RUNS_V1',
@@ -103,6 +104,7 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === KEYS.parts) return validMapParts(value);
   if (key === KEYS.profile || key === KEYS.history) return value === null || validProfile(value);
   if (key === 'ifs.legacy64.result') return value === null || object(value);
+  if (key === 'ifs.parts2.result') return value === null || isAssessment2Result(value);
   if (key === 'INNERVERSE_PROFILE_V1') return isCanonicalAssessmentInput(value);
   if (key === 'INNERVERSE_GOAL_V1') return readGoalRecord(value).status !== 'rejected';
   if (key === DESCENT_DRAFT_KEY) return isDescentDraft(value);

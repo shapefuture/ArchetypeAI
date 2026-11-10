@@ -1,6 +1,6 @@
 # Assessment 2.0: plan
 
-**Status:** proposal, 2026-11-10. Nothing here is built or validated.
+**Status:** implemented as the default route on branch `claude/jolly-babbage-7ibtyk`, 2026-11-10. See §14 for what was built and where it departs from this plan. Every number is still a guess until the pilot in §10 runs.
 **Reads with:** `docs/parts-identification-handoff.md` (on branch `claude/full-plan-handoff-gmgpkq`), `src/shared/core/data/parts.ts`, `REVAMP_PLAN.md` §1.
 **How to read the numbers:** every count, threshold, weight and time in this plan is an educated guess unless a source is named. Section 11 lists the guesses and what would settle each one.
 
@@ -288,3 +288,47 @@ If retest fails, 2.0 does not replace anything and the scenes are rewritten firs
 - Forced choice ranks parts within one person. It supports comparison between people less well, so the pair comparison built on 147 profiles should keep using the 147.
 - Stage 3 uses fixed rules. Statistical item models need answers from a few hundred people.
 - The taxonomy combines several therapy traditions by judgement. Schema-mode questionnaires have published support; the family grouping, the capacity twins and the six providers do not.
+
+## 14. Implementation status (2026-11-10)
+
+Owner decisions applied: Assessment 2.0 is the default route; the four map axes are replaced everywhere the map plots, lenses, compares or labels coordinates; faith and ancestry are included now; the exile stage is on.
+
+### Built
+
+| Piece | Where |
+|---|---|
+| Taxonomy: needs, eight exiles, eight families, 28 members, providers, capacities, ground, costumes | `src/shared/core/data/assessment2/taxonomy.ts` |
+| Map axes (Energy, Direction, Depth, Blending), the 64 projection, unmeasured-axis handling | `src/shared/core/data/map-axes.ts` |
+| Scoring: family scores, top families, skip rule, level, confidence, conflicts, result builder, validator | `src/shared/core/data/assessment2/scoring.ts` |
+| Bilingual copy, exhaustive over the taxonomy | `src/shared/core/data/assessment2/content.ts` |
+| Screen order and stage mapping (pure) | `src/parts-cartographer/core/parts-two-flow.ts` |
+| Screens (stages 0–6, result) and the placement pad | `src/parts-cartographer/screens/parts-two.jsx`, `parts-two-pad.jsx`, `parts-two.css` |
+| Result to map parts | `src/parts-cartographer/core/parts2-universe-adapter.ts` |
+| Stored-axis migration on load | `src/parts-cartographer/core/usable-parts.ts` |
+| Routes: 2.0 first and recommended; 147 labelled as the optional deep battery; Quick Scan removed | `core/assessment-routes.ts`, `core/boot.ts`, `screens/landing.jsx`, `elevation/e02-entry.ts` |
+
+### Departures from the proposal
+
+- **Blending** has six options. `neutral` (0) is added to the five in §4.
+- **Stage 2** allows one member per top family, so at most four protectors, not five. The record allows one exile per protector, so at most four exile parts, not three.
+- **Target** is each member's default. It is not asked per instance.
+- **Costume** is an optional tag asked in stage 2. The taxonomy includes faith and ancestry.
+- **Placement** uses one pad (Energy and Direction) plus a Depth slider, not two pads. Blending is set in stage 5.
+- **Capacities** appear as parts only when the person names an easiest or hardest one.
+- **64-derived parts** have Depth and Blending unmeasured. They sit at the middle depth on the 3D map, and the coordinates panel shows those axes as unknown.
+- **147 reference parts** have Blending unmeasured. Their Energy, Direction and Depth come from the taxonomy defaults.
+- **Interpretation of "everywhere":** the 64 instrument's own relational scoring, synastry, report and backup keep their original names, because the 64 result and its backups must still read across versions. Only the map-facing layer uses the new axes.
+
+### Guesses this build depends on (to be settled by the pilot)
+
+- Family default positions (§5.1), the exile default positions, and the player capacity position are guesses.
+- The stage-1 scene families and the 0.15 margin for a fourth family are guesses.
+- The confidence thresholds (level 3, score 0.25) are guesses.
+- The Russian copy is a first draft written by the implementing agent. A native speaker has not reviewed it. The owner was asked to assign a reviewer (§12, item 5).
+
+### Gates
+
+- `npx tsc --noEmit`: passes.
+- `npx vitest run`: all unit tests pass, including new specs for the taxonomy, scoring, screen order, adapter and migration.
+- `npm run build`: passes.
+- Browser: `tests/browser/parity.spec.mjs` drives the whole 2.0 flow to a saved map, with no 147 profile written and no page errors.

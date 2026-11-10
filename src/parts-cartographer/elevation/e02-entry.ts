@@ -1,7 +1,7 @@
 // E02 need-based entry and first useful result (ArchetypeAI-3pj, step 04). Pure: no storage, DOM, network or clock.
 // Three immediate needs each lead to one small, complete first result with a useful stopping point. Missing context
-// gets an honest default that names what is missing: no invented profile, completion or score. The 64 and 147
-// instruments are canonical, so they are offered only as deeper options and never as a default. Onboarding never
+// gets an honest default that names what is missing: no invented profile, completion or score. Assessment 2.0 is the
+// one canonical default (the pattern need). The 64 and 147 instruments are canonical deeper options, never a default. Onboarding never
 // gates entry, assessment-free support is always on, and sensory choices are neither read nor changed.
 // Labels are kept apart: need (user-authored), route suggestion (hypothesis, or user-authored when deep-linked),
 // result (observation, or canonical-measurement for the 64/147 routes).
@@ -98,12 +98,12 @@ const routeById = (id: string, ctx: EntryContext) => ctx.routes.find((r) => r.id
 /** Completion is not known to the entry, so only prerequisite-free practices are offered. */
 const readyPractices = (ctx: EntryContext): Practice[] => availablePractices(ctx.practices, []);
 
-/** Canonical routes that are available. They are never the default, only a deeper option. */
+/** Canonical routes that are available, other than the one chosen for the need. The 64 and 147 are only ever deeper options. */
 const deeperFor = (ctx: EntryContext, except: RouteId | null): RouteId[] =>
   ctx.routes.filter((r) => r.canonical && r.available && r.id !== except).map((r) => r.id);
 
 const UNKNOWN: Partial<Record<RouteId, string[]>> = {
-  'quick-scan-teaser': ['how-this-applies-over-time'],
+  'parts-two': ['how-this-applies-over-time'],
   'situation-inquiry': ['the-wider-picture'],
   'reflection-64': ['the-full-profile'],
   'battery-147': ['the-full-profile'],
@@ -136,7 +136,7 @@ function assessmentChoice(
 
 /** Maps one need to one first step. A missing route or practice gives a named notice, never a blank step. */
 export function routeForNeed(need: Need, ctx: EntryContext): RouteOutcome {
-  const target: RouteId | null = need === 'situation' ? 'situation-inquiry' : need === 'pattern' ? 'quick-scan-teaser' : null;
+  const target: RouteId | null = need === 'situation' ? 'situation-inquiry' : need === 'pattern' ? 'parts-two' : null;
   const route = target ? routeById(target, ctx) : null;
   if (route?.available) return { ok: true, choice: assessmentChoice(route, ctx, need, 'hypothesis') };
   const ready = readyPractices(ctx);

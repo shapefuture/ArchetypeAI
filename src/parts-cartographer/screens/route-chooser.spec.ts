@@ -97,12 +97,10 @@ describe('Base tab assessment entries', () => {
     expect(appMock.current!.go).toHaveBeenLastCalledWith('full-assessment');
   });
 
-  it('opens the sample map and quick scan only from other tools', () => {
+  it('opens the sample map only from other tools', () => {
     mountBase();
     press(host!, 'Sample map');
     expect(appMock.current!.go).toHaveBeenLastCalledWith('assessment');
-    press(host!, 'Quick scan');
-    expect(appMock.current!.setOverlay).toHaveBeenLastCalledWith('quickscan');
   });
 
   it('keeps booking and coaching reachable on a fresh install with no assessment', () => {

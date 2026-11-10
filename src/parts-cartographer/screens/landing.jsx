@@ -255,7 +255,7 @@ function BaseTab() {
 const STR_VER = (t) => t('footVer');
 
 /* ── Assessment entries: three honest routes, then limited tools ── */
-const ROUTE_ICON = { 'situation-inquiry': '✎', 'reflection-64': '🧭', 'battery-147': '🗺️', 'quick-map-sample': '✦', 'quick-scan-teaser': '⚡' };
+const ROUTE_ICON = { 'parts-two': '🧩', 'situation-inquiry': '✎', 'reflection-64': '🧭', 'battery-147': '🗺️', 'quick-map-sample': '✦' };
 
 function openRoute(route, { go, setOverlay }) {
   if (!route.available || !route.destination) return;

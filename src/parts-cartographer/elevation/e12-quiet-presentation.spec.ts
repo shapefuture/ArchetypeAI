@@ -137,11 +137,13 @@ describe('E12.04 selectors: the same tasks on every surface', () => {
   });
 
   it('lens readings: invalid coordinates are unknown (null), not zero, and repeated axes fall back to the default map', () => {
-    expect(lensRows(['AGENCY', 'AGENCY', 'FOCUS'], [0.5, 0, 0, 0]).axes).toEqual(['AGENCY', 'TEMPERATURE', 'FOCUS']);
-    const valid = lensRows(['AGENCY', 'TEMPERATURE', 'ATTACHMENT'], [0.5, 2, 0, -0.2]);
-    expect(valid.rows.find((row) => row.key === 'TEMPERATURE')).toEqual({ key: 'TEMPERATURE', onMap: true, value: 1 });
-    expect(valid.rows.find((row) => row.key === 'FOCUS')).toEqual({ key: 'FOCUS', onMap: false, value: 0 });
-    expect(lensRows(['AGENCY', 'TEMPERATURE', 'FOCUS'], [0.5, NaN, 0, 0]).rows.every((row) => row.value === null)).toBe(true);
+    expect(lensRows(['ENERGY', 'ENERGY', 'DEPTH'], [0.5, 0, 0, 0]).axes).toEqual(['ENERGY', 'DEPTH', 'DIRECTION']);
+    const valid = lensRows(['ENERGY', 'DIRECTION', 'BLENDING'], [0.5, 2, 0, -0.2]);
+    expect(valid.rows.find((row) => row.key === 'DIRECTION')).toEqual({ key: 'DIRECTION', onMap: true, value: 1 });
+    expect(valid.rows.find((row) => row.key === 'DEPTH')).toEqual({ key: 'DEPTH', onMap: false, value: 0 });
+    // An axis the instrument did not measure is unknown, even when its slot holds a placeholder number.
+    expect(lensRows(['ENERGY', 'DIRECTION', 'DEPTH'], [0.5, 0, 0.3, 0], ['DEPTH', 'BLENDING']).rows.find((row) => row.key === 'DEPTH')?.value).toBeNull();
+    expect(lensRows(['ENERGY', 'DIRECTION', 'DEPTH'], [0.5, NaN, 0, 0]).rows.every((row) => row.value === null)).toBe(true);
   });
 
   it('identical inputs give identical presentations, and the inputs are not mutated', () => {

@@ -27,7 +27,8 @@ test('two same-day reports with one constellation have distinct History button n
   });
   await page.getByRole('button', { name: /^📖 Report$|^Report/ }).first().click();
   const history = page.locator('#clinical-history');
-  await expect(history).toBeVisible();
+  // The default expect timeout is 5 s, too short for the report to render on a loaded runner. The rest of this test uses 20 s.
+  await expect(history).toBeVisible({ timeout: 20_000 });
 
   const snapshot = await history.ariaSnapshot();
   const names = [...snapshot.matchAll(/button "([^"]*)"/g)].map((match) => match[1]);

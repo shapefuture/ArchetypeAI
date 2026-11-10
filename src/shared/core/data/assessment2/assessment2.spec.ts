@@ -405,3 +405,36 @@ describe('depth answer rules: drafts, validator and conflicts', () => {
     expect(deriveConflicts(parts).map((c) => c.type)).not.toContain('strategy-against-strategy');
   });
 });
+
+describe('skipped timing is unknown, not a default (plan §3.1, D1)', () => {
+  const skippedInputs: Array<Assessment2Input['timing']> = [{}, { rebel: null }];
+  const rebelWithTiming = (timing: Assessment2Input['timing']) =>
+    buildAssessment2Result({ ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, timing }).parts.find((p) => p.key === 'member:rebel')!;
+
+  it('keeps a skipped timing unknown, whether the key is absent or null', () => {
+    for (const timing of skippedInputs) {
+      const part = rebelWithTiming(timing);
+      expect(part.timing).toBeNull();
+      expect(part.classKnown).toBe(false);
+      expect(part.mapFamily).toBe('manager');
+      expect(part.coordinates[2]).toBe(0.45);
+      expect(part.unmeasuredAxes).toContain('DEPTH');
+      expect([part.coordinates[0], part.coordinates[1]]).toEqual([FAMILY_DEFAULT.attack.energy, FAMILY_DEFAULT.attack.direction]);
+    }
+  });
+
+  it('keeps an answered timing: reactive stays reactive and classKnown is true', () => {
+    const part = rebelWithTiming({ rebel: 'reactive' as const });
+    expect(part.timing).toBe('reactive');
+    expect(part.classKnown).toBe(true);
+    expect(part.mapFamily).toBe('firefighter');
+  });
+
+  it('accepts a null protector timing in the validator, and rejects any other timing value', () => {
+    const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const } };
+    const result = JSON.parse(JSON.stringify(buildAssessment2Result(input)));
+    expect(isAssessment2Result(result)).toBe(true);
+    const tampered = { ...result, parts: result.parts.map((p: any) => (p.key === 'member:rebel' ? { ...p, timing: 'sometimes' } : p)) } as any;
+    expect(isAssessment2Result(tampered)).toBe(false);
+  });
+});

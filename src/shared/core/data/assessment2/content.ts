@@ -346,6 +346,7 @@ export const UI_COPY = {
   back: { en: 'Back', ru: 'Назад' },
   narrowHelp: { en: 'Which of these fits this part of you best?', ru: 'Какая из этих частей лучше всего описывает эту часть вас?' },
   timingQ: { en: 'When does it usually show up?', ru: 'Когда она обычно проявляется?' },
+  timingUnknown: { en: 'Timing not answered', ru: 'Время не указано' },
   confirmHelp: { en: 'In the last month, how often has this happened?', ru: 'За последний месяц, как часто это случалось?' },
   fearQ: { en: 'If this part stopped doing its job, what would it fear would happen?', ru: 'Если бы эта часть перестала выполнять свою работу, чего бы она боялась?' },
   levelQ: { en: 'When this feeling comes up, how strong is it?', ru: 'Когда это чувство появляется, насколько оно сильное?' },

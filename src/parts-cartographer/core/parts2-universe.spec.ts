@@ -75,6 +75,25 @@ describe('Assessment 2.0 map parts', () => {
   });
 });
 
+describe('a skipped protector timing is unknown on the map part (plan §3.1, D1)', () => {
+  const rebelPart = (timing: Assessment2Input['timing']) => {
+    const result = buildAssessment2Result({ ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, timing });
+    return buildParts2UniverseParts(result, 'en').find((p) => p.id === 'parts2_member_rebel')!;
+  };
+
+  it('has no partType and classKnown false when the timing is skipped', () => {
+    const part = rebelPart({ rebel: null });
+    expect(part.archetype?.partType).toBeUndefined();
+    expect(part.archetype?.classKnown).toBe(false);
+  });
+
+  it('keeps a reactive timing as a firefighter, with classKnown true', () => {
+    const part = rebelPart({ rebel: 'reactive' as const });
+    expect(part.archetype?.partType).toBe('firefighter');
+    expect(part.archetype?.classKnown).toBe(true);
+  });
+});
+
 describe('stored axes are converted once on load (plan §3.5)', () => {
   const base = (archetype: ArchetypeMapData): Part => ({ ...SEED_PARTS[0], id: 'legacy-part', archetype }) as Part;
 

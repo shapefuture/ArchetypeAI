@@ -384,7 +384,7 @@ function ResultView({ T, tx, input, onSave, onRestart }) {
             <li key={part.key} className="card">
               <strong>{name}</strong>
               <p className="sub">
-                {part.kind === 'protector' ? `${tx(TIMING_COPY[part.timing])} · ${tx(FAMILY_COPY[part.family])}` : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].feeling) : ''}
+                {part.kind === 'protector' ? `${part.timing ? tx(TIMING_COPY[part.timing]) : tx(UI_COPY.timingUnknown)} · ${tx(FAMILY_COPY[part.family])}` : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].feeling) : ''}
               </p>
               {part.rank !== null ? <p>{T('resultRank')}: {part.rank} · {T('resultConfidence')}: {part.confidence ? confidence[part.confidence] : '—'}</p> : null}
               <p>{T('resultLevel')}: {part.level === null ? T('levelUnknown') : `${part.level} / 5`}</p>
@@ -508,7 +508,7 @@ export function PartsTwo() {
           setTiming={(value) => patch('timing', screen.member, value)}
           setCostume={(value) => patch('costume', screen.member, value)}
           onNext={forward}
-          onSkip={forward} />
+          onSkip={() => { patch('timing', screen.member, null); forward(); }} />
       );
     case 'confirm':
       return (

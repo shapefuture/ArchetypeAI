@@ -38,7 +38,8 @@ export function buildParts2UniverseParts(result: Assessment2Result, lang: 'en' |
       cluster: `parts_two_${part.kind}`,
       prominence: prominenceOf(part),
       size: 0.8,
-      partType: part.kind === 'exile' ? 'exile' : part.kind === 'protector' ? (part.timing === 'reactive' ? 'firefighter' : 'manager') : undefined,
+      partType: part.kind === 'exile' ? 'exile' : part.kind === 'protector' && part.classKnown ? (part.timing === 'reactive' ? 'firefighter' : 'manager') : undefined,
+      classKnown: part.classKnown,
     };
     const guarded = part.guards[0] as ExileId | undefined;
     const need = part.kind === 'exile' ? part.need : guarded ? EXILE_NEED[guarded] : undefined;

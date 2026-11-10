@@ -44,7 +44,8 @@ export interface Assessment2Input {
   scenes: SceneAnswer[];
   /** Stage 2: one member per top family, or 'none'. */
   picks: Partial<Record<FamilyId, MemberId | 'none'>>;
-  timing: Partial<Record<MemberId, Timing>>;
+  /** Stage 2: null means the person skipped the timing. A missing key means not asked yet. */
+  timing: Partial<Record<MemberId, Timing | null>>;
   /** Stage 2, optional: the familiar costume a protector wears (plan §3.2). Faith and ancestry are among them. */
   costume: Partial<Record<MemberId, CostumeId | null>>;
   /** Stage 3: three 1–5 frequency answers per member. */
@@ -164,7 +165,10 @@ export interface MapPart {
   exile?: ExileId;
   capacity?: CapacityId;
   family?: FamilyId;
-  timing?: Timing;
+  /** The timing the person chose for a protector, or null when skipped. Absent for other kinds. */
+  timing?: Timing | null;
+  /** False exactly when timing is null. Exiles and capacities have no timing, so it is true for them. */
+  classKnown: boolean;
   target?: Target;
   rank: number | null;
   level: number | null;
@@ -277,7 +281,8 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     const pick = input.picks[family];
     if (!pick || pick === 'none') continue;
     const def = MEMBER_DEFS[pick];
-    const timing = input.timing[pick] ?? def.defaultTiming;
+    // A skipped or unasked timing stays null. It is never filled from the member's default (plan §3.1, D1).
+    const timing: Timing | null = input.timing[pick] ?? null;
     const skipped = skipsConfirm(family, input.scenes);
     const level = skipped ? null : levelOf(input.confirm[pick]);
     // The lighter path has no stage 4, so a stored fear guards nothing there. The answer stays in the input (plan §3.3, G4).
@@ -287,7 +292,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     const blending = input.blending[key] ?? null;
     const placedCoords = coordsFor(key, protectorDefault(pick, timing), input.placed, blending);
     parts.push({
-      key, kind: 'protector', member: pick, family, timing, target: def.defaultTarget,
+      key, kind: 'protector', member: pick, family, timing, classKnown: timing !== null, target: def.defaultTarget,
       rank, level, confidence: confidenceOf(score, level, skipped, leads[family] ?? 0), guards, costume: input.costume?.[pick] ?? null,
       placement: placedCoords.placement, coordinates: placedCoords.coordinates, unmeasuredAxes: placedCoords.unmeasuredAxes,
       depthState: placedCoords.depthState,
@@ -310,7 +315,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
       const coords = coordsFor(key, exileDefault(exile), input.placed, blending);
       const provider = input.providers[exile];
       parts.push({
-        key, kind: 'exile', exile, rank: null, level: input.exileLevel[exile] ?? null, confidence: null,
+        key, kind: 'exile', exile, classKnown: true, rank: null, level: input.exileLevel[exile] ?? null, confidence: null,
         guards: [], costume: null, need: input.exileNeed[exile] ?? EXILE_NEED[exile],
         provider: provider ? { access: provider.access, form: provider.form ?? null } : undefined,
         placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes, depthState: coords.depthState,
@@ -324,7 +329,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     const key = keyFor('capacity', capacity);
     const coords = coordsFor(key, capacityDefault(capacity), input.placed, null);
     parts.push({
-      key, kind: 'capacity', capacity, rank: null, level: null, confidence: null, guards: [], costume: null,
+      key, kind: 'capacity', capacity, classKnown: true, rank: null, level: null, confidence: null, guards: [], costume: null,
       placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes, depthState: coords.depthState,
       blending: null, mapFamily: 'resource',
     } as MapPart);
@@ -386,7 +391,7 @@ export function isAssessment2Result(value: unknown): value is Assessment2Result 
     && ((part.depthState === 'set') === !part.unmeasuredAxes.includes('DEPTH'))
     && (part.level === null || (typeof part.level === 'number' && part.level >= 1 && part.level <= 5))
     && (part.placement === 'placed' || part.placement === 'default')
-    && (part.kind !== 'protector' || (oneOf(MEMBERS, part.member) && oneOf(FAMILIES, part.family) && oneOf(TIMINGS, part.timing) && oneOf(TARGETS, part.target)))
+    && (part.kind !== 'protector' || (oneOf(MEMBERS, part.member) && oneOf(FAMILIES, part.family) && (part.timing === null || oneOf(TIMINGS, part.timing)) && oneOf(TARGETS, part.target)))
     && (part.kind !== 'exile' || oneOf(EXILES, part.exile) && oneOf(NEEDS, part.need))
     && (part.kind !== 'capacity' || oneOf(CAPACITIES, part.capacity))
     && (!part.provider || (oneOf(PROVIDER_ACCESS, part.provider.access) && (part.provider.form === null || oneOf(PROVIDER_FORMS, part.provider.form))))

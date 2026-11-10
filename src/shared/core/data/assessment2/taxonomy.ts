@@ -188,10 +188,18 @@ export const LEVEL_SCALE = [1, 2, 3, 4, 5] as const;
 
 export const clampUnit = (value: number) => Math.max(-1, Math.min(1, value));
 
-export function protectorDefault(member: MemberId, timing: Timing): MapCoordinates {
+/**
+ * A skipped timing (null) is not guessed: its depth reference is the midpoint of the two defaults, 0.45 (plan §3.1, G1).
+ * Energy and direction still come from the family default.
+ */
+export function protectorDefault(member: MemberId, timing: Timing | null): MapCoordinates {
   const def = MEMBER_DEFS[member];
   const family = FAMILY_DEFAULT[def.family];
-  return [clampUnit(family.energy), clampUnit(family.direction), PROTECTOR_DEPTH_DEFAULT[timing], 0];
+  // Rounded so the midpoint is exactly 0.45, not 0.44999999999999996.
+  const depth = timing === null
+    ? Math.round(((PROTECTOR_DEPTH_DEFAULT.preventive + PROTECTOR_DEPTH_DEFAULT.reactive) / 2) * 100) / 100
+    : PROTECTOR_DEPTH_DEFAULT[timing];
+  return [clampUnit(family.energy), clampUnit(family.direction), depth, 0];
 }
 
 export function exileDefault(exile: ExileId): MapCoordinates {
@@ -205,8 +213,11 @@ export function capacityDefault(capacity: CapacityId): MapCoordinates {
   return [clampUnit(at.energy), clampUnit(at.direction), CAPACITY_DEPTH_DEFAULT, 0];
 }
 
-/** Part family classes used by the existing map: a preventive protector is a manager, a reactive one a firefighter. */
-export function mapFamilyFor(kind: 'protector' | 'exile' | 'capacity', timing?: Timing): 'manager' | 'firefighter' | 'exile' | 'resource' {
+/**
+ * Part family classes used by the existing map: a preventive protector is a manager, a reactive one a firefighter.
+ * A skipped timing (null) is a manager: a layout choice only, not a class claim (plan §3.1, G2).
+ */
+export function mapFamilyFor(kind: 'protector' | 'exile' | 'capacity', timing?: Timing | null): 'manager' | 'firefighter' | 'exile' | 'resource' {
   if (kind === 'exile') return 'exile';
   if (kind === 'capacity') return 'resource';
   return timing === 'reactive' ? 'firefighter' : 'manager';

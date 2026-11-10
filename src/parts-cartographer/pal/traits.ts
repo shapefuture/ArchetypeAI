@@ -95,6 +95,7 @@ export interface ArchetypeMapData {
   prominence: number;
   size: number;
   partType?: 'manager' | 'firefighter' | 'exile' | 'self';
+  classKnown?: boolean; // false when a protector's timing was skipped, so its class is unknown and partType is absent
   developmentalOrigin?: 'pre_verbal' | 'early_attachment' | 'oedipal' | 'latency' | 'adolescent';
   description?: string;
   wound?: string;

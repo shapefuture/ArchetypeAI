@@ -8,7 +8,7 @@ import {
   SCENES, SCENE_FAMILIES, SELF_ATTACK_MEMBERS, buildAssessment2Result, confidenceOf, deriveConflicts, isAssessment2Result, leadsOf, levelOf, rankFamilies,
   scoreFamilies, skipsConfirm, type Assessment2Input, type MapPart, type SceneAnswer,
 } from './scoring';
-import { CONFIRM_COPY, CAPACITY_COPY, copyCoverage, REACTION_COPY, UI_COPY } from './content';
+import { CONFIRM_COPY, CAPACITY_COPY, copyCoverage, GROUND_COPY, PROVIDER_FORM_COPY, REACTION_COPY, UI_COPY } from './content';
 import { knownAxisValues, legacy64ToMapPlacement, referenceMapPlacement, isMapCoordinates, MAP_AXIS_KEYS, MAP_DEFAULT_PLOT } from '../map-axes';
 
 const LEGACY_147_PROTECTORS = ['taskmaster', 'inner_critic', 'pleaser', 'controller', 'analyst', 'hermit', 'bypasser', 'numb', 'rebel', 'charmer'];
@@ -291,6 +291,16 @@ describe('conflicts (plan §3.4, §5.2)', () => {
 describe('copy coverage (plan §7)', () => {
   it('covers every scene, family, member, exile, need, provider, capacity, ground item and costume', () => {
     for (const value of Object.values(copyCoverage)) expect(value).toBe(true);
+  });
+
+  it('keeps the exact ground, capacity and provider-form copy', () => {
+    expect(GROUND_COPY.containerForLater.en).toBe('Set it down somewhere safe to come back to later');
+    expect(CAPACITY_COPY.player.name).toEqual({ en: 'Player', ru: 'Исследователь' });
+    for (const form of ['realPerson', 'idealParent'] as const) {
+      expect(PROVIDER_FORMS).toContain(form);
+      expect(PROVIDER_FORM_COPY[form].en).not.toBe('');
+      expect(PROVIDER_FORM_COPY[form].ru).not.toBe('');
+    }
   });
 
   it('has three confirm items for every member', () => {

@@ -53,6 +53,8 @@ Existing ids are kept. New members are marked.
 
 That is 8 families and 28 members: the 10 existing protectors and 18 new ones.
 
+**Capacity name (G18):** the healthy twin of numb or soothe is called "Player" in English. The Russian name stays «Исследователь».
+
 Attributes on each instance of a part:
 
 - **Timing:** preventive or reactive. This replaces the fixed manager and firefighter classes.
@@ -67,6 +69,10 @@ Attributes on each instance of a part:
 | Capacities | The eight twins in §3.2 |
 | Providers | The six roles in §3.1, each in a form the person chooses: own adult self, a real or ideal person, an ancestor, an animal helper, a place, a spiritual figure, a fictional character |
 | Ground | Calm place, body anchor, breath or rhythm, nature, real people |
+
+**Ground item (G16):** `containerForLater` reads "Set it down somewhere safe to come back to later". The wording follows the IFS container practice. The id stays, because stored drafts and results may exist.
+
+**Provider forms (G17):** the "real or ideal person" above is two forms, `realPerson` and `idealParent`, each with its own id. Both stay. Renaming either id would need a migration.
 
 ### 3.4 Conflicts
 

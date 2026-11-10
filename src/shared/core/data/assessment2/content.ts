@@ -267,7 +267,7 @@ export const CAPACITY_COPY: Record<CapacityId, { name: Bi; line: Bi }> = {
   caregiver: { name: { en: 'Caregiver', ru: 'Заботник' }, line: { en: 'Care that includes you.', ru: 'Забота, которая включает и вас самих.' } },
   reacher: { name: { en: 'Reacher', ru: 'Тянущийся' }, line: { en: 'Asking openly for what you need.', ru: 'Открыто просит о том, что нужно.' } },
   sage: { name: { en: 'Sage', ru: 'Мудрец' }, line: { en: 'Reflective distance that sees clearly.', ru: 'Рефлексивная дистанция, которая видит ясно.' } },
-  player: { name: { en: 'Explorer', ru: 'Исследователь' }, line: { en: 'Curiosity, play and pleasure.', ru: 'Любопытство, игра и удовольствие.' } },
+  player: { name: { en: 'Player', ru: 'Исследователь' }, line: { en: 'Curiosity, play and pleasure.', ru: 'Любопытство, игра и удовольствие.' } },
   meaningMaker: { name: { en: 'Meaning-maker', ru: 'Создатель смысла' }, line: { en: 'Real perspective, real humour and real faith.', ru: 'Настоящая перспектива, настоящий юмор и настоящая вера.' } },
 };
 
@@ -275,7 +275,7 @@ export const GROUND_COPY: Record<GroundId, Bi> = {
   calmPlace: { en: 'A calm place you can return to', ru: 'Спокойное место, куда можно вернуться' },
   bodyAnchor: { en: 'A body anchor: feet on the floor, a hand on the chest', ru: 'Опора в теле: стопы на полу, рука на груди' },
   breath: { en: 'Slow breath or a steady rhythm', ru: 'Медленное дыхание или ровный ритм' },
-  containerForLater: { en: 'A plan to come back to it later', ru: 'План вернуться к этому позже' },
+  containerForLater: { en: 'Set it down somewhere safe to come back to later', ru: 'Отложите это в безопасное место, чтобы вернуться к этому позже' },
   nature: { en: 'Time outside, with trees, sky or water', ru: 'Время на воздухе: деревья, небо или вода' },
   realPeople: { en: 'Real people who know you', ru: 'Близкие люди, которые вас знают' },
   ritualOrPrayer: { en: 'A ritual or prayer you trust', ru: 'Ритуал или молитва, которым вы доверяете' },

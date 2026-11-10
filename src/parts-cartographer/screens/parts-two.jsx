@@ -15,6 +15,7 @@ import {
   BLENDING_OPTIONS, CAPACITIES, COSTUMES, EXILE_NEED, GROUND_ITEMS, NEEDS, NEED_PROVIDER, PROVIDER_ACCESS, PROVIDER_FORMS, EXILES, TIMINGS, membersOf,
 } from '../../shared/core/data/assessment2/taxonomy.ts';
 import { PlacementPad, DepthSlider } from './parts-two-pad.jsx';
+import { ProvisionalPad } from './parts-two-provisional.jsx';
 import './parts-two.css';
 
 const blankInput = () => ({
@@ -112,13 +113,14 @@ function SceneScreen({ T, tx, frame, screen, input, commitScene, onSkip }) {
   );
 }
 
-function PickScreen({ T, tx, frame, screen, input, setPick }) {
+function PickScreen({ T, tx, frame, screen, input, setPick, showPad }) {
   const options = membersOf(screen.family);
   const chosen = input.picks[screen.family];
   return (
     <Frame {...frame} title={tx(FAMILY_COPY[screen.family])} kicker={T('narrowHelp')} onNext={null}>
       <p className="p2-note">{T('memberPickNote')}</p>
       <p className="p2-note">{T('provisionalNote')}: {rankFamilies(scoreFamilies(input.scenes)).map((entry) => tx(FAMILY_COPY[entry.family])).join(', ')}</p>
+      {showPad ? <ProvisionalPad T={T} tx={tx} scores={scoreFamilies(input.scenes)} /> : null}
       <ul className="p2-list">
         {options.map((member) => (
           <li key={member}>
@@ -390,6 +392,7 @@ function ResultView({ T, tx, locale, input, onSave, onRestart }) {
       <h2 id="p2-result-title" className="p2-title">{T('resultTitle')}</h2>
       <p className="p2-note">{T('resultNote')}</p>
       {result.supportPrompt ? <div className="card p2-support"><h3>{T('supportTitle')}</h3><p>{T('supportBody')}</p></div> : null}
+      <ProvisionalPad T={T} tx={tx} scores={result.familyScores} />
       <h3>{T('resultTop')}</h3>
       <ul className="p2-list">
         {result.topFamilies.map((entry) => (
@@ -525,6 +528,7 @@ export function PartsTwo() {
     case 'pick':
       return (
         <PickScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
+          showPad={at === screens.findIndex((s) => s.kind === 'pick')}
           setPick={(value) => { patch('picks', screen.family, value); forward(); }} />
       );
     case 'timing':

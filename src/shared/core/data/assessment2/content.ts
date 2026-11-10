@@ -423,6 +423,7 @@ export const UI_COPY = {
   placeBlendingNote: { en: 'Blending is set in the Toward step, not here.', ru: 'Слитность задаётся на шаге «Отношение», а не здесь.' },
   providerTest: { en: 'The test for any source: after you reach toward it, is this feeling met, or skipped past?', ru: 'Проверка для любого источника: после обращения к нему чувство удовлетворено или его проскочили?' },
   provisionalNote: { en: 'Provisional, from your first six choices', ru: 'Предварительно, по первым шести выборам' },
+  provisionalLabel: { en: 'Provisional: family positions, not your parts.', ru: 'Предварительно: расположение семей, а не ваши части.' },
   depthNotAnswered: { en: 'Depth not answered yet', ru: 'Глубина пока не указана' },
   depthNotSure: { en: 'Not sure', ru: 'Не знаю' },
   notSetByYou: { en: 'not set by you', ru: 'не задано вами' },

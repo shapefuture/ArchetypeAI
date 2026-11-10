@@ -36,4 +36,13 @@
 .p2-depth { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; font-size: 0.85rem; }
 .p2-depth-name { grid-column: 1 / -1; font-weight: 600; }
 .p2-depth input { width: 100%; }
+.p2-prov { margin: 0; display: grid; gap: 6px; }
+.p2-prov-svg { display: block; width: 100%; max-width: 360px; height: auto; margin: 0 auto; }
+.p2-prov-frame { fill: rgba(127, 127, 127, 0.06); stroke: rgba(127, 127, 127, 0.5); }
+.p2-prov-axis { stroke: rgba(127, 127, 127, 0.35); stroke-dasharray: 3 3; }
+.p2-prov-edge { fill: currentColor; font-size: 9px; opacity: 0.75; }
+.p2-prov-point { fill: currentColor; fill-opacity: 0.3; }
+.p2-prov-top { fill-opacity: 1; stroke: currentColor; stroke-width: 2; }
+.p2-prov-rank { fill: currentColor; font-size: 10px; font-weight: 700; }
+.p2-prov-label { font-size: 0.85rem; text-align: center; text-wrap: balance; opacity: 0.85; }
 @media (max-width: 480px) { .p2 { padding: 12px; } .p2-nav { flex-wrap: wrap; } }

@@ -1,3 +1,4 @@
+import { sanitizePlaced } from './scoring';
 import { describe, expect, it } from 'vitest';
 import {
   CAPACITIES, COSTUMES, EXILES, EXILE_NEED, FAMILIES, FAMILY_DEFAULT, GROUND_ITEMS, MEMBERS, MEMBER_DEFS, NEEDS, PROVIDER_FORMS, membersOf,
@@ -311,7 +312,7 @@ describe('placement answers: depth and unknown axes', () => {
     expect(part.unmeasuredAxes).toContain('DEPTH');
   });
 
-  it('marks every axis unknown when placement is skipped, and never stores the default as an answer', () => {
+  it('marks every axis unknown when placement is skipped, and records no default as an answer', () => {
     const part = rebelWith({});
     expect(part.placement).toBe('default');
     expect(part.unmeasuredAxes).toEqual(expect.arrayContaining(['ENERGY', 'DIRECTION', 'DEPTH']));
@@ -332,5 +333,33 @@ describe('placement answers: depth and unknown axes', () => {
     const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const } };
     const result = JSON.parse(JSON.stringify(buildAssessment2Result(input)));
     expect(isAssessment2Result({ ...result, parts: [{ ...result.parts[0], unmeasuredAxes: ['FOCUS'] }, ...result.parts.slice(1)] })).toBe(false);
+  });
+});
+
+describe('depth answer rules: drafts, validator and conflicts', () => {
+  it('keeps only real axis values from a draft, and keeps depth null as "not sure"', () => {
+    expect(sanitizePlaced({ 'member:rebel': { energy: 'x', direction: 0.4, depth: null }, 'member:numb': { energy: NaN } }))
+      .toEqual({ 'member:rebel': { direction: 0.4, depth: null } });
+    expect(sanitizePlaced(null)).toEqual({});
+  });
+
+  it('requires a depth state that agrees with the unknown-axis list', () => {
+    const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const } };
+    const valid = JSON.parse(JSON.stringify(buildAssessment2Result(input)));
+    expect(isAssessment2Result(valid)).toBe(true);
+    const missingState = { ...valid, parts: valid.parts.map((p: any) => ({ ...p, depthState: undefined })) };
+    expect(isAssessment2Result(missingState)).toBe(false);
+    const claimsAnswer = { ...valid, parts: valid.parts.map((p: any) => ({ ...p, depthState: 'set' })) };
+    expect(isAssessment2Result(claimsAnswer)).toBe(false);
+  });
+
+  it('does not separate two protectors when only one of them has answered an axis', () => {
+    const base = { kind: 'protector', target: 'others', guards: ['frightened'], rank: null, level: null, confidence: null,
+      placement: 'placed', costume: null, blending: null, mapFamily: 'firefighter', depthState: 'unanswered' };
+    const parts = [
+      { ...base, key: 'member:rebel', member: 'rebel', family: 'attack', coordinates: [0.8, 0.3, 0.3, 0], unmeasuredAxes: ['DIRECTION', 'DEPTH', 'BLENDING'] },
+      { ...base, key: 'member:numb', member: 'numb', family: 'numbSoothe', coordinates: [-0.8, -0.5, 0.3, 0], unmeasuredAxes: ['ENERGY', 'DIRECTION', 'DEPTH', 'BLENDING'] },
+    ] as unknown as MapPart[];
+    expect(deriveConflicts(parts).map((c) => c.type)).not.toContain('strategy-against-strategy');
   });
 });

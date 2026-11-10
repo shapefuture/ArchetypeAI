@@ -4,7 +4,7 @@ import { store } from '../core/local-store.ts';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
 import { buildParts2UniverseParts, isParts2Part } from '../core/parts2-universe-adapter.ts';
 import { buildScreens, clampIndex, completedStagesFor, stageOf } from '../core/parts-two-flow.ts';
-import { SCENE_FAMILIES, buildAssessment2Result, rankFamilies, scoreFamilies } from '../../shared/core/data/assessment2/scoring.ts';
+import { SCENE_FAMILIES, buildAssessment2Result, rankFamilies, sanitizePlaced, scoreFamilies } from '../../shared/core/data/assessment2/scoring.ts';
 import {
   BLENDING_COPY, CAPACITY_COPY, CONFIRM_COPY, CONFIRM_SCALE, COSTUME_COPY, EXILE_COPY, FAMILY_COPY,
   FEAR_COPY, GROUND_COPY, MEMBER_COPY, NEED_COPY, PROVIDER_COPY, PROVIDER_FORM_COPY, REACTION_COPY, SCENE_COPY, TIMING_COPY,
@@ -318,7 +318,7 @@ function GroundScreen2({ T, tx, frame, input, toggleGround, onNext }) {
   );
 }
 
-function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
+export function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
   const parts = useMemo(() => buildAssessment2Result(input).parts, [input]);
   const [keyChosen, setKeyChosen] = useState(parts[0]?.key ?? null);
   const part = parts.find((entry) => entry.key === keyChosen) ?? parts[0] ?? null;
@@ -326,7 +326,7 @@ function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
     return <Frame {...frame} title={T('placeHelp')} onNext={onNext}><p className="sub">—</p></Frame>;
   }
   const name = part.kind === 'protector' ? tx(MEMBER_COPY[part.member].name) : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].name) : tx(CAPACITY_COPY[part.capacity].name);
-  // Until the person sets an axis, its value is the reference position and is shown as unknown.
+  // Until the person sets an axis, its value is the reference position, and the coordinates panel shows it as unknown.
   const [energy, direction, depth] = part.coordinates;
   const unknown = new Set(part.unmeasuredAxes);
   // Writes only the axes passed in: the pad sets energy and direction, the slider sets depth, "not sure" sets depth to null.
@@ -431,7 +431,7 @@ export function PartsTwo() {
 
   useEffect(() => {
     if (phase !== 'running') return;
-    try { store.save(DRAFT_KEY, { input, index: at }); } catch { /* storage may be unavailable; the flow still works */ }
+    try { store.save(DRAFT_KEY, { version: 2, input, index: at }); } catch { /* storage may be unavailable; the flow still works */ }
   }, [input, at, phase]);
 
   const patch = (field, key, value) => setInput((prev) => ({ ...prev, [field]: { ...prev[field], [key]: value } }));
@@ -440,7 +440,11 @@ export function PartsTwo() {
 
   const resume = () => {
     const draft = loadDraft();
-    if (draft) { setInput({ ...blankInput(), ...draft.input }); setIndex(draft.index ?? 0); }
+    if (draft) {
+      // Placements from a draft written before the depth rule were defaults, not answers, so they are not resumed.
+      setInput({ ...blankInput(), ...draft.input, placed: draft.version === 2 ? sanitizePlaced(draft.input.placed) : {} });
+      setIndex(draft.index ?? 0);
+    }
     setPhase('running');
   };
   const restart = () => {

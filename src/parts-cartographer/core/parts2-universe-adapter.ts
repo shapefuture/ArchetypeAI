@@ -34,6 +34,7 @@ export function buildParts2UniverseParts(result: Assessment2Result, lang: 'en' |
       coordinates: part.coordinates,
       unmeasuredAxes: part.unmeasuredAxes,
       axisVersion: 2,
+      depthRecord: 2,
       cluster: `parts_two_${part.kind}`,
       prominence: prominenceOf(part),
       size: 0.8,

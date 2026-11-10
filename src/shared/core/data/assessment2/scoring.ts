@@ -1,6 +1,6 @@
 /**
  * Assessment 2.0 scoring (docs/plans/assessment-2/plan.md §4–§5). Pure and deterministic.
- * Unknown is stored as null and never as zero. Results are rankings within one person, not norms.
+ * An axis the person did not answer keeps a reference number in its slot, is listed in unmeasuredAxes, and is never shown as measured. Results are rankings within one person, not norms.
  */
 import { MAP_AXIS_KEYS, clampAxis, isMapCoordinates, type MapAxisKey, type MapCoordinates } from '../map-axes';
 import {
@@ -354,6 +354,26 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
 const isRecord = (v: unknown): v is Record<string, any> => !!v && typeof v === 'object' && !Array.isArray(v);
 const oneOf = <T extends string>(list: readonly T[], v: unknown): v is T => typeof v === 'string' && (list as readonly string[]).includes(v);
 
+/** Keeps only the axis values a person actually set. Anything else in a stored draft is dropped, never read as an answer. */
+export function sanitizePlaced(value: unknown): Assessment2Input['placed'] {
+  const out: Assessment2Input['placed'] = {};
+  if (!value || typeof value !== 'object') return out;
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const fields = raw as Record<string, unknown>;
+    const number = (v: unknown) => typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+    const energy = number(fields.energy);
+    const direction = number(fields.direction);
+    const depth = fields.depth === null ? null : number(fields.depth);
+    const kept: { energy?: number; direction?: number; depth?: number | null } = {};
+    if (energy !== undefined) kept.energy = energy;
+    if (direction !== undefined) kept.direction = direction;
+    if (depth !== undefined) kept.depth = depth;
+    if (Object.keys(kept).length > 0) out[key] = kept;
+  }
+  return out;
+}
+
 export function isAssessment2Result(value: unknown): value is Assessment2Result {
   if (!isRecord(value) || value.instrument !== 'parts-2' || value.version !== 1) return false;
   if (!Array.isArray(value.parts) || !Array.isArray(value.conflicts) || !Array.isArray(value.topFamilies) || !isRecord(value.familyScores)) return false;
@@ -362,7 +382,8 @@ export function isAssessment2Result(value: unknown): value is Assessment2Result 
     && (part.kind === 'protector' || part.kind === 'exile' || part.kind === 'capacity')
     && isMapCoordinates(part.coordinates)
     && Array.isArray(part.unmeasuredAxes) && part.unmeasuredAxes.every((k: unknown) => (MAP_AXIS_KEYS as readonly unknown[]).includes(k))
-    && (part.depthState === undefined || part.depthState === 'set' || part.depthState === 'unsure' || part.depthState === 'unanswered')
+    && (part.depthState === 'set' || part.depthState === 'unsure' || part.depthState === 'unanswered')
+    && ((part.depthState === 'set') === !part.unmeasuredAxes.includes('DEPTH'))
     && (part.level === null || (typeof part.level === 'number' && part.level >= 1 && part.level <= 5))
     && (part.placement === 'placed' || part.placement === 'default')
     && (part.kind !== 'protector' || (oneOf(MEMBERS, part.member) && oneOf(FAMILIES, part.family) && oneOf(TIMINGS, part.timing) && oneOf(TARGETS, part.target)))

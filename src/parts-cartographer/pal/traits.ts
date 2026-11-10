@@ -89,6 +89,8 @@ export interface ArchetypeMapData {
   unmeasuredAxes?: Array<'ENERGY' | 'DIRECTION' | 'DEPTH' | 'BLENDING'>;
   /** 2 once coordinates are in the map-axis order. Absent on records written before the axis change. */
   axisVersion?: 2;
+  /** 2 once a 2.0 record says whether depth was answered. Earlier 2.0 records lack it and read as depth unknown. */
+  depthRecord?: 2;
   cluster: string;
   prominence: number;
   size: number;

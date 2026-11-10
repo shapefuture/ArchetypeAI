@@ -339,7 +339,7 @@ An independent review of the first build found the issues below. Fixed in this c
 - The two Quick Scan buttons still read Quick scan. Fixed: they now show the 2.0 title. Self-placed coordinates were labelled measured. Fixed: they are labelled derived.
 - The provider screen did not carry the plan §8 test. Fixed: the test is shown there. Pick screens now show the provisional family ranking from the first six choices.
 
-Depth answers, found when the question was asked: placement stored the default depth as the person's answer, and skipping placement left depth looking known. Fixed: each axis is recorded only when the person sets it. Depth has three states: set, not sure, and not answered. Unset axes are unknown on the map and in the panel, and conflict checks ignore them. Parts saved by the earlier build keep the depth they were stored with, so re-run 2.0 to correct them.
+Depth answers, found when the question was asked: placement stored the default depth as the person's answer, and skipping placement left depth looking known. Fixed: each axis is recorded only when the person sets it. Depth has three states: set, not sure, and not answered. Unset axes are unknown in the coordinates panel, and the lens and conflict checks leave them out. The 3D map still draws them at reference positions, which is the open decision below. Parts and drafts saved by the earlier build are read with depth unknown, and their placements are not resumed. Cloud copies and history restores keep the unknown flags. Re-run 2.0 to correct earlier placements.
 
 Departures the review raised, now recorded as decisions:
 

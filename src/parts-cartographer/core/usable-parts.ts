@@ -1,9 +1,22 @@
-import { SEED_PARTS, type Part } from '../pal/traits';
+import { SEED_PARTS, type ArchetypeMapData, type Part } from '../pal/traits';
 import { validMapParts } from './backup';
 import { withFamilyCluster } from './clinical-profile-adapter';
 import { canonicalEnergyPart } from './universe-controls';
 import { IV_PARTS } from '../../shared/features/landing/stickers';
 import { legacy64ToMapPlacement, referenceMapPlacement } from '../../shared/core/data/map-axes';
+
+/**
+ * A 2.0 record is current when it carries the axis version and the depth marker, and its unknown-axis list survived.
+ * Anything else is read conservatively: depth is unknown, because an earlier build stored the default as the answer.
+ */
+function currentParts2Archetype(archetype: ArchetypeMapData): ArchetypeMapData {
+  if (archetype.axisVersion === 2 && archetype.depthRecord === 2 && Array.isArray(archetype.unmeasuredAxes)) return archetype;
+  const listed: Array<'ENERGY' | 'DIRECTION' | 'DEPTH' | 'BLENDING'> = Array.isArray(archetype.unmeasuredAxes)
+    ? archetype.unmeasuredAxes
+    : ['ENERGY', 'DIRECTION', 'DEPTH', 'BLENDING'];
+  const unmeasuredAxes: Array<'ENERGY' | 'DIRECTION' | 'DEPTH' | 'BLENDING'> = archetype.depthRecord === 2 || listed.includes('DEPTH') ? listed : [...listed, 'DEPTH' as const];
+  return { ...archetype, axisVersion: 2, depthRecord: 2, unmeasuredAxes };
+}
 
 /**
  * Stored coordinates written before the axis change use the old four-axis tuple (agency, temperature, focus,
@@ -14,7 +27,13 @@ import { legacy64ToMapPlacement, referenceMapPlacement } from '../../shared/core
  */
 export function migrateArchetypeAxes(part: Part): Part {
   const archetype = part.archetype;
-  if (!archetype || archetype.axisVersion === 2) return part;
+  if (!archetype) return part;
+  // 2.0 records are never re-projected: their coordinates are already on the map axes.
+  if (archetype.sourceAssessment === 'parts-2') {
+    const current = currentParts2Archetype(archetype);
+    return current === archetype ? part : { ...part, archetype: current };
+  }
+  if (archetype.axisVersion === 2) return part;
   if (archetype.coordinateBasis === 'fixed-reference-147' || archetype.coordinateBasis === 'family-default-2') {
     const reference = IV_PARTS.find((entry) => entry.id === part.id);
     if (!reference) return { ...part, archetype: undefined };

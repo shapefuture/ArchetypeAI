@@ -7,7 +7,7 @@ import { Crest, familyColor, Sheet, Confetti } from '../ui/ui.jsx';
 import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus, appointmentDisplayTime } from '../core/booking.ts';
 import { CLOUD_PART_LIMIT, loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
-import { canonicalEnergyPart } from '../core/universe-controls.ts';
+import { usableParts } from '../core/usable-parts.ts';
 import { archetypeOf, studioArchetypeFor } from '../core/clinical-profile-adapter.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
@@ -155,7 +155,7 @@ export function Cabinet() {
       return;
     }
     setProfile(entry.profile);
-    setParts(entry.parts.map(canonicalEnergyPart));
+    setParts(usableParts(entry.parts));
     toast('✓ ' + t('cloudRestoreOk'));
     go('assessment-results');
   };

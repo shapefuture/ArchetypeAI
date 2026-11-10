@@ -94,7 +94,7 @@ describe('stored axes are converted once on load (plan §3.5)', () => {
   });
 
   it('leaves records already on the map axes untouched', () => {
-    const current = base({ schema: 'archetype-map.v1', sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.1, 0.2, 0.3, 0.4], cluster: 'x', prominence: 50, size: 0.8, axisVersion: 2 });
+    const current = base({ schema: 'archetype-map.v1', sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.1, 0.2, 0.3, 0.4], cluster: 'x', prominence: 50, size: 0.8, axisVersion: 2, depthRecord: 2, unmeasuredAxes: [] });
     expect(migrateArchetypeAxes(current)).toBe(current);
   });
 
@@ -134,5 +134,25 @@ describe('map parts keep their coordinates when they are loaded again', () => {
     const before = once.find((p) => p.id === 'parts2_member_rebel');
     const after = reloaded.find((p) => p.id === 'parts2_member_rebel');
     expect(after?.archetype?.coordinates).toEqual(before?.archetype?.coordinates);
+  });
+});
+
+describe('earlier 2.0 records read as depth unknown', () => {
+  const legacyPart = (archetype: Partial<ArchetypeMapData>) => ({
+    ...SEED_PARTS[0], id: 'parts2_member_rebel',
+    archetype: { schema: 'archetype-map.v1', sourceAssessment: 'parts-2', cluster: 'x', prominence: 50, size: 0.8, coordinates: [0.2, 0.5, 0.3, 0], ...archetype },
+  } as unknown as Part);
+
+  it('keeps a 2.0 record that lacks the depth marker, and marks its depth unknown', () => {
+    const migrated = migrateArchetypeAxes(legacyPart({ coordinateBasis: 'self-placed-2' }));
+    expect(migrated.archetype?.coordinates).toEqual([0.2, 0.5, 0.3, 0]);
+    expect(migrated.archetype?.unmeasuredAxes).toContain('DEPTH');
+    expect(migrated.archetype?.depthRecord).toBe(2);
+  });
+
+  it('keeps a reference record that lacks the axis version instead of stripping it', () => {
+    const migrated = migrateArchetypeAxes(legacyPart({ coordinateBasis: 'family-default-2', unmeasuredAxes: undefined }));
+    expect(migrated.archetype).toBeDefined();
+    expect(migrated.archetype?.unmeasuredAxes).toEqual(['ENERGY', 'DIRECTION', 'DEPTH', 'BLENDING']);
   });
 });

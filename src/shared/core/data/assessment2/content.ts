@@ -358,7 +358,6 @@ export const UI_COPY = {
   capacityHardQ: { en: 'Which of these is hardest to reach?', ru: 'К чему из этого труднее всего дотянуться?' },
   groundQ: { en: 'What helps you feel steady? Choose any that apply.', ru: 'Что помогает вам чувствовать опору? Отметьте всё подходящее.' },
   placeHelp: { en: 'Drag each part to where it sits for you, or use the arrow keys. Each part starts at its reference position.', ru: 'Перетащите каждую часть туда, где она находится для вас, или используйте стрелки. Каждая часть начинается с опорной позиции.' },
-  placeHint: { en: 'Energy across, depth up and down. Direction is the second pad.', ru: 'Энергия по горизонтали, глубина по вертикали. Направление на втором поле.' },
   placeReference: { en: 'Reference position', ru: 'Опорная позиция' },
   placePlaced: { en: 'Placed by you', ru: 'Размещено вами' },
   pad1: { en: 'Energy and direction', ru: 'Энергия и направление' },

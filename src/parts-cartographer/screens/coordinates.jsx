@@ -3,6 +3,7 @@ import { localizeParts } from '../pal/seed-copy.ts';
 import { useApp } from '../app.jsx';
 import { store, KEYS } from '../core/local-store.ts';
 import { coordinatesFromTuple, project, projectionsAgree } from '../core/analytic-coordinates.ts';
+import { migrateArchetypeAxes } from '../core/usable-parts.ts';
 import { UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
 import { MAP_AXIS_KEYS } from '../../shared/core/data/map-axes.ts';
 import './replay.css';
@@ -86,9 +87,13 @@ export function coordinatesForPart(part) {
   return coordinatesFromTuple(known, status);
 }
 
+/* Stored parts get the same axis migration as the map (migrateArchetypeAxes), so a record from an earlier build reads the
+   same here: depth stays unknown until the person sets it, and old-axis values are converted rather than shown as they were. */
 function readCoordinateParts(contextParts) {
   const stored = store.load(KEYS.parts, null);
-  const list = Array.isArray(stored) ? stored : (Array.isArray(contextParts) ? contextParts : []);
+  const list = Array.isArray(stored)
+    ? stored.filter(isObject).map(migrateArchetypeAxes)
+    : (Array.isArray(contextParts) ? contextParts : []);
   return list.filter((part) => isObject(part) && typeof part.id === 'string' && part.id.length > 0);
 }
 

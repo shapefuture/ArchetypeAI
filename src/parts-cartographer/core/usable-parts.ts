@@ -28,7 +28,8 @@ function currentParts2Archetype(archetype: ArchetypeMapData): ArchetypeMapData {
 export function migrateArchetypeAxes(part: Part): Part {
   const archetype = part.archetype;
   if (!archetype) return part;
-  // 2.0 records are never re-projected: their coordinates are already on the map axes.
+  // 2.0 records are never re-projected. Every 2.0 writer sets axisVersion 2 (parts2-universe-adapter.ts), and the 2.0 flow
+  // never stored the old tuple, so their coordinates are already on the map axes.
   if (archetype.sourceAssessment === 'parts-2') {
     const current = currentParts2Archetype(archetype);
     return current === archetype ? part : { ...part, archetype: current };

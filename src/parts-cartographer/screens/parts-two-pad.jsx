@@ -10,18 +10,41 @@ export function padKeyMove(key, step) {
 }
 
 /**
+ * The axes a pointer move actually moved along, from the previous pointer position to this one. A sideways drag moves
+ * x only, so y is not answered. Without a previous position (the press), both axes are answered.
+ */
+export function padPointerAxes(from, to) {
+  if (!from) return { x: true, y: true };
+  return { x: to.clientX !== from.clientX, y: to.clientY !== from.clientY };
+}
+
+/**
  * Two-axis placement pad for Assessment 2.0 (plan §4 stage 6). Drag, or use the arrow keys (Shift for larger steps).
  * x and y are both in [−1, 1]. The depth slider next to it is the third axis. Pure presentation; the parent owns state.
  */
 export function PlacementPad({ label, x, y, xLabels, yLabels, onChange }) {
   const ref = useRef(null);
-  const fromPointer = (event) => {
+  const last = useRef(null);
+  // Writes only the axes passed in, each read from the pointer position inside the pad.
+  const answer = (event, axes) => {
     const rect = ref.current.getBoundingClientRect();
-    onChange({
-      x: round(clamp(((event.clientX - rect.left) / rect.width) * 2 - 1)),
-      y: round(clamp(1 - ((event.clientY - rect.top) / rect.height) * 2)),
-    });
+    const values = {};
+    if (axes.x) values.x = round(clamp(((event.clientX - rect.left) / rect.width) * 2 - 1));
+    if (axes.y) values.y = round(clamp(1 - ((event.clientY - rect.top) / rect.height) * 2));
+    onChange(values);
   };
+  const onPointerDown = (event) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    last.current = { clientX: event.clientX, clientY: event.clientY };
+    answer(event, { x: true, y: true }); // a press places the part, so both axes are answered
+  };
+  const onPointerMove = (event) => {
+    if (!event.buttons || !last.current) return;
+    const axes = padPointerAxes(last.current, event);
+    last.current = { clientX: event.clientX, clientY: event.clientY };
+    if (axes.x || axes.y) answer(event, axes);
+  };
+  const onPointerEnd = () => { last.current = null; };
   const onKeyDown = (event) => {
     const move = padKeyMove(event.key, event.shiftKey ? 0.2 : 0.05);
     if (!move) return;
@@ -38,8 +61,10 @@ export function PlacementPad({ label, x, y, xLabels, yLabels, onChange }) {
         role="application"
         aria-label={label}
         tabIndex={0}
-        onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); fromPointer(event); }}
-        onPointerMove={(event) => { if (event.buttons) fromPointer(event); }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerEnd}
+        onPointerCancel={onPointerEnd}
         onKeyDown={onKeyDown}
       >
         <span className="p2-pad-dot" style={{ left: `${(x + 1) * 50}%`, bottom: `${(y + 1) * 50}%` }} aria-hidden="true" />

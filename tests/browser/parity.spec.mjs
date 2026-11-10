@@ -116,7 +116,7 @@ test('147-answer assessment resumes, completes locally, exports, and opens the c
   const filters = page.getByRole('dialog', { name: 'Filters' });
   await expect(filters).toBeVisible();
   await expect(filters.getByRole('slider')).toHaveCount(5);
-  await filters.getByRole('combobox', { name: 'X', exact: true }).selectOption('ATTACHMENT');
+  await filters.getByRole('combobox', { name: 'X', exact: true }).selectOption('BLENDING');
   await filters.getByRole('slider').nth(1).focus();
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Escape');

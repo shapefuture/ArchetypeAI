@@ -5,7 +5,7 @@ import {
   exileDefault, protectorDefault, capacityDefault, mapFamilyFor, type MemberId,
 } from './taxonomy';
 import {
-  SCENES, SCENE_FAMILIES, buildAssessment2Result, confidenceOf, deriveConflicts, isAssessment2Result, leadsOf, levelOf, rankFamilies,
+  SCENES, SCENE_FAMILIES, SELF_ATTACK_MEMBERS, buildAssessment2Result, confidenceOf, deriveConflicts, isAssessment2Result, leadsOf, levelOf, rankFamilies,
   scoreFamilies, skipsConfirm, type Assessment2Input, type MapPart, type SceneAnswer,
 } from './scoring';
 import { CONFIRM_COPY, CAPACITY_COPY, copyCoverage, REACTION_COPY, UI_COPY } from './content';
@@ -273,6 +273,10 @@ describe('conflicts (plan §3.4, §5.2)', () => {
       part({ key: 'exile:ashamed', kind: 'exile', exile: 'ashamed', need: 'worth', level: 2, mapFamily: 'exile' }),
     ];
     expect(deriveConflicts(parts).map((c) => c.type)).toContain('critic-against-criticised');
+  });
+
+  it('derives the type-3 critic from MEMBER_DEFS: exactly inner_critic', () => {
+    expect(SELF_ATTACK_MEMBERS).toEqual(['inner_critic']);
   });
 
   it('flags two protectors that guard the same exile and sit a full unit apart', () => {

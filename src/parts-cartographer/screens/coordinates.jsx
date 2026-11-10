@@ -22,7 +22,7 @@ const COPY = {
     status: { measured: 'measured', derived: 'derived', reference: 'reference', unknown: 'unknown' },
     statusLegend: {
       measured: 'Placed from your own 64-item answers.',
-      derived: 'Created in the Archetype Studio from a description. Not measured.',
+      derived: 'Placed by you, or created in the Archetype Studio from a description. Not measured.',
       reference: 'A shared template for the 147-item map. It is not a measurement of you.',
       unknown: 'No value is recorded for this axis. It is not zero.',
     },
@@ -45,7 +45,7 @@ const COPY = {
     status: { measured: 'измерено', derived: 'вычислено', reference: 'эталон', unknown: 'неизвестно' },
     statusLegend: {
       measured: 'Определено по вашим ответам на 64 вопроса.',
-      derived: 'Создано в Студии архетипов по описанию. Не измерено.',
+      derived: 'Размещено вами или создано в Студии архетипов по описанию. Не измерено.',
       reference: 'Общий шаблон карты на 147 вопросов. Это не измерение вас.',
       unknown: 'Для этой оси значение не записано. Это не ноль.',
     },

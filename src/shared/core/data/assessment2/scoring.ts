@@ -118,7 +118,7 @@ export function skipsConfirm(family: FamilyId, scenes: SceneAnswer[]): boolean {
   return appearances > 0 && least === 0 && most / appearances >= SKIP_CONFIRM_SHARE;
 }
 
-/** Stage 3 level: the mean of at least two 1–5 answers. Fewer answers means unknown. */
+/** Stage 3 level: the mean of three 1–5 answers. Fewer answers means unknown. */
 export function levelOf(items: Array<number | null> | undefined): number | null {
   const values = (items ?? []).filter((v): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 5);
   // The level is the mean of all three confirm items, so a partial set is unknown (plan §5).
@@ -233,6 +233,9 @@ function coordsFor(key: string, fallback: MapCoordinates, placed: Assessment2Inp
   return { coordinates: base, unmeasuredAxes: unmeasured, depthState, placement: placement as 'placed' | 'default' };
 }
 
+/** Attack members whose default target is self. Conflict type 3 treats them as the critic. Derived from MEMBER_DEFS. */
+export const SELF_ATTACK_MEMBERS: readonly MemberId[] = MEMBERS.filter((id) => MEMBER_DEFS[id].family === 'attack' && MEMBER_DEFS[id].defaultTarget === 'self');
+
 /** Plan §3.4, derived from the finished parts. Types 1 and 2 are checked before 3 and 4. */
 export function deriveConflicts(parts: MapPart[]): Conflict[] {
   const conflicts: Conflict[] = [];
@@ -258,7 +261,7 @@ export function deriveConflicts(parts: MapPart[]): Conflict[] {
       }
     }
   }
-  const critic = protectors.find((p) => p.member === 'inner_critic' && p.target === 'self');
+  const critic = protectors.find((p) => p.member !== undefined && SELF_ATTACK_MEMBERS.includes(p.member) && p.target === 'self');
   const ashamed = exiles.find((e) => e.exile === 'ashamed');
   if (critic && ashamed) conflicts.push({ type: 'critic-against-criticised', keys: [critic.key, ashamed.key] });
   // Only exiles with a measured level can be ranked against each other; an unknown level is never zero.

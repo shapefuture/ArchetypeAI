@@ -161,9 +161,10 @@ function TimingScreen({ T, tx, frame, screen, input, setTiming, setCostume, onNe
   );
 }
 
-function ConfirmScreen({ T, tx, frame, screen, setConfirm, onSkip }) {
+export function ConfirmScreen({ T, tx, frame, screen, input, setConfirm, onSkip }) {
   const member = screen.member;
-  const [answers, setAnswers] = useState([null, null, null]);
+  const stored = input.confirm?.[member];
+  const [answers, setAnswers] = useState(() => (Array.isArray(stored) && stored.length === 3 ? [...stored] : [null, null, null]));
   const ready = answers.every((value) => value !== null);
   return (
     <Frame {...frame} title={tx(MEMBER_COPY[member].name)} kicker={T('confirmHelp')} onNext={() => setConfirm(answers)} nextDisabled={!ready}>
@@ -512,7 +513,7 @@ export function PartsTwo() {
       );
     case 'confirm':
       return (
-        <ConfirmScreen T={T} tx={tx} frame={frame} screen={screen}
+        <ConfirmScreen key={screen.member} T={T} tx={tx} frame={frame} screen={screen} input={input}
           setConfirm={(answers) => { patch('confirm', screen.member, answers); forward(); }}
           onSkip={() => { patch('confirm', screen.member, [null, null, null]); forward(); }} />
       );

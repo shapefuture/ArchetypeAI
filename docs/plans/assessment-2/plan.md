@@ -75,7 +75,7 @@ Four types, derived from the result and not from a fixed list:
 1. Strategy against strategy: two protectors guard the same exile in opposite ways.
 2. Protector against exile: a part blocks a feeling.
 3. Critic against the one criticised.
-4. Need against need: connection against agency, safety against aliveness, belonging against authenticity.
+4. Need against need: connection against agency, safety against aliveness.
 
 ### 3.5 Axes
 
@@ -220,7 +220,7 @@ All copy is needed in English and Russian. Russian follows `src/shared/i18n/stri
 Wording rules:
 
 - Describe what the reaction does, not its costume. A card must not say or imply that faith, humour or reasoning is a defence in itself.
-- One behaviour per item. A stated time window on every frequency item.
+- One behaviour per item. The time window is stated once, above the items on the same screen (G10), not repeated on each item.
 - No reverse-keyed items.
 
 ## 8. Safety

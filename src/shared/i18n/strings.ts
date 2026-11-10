@@ -17,28 +17,6 @@ import type { FamKind } from '../features/landing/stickers';
 // NOTE: deliberately NOT `as const` — components rely on widened `string`
 // property types (some use `typeof UI.ru & typeof UI.en` intersections).
 export const STRINGS = {
-  // ── Quick Scan panel ──────────────────────────────────────────────────
-  quickscan:   {
-    en: {
-      title: 'Meet one part in 90 seconds',
-      skip: 'Close',
-      resultOf: name => `${name} stepped forward.`,
-      teaserNote: 'A one-part glimpse. The full battery — 147 statements, three sittings — introduces you to each other.',
-      cta: 'Begin the full battery',
-      selfTitle: 'No part claimed the floor — your Self is near the surface.',
-      selfNote: 'Rare and good. The full battery will still find the quieter ones.',
-    },
-    ru: {
-      title: 'Познакомьтесь с одной частью себя за 90 секунд',
-      skip: 'Закрыть',
-      resultOf: name => `Вперёд вышла «${name}».`,
-      teaserNote: 'Это лишь беглый взгляд. Полная батарея — 147 утверждений в трёх подходах — представит вас друг другу.',
-      cta: 'Начать полный тест',
-      selfTitle: 'Ни одна часть не вышла вперёд — сейчас вы в спокойном, ясном состоянии.',
-      selfNote: 'Такое бывает нечасто, и это хороший знак. Полный тест всё равно найдёт и более тихих.',
-    },
-  },
-
   // ── Install prompt ────────────────────────────────────────────────────
   installPrompt:   {
     en: {
@@ -3292,7 +3270,6 @@ export const TRANSLATIONS = {
       youRestore: 'Restore from backup file',
       youEthics: 'Innerverse is an IFS-inspired map. For diagnosis or therapy, see a human. Your data never leaves this device without your action.',
       startTest: 'Start Test \u2726',
-      quickScanCta: 'Meet one part in 90 seconds',
       // Hero
       liveBadge: 'Now', heroBadge: '147 Statements \u00B7 IFS-Grounded',
       heroTitleLine1: 'Meet the', heroTitleEmphasis: 'constellation', heroTitleLine2: 'inside you.',
@@ -4236,7 +4213,6 @@ export const TRANSLATIONS = {
       youRestore: 'Восстановить из файла',
       youEthics: 'Innerverse — карта внутреннего мира по мотивам IFS. За диагностикой и терапией обращайтесь к специалисту. Данные остаются на устройстве, пока вы сами не решите иначе.',
       startTest: 'Начать тест \u2726',
-      quickScanCta: 'Встретьте одну часть за 90 секунд',
       // Hero
       liveBadge: 'Сейчас', heroBadge: '147 утверждений \u00B7 метод IFS',
       heroTitleLine1: 'Внутри вас —', heroTitleEmphasis: 'созвездие', heroTitleLine2: 'познакомьтесь с ним.',

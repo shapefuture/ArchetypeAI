@@ -72,6 +72,10 @@ test('Assessment 2.0 is the default route, Quick Scan is gone, and a full pass s
   expect(saved.result?.instrument).toBe('parts-2');
   expect(saved.parts.some((part) => part.archetype?.sourceAssessment === 'parts-2')).toBe(true);
   expect(saved.profile).toBeNull();
+  const partsTwo = saved.parts.filter((part) => part.archetype?.sourceAssessment === 'parts-2');
+  expect(partsTwo.length).toBeGreaterThan(0);
+  // This run skips placement, so no depth was answered: depth must be stored as unknown, not as a default.
+  expect(partsTwo.every((part) => part.archetype.unmeasuredAxes.includes('DEPTH'))).toBe(true);
   expect(errors).toEqual([]);
 });
 

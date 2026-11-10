@@ -148,13 +148,13 @@ describe('result building (plan §4, §6)', () => {
     const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const } };
     const result = buildAssessment2Result(input);
     const part = result.parts.find((p) => p.key === 'member:rebel')!;
-    expect(part.unmeasuredAxes).toEqual(['BLENDING']);
+    expect(part.unmeasuredAxes).toEqual(['ENERGY', 'DIRECTION', 'DEPTH', 'BLENDING']);
     expect(part.blending).toBeNull();
     expect(part.placement).toBe('default');
   });
 
   it('turns a blending answer into a value and removes it from the unmeasured list', () => {
-    const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, blending: { 'member:rebel': 'itIsMe' as const } };
+    const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, placed: { 'member:rebel': { energy: 0.1, direction: 0.2, depth: 0.3 } }, blending: { 'member:rebel': 'itIsMe' as const } };
     const part = buildAssessment2Result(input).parts.find((p) => p.key === 'member:rebel')!;
     expect(part.coordinates[3]).toBe(1);
     expect(part.unmeasuredAxes).toEqual([]);
@@ -280,5 +280,57 @@ describe('review fixes', () => {
       { key: 'exile:powerless', kind: 'exile', exile: 'powerless', need: 'agency', level: null, guards: [], coordinates: [0, 0, 0, 0], unmeasuredAxes: [], blending: null, mapFamily: 'exile' },
     ] as unknown as MapPart[];
     expect(deriveConflicts(parts)).toEqual([]);
+  });
+});
+
+describe('placement answers: depth and unknown axes', () => {
+  const rebelWith = (placed: Assessment2Input['placed']) => {
+    const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, placed };
+    return buildAssessment2Result(input).parts.find((p) => p.key === 'member:rebel')!;
+  };
+
+  it('treats a drag on the pad alone as no depth answer', () => {
+    const part = rebelWith({ 'member:rebel': { energy: 0.25, direction: 0.5 } });
+    expect(part.depthState).toBe('unanswered');
+    expect(part.unmeasuredAxes).toContain('DEPTH');
+    expect(part.unmeasuredAxes).not.toContain('ENERGY');
+    expect(part.unmeasuredAxes).not.toContain('DIRECTION');
+    expect(part.placement).toBe('placed');
+  });
+
+  it('records depth only when the person set it', () => {
+    const part = rebelWith({ 'member:rebel': { energy: 0.25, direction: 0.5, depth: 0.3 } });
+    expect(part.depthState).toBe('set');
+    expect(part.unmeasuredAxes).not.toContain('DEPTH');
+    expect(part.coordinates[2]).toBe(0.3);
+  });
+
+  it('keeps "not sure" distinct from "not answered", and both unknown', () => {
+    const part = rebelWith({ 'member:rebel': { energy: 0.25, direction: 0.5, depth: null } });
+    expect(part.depthState).toBe('unsure');
+    expect(part.unmeasuredAxes).toContain('DEPTH');
+  });
+
+  it('marks every axis unknown when placement is skipped, and never stores the default as an answer', () => {
+    const part = rebelWith({});
+    expect(part.placement).toBe('default');
+    expect(part.unmeasuredAxes).toEqual(expect.arrayContaining(['ENERGY', 'DIRECTION', 'DEPTH']));
+    expect(part.depthState).toBe('unanswered');
+  });
+
+  it('does not separate two protectors on axes that neither has answered', () => {
+    const base = { kind: 'protector', target: 'others', guards: ['frightened'], rank: null, level: null, confidence: null,
+      placement: 'default', costume: null, blending: null, mapFamily: 'firefighter', depthState: 'unanswered', unmeasuredAxes: ['ENERGY', 'DIRECTION', 'DEPTH', 'BLENDING'] };
+    const parts = [
+      { ...base, key: 'member:rebel', member: 'rebel', family: 'attack', coordinates: [0.8, 0.3, 0.3, 0] },
+      { ...base, key: 'member:numb', member: 'numb', family: 'numbSoothe', coordinates: [-0.8, -0.5, 0.3, 0] },
+    ] as unknown as MapPart[];
+    expect(deriveConflicts(parts).map((c) => c.type)).not.toContain('strategy-against-strategy');
+  });
+
+  it('rejects a stored result whose unknown-axis list names an axis that does not exist', () => {
+    const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const } };
+    const result = JSON.parse(JSON.stringify(buildAssessment2Result(input)));
+    expect(isAssessment2Result({ ...result, parts: [{ ...result.parts[0], unmeasuredAxes: ['FOCUS'] }, ...result.parts.slice(1)] })).toBe(false);
   });
 });

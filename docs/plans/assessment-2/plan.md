@@ -339,6 +339,8 @@ An independent review of the first build found the issues below. Fixed in this c
 - The two Quick Scan buttons still read Quick scan. Fixed: they now show the 2.0 title. Self-placed coordinates were labelled measured. Fixed: they are labelled derived.
 - The provider screen did not carry the plan §8 test. Fixed: the test is shown there. Pick screens now show the provisional family ranking from the first six choices.
 
+Depth answers, found when the question was asked: placement stored the default depth as the person's answer, and skipping placement left depth looking known. Fixed: each axis is recorded only when the person sets it. Depth has three states: set, not sure, and not answered. Unset axes are unknown on the map and in the panel, and conflict checks ignore them. Parts saved by the earlier build keep the depth they were stored with, so re-run 2.0 to correct them.
+
 Departures the review raised, now recorded as decisions:
 
 - Provider forms include your future self, from the resource discussion. Plan §3.3 did not list it.
@@ -346,6 +348,7 @@ Departures the review raised, now recorded as decisions:
 
 Open decisions for the owner:
 
+- Unknown axes on the 3D map. Parts with an unknown axis, from 2.0 or the 64, are still drawn at reference values, while the panel shows them as unknown. Choose between ghosting them and hiding them, as the 64 bullet below describes.
 - 64-derived parts have depth unmeasured. The 3D map places them on the middle plane, and the coordinates panel shows depth as unknown. The alternative is to hide them from the 3D view until depth is measured. Hiding them would change what every 64 user sees.
 - Stored 2.0 results are written and validated on backup, but nothing reads them back yet. A reader (for example, a last-map view on the route) is still to be built.
 - The provisional view after stage 1 is the family ranking only, not a map. A fuller provisional map needs picks, so it cannot appear before stage 2.

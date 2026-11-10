@@ -326,8 +326,12 @@ function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
     return <Frame {...frame} title={T('placeHelp')} onNext={onNext}><p className="sub">—</p></Frame>;
   }
   const name = part.kind === 'protector' ? tx(MEMBER_COPY[part.member].name) : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].name) : tx(CAPACITY_COPY[part.capacity].name);
+  // Until the person sets an axis, its value is the reference position and is shown as unknown.
   const [energy, direction, depth] = part.coordinates;
-  const set = (values) => setPlaced(part.key, { energy: values.x ?? energy, direction: values.y ?? direction, depth: values.depth ?? depth });
+  const unknown = new Set(part.unmeasuredAxes);
+  // Writes only the axes passed in: the pad sets energy and direction, the slider sets depth, "not sure" sets depth to null.
+  const write = (values) => setPlaced(part.key, values);
+  const depthText = part.depthState === 'set' ? depth.toFixed(2) : part.depthState === 'unsure' ? T('depthNotSure') : T('depthNotAnswered');
   return (
     <Frame {...frame} title={T('pad1')} kicker={T('placeHelp')} onNext={onNext}>
       <div className="p2-chips" role="group" aria-label={T('placeHelp')}>
@@ -337,15 +341,19 @@ function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
         ))}
       </div>
       <p className="p2-kicker">{name} · {part.placement === 'placed' ? T('placePlaced') : T('placeReference')}</p>
+      <p className="p2-note">{T('depthChoiceHelp')}</p>
       <PlacementPad
         label={`${name}: ${T('pad1')}`}
         x={energy}
         y={direction}
         xLabels={[T('lowLabel'), T('highLabel')]}
         yLabels={[T('awayLabel'), T('towardLabel')]}
-        onChange={(values) => set({ x: values.x, y: values.y })}
+        onChange={(values) => write({ ...(values.x !== undefined ? { energy: values.x } : {}), ...(values.y !== undefined ? { direction: values.y } : {}) })}
       />
-      <DepthSlider label={`${name}: ${T('axisDepth')}`} value={depth} lowLabel={T('deepLabel')} highLabel={T('surfaceLabel')} onChange={(value) => set({ depth: value })} />
+      <p className="p2-note">{T('axisEnergy')}: {unknown.has('ENERGY') ? T('notSetByYou') : T('setByYou')} · {T('axisDirection')}: {unknown.has('DIRECTION') ? T('notSetByYou') : T('setByYou')}</p>
+      <DepthSlider label={`${name}: ${T('axisDepth')}`} value={depth} lowLabel={T('deepLabel')} highLabel={T('surfaceLabel')} onChange={(value) => write({ depth: value })} />
+      <p className="p2-note">{T('axisDepth')}: {depthText}</p>
+      <button type="button" className="btn ghost block" aria-pressed={part.depthState === 'unsure'} onClick={() => write({ depth: null })}>{T('depthNotSure')}</button>
     </Frame>
   );
 }
@@ -380,6 +388,7 @@ function ResultView({ T, tx, input, onSave, onRestart }) {
               </p>
               {part.rank !== null ? <p>{T('resultRank')}: {part.rank} · {T('resultConfidence')}: {part.confidence ? confidence[part.confidence] : '—'}</p> : null}
               <p>{T('resultLevel')}: {part.level === null ? T('levelUnknown') : `${part.level} / 5`}</p>
+              <p>{T('axisDepth')}: {part.depthState === 'set' ? part.coordinates[2].toFixed(2) : part.depthState === 'unsure' ? T('depthNotSure') : T('depthNotAnswered')}</p>
               {part.guards.length ? <p>{T('guards')}: {part.guards.map((e) => tx(EXILE_COPY[e].name)).join(', ')}</p> : null}
               {part.need ? <p>{T('needLabel')}: {tx(NEED_COPY[part.need])}</p> : null}
               {part.provider ? <p>{T('providerLabel')}: {tx(ACCESS_COPY[part.provider.access])}{part.provider.form ? ` · ${tx(PROVIDER_FORM_COPY[part.provider.form])}` : ''}</p> : null}
@@ -539,7 +548,7 @@ export function PartsTwo() {
     case 'place':
       return (
         <PlaceScreen T={T} tx={tx} input={input} frame={frame}
-          setPlaced={(key, value) => patch('placed', key, value)}
+          setPlaced={(key, values) => setInput((prev) => ({ ...prev, placed: { ...prev.placed, [key]: { ...(prev.placed[key] ?? {}), ...values } } }))}
           onNext={forward} />
       );
     default:

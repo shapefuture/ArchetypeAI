@@ -148,3 +148,11 @@ describe('coordinate status rules', () => {
     expect(coordinatesForPart({ id: 'y', archetype: { sourceAssessment: 'studio', coordinates: [0, 0, 0, 0] } }).every((c) => c.value === null)).toBe(true);
   });
 });
+
+describe('unknown depth in the coordinates panel', () => {
+  it('shows an axis the person did not answer as unknown, even when a reference number is stored', () => {
+    const rows = coordinatesForPart({ id: 'p', archetype: { sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.2, 0.5, 0.3, 0], unmeasuredAxes: ['DEPTH', 'BLENDING'] } });
+    expect(rows[0]).toMatchObject({ axis: 0, value: 0.2, status: 'derived' });
+    expect(rows[2]).toMatchObject({ axis: 2, value: null, status: 'unknown' });
+  });
+});

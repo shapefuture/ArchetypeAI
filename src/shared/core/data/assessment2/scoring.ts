@@ -2,7 +2,7 @@
  * Assessment 2.0 scoring (docs/plans/assessment-2/plan.md §4–§5). Pure and deterministic.
  * Unknown is stored as null and never as zero. Results are rankings within one person, not norms.
  */
-import { clampAxis, isMapCoordinates, type MapAxisKey, type MapCoordinates } from '../map-axes';
+import { MAP_AXIS_KEYS, clampAxis, isMapCoordinates, type MapAxisKey, type MapCoordinates } from '../map-axes';
 import {
   BLENDING_OPTIONS, BLENDING_VALUE, CAPACITIES, COSTUMES, EXILES, FAMILIES, GROUND_ITEMS, MEMBER_DEFS, MEMBERS, NEEDS,
   PROVIDER_ACCESS, PROVIDER_FORMS, TIMINGS, TARGETS, EXILE_NEED, capacityDefault, exileDefault, mapFamilyFor, protectorDefault,
@@ -59,8 +59,11 @@ export interface Assessment2Input {
   capacityEasiest: CapacityId | null;
   capacityHardest: CapacityId | null;
   ground: GroundId[];
-  /** Stage 6: energy, direction and depth as placed by the person. Blending is not placed. */
-  placed: Partial<Record<string, { energy: number; direction: number; depth: number }>>;
+  /**
+   * Stage 6: only the axes the person set. An absent axis is not answered; depth null means "not sure".
+   * Blending is not placed.
+   */
+  placed: Partial<Record<string, { energy?: number; direction?: number; depth?: number | null }>>;
 }
 
 export type FamilyScores = Record<FamilyId, number | null>;
@@ -152,6 +155,9 @@ export function confidenceOf(score: number, level: number | null, skipped: boole
   return score >= 0.25 ? 'high' : 'medium';
 }
 
+/** Whether the person answered depth: set it, said not sure, or left it unanswered. */
+export type DepthState = 'set' | 'unsure' | 'unanswered';
+
 export interface MapPart {
   key: string;
   kind: 'protector' | 'exile' | 'capacity';
@@ -172,6 +178,7 @@ export interface MapPart {
   placement: 'placed' | 'default';
   coordinates: MapCoordinates;
   unmeasuredAxes: MapAxisKey[];
+  depthState: DepthState;
   blending: BlendingOption | null;
   mapFamily: 'manager' | 'firefighter' | 'exile' | 'resource';
 }
@@ -196,16 +203,31 @@ export interface Assessment2Result {
 
 const keyFor = (kind: 'member' | 'exile' | 'capacity', id: string) => `${kind}:${id}`;
 
+/**
+ * Coordinates for one part. An axis the person did not set is unknown: its slot holds the reference value so the
+ * shape stays complete, and it is listed in unmeasuredAxes. Only axes the person set count as answers.
+ */
 function coordsFor(key: string, fallback: MapCoordinates, placed: Assessment2Input['placed'], blending: BlendingOption | null) {
-  const place = placed[key];
-  const isPlaced = !!place && [place.energy, place.direction, place.depth].every((v) => typeof v === 'number' && Number.isFinite(v));
-  const base: MapCoordinates = isPlaced
-    ? [clampAxis(place!.energy), clampAxis(place!.direction), clampAxis(place!.depth), 0]
-    : [fallback[0], fallback[1], fallback[2], 0];
+  const place = placed[key] ?? {};
+  const finite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+  const energySet = finite(place.energy);
+  const directionSet = finite(place.direction);
+  const depthSet = finite(place.depth);
+  const base: MapCoordinates = [
+    energySet ? clampAxis(place.energy as number) : fallback[0],
+    directionSet ? clampAxis(place.direction as number) : fallback[1],
+    depthSet ? clampAxis(place.depth as number) : fallback[2],
+    0,
+  ];
   const unmeasured: MapAxisKey[] = [];
+  if (!energySet) unmeasured.push('ENERGY');
+  if (!directionSet) unmeasured.push('DIRECTION');
+  if (!depthSet) unmeasured.push('DEPTH');
   if (blending) base[3] = clampAxis(BLENDING_VALUE[blending]);
   else unmeasured.push('BLENDING');
-  return { coordinates: base, unmeasuredAxes: unmeasured, placement: (isPlaced ? 'placed' : 'default') as 'placed' | 'default' };
+  const depthState: DepthState = depthSet ? 'set' : place.depth === null ? 'unsure' : 'unanswered';
+  const placement = energySet || directionSet || depthSet ? 'placed' : 'default';
+  return { coordinates: base, unmeasuredAxes: unmeasured, depthState, placement: placement as 'placed' | 'default' };
 }
 
 /** Plan §3.4, derived from the finished parts. Types 1 and 2 are checked before 3 and 4. */
@@ -218,7 +240,10 @@ export function deriveConflicts(parts: MapPart[]): Conflict[] {
       const a = protectors[i];
       const b = protectors[j];
       const shared = a.guards.some((e) => b.guards.includes(e));
-      const apart = Math.abs(a.coordinates[0] - b.coordinates[0]) >= 1 || Math.abs(a.coordinates[1] - b.coordinates[1]) >= 1;
+      // Only an axis both parts have answered can separate them. A reference value is not an answer.
+      const answered = (part: MapPart, axis: MapAxisKey) => !part.unmeasuredAxes.includes(axis);
+      const apart = (answered(a, MAP_AXIS_KEYS[0]) && answered(b, MAP_AXIS_KEYS[0]) && Math.abs(a.coordinates[0] - b.coordinates[0]) >= 1)
+        || (answered(a, MAP_AXIS_KEYS[1]) && answered(b, MAP_AXIS_KEYS[1]) && Math.abs(a.coordinates[1] - b.coordinates[1]) >= 1);
       if (shared && apart) conflicts.push({ type: 'strategy-against-strategy', keys: [a.key, b.key] });
     }
   }
@@ -265,6 +290,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
       key, kind: 'protector', member: pick, family, timing, target: def.defaultTarget,
       rank, level, confidence: confidenceOf(score, level, skipped, leads[family] ?? 0), guards, costume: input.costume?.[pick] ?? null,
       placement: placedCoords.placement, coordinates: placedCoords.coordinates, unmeasuredAxes: placedCoords.unmeasuredAxes,
+      depthState: placedCoords.depthState,
       blending, mapFamily: mapFamilyFor('protector', timing),
     } as MapPart);
   }
@@ -287,7 +313,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
         key, kind: 'exile', exile, rank: null, level: input.exileLevel[exile] ?? null, confidence: null,
         guards: [], costume: null, need: input.exileNeed[exile] ?? EXILE_NEED[exile],
         provider: provider ? { access: provider.access, form: provider.form ?? null } : undefined,
-        placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes,
+        placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes, depthState: coords.depthState,
         blending, mapFamily: 'exile',
       } as MapPart);
     }
@@ -299,7 +325,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     const coords = coordsFor(key, capacityDefault(capacity), input.placed, null);
     parts.push({
       key, kind: 'capacity', capacity, rank: null, level: null, confidence: null, guards: [], costume: null,
-      placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes,
+      placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes, depthState: coords.depthState,
       blending: null, mapFamily: 'resource',
     } as MapPart);
   }
@@ -335,7 +361,8 @@ export function isAssessment2Result(value: unknown): value is Assessment2Result 
   return value.parts.every((part: unknown) => isRecord(part)
     && (part.kind === 'protector' || part.kind === 'exile' || part.kind === 'capacity')
     && isMapCoordinates(part.coordinates)
-    && Array.isArray(part.unmeasuredAxes) && part.unmeasuredAxes.every((k: unknown) => typeof k === 'string')
+    && Array.isArray(part.unmeasuredAxes) && part.unmeasuredAxes.every((k: unknown) => (MAP_AXIS_KEYS as readonly unknown[]).includes(k))
+    && (part.depthState === undefined || part.depthState === 'set' || part.depthState === 'unsure' || part.depthState === 'unanswered')
     && (part.level === null || (typeof part.level === 'number' && part.level >= 1 && part.level <= 5))
     && (part.placement === 'placed' || part.placement === 'default')
     && (part.kind !== 'protector' || (oneOf(MEMBERS, part.member) && oneOf(FAMILIES, part.family) && oneOf(TIMINGS, part.timing) && oneOf(TARGETS, part.target)))

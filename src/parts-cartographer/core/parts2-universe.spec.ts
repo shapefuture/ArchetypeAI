@@ -51,7 +51,8 @@ describe('Assessment 2.0 map parts', () => {
     expect(rebel.archetype?.unmeasuredAxes).toEqual([]);
     const frightened = parts.find((p) => p.id === 'parts2_exile_frightened')!;
     expect(frightened.archetype?.coordinateBasis).toBe('family-default-2');
-    expect(frightened.archetype?.unmeasuredAxes).toEqual(['BLENDING']);
+    // Unplaced and unblended: every axis is unknown, not only blending (plan §3.5, placement rules).
+    expect(frightened.archetype?.unmeasuredAxes).toEqual(['ENERGY', 'DIRECTION', 'DEPTH', 'BLENDING']);
   });
 
   it('maps classes the way the existing map does: reactive is a firefighter, an exile is an exile', () => {

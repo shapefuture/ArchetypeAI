@@ -503,7 +503,7 @@ export function PartsTwo() {
       );
     case 'scene':
       return (
-        <SceneScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
+        <SceneScreen key={screen.scene} T={T} tx={tx} input={input} frame={frame} screen={screen}
           commitScene={(answer) => { setInput((prev) => ({ ...prev, scenes: [...prev.scenes.filter((s) => s.scene !== answer.scene), answer] })); forward(); }}
           onSkip={() => { setInput((prev) => ({ ...prev, scenes: [...prev.scenes.filter((s) => s.scene !== screen.scene), { scene: screen.scene, most: null, least: null }] })); forward(); }} />
       );
@@ -549,7 +549,7 @@ export function PartsTwo() {
       );
     case 'provider':
       return (
-        <ProviderScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
+        <ProviderScreen key={screen.exile} T={T} tx={tx} input={input} frame={frame} screen={screen}
           onNext={({ access, form }) => { patch('providers', screen.exile, { access, form }); forward(); }}
           onSkip={() => { patch('providers', screen.exile, undefined); forward(); }} />
       );

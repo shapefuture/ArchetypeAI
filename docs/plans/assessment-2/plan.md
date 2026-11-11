@@ -94,6 +94,8 @@ Four types, derived from the result and not from a fixed list:
 
 Energy, Direction and Depth are the three plotted axes. Blending is the "+1" value.
 
+**The 64 projection** (`legacy64ToMapPlacement`, `src/shared/core/data/map-axes.ts:54`) sets energy to (temperature − agency) ÷ 2 and direction to (focus + attachment) ÷ 2. Depth and blending are unmeasured. Read against the 64 pole labels in `screens/legacy-report.jsx`, energy is positive for Active and Expressive, and negative for Receptive and Composed. Direction is positive for Other-focused and Anxious, and negative for Self-focused and Avoidant. The formula is a guess. `src/shared/core/data/map-axes-projection.spec.ts` checks its signs against those labels.
+
 ## 4. Flow
 
 | Stage | The person does | Taps | Minutes | Output |
@@ -342,6 +344,9 @@ Owner decisions applied: Assessment 2.0 is the default route; the four map axes 
 - **Provider points** are drawn beside their exile as resource points (B7). Each is named by its short role (Guardian, Companion, Mirror, Blesser, Mentor, Playmate). It has no blurb, and the full sentence stays on the provider screen.
 - **Ground copy:** the "set it down for later" item has the B4 wording. Ids are unchanged (G16).
 - **Coordinates** are a four-slot tuple in map-axis order, with the list of unmeasured axes (B5). Section 6 shows the built shape.
+- **Capacity name:** the English name of the healthy twin of numb or soothe is Player (G18). The Russian name is unchanged.
+- **Provider blending:** a provider point never has a blending value, so its blending stays unmeasured even when its exile's blending is known (build-and-fix G37).
+- **Unknown axes:** a stored unknown axis keeps a placeholder number in its coordinates slot, and `unmeasuredAxes` names it. Readers check that list, and no screen shows the placeholder as a value (build-and-fix G38).
 
 ### Guesses this build depends on (to be settled by the pilot)
 
@@ -363,7 +368,7 @@ An independent review of the first build found the issues below. Fixed in this c
 - The two Quick Scan buttons still read Quick scan. Fixed: they now show the 2.0 title. Self-placed coordinates were labelled measured. Fixed: they are labelled derived.
 - The provider screen did not carry the plan §8 test. Fixed: the test is shown there. Pick screens now show the provisional family ranking from the first six choices.
 
-Depth answers, found when the question was asked: placement stored the default depth as the person's answer, and skipping placement left depth looking known. Fixed: each axis is recorded only when the person sets it, and a drag answers only the axis it moved along (a press answers both). Depth has three states: set, not sure, and not answered. Unset axes are unknown in the coordinates panel, which applies the map's axis migration to stored parts, so an earlier record reads the same in both places. The lens (the visual view over the 3D map, `universe-lens.ts`) and the conflict checks leave unset axes out. The 3D map still draws them at reference positions, which is the open decision below. Parts and drafts saved by the earlier build are read with depth unknown, and their placements are not resumed. Cloud copies and history restores keep the unknown flags. Re-run 2.0 to correct earlier placements.
+Depth answers, found when the question was asked: placement stored the default depth as the person's answer, and skipping placement left depth looking known. Fixed: each axis is recorded only when the person sets it, and a drag answers only the axis it moved along (a press answers both). Depth has three states: set, not sure, and not answered. Unset axes are unknown in the coordinates panel, which applies the map's axis migration to stored parts, so an earlier record reads the same in both places. The lens (the visual view over the 3D map, `universe-lens.ts`) and the conflict checks leave unset axes out. The 3D map still draws them at reference positions. B12 decided that unset axes are ghosted and labelled, not hidden (G22, G31, G32). Parts and drafts saved by the earlier build are read with depth unknown, and their placements are not resumed. Cloud copies and history restores keep the unknown flags. Re-run 2.0 to correct earlier placements.
 
 Departures the review raised, now recorded as decisions:
 
@@ -380,6 +385,7 @@ Open decisions, with their status:
 
 ### Gates (checked 2026-11-11)
 
+- Follow-up fixes (2026-11-11): `npx tsc --noEmit` passes; `npm test` gives 253 test files and 1,881 tests passing; `npm run build` passes; `tests/browser/parity.spec.mjs` gives 9 of 9, with a skipped-timing case and a lighter-path case. The full browser suite gave 88 of 89. The one failure, `report-retake.spec.mjs` "starts over once the person agrees", waits 5 seconds for the Report panel. It passed 8 of 8 when repeated alone, which is the load-timeout handling in build-and-fix §2 and R7.
 - `npx tsc --noEmit`: passes at 4c2e627.
 - `npm test` (`npx vitest run`): 252 test files and 1,879 tests pass at 2af4f5e, including new specs for the taxonomy, scoring, screen order, adapter, migration, the E16 module side, the pilot functions and the tap budget.
 - `npm run build`: passes at 4c2e627.

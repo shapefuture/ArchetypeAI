@@ -20,14 +20,14 @@
 - The 3+1 3D view (`plan.md` §9 phase 6). It waits for the pilot.
 
 **Done means**
-1. No screen, result or stored record shows an unknown as a value. Timing, confidence, map class and axes are all checked.
+1. No screen, result or stored record shows an unknown as a value. Timing, confidence, map class and axes are all checked. An unknown axis is marked in `unmeasuredAxes`, and its slot holds a placeholder that no reader treats as a value (G38).
 2. A 2.0 result is never labelled, stored or shared as a measurement, in any module.
 3. Every item in `plan.md` §3–§8 is built, or deferred with a decision recorded in §7.
 4. `plan.md` §14 matches the code.
 
 ## 2. Ground rules
 
-- Unknown is never stored or shown as zero. A skipped answer is stored as `null`. `undefined` means "not asked yet".
+- Unknown is never shown as zero or as a value. A skipped single answer is stored as `null`, and `undefined` means "not asked yet". An unknown map axis keeps a placeholder number in its coordinates slot, and `unmeasuredAxes` names it (G38).
 - Keep every id that exists. Add ids; do not rename them. Drafts and results may already be stored for people who used 2.0.
 - 2.0 never shares a record with the 64 or 147 results (`plan.md` §1, §6).
 - Every new field on a map part must go into the cloud whitelist (`core/cloud-storage.ts:73`) and must pass `validMapParts` (`core/backup.ts:62`). Otherwise it is lost on sync or restore.
@@ -218,7 +218,7 @@ Do these after Phase 2. B9 comes first, because it reads the stored result that 
 
 ### B7 Providers as points beside their exiles (`plan.md` §5.1)
 - For each exile whose provider access is `easy` or `effort`, add a resource part `parts2_provider_<exile>`:
-  - Coordinates: the exile's energy +0.25 and direction +0.25, clamped; depth is the exile's depth; the exile's unmeasured axes are copied (G21).
+  - Coordinates: the exile's energy +0.25 and direction +0.25, clamped; depth is the exile's depth; the exile's unmeasured axes are copied (G21), and blending is always unmeasured on the point (G37).
   - `mapFamily: 'resource'`, `partType: undefined`, name the provider role, role "Provider".
 - Access `none` gives no point. The gap line (B1) explains it.
 - **Result shape:** add `kind: 'provider'` to `MapPart`. Update `isAssessment2Result`, `core/parts2-universe-adapter.ts` and the result view.
@@ -314,6 +314,8 @@ Defaults stand unless the owner changes them. The owner answers Phase 0 before P
 | G34 | Default camera | Slightly oblique, at (13, 9, 42), not straight on at (0, 0, 46) | Straight on, the direction axis points at the viewer and its label covers the centre | Owner review |
 | G35 | Axis guides | Lines through the origin along the three chosen axes, with the end words beside each line. Hidden in isolation mode. | Readers need the axis names where the parts are | Owner review |
 | G36 | Legend | Two sentences in the lens card, in English and Russian, explain the ring and the fade | Readers need the key where the lens is | Copy review |
+| G37 | Blending on a provider point | Always unmeasured. The point copies the exile's unmeasured axes, and does not copy the exile's blending. | A provider was never asked about blending, so copying the exile's would invent an answer. Educated guess: keep the code and record the departure in `plan.md` section 14. | Owner: confirm or change |
+| G38 | Unknown axes in stored coordinates | Keep a placeholder number in the unmeasured slot. `unmeasuredAxes` is the answer, and no reader treats the placeholder as a value. | Making unknown `null` changes `MapCoordinates` and every reader, and needs a migration of stored parts. The readers already check the list. Educated guess: keep the placeholder and reword §1 and §2. | Owner: confirm or change |
 
 **Owner tasks (no code can do these):**
 1. Name a reviewer for the Russian copy. This blocks the final Russian text.

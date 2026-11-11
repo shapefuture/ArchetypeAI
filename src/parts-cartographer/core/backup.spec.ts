@@ -7,6 +7,8 @@ import { adaptClinicalProfile } from './clinical-profile-adapter';
 import { IV_PARTS } from '../../shared/features/landing/stickers';
 import { snapshot, fromDocument } from './cloud-storage';
 import { validClinicalScore } from './profile-contract';
+import { SCENES, SCENE_FAMILIES, buildAssessment2Result, type Assessment2Result, type SceneAnswer } from '../../shared/core/data/assessment2/scoring';
+import type { FamilyId } from '../../shared/core/data/assessment2/taxonomy';
 
 const input = () => ({ shadow: Object.fromEntries(SHADOW_PARTS.map((id) => [id, [4, 3, 2, 5, 4, 3, 2, 1]])),
   resources: Object.fromEntries(RESOURCES.map((id) => [id, [3, 4, 5, 3, 4, 5]])), self: [3, 4, 5, 3, 4, 5, 3, 4], validity: { attention: 3, infrequency: [1, 2] as [number, number] } });
@@ -235,5 +237,42 @@ describe('a restored profile survives a backup round trip', () => {
     const profile = prepared.entries['ifs.profile'] as any;
     expect(profile.headlineConstellation).toBe(chosen.headlineConstellation);
     expect(profile.createdAt).toBe(chosen.createdAt);
+  });
+});
+
+describe('the last Assessment 2.0 result in a backup (B9, G23)', () => {
+  const scenesFavouring = (most: FamilyId, least: FamilyId): SceneAnswer[] => SCENES.map((scene) => ({
+    scene,
+    most: SCENE_FAMILIES[scene].includes(most) ? most : SCENE_FAMILIES[scene][0],
+    least: SCENE_FAMILIES[scene].includes(least) ? least : SCENE_FAMILIES[scene][1],
+  }));
+  const sample: Assessment2Result = buildAssessment2Result({ completedStages: [], steadiness: 4, lighter: false, scenes: scenesFavouring('attack', 'withdraw'),
+    picks: { attack: 'inner_critic' }, timing: { inner_critic: 'preventive' }, costume: {}, confirm: {}, fears: { inner_critic: 'ashamed' },
+    exileLevel: {}, exileNeed: {}, blending: {}, providers: {}, capacityEasiest: null, capacityHardest: null, ground: [], placed: {} });
+  const envelope = { savedAt: '2026-11-10T18:00:00.000Z', result: sample };
+  const backupWith = (data: Record<string, unknown>) => JSON.stringify({ schema: 'parts-cartographer.backup.v2', data: { 'ifs.lang': 'en', ...data } });
+
+  it('keeps the saved shape, the older bare result and null', async () => {
+    for (const value of [envelope, sample, null]) {
+      const prepared = await prepareBackup(backupWith({ 'ifs.parts2.result': value }), 'en');
+      expect(prepared.skipped).not.toContain('ifs.parts2.result');
+      expect(prepared.entries['ifs.parts2.result']).toEqual(value);
+    }
+  });
+
+  it('skips a value that is not a result, and still restores the rest of the backup', async () => {
+    const invalid = [{ savedAt: 'yesterday', result: sample }, 'oops', { savedAt: envelope.savedAt, result: { instrument: 'parts-2', version: 1 } }];
+    for (const value of invalid) {
+      const prepared = await prepareBackup(backupWith({ 'ifs.parts2.result': value }), 'en');
+      expect(prepared.skipped).toContain('ifs.parts2.result');
+      expect(Object.keys(prepared.entries)).not.toContain('ifs.parts2.result');
+      expect(prepared.entries['ifs.lang']).toBe('en');
+    }
+  });
+
+  it('keeps the readable archive copies of both shapes and drops the rest', async () => {
+    const archive = [JSON.stringify(envelope), JSON.stringify(sample), 'not json'];
+    const prepared = await prepareBackup(backupWith({ 'ifs.parts2.result.hist': archive }), 'en');
+    expect(prepared.entries['ifs.parts2.result.hist']).toEqual([JSON.stringify(envelope), JSON.stringify(sample)]);
   });
 });

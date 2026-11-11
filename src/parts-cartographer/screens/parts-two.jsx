@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { store } from '../core/local-store.ts';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
+import { readLastResult, saveLastResult } from '../core/parts-two-store.ts';
 import { buildParts2UniverseParts, isParts2Part } from '../core/parts2-universe-adapter.ts';
 import { buildScreens, clampIndex, completedStagesFor, stageOf } from '../core/parts-two-flow.ts';
 import { CATALOG_REVIEW, reviewedPractices } from '../core/practice-catalog.ts';
@@ -24,7 +25,6 @@ const blankInput = () => ({
 });
 
 const DRAFT_KEY = ROUTE_KEYS.parts2.draft;
-const RESULT_KEY = ROUTE_KEYS.parts2.result;
 
 function loadDraft() {
   try {
@@ -384,12 +384,14 @@ function GapLines({ T, tx, locale, need }) {
   );
 }
 
-function ResultView({ T, tx, locale, input, onSave, onRestart }) {
-  const result = useMemo(() => buildAssessment2Result({ ...input, completedStages: completedStagesFor(input) }), [input]);
+/** The stored date, in the language the person reads. */
+const formatSavedDate = (savedAt, locale) => new Date(savedAt).toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+
+/** The body of a result. The live result and the stored last result both use it, so the two cannot drift apart. */
+function ResultBody({ T, tx, locale, result }) {
   const confidence = { high: T('confHigh'), medium: T('confMedium'), low: T('confLow') };
   return (
-    <section className="p2" aria-labelledby="p2-result-title">
-      <h2 id="p2-result-title" className="p2-title">{T('resultTitle')}</h2>
+    <>
       <p className="p2-note">{T('resultNote')}</p>
       {result.supportPrompt ? <div className="card p2-support"><h3>{T('supportTitle')}</h3><p>{T('supportBody')}</p></div> : null}
       <ProvisionalPad T={T} tx={tx} scores={result.familyScores} />
@@ -416,7 +418,7 @@ function ResultView({ T, tx, locale, input, onSave, onRestart }) {
               {part.rank !== null ? <p>{T('resultRank')}: {part.rank} · {T('resultConfidence')}: {part.confidence ? confidence[part.confidence] : '—'}</p> : null}
               <p>{T('resultLevel')}: {part.level === null ? T('levelUnknown') : `${part.level} / 5`}</p>
               <p>{T('axisDepth')}: {part.depthState === 'set' ? part.coordinates[2].toFixed(2) : part.depthState === 'unsure' ? T('depthNotSure') : T('depthNotAnswered')}</p>
-              {part.guards.length ? <p>{T('guards')}: {part.guards.map((e) => tx(EXILE_COPY[e].name)).join(', ')}</p> : null}
+              {part.guards?.length ? <p>{T('guards')}: {part.guards.map((e) => tx(EXILE_COPY[e].name)).join(', ')}</p> : null}
               {part.need ? <p>{T('needLabel')}: {tx(NEED_COPY[part.need])}</p> : null}
               {part.provider ? <p>{T('providerLabel')}: {tx(ACCESS_COPY[part.provider.access])}{part.provider.form ? ` · ${tx(PROVIDER_FORM_COPY[part.provider.form])}` : ''}</p> : null}
               {part.kind === 'exile' && part.need && part.provider?.access === 'none' ? <GapLines T={T} tx={tx} locale={locale} need={part.need} /> : null}
@@ -435,9 +437,36 @@ function ResultView({ T, tx, locale, input, onSave, onRestart }) {
         </>
       ) : null}
       <p className="sub">{T('notDiagnosis')}</p>
+    </>
+  );
+}
+
+function ResultView({ T, tx, locale, input, onSave, onRestart, saveFailed }) {
+  const result = useMemo(() => buildAssessment2Result({ ...input, completedStages: completedStagesFor(input) }), [input]);
+  return (
+    <section className="p2" aria-labelledby="p2-result-title">
+      <h2 id="p2-result-title" className="p2-title">{T('resultTitle')}</h2>
+      <ResultBody T={T} tx={tx} locale={locale} result={result} />
+      {saveFailed ? <p className="sub mt12" role="alert">{T('saveFailed')}</p> : null}
       <div className="p2-nav">
         <button type="button" className="btn ghost" onClick={onRestart}>{T('restart')}</button>
         <button type="button" className="btn primary" onClick={onSave}>{T('save')}</button>
+      </div>
+    </section>
+  );
+}
+
+/** A stored result, read only. It has no save: Start again begins the flow, and the stored result is kept. */
+function LastResultView({ T, tx, locale, last, onStartAgain }) {
+  return (
+    <section className="p2" aria-labelledby="p2-last-title">
+      <h2 id="p2-last-title" className="p2-title">
+        {last.savedAt ? T('lastResultSaved').replace('{date}', formatSavedDate(last.savedAt, locale)) : T('lastResultTitle')}
+      </h2>
+      {last.predatesTimingFix ? <p className="p2-note">{T('beforeTimingFix')}</p> : null}
+      <ResultBody T={T} tx={tx} locale={locale} result={last.result} />
+      <div className="p2-nav">
+        <button type="button" className="btn primary" onClick={onStartAgain}>{T('restart')}</button>
       </div>
     </section>
   );
@@ -450,7 +479,10 @@ export function PartsTwo() {
   const tx = (bi) => bi[locale];
   const frameBase = { T, tx, stageNames: UI_COPY.stageNames[locale] };
 
-  const [phase, setPhase] = useState(() => (loadDraft() ? 'resume' : 'running'));
+  // A stored draft takes the resume prompt first. With no draft, a stored result opens the read-only last-result view (B9).
+  const [lastResult] = useState(() => readLastResult());
+  const [phase, setPhase] = useState(() => (loadDraft() ? 'resume' : lastResult ? 'last' : 'running'));
+  const [saveFailed, setSaveFailed] = useState(false);
   const [input, setInput] = useState(() => blankInput());
   const [index, setIndex] = useState(0);
   const screens = useMemo(() => buildScreens(input), [input]);
@@ -475,19 +507,22 @@ export function PartsTwo() {
     }
     setPhase('running');
   };
+  // Start again clears the draft only. A stored result is kept.
   const restart = () => {
     try { store.save(DRAFT_KEY, null); } catch { /* ignore */ }
     setInput(blankInput());
     setIndex(0);
+    setSaveFailed(false);
     setPhase('running');
   };
 
   const save = () => {
     const result = buildAssessment2Result({ ...input, completedStages: completedStagesFor(input) });
-    try { store.save(RESULT_KEY, result); } catch { /* ignore */ }
+    // The draft is cleared and the universe opened only once the saved copy reads back (B9). A refused save changes nothing else.
+    if (!saveLastResult(result)) { setSaveFailed(true); return; }
+    try { store.save(DRAFT_KEY, null); } catch { /* ignore */ }
     const generated = buildParts2UniverseParts(result, locale);
     setParts([...(parts ?? []).filter((part) => !isParts2Part(part)), ...generated]);
-    try { store.save(DRAFT_KEY, null); } catch { /* ignore */ }
     setUniverseMode('parts');
     go('universe');
   };
@@ -505,8 +540,12 @@ export function PartsTwo() {
     );
   }
 
+  if (phase === 'last' && lastResult) {
+    return <LastResultView T={T} tx={tx} locale={locale} last={lastResult} onStartAgain={restart} />;
+  }
+
   if (screen.kind === 'result') {
-    return <ResultView T={T} tx={tx} locale={locale} input={input} onSave={save} onRestart={restart} />;
+    return <ResultView T={T} tx={tx} locale={locale} input={input} onSave={save} onRestart={restart} saveFailed={saveFailed} />;
   }
 
   const frame = { ...frameBase, screens, index: at, onBack: back, onNext: null, nextLabel: null, nextDisabled: false };

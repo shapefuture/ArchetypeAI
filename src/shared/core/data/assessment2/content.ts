@@ -433,6 +433,10 @@ export const UI_COPY = {
   ofLabel: { en: 'of', ru: 'из' },
   familyLabel: { en: 'Family', ru: 'Семья' },
   memberPickNote: { en: 'One pick per family. Choose none if no card fits.', ru: 'Одна позиция на семью. Выберите «ничего», если ни одна карточка не подходит.' },
+  saveFailed: { en: 'Could not save on this device. Your answers are kept.', ru: 'Не удалось сохранить на этом устройстве. Ваши ответы сохранены.' },
+  lastResultTitle: { en: 'Your last result', ru: 'Ваш последний результат' },
+  lastResultSaved: { en: 'Your last result, saved {date}', ru: 'Ваш последний результат, сохранён {date}' },
+  beforeTimingFix: { en: 'Saved before the timing fix; timing may be a default.', ru: 'Сохранено до исправления времени; время могло быть значением по умолчанию.' },
 } as const;
 
 /** Compile-time guard: every scene, family, member, exile and item in the taxonomy has copy. */

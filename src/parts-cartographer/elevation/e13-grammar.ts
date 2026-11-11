@@ -78,7 +78,7 @@ export const REGISTRY: Readonly<Record<CorePath, PathContract>> = {
   'parts-two': {
     needsAssessment: false,
     primitives: {
-      save: yes('parts-two.jsx save(): ifs.parts2.result written, not read back'),
+      save: yes('saveLastResult (parts-two-store.ts): ifs.parts2.result written and read back before the draft is cleared'),
       undo: no('no undo control; Back keeps the answers already given, and Restart clears the whole draft'),
       pause: yes('ifs.parts2.draft written on each change (parts-two.jsx useEffect); Resume restores the stored index'),
       inspect: yes('ResultView (parts-two.jsx) shows the result before Save; saved parts go to the universe (parts2-universe-adapter.ts)'),

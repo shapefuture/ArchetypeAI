@@ -126,7 +126,8 @@ export function levelOf(items: Array<number | null> | undefined): number | null 
   return Math.round((values.reduce((sum, v) => sum + v, 0) / values.length) * 100) / 100;
 }
 
-export type Confidence = 'high' | 'medium' | 'low';
+export const CONFIDENCES = ['high', 'medium', 'low'] as const;
+export type Confidence = (typeof CONFIDENCES)[number];
 
 /** The lead of each family over the next-ranked family. The lowest-ranked family keeps its full score as its lead. */
 export function leadsOf(scores: FamilyScores): Partial<Record<FamilyId, number>> {
@@ -192,7 +193,8 @@ export interface MapPart {
   mapFamily: 'manager' | 'firefighter' | 'exile' | 'resource';
 }
 
-export type ConflictType = 'strategy-against-strategy' | 'protector-against-exile' | 'critic-against-criticised' | 'need-against-need';
+export const CONFLICT_TYPES = ['strategy-against-strategy', 'protector-against-exile', 'critic-against-criticised', 'need-against-need'] as const;
+export type ConflictType = (typeof CONFLICT_TYPES)[number];
 export interface Conflict { type: ConflictType; keys: string[] }
 
 export interface Assessment2Result {
@@ -393,19 +395,33 @@ export function isAssessment2Result(value: unknown): value is Assessment2Result 
   if (!isRecord(value) || value.instrument !== 'parts-2' || value.version !== 1) return false;
   if (!Array.isArray(value.parts) || !Array.isArray(value.conflicts) || !Array.isArray(value.topFamilies) || !isRecord(value.familyScores)) return false;
   if (!FAMILIES.every((f) => value.familyScores[f] === null || (typeof value.familyScores[f] === 'number' && Math.abs(value.familyScores[f]) <= 1))) return false;
+  // The result view looks up copy by these stored values, and a value outside its map throws. Each field the view reads is checked here.
+  if (value.supportPrompt !== undefined && typeof value.supportPrompt !== 'boolean') return false;
+  if (!value.topFamilies.every((entry: unknown) => isRecord(entry)
+    && oneOf(FAMILIES, entry.family)
+    && typeof entry.score === 'number' && Math.abs(entry.score) <= 1
+    && Number.isInteger(entry.rank))) return false;
+  if (!value.conflicts.every((conflict: unknown) => isRecord(conflict)
+    && oneOf(CONFLICT_TYPES, conflict.type)
+    && Array.isArray(conflict.keys) && conflict.keys.every((key: unknown) => typeof key === 'string'))) return false;
   return value.parts.every((part: unknown) => isRecord(part)
+    && typeof part.key === 'string'
     && (part.kind === 'protector' || part.kind === 'exile' || part.kind === 'capacity')
     && isMapCoordinates(part.coordinates)
     && Array.isArray(part.unmeasuredAxes) && part.unmeasuredAxes.every((k: unknown) => (MAP_AXIS_KEYS as readonly unknown[]).includes(k))
     && (part.depthState === 'set' || part.depthState === 'unsure' || part.depthState === 'unanswered')
     && ((part.depthState === 'set') === !part.unmeasuredAxes.includes('DEPTH'))
     && (part.level === null || (typeof part.level === 'number' && part.level >= 1 && part.level <= 5))
+    && (part.rank === null || Number.isInteger(part.rank))
+    && (part.confidence === null || oneOf(CONFIDENCES, part.confidence))
     && (part.placement === 'placed' || part.placement === 'default')
     && (part.kind !== 'protector' || (oneOf(MEMBERS, part.member) && oneOf(FAMILIES, part.family) && (part.timing === null || oneOf(TIMINGS, part.timing)) && oneOf(TARGETS, part.target)))
     && (part.kind !== 'exile' || oneOf(EXILES, part.exile) && oneOf(NEEDS, part.need))
+    && (part.need === undefined || oneOf(NEEDS, part.need))
+    && Array.isArray(part.guards) && part.guards.every((guard: unknown) => oneOf(EXILES, guard))
     && (part.needSource === undefined || (part.kind === 'exile' && oneOf(NEED_SOURCES, part.needSource)))
     && (part.kind !== 'capacity' || oneOf(CAPACITIES, part.capacity))
-    && (!part.provider || (oneOf(PROVIDER_ACCESS, part.provider.access) && (part.provider.form === null || oneOf(PROVIDER_FORMS, part.provider.form))))
+    && (part.provider === undefined || (isRecord(part.provider) && oneOf(PROVIDER_ACCESS, part.provider.access) && (part.provider.form === null || oneOf(PROVIDER_FORMS, part.provider.form))))
     && (part.blending === null || oneOf(BLENDING_OPTIONS, part.blending))
     && (part.costume === null || part.costume === undefined || oneOf(COSTUMES, part.costume)));
 }

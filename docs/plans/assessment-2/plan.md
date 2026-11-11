@@ -381,8 +381,8 @@ Open decisions, with their status:
 ### Gates (checked 2026-11-11)
 
 - `npx tsc --noEmit`: passes at 4c2e627.
-- `npm test` (`npx vitest run`): 251 test files and 1,875 tests pass at a04b517, including new specs for the taxonomy, scoring, screen order, adapter, migration, the E16 module side and the pilot functions. Only docs have changed since, so the code is the same.
+- `npm test` (`npx vitest run`): 252 test files and 1,879 tests pass at 2af4f5e, including new specs for the taxonomy, scoring, screen order, adapter, migration, the E16 module side, the pilot functions and the tap budget.
 - `npm run build`: passes at 4c2e627.
-- Browser, full suite run locally: 86 passed, 1 failed. The failure is `tests/browser/round18-checkin.spec.mjs:55`, which times out at `toast.boundingBox()` after the toast was seen. It is outside 2.0. CI on 4c2e627 passed all four browser shards. The same test failed once in CI on a04b517.
+- Browser, full suite run locally at 661319f: 87 passed, 0 failed. The round18 P2 test used to fail when a poll from the test missed the toast under load, or when it read the toast's box after the toast had left. It now waits for the toast in the page, and no assertion changed. CI on 4c2e627 passed all four browser shards, and the same test failed once in CI on a04b517.
 - `tests/browser/parity.spec.mjs` drives the whole 2.0 flow to a saved map, with no 147 profile written and no page errors. It passes in the full local run.
 - Tap budget (B11): the owner raised the targets to 57 and 73 on 2026-11-11, and `src/parts-cartographer/core/parts-two-tap-budget.spec.ts` checks them.

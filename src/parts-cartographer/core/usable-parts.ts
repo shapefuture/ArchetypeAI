@@ -3,7 +3,7 @@ import { validMapParts } from './backup';
 import { withFamilyCluster } from './clinical-profile-adapter';
 import { canonicalEnergyPart } from './universe-controls';
 import { IV_PARTS } from '../../shared/features/landing/stickers';
-import { legacy64ToMapPlacement, referenceMapPlacement } from '../../shared/core/data/map-axes';
+import { MAP_AXIS_KEYS, legacy64ToMapPlacement, referenceMapPlacement } from '../../shared/core/data/map-axes';
 
 /**
  * A 2.0 record is current when it carries the axis version and the depth marker, and its unknown-axis list survived.
@@ -33,6 +33,11 @@ export function migrateArchetypeAxes(part: Part): Part {
   if (archetype.sourceAssessment === 'parts-2') {
     const current = currentParts2Archetype(archetype);
     return current === archetype ? part : { ...part, archetype: current };
+  }
+  // A studio part saved without a usable description holds an all-zero placeholder. Every axis is unknown for it, so the
+  // zeros are never read as values (build-and-fix G38). This also covers studio records written at axis version 2.
+  if (archetype.sourceAssessment === 'studio' && Array.isArray(archetype.coordinates) && archetype.coordinates.every((value) => value === 0)) {
+    return { ...part, archetype: { ...archetype, axisVersion: 2, coordinates: [0, 0, 0, 0], unmeasuredAxes: [...MAP_AXIS_KEYS] } };
   }
   if (archetype.axisVersion === 2) return part;
   if (archetype.coordinateBasis === 'fixed-reference-147' || archetype.coordinateBasis === 'family-default-2') {

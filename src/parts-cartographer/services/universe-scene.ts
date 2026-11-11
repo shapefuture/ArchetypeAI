@@ -49,6 +49,8 @@ type MapNode = {
   /** The "unknown" tag in the isolation view, present when this part has no value on the isolated axis (G31, G38). */
   unknownTag?: THREE.Sprite;
   unknownTagText?: string;
+  /** The sewn felt character, once it has loaded. */
+  felt?: THREE.Object3D;
 };
 let api: UniverseAPI | null = null;
 let dimensionalExpressions: UniverseDimensions = { ...ZERO_DIMENSIONS };
@@ -281,8 +283,9 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
         felt.scale.multiplyScalar(3.2);
         felt.rotation.set(-.12, -.18, -.025);
         group.add(felt);
+        node.felt = felt;
         felt.traverse((object: any) => { if (object.isMesh) meshes.push(object); });
-        renderer.domElement.dataset.feltCharacters = String(nodes.filter((node) => node.group.children.length).length);
+        renderer.domElement.dataset.feltCharacters = String(nodes.filter((entry) => entry.felt).length);
       }).catch((error) => { if (!disposed) console.warn('Felt character could not be sewn', error); });
 
     });

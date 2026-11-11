@@ -21,6 +21,25 @@ const scenesFavouring = (most: FamilyId, least: FamilyId): SceneAnswer[] =>
     least: SCENE_FAMILIES[scene].includes(least) ? least : SCENE_FAMILIES[scene][1],
   }));
 
+describe('the energy of a 2.0 part is known only when its level is answered (G39)', () => {
+  const withExile = (level: number | null) => buildParts2UniverseParts(buildAssessment2Result({
+    ...blank(),
+    scenes: scenesFavouring('attack', 'withdraw'),
+    picks: { attack: 'rebel' as const },
+    fears: { rebel: 'frightened' as const },
+    exileLevel: level === null ? {} : { frightened: level },
+  }), 'en');
+  const exileOf = (parts: Part[]) => parts.find((part) => part.archetype?.cluster === 'parts_two_exile')!;
+
+  it('marks an exile with an answered level as known', () => {
+    expect(exileOf(withExile(4)).archetype?.levelKnown).toBe(true);
+  });
+
+  it('marks an exile with no answered level as unknown, so its default energy is never shown as a value', () => {
+    expect(exileOf(withExile(null)).archetype?.levelKnown).toBe(false);
+  });
+});
+
 describe('Assessment 2.0 map parts', () => {
   const input: Assessment2Input = {
     ...blank(),

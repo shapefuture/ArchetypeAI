@@ -18,13 +18,28 @@ export function canonicalEnergyPart<T extends Pick<Part, 'energy'>>(part: T): T 
   return value > 0 && value < 1 ? { ...part, energy: Math.round(value * 100) } : part;
 }
 
+/**
+ * Whether a part's energy is a finding. A 2.0 part with no answered level (a capacity, a provider point, or a protector or
+ * exile without a level) has a layout default for energy, not a finding, so its energy is unknown (build-and-fix G39).
+ * A part without the flag is read as known, as before.
+ */
+export function energyKnown(part: Pick<Part, 'archetype'>): boolean {
+  return part.archetype?.levelKnown !== false;
+}
+
+/** The energy a person reads: a percentage, or an em dash when the energy is unknown. The layout default is never shown. */
+export function energyText(part: Pick<Part, 'energy' | 'archetype'>): string {
+  return energyKnown(part) ? `${Math.round(normalizedEnergy(part))}%` : '—';
+}
+
 export function filterUniverseParts<T extends Part>(
   parts: T[],
   families: Partial<Record<Family, boolean>>,
   maxEnergy: number,
 ): T[] {
   const limit = Math.max(0, Math.min(100, Number(maxEnergy) || 0));
-  return parts.filter((part) => families[part.family] !== false && normalizedEnergy(part) <= limit);
+  // A part whose energy is unknown is not hidden by an energy it does not have (G39).
+  return parts.filter((part) => families[part.family] !== false && (!energyKnown(part) || normalizedEnergy(part) <= limit));
 }
 
 /** Search existing parts only. Creation is a separate, explicit Studio action. */

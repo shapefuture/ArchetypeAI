@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { MAP_AXIS_KEYS, legacy64ToMapPlacement } from './map-axes';
+import { MAP_AXIS_KEYS, legacy64ToMapPlacement, studioMapPlacement } from './map-axes';
 
 /*
  * Pins the sign convention of the 64 projection to the 64 pole labels in
@@ -44,6 +44,21 @@ describe('legacy-report.jsx pole labels that the 64 projection relies on', () =>
       ['focusOther', 'positive'], ['focusSelf', 'negative'],
       ['attAnxious', 'positive'], ['attAvoidant', 'negative'],
     ]);
+  });
+});
+
+describe('studio placement: a missing placement is unknown on every axis (G38)', () => {
+  it('gives every axis as unknown when there is no placement, and never a zero read as a value', () => {
+    expect(studioMapPlacement(null)).toEqual({ coordinates: [0, 0, 0, 0], unmeasuredAxes: [...MAP_AXIS_KEYS] });
+    expect(studioMapPlacement([0.1, 0.2])).toEqual({ coordinates: [0, 0, 0, 0], unmeasuredAxes: [...MAP_AXIS_KEYS] });
+    expect(studioMapPlacement(['a', 0, 0, 0])).toEqual({ coordinates: [0, 0, 0, 0], unmeasuredAxes: [...MAP_AXIS_KEYS] });
+    // The all-zero placeholder the studio writes for a missing placement, and the same zeros as a fresh AI draft.
+    expect(studioMapPlacement([0, 0, 0, 0])).toEqual({ coordinates: [0, 0, 0, 0], unmeasuredAxes: [...MAP_AXIS_KEYS] });
+  });
+
+  it('keeps a full placement as given, clamped to the axes, with no unknown axis', () => {
+    expect(studioMapPlacement([0.5, -0.25, 0.1, 0.9])).toEqual({ coordinates: [0.5, -0.25, 0.1, 0.9], unmeasuredAxes: [] });
+    expect(studioMapPlacement([2, -2, 0, 0]).coordinates).toEqual([1, -1, 0, 0]);
   });
 });
 

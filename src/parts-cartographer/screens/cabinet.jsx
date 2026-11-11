@@ -8,6 +8,7 @@ import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus, appointmentDisplayTime } from '../core/booking.ts';
 import { CLOUD_PART_LIMIT, loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { usableParts } from '../core/usable-parts.ts';
+import { energyKnown, energyText } from '../core/universe-controls.ts';
 import { archetypeOf, studioArchetypeFor } from '../core/clinical-profile-adapter.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
@@ -215,7 +216,7 @@ export function Cabinet() {
               <div className="pc-art"><Character traits={p.traits} lite showShadow={false} /></div>
               <div className="pc-name">{p.name}</div>
               <div className="pc-role">{p.role}</div>
-              <div className="energy-strip"><i style={{ width: `${p.energy}%`, background: familyColor(p.family) }} /></div>
+              {energyKnown(p) ? <div className="energy-strip"><i style={{ width: `${p.energy}%`, background: familyColor(p.family) }} /></div> : null}
             </div>
           ))}
           {list.length === 0 && (
@@ -336,7 +337,7 @@ export function PartSheet({ id }) {
           <div className="h2" style={{ fontSize: 24, marginTop: 3 }}>{p.name}</div>
           <div className="row mt8" style={{ gap: 8 }}>
             <Crest family={p.family} size={26} />
-            <div className="chip" style={{ fontSize: 12 }}>⚡ {p.energy}%</div>
+            <div className="chip" style={{ fontSize: 12 }}>⚡ {energyText(p)}</div>
             <button className="star-btn" style={{ color: p.star ? 'var(--yolk)' : 'var(--text-faint)' }}
               onClick={() => setParts(parts.map((x) => (x.id === p.id ? { ...p, star: !p.star } : x)))}>★</button>
           </div>

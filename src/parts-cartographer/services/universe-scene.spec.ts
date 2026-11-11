@@ -251,6 +251,27 @@ describe('the unknown tag in the isolation view (G31, G38)', () => {
   });
 });
 
+describe('the unknown tag text follows the language (N3)', () => {
+  it('replaces the tag when the text changes, and keeps one tag on the part', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const api = initUniverse(host, false, 'gentle');
+    try {
+      api.setParts([part('no-blending', [0.2, 0.1, 0.3, 0], 'fixed-reference-147', ['BLENDING'])]);
+      const scene = renderer.scenes[renderer.scenes.length - 1];
+      const tagsOf = () => (groupOf(scene, 'no-blending')?.children ?? []).filter((child: unknown) => child instanceof THREE.Sprite);
+      api.setView({ isolation: 'BLENDING', unknownText: 'unknown' });
+      const [english] = tagsOf();
+      api.setView({ unknownText: 'неизвестно' });
+      expect(tagsOf()).toHaveLength(1);
+      expect(tagsOf()[0]).not.toBe(english);
+    } finally {
+      api.dispose();
+      host.remove();
+    }
+  });
+});
+
 describe('the 3+1 scene', () => {
   it('lays out a mixed scene with guides, relayouts when the axes or isolation change, and renders a frame', () => {
     const host = document.createElement('div');

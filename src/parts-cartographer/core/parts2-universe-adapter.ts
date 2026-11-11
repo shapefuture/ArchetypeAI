@@ -42,6 +42,8 @@ export function buildParts2UniverseParts(result: Assessment2Result, lang: 'en' |
       size: 0.8,
       partType: part.kind === 'exile' ? 'exile' : part.kind === 'protector' && part.classKnown ? (part.timing === 'reactive' ? 'firefighter' : 'manager') : undefined,
       classKnown: part.classKnown,
+      // The energy above is a layout default when the level is unanswered, so the screens show it as unknown (G39).
+      levelKnown: part.level !== null,
     };
     const guarded = part.guards[0] as ExileId | undefined;
     const need = part.kind === 'exile' ? part.need : guarded ? EXILE_NEED[guarded] : undefined;

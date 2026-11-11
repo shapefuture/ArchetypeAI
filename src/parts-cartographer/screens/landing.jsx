@@ -12,6 +12,7 @@ import { auth } from '../core/auth.service.ts';
 import { downloadText } from '../core/file-download';
 import { isExamplePart, isSampleProfile, primaryRoutes, secondaryRoutes } from '../core/assessment-routes.ts';
 import { requestFocus } from '../core/focus-request.ts';
+import { energyKnown } from '../core/universe-controls.ts';
 
 /* ═══════════ loading (shown only while local content is not yet ready; no timed wait) ═══════════ */
 export function Loading() {
@@ -228,9 +229,9 @@ function BaseTab() {
               <div style={{ fontFamily: 'var(--font-round)', fontWeight: 600, fontSize: 13, marginTop: 4 }}>{p.name}</div>
               {example
                 ? <span className="chip" style={{ fontSize: 10.5, marginTop: 6 }}>{t('examplePart')}</span>
-                : <div style={{ height: 5, borderRadius: 3, background: 'var(--surface2)', marginTop: 7, overflow: 'hidden' }}>
+                : energyKnown(p) ? <div style={{ height: 5, borderRadius: 3, background: 'var(--surface2)', marginTop: 7, overflow: 'hidden' }}>
                   <i style={{ display: 'block', height: '100%', width: `${p.energy}%`, background: familyColor(p.family) }} />
-                </div>}
+                </div> : null}
             </button>
           );
         })}

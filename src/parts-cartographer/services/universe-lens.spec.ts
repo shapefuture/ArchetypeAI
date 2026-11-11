@@ -12,7 +12,6 @@ import {
 
 const dimensions = (overrides: Partial<typeof ZERO_DIMENSIONS> = {}) => ({ ...ZERO_DIMENSIONS, ...overrides });
 
-// Tuple order is energy, direction, depth, blending (plan §3.5). The default plot is energy (x), depth (y), direction (z).
 describe('a part affinity to the lens (G38)', () => {
   it('leaves an unmeasured axis out, so a placeholder neither raises nor lowers the affinity', () => {
     const blendingLens = dimensions({ BLENDING: 1 });
@@ -29,6 +28,7 @@ describe('a part affinity to the lens (G38)', () => {
   });
 });
 
+// Tuple order is energy, direction, depth, blending (plan §3.5). The default plot is energy (x), depth (y), direction (z).
 describe('universe dimensional lens (map axes)', () => {
   it('rejects malformed coordinate records and clamps valid imported values', () => {
     expect(sanitizeArchetypeCoordinates([0, 0, Number.NaN, 0])).toBeNull();

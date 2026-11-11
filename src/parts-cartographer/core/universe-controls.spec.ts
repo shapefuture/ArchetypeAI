@@ -1,6 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { SEED_PARTS } from '../pal/traits';
-import { canonicalEnergyPart, filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
+import { canonicalEnergyPart, energyKnown, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
+
+describe('the energy a person reads (G39)', () => {
+  const unknown = { family: 'manager' as const, energy: 45, archetype: { levelKnown: false } } as any;
+  const known = { family: 'manager' as const, energy: 60, archetype: { levelKnown: true } } as any;
+  const legacy = { family: 'manager' as const, energy: 30 } as any;
+
+  it('reads an unanswered level as unknown, and any other energy as known', () => {
+    expect(energyKnown(unknown)).toBe(false);
+    expect(energyKnown(known)).toBe(true);
+    expect(energyKnown(legacy)).toBe(true);
+  });
+
+  it('shows an em dash for unknown energy, never the layout default', () => {
+    expect(energyText(unknown)).toBe('—');
+    expect(energyText(known)).toBe('60%');
+    expect(energyText(legacy)).toBe('30%');
+  });
+
+  it('keeps a part of unknown energy in the energy filter, and filters known energy as before', () => {
+    const visible = filterUniverseParts([unknown, known, legacy], { manager: true }, 30);
+    expect(visible).toContain(unknown);
+    expect(visible).toContain(legacy);
+    expect(visible).not.toContain(known);
+  });
+});
 
 describe('React universe controls', () => {
   it('reads parts on the 0..100 scale and clamps the ends', () => {

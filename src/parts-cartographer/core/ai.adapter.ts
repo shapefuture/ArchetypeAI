@@ -226,6 +226,7 @@ export async function createStudioArchetype(prompt: string, language: 'en' | 'ru
     ResilientAiAdapter.degradation = { degraded: true, reason: 'AI unavailable' };
     ResilientAiAdapter.primary = 'heuristic';
     const local = JSON.parse(await LocalHeuristicAiAdapter.archetypeCreate(prompt));
+    // Without the AI the placement is the all-zero placeholder, which the studio reads as unknown on every axis (build-and-fix G38).
     return JSON.stringify({ ...local, title: prompt.slice(0, 40), family: 'manager', role: prompt.slice(0, 200), coordinates: [0, 0, 0, 0] });
   }
 }

@@ -635,6 +635,7 @@ export const STRINGS = {
   sw18: s("Cross-family exchange", "Разноцветный обмен"),
   sw19: s("High current — keep Self at the wheel.", "Высокое напряжение — пусть Self-энергия остаётся у руля."),
   sw20: s("Gentle current — good conditions for dialogue.", "Мягкий ток — можно в диалог."),
+  chemistryUnknown: s("The tension needs a known energy for both parts. These parts have none yet.", "Напряжение нужно прочитать по обеим частям. У них пока нет известной энергии."),
   sw21: s("Empty — finish a check-in first.", "Пока пусто — завершите чек-ин."),
   sw22: s("Summoned from the deep", "Призвана из бездны"),
   sw23: s("nothing in range", "ничего не найдено"),

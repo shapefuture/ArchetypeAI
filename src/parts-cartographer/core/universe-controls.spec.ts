@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SEED_PARTS } from '../pal/traits';
-import { canonicalEnergyPart, energyKnown, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
+import { canonicalEnergyPart, energyKnown, energyTension, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
 
 describe('the energy a person reads (G39)', () => {
   const unknown = { family: 'manager' as const, energy: 45, archetype: { levelKnown: false } } as any;
@@ -13,8 +13,9 @@ describe('the energy a person reads (G39)', () => {
     expect(energyKnown(legacy)).toBe(true);
   });
 
-  it('shows an em dash for unknown energy, never the layout default', () => {
-    expect(energyText(unknown)).toBe('—');
+  it('shows the word for unknown in the reader language for unknown energy, never the layout default', () => {
+    expect(energyText(unknown)).toBe('unknown');
+    expect(energyText(unknown, 'ru')).toBe('неизвестно');
     expect(energyText(known)).toBe('60%');
     expect(energyText(legacy)).toBe('30%');
   });
@@ -24,6 +25,13 @@ describe('the energy a person reads (G39)', () => {
     expect(visible).toContain(unknown);
     expect(visible).toContain(legacy);
     expect(visible).not.toContain(known);
+  });
+
+  it('reads the Chemistry tension of two known energies as before, and as unknown when either energy is unknown', () => {
+    expect(energyTension(known, known)).toBe(Math.round(60 * 0.7));
+    expect(energyTension({ ...known, family: 'exile' }, { ...known, family: 'manager' })).toBe(Math.round(60 * 1.15));
+    expect(energyTension(unknown, known)).toBeNull();
+    expect(energyTension(known, unknown)).toBeNull();
   });
 });
 

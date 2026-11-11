@@ -132,7 +132,8 @@ describe('stored axes are converted once on load (plan §3.5)', () => {
   });
 
   it('leaves records already on the map axes untouched', () => {
-    const current = base({ schema: 'archetype-map.v1', sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.1, 0.2, 0.3, 0.4], cluster: 'x', prominence: 50, size: 0.8, axisVersion: 2, depthRecord: 2, unmeasuredAxes: [] });
+    // A record the current writer produced: it carries its energy flag (G39), so it is already current.
+    const current = base({ schema: 'archetype-map.v1', sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.1, 0.2, 0.3, 0.4], cluster: 'x', prominence: 50, size: 0.8, axisVersion: 2, depthRecord: 2, unmeasuredAxes: [], levelKnown: true });
     expect(migrateArchetypeAxes(current)).toBe(current);
   });
 

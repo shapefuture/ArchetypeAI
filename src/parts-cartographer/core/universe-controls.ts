@@ -27,9 +27,24 @@ export function energyKnown(part: Pick<Part, 'archetype'>): boolean {
   return part.archetype?.levelKnown !== false;
 }
 
-/** The energy a person reads: a percentage, or an em dash when the energy is unknown. The layout default is never shown. */
-export function energyText(part: Pick<Part, 'energy' | 'archetype'>): string {
-  return energyKnown(part) ? `${Math.round(normalizedEnergy(part))}%` : '—';
+/**
+ * The energy a person reads: a percentage, or the word for unknown when the energy is unknown. The layout default is never
+ * shown (G39). The word is in the reader's language, as the coordinates panel shows an unknown axis.
+ */
+export function energyText(part: Pick<Part, 'energy' | 'archetype'>, lang: 'en' | 'ru' = 'en'): string {
+  return energyKnown(part) ? `${Math.round(normalizedEnergy(part))}%` : (lang === 'ru' ? 'неизвестно' : 'unknown');
+}
+
+/**
+ * The tension of two parts, as the Chemistry check reads it: their mean energy, scaled by family. It is unknown (null) when
+ * either energy is unknown, so no default is read as a value (G39).
+ */
+export function energyTension(
+  a: Pick<Part, 'energy' | 'family' | 'archetype'>,
+  b: Pick<Part, 'energy' | 'family' | 'archetype'>,
+): number | null {
+  if (!energyKnown(a) || !energyKnown(b)) return null;
+  return Math.round(((normalizedEnergy(a) + normalizedEnergy(b)) / 2) * (a.family === b.family ? 0.7 : 1.15));
 }
 
 export function filterUniverseParts<T extends Part>(

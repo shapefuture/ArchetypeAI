@@ -10,12 +10,15 @@ import { MAP_AXIS_KEYS, legacy64ToMapPlacement, referenceMapPlacement } from '..
  * Anything else is read conservatively: depth is unknown, because an earlier build stored the default as the answer.
  */
 function currentParts2Archetype(archetype: ArchetypeMapData): ArchetypeMapData {
-  if (archetype.axisVersion === 2 && archetype.depthRecord === 2 && Array.isArray(archetype.unmeasuredAxes)) return archetype;
+  if (archetype.axisVersion === 2 && archetype.depthRecord === 2 && Array.isArray(archetype.unmeasuredAxes) && typeof archetype.levelKnown === 'boolean') return archetype;
   const listed: Array<'ENERGY' | 'DIRECTION' | 'DEPTH' | 'BLENDING'> = Array.isArray(archetype.unmeasuredAxes)
     ? archetype.unmeasuredAxes
     : ['ENERGY', 'DIRECTION', 'DEPTH', 'BLENDING'];
   const unmeasuredAxes: Array<'ENERGY' | 'DIRECTION' | 'DEPTH' | 'BLENDING'> = archetype.depthRecord === 2 || listed.includes('DEPTH') ? listed : [...listed, 'DEPTH' as const];
-  return { ...archetype, axisVersion: 2, depthRecord: 2, unmeasuredAxes };
+  // A record saved before levelKnown existed. Its energy is the layout default (45) exactly when its level was unanswered:
+  // a level is a whole number or a third, and round(level * 20) is never 45 (G39).
+  const levelKnown = typeof archetype.levelKnown === 'boolean' ? archetype.levelKnown : archetype.prominence !== 45;
+  return { ...archetype, axisVersion: 2, depthRecord: 2, unmeasuredAxes, levelKnown };
 }
 
 /**

@@ -6,7 +6,7 @@ import { familyColor, Crest, Seg, Bars } from '../ui/ui.jsx';
 import { t as tr, UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
 import { EXERCISE_COPY } from '../../shared/i18n/strings';
 import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapter.ts';
-import { energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
+import { energyKnown, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
 import { EXERCISES, EXERCISE_TYPES } from '../../shared/core/data/exercises';
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus, therapistWallLabel } from '../core/booking.ts';
@@ -116,7 +116,8 @@ export function Innerverse() {
     return score(b) - score(a) || normalizedEnergy(b) - normalizedEnergy(a);
   }), [visible, dimensions]);
   const searchMatches = useMemo(() => searchUniverseParts(parts, q, lang).slice(0, 8), [parts, q, lang]);
-  const storyParts = useMemo(() => [...visible]
+  // The story is about the most energized parts, so only a part with a known energy can be chosen (G39).
+  const storyParts = useMemo(() => [...visible].filter(energyKnown)
     .sort((a, b) => normalizedEnergy(b) - normalizedEnergy(a)).slice(0, 3), [visible]);
   const storyEssay = lang === 'ru'
     ? profile?.constellationEssayRu || profile?.constellationEssay || ''
@@ -254,7 +255,7 @@ export function Innerverse() {
               style={{ width: '100%', padding: 10, border: '1px solid var(--line)', borderRadius: 12, color: 'var(--text)', textAlign: 'left' }}>
               <span style={{ color: familyColor(part.family) }}>{FAMILY_LABELS[part.family].icon}</span>
               <span className="grow" style={{ marginLeft: 8, fontWeight: 900 }}>{lang === 'ru' ? part.nameRu ?? part.name : part.nameEn ?? part.name}</span>
-              <span className="chip" style={{ fontSize: 10 }}>{energyText(part)}</span>
+              <span className="chip" style={{ fontSize: 10 }}>{energyText(part, lang)}</span>
             </button>
           ))}
           <p className="faint mt8" style={{ fontSize: 10 }}>{lang === 'ru' ? 'История — приглашение к саморефлексии, а не диагноз.' : 'A story is an invitation to reflect, not a diagnosis.'}</p>
@@ -299,7 +300,7 @@ export function Innerverse() {
                 <div key={id} className="grow center">
                   <div style={{ width: 56, margin: '0 auto' }}><Character traits={p.traits} lite showShadow={false} /></div>
                   <div style={{ fontWeight: 900, fontSize: 13 }}>{p.name}</div>
-                  <div className="faint" style={{ fontSize: 11, fontWeight: 800 }}>⚡{energyText(p)} · {FAMILY_LABELS[p.family][lang]}</div>
+                  <div className="faint" style={{ fontSize: 11, fontWeight: 800 }}>⚡{energyText(p, lang)} · {FAMILY_LABELS[p.family][lang]}</div>
                 </div>
               );
             })}

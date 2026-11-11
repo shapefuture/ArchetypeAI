@@ -19,8 +19,8 @@ vi.mock('three', () => {
     scale = new Vector();
     userData: Record<string, unknown> = {};
     children: any[] = [];
-    add(child: any) { this.children.push(child); return this; }
-    remove(child: any) { const index = this.children.indexOf(child); if (index >= 0) this.children.splice(index, 1); return this; }
+    add(child: any) { child.parent = this; this.children.push(child); return this; }
+    remove(child: any) { const index = this.children.indexOf(child); if (index >= 0) { this.children.splice(index, 1); child.parent = undefined; } return this; }
     traverse() {}
   }
   class Material { dispose() {} }
@@ -244,6 +244,27 @@ describe('the unknown tag in the isolation view (G31, G38)', () => {
       expect(tagsOf('measured')).toHaveLength(0);
       api.setView({ isolation: 'DIRECTION' });
       expect(tagsOf('no-blending')).toHaveLength(0);
+    } finally {
+      api.dispose();
+      host.remove();
+    }
+  });
+});
+
+describe('the felt counter (N2)', () => {
+  it('counts the parts whose felt character is sewn in, and not the tags on them', async () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const api = initUniverse(host, false, 'gentle');
+    try {
+      api.setParts([
+        part('measured', [0.2, 0.1, 0.3, 0.5], 'self-placed-2', []),
+        part('no-blending', [0.2, 0.1, 0.3, 0], 'fixed-reference-147', ['BLENDING']),
+      ]);
+      api.setView({ isolation: 'BLENDING', unknownText: 'unknown' });
+      // The felt characters are sewn in after a promise resolves, so wait for the queued callbacks to run.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(host.querySelector('canvas')?.dataset.feltCharacters).toBe('2');
     } finally {
       api.dispose();
       host.remove();

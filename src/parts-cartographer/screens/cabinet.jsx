@@ -8,7 +8,7 @@ import { t as tr, PART_COPY } from '../i18n/strings.ts';
 import { myAppointments, setAppointmentStatus, appointmentDisplayTime } from '../core/booking.ts';
 import { CLOUD_PART_LIMIT, loadCloudMapHistory, saveCloudMap } from '../core/cloud-storage.ts';
 import { usableParts } from '../core/usable-parts.ts';
-import { energyKnown, energyText } from '../core/universe-controls.ts';
+import { energyKnown, energyTension, energyText } from '../core/universe-controls.ts';
 import { archetypeOf, studioArchetypeFor } from '../core/clinical-profile-adapter.ts';
 import { checkAdminAccess } from '../core/admin.ts';
 import { prepareBackup, applyBackup } from '../core/backup';
@@ -337,7 +337,7 @@ export function PartSheet({ id }) {
           <div className="h2" style={{ fontSize: 24, marginTop: 3 }}>{p.name}</div>
           <div className="row mt8" style={{ gap: 8 }}>
             <Crest family={p.family} size={26} />
-            <div className="chip" style={{ fontSize: 12 }}>⚡ {energyText(p)}</div>
+            <div className="chip" style={{ fontSize: 12 }}>⚡ {energyText(p, lang)}</div>
             <button className="star-btn" style={{ color: p.star ? 'var(--yolk)' : 'var(--text-faint)' }}
               onClick={() => setParts(parts.map((x) => (x.id === p.id ? { ...p, star: !p.star } : x)))}>★</button>
           </div>
@@ -450,10 +450,11 @@ export function Chemistry({ from }) {
     setBusy(true);
     setTimeout(() => {
       const [a, b] = sel.map((id) => parts.find((p) => p.id === id));
-      const tension = Math.round(((a.energy + b.energy) / 2) * (a.family === b.family ? 0.7 : 1.15));
+      // Unknown, not a default, when either part has no energy (G39): no percentage, no bar, and neutral advice.
+      const tension = energyTension(a, b);
       const sameFam = a.family === b.family;
       setResult({
-        tension: Math.min(97, tension + 8),
+        tension: tension === null ? null : Math.min(97, tension + 8),
         label: sameFam
           ? (lang === 'ru' ? `Однородный альянс: ${FAMILY_LABELS[a.family][lang]}` : `Same-family alliance: ${FAMILY_LABELS[a.family][lang]}`)
           : (tr('sw18', lang)),
@@ -464,7 +465,7 @@ export function Chemistry({ from }) {
           : (sameFam
               ? `${a.name} and ${b.name} run the same shift — they amplify each other's ${a.family === 'manager' ? 'planning' : a.family === 'firefighter' ? 'rescue' : a.family === 'exile' ? 'longing' : 'calm'}. One signal is enough to trigger both.`
               : `${a.name} (${FAMILY_LABELS[a.family][lang]}) counters ${b.name} (${FAMILY_LABELS[b.family][lang]}). The pair is a regulation loop: when one rises, the other's job is to lower the volume. Thank both.`),
-        advice: tension > 60
+        advice: tension === null ? tr('chemistryUnknown', lang) : tension > 60
           ? (tr('sw19', lang))
           : (tr('sw20', lang)),
       });
@@ -502,9 +503,9 @@ export function Chemistry({ from }) {
               <div className="kicker" style={{ color: 'var(--accent-text)' }}>{t('chemistryOut')}</div>
               <div className="h2" style={{ fontSize: 18, marginTop: 4 }}>{result.label}</div>
             </div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 30 }}>{result.tension}%</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 30 }}>{result.tension === null ? (lang === 'ru' ? 'неизвестно' : 'unknown') : `${result.tension}%`}</div>
           </div>
-          <div className="bar y mt8"><i style={{ width: `${result.tension}%` }} /></div>
+          {result.tension !== null ? <div className="bar y mt8"><i style={{ width: `${result.tension}%` }} /></div> : null}
           <p className="sub mt12">{result.body}</p>
           <p style={{ fontWeight: 900, color: 'var(--accent-text)', marginTop: 8, fontSize: 14 }}>→ {result.advice}</p>
         </div>

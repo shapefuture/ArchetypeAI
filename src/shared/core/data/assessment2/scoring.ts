@@ -3,6 +3,7 @@
  * An axis the person did not answer keeps a reference number in its slot, is listed in unmeasuredAxes, and is never shown as measured. Results are rankings within one person, not norms.
  */
 import { MAP_AXIS_KEYS, clampAxis, isMapCoordinates, type MapAxisKey, type MapCoordinates } from '../map-axes';
+import { SELF_QUALITIES, type SelfQuality } from '../parts';
 import {
   BLENDING_OPTIONS, BLENDING_VALUE, CAPACITIES, COSTUMES, EXILES, FAMILIES, GROUND_ITEMS, MEMBER_DEFS, MEMBERS, NEEDS,
   PROVIDER_ACCESS, PROVIDER_FORMS, TIMINGS, TARGETS, EXILE_NEED, capacityDefault, exileDefault, mapFamilyFor, protectorDefault,
@@ -37,6 +38,13 @@ export interface SceneAnswer {
   least: FamilyId | null;
 }
 
+/** Stage 5, the Centre (plan §3.3): awareness and will are integers 1 to 5 or null, and qualities are at most three of SELF_QUALITIES. */
+export interface Centre {
+  awareness: number | null;
+  will: number | null;
+  qualities: SelfQuality[];
+}
+
 export interface Assessment2Input {
   completedStages: number[];
   steadiness: number | null;
@@ -65,6 +73,8 @@ export interface Assessment2Input {
    * Blending is not placed.
    */
   placed: Partial<Record<string, { energy?: number; direction?: number; depth?: number | null }>>;
+  /** Stage 5, the Centre (plan §3.3). An absent centre is all unanswered. It is not a map part and changes no part or conflict. */
+  centre?: Centre;
 }
 
 export type FamilyScores = Record<FamilyId, number | null>;
@@ -210,6 +220,8 @@ export interface Assessment2Result {
   conflicts: Conflict[];
   /** True when the exile level of three or more named exiles is 5, or steadiness is 1. */
   supportPrompt: boolean;
+  /** The sanitized Centre (plan §3.3). Absent on results saved before it existed. It is not a map part. */
+  centre?: Centre;
 }
 
 const keyFor = (kind: 'member' | 'exile' | 'capacity', id: string) => `${kind}:${id}`;
@@ -363,6 +375,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     ground: [...new Set(input.ground)].filter((g) => GROUND_ITEMS.includes(g)),
     conflicts: deriveConflicts(parts),
     supportPrompt,
+    centre: sanitizeCentre(input.centre),
   };
 }
 
@@ -391,12 +404,45 @@ export function sanitizePlaced(value: unknown): Assessment2Input['placed'] {
   return out;
 }
 
+const isCentreRating = (value: unknown): value is number => typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 5;
+
+/**
+ * Keeps only valid Centre values (plan §3.3). Awareness and will are integers 1 to 5, and anything else becomes null.
+ * Qualities keep the SELF_QUALITIES values in the order given, drop repeats, and keep at most three. An absent or
+ * non-record centre is all unanswered.
+ */
+export function sanitizeCentre(centre: unknown): Centre {
+  const source: Record<string, any> = isRecord(centre) ? centre : {};
+  const qualities: SelfQuality[] = [];
+  for (const quality of Array.isArray(source.qualities) ? source.qualities : []) {
+    if (qualities.length === 3) break;
+    if (oneOf(SELF_QUALITIES, quality) && !qualities.includes(quality)) qualities.push(quality);
+  }
+  return {
+    awareness: isCentreRating(source.awareness) ? source.awareness : null,
+    will: isCentreRating(source.will) ? source.will : null,
+    qualities,
+  };
+}
+
+/** A stored Centre: awareness and will are null or integers 1 to 5, and qualities has at most three different SELF_QUALITIES. */
+function isCentre(value: unknown): value is Centre {
+  if (!isRecord(value)) return false;
+  const rating = (v: unknown) => v === null || isCentreRating(v);
+  return rating(value.awareness) && rating(value.will)
+    && Array.isArray(value.qualities) && value.qualities.length <= 3
+    && value.qualities.every((quality: unknown) => oneOf(SELF_QUALITIES, quality))
+    && new Set(value.qualities).size === value.qualities.length;
+}
+
 export function isAssessment2Result(value: unknown): value is Assessment2Result {
   if (!isRecord(value) || value.instrument !== 'parts-2' || value.version !== 1) return false;
   if (!Array.isArray(value.parts) || !Array.isArray(value.conflicts) || !Array.isArray(value.topFamilies) || !isRecord(value.familyScores)) return false;
   if (!FAMILIES.every((f) => value.familyScores[f] === null || (typeof value.familyScores[f] === 'number' && Math.abs(value.familyScores[f]) <= 1))) return false;
   // The result view looks up copy by these stored values, and a value outside its map throws. Each field the view reads is checked here.
   if (value.supportPrompt !== undefined && typeof value.supportPrompt !== 'boolean') return false;
+  // The Centre is optional, so a result saved before it existed passes. When present it must be a valid Centre (plan §3.3).
+  if (value.centre !== undefined && !isCentre(value.centre)) return false;
   if (!value.topFamilies.every((entry: unknown) => isRecord(entry)
     && oneOf(FAMILIES, entry.family)
     && typeof entry.score === 'number' && Math.abs(entry.score) <= 1

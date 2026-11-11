@@ -51,7 +51,7 @@ const CONFIDENCE_LEVELS = ['high', 'medium', 'low'];
 describe('stored result validator: every field the result view reads', () => {
   it('accepts a plain copy of a built result, which has parts of every kind and a conflict', () => {
     const result = valid();
-    expect(new Set(result.parts.map((part: Stored) => part.kind))).toEqual(new Set(['protector', 'exile', 'capacity']));
+    expect(new Set(result.parts.map((part: Stored) => part.kind))).toEqual(new Set(['protector', 'exile', 'capacity', 'provider']));
     expect(result.conflicts.length).toBeGreaterThan(0);
     expect(isAssessment2Result(result)).toBe(true);
   });

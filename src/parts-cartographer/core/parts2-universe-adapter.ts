@@ -2,7 +2,7 @@ import { hashStr } from './ports';
 import { deterministicTraits } from './legacy-universe-adapter';
 import type { ArchetypeMapData, Family, Part } from '../pal/traits';
 import type { Assessment2Result, MapPart } from '../../shared/core/data/assessment2/scoring';
-import { CAPACITY_COPY, EXILE_COPY, FAMILY_COPY, MEMBER_COPY, NEED_COPY } from '../../shared/core/data/assessment2/content';
+import { CAPACITY_COPY, EXILE_COPY, FAMILY_COPY, MEMBER_COPY, NEED_COPY, PROVIDER_COPY, UI_COPY } from '../../shared/core/data/assessment2/content';
 import { EXILE_NEED, type ExileId } from '../../shared/core/data/assessment2/taxonomy';
 
 export const PARTS2_SOURCE = 'parts-2' as const;
@@ -15,6 +15,8 @@ const prominenceOf = (part: MapPart): number => {
 const nameOf = (part: MapPart, lang: 'en' | 'ru'): string => {
   if (part.kind === 'protector') return MEMBER_COPY[part.member!].name[lang];
   if (part.kind === 'exile') return EXILE_COPY[part.exile!].name[lang];
+  // A provider point is named for its role (plan §5.1, B7).
+  if (part.kind === 'provider') return PROVIDER_COPY[part.role!][lang];
   return CAPACITY_COPY[part.capacity!].name[lang];
 };
 
@@ -43,10 +45,14 @@ export function buildParts2UniverseParts(result: Assessment2Result, lang: 'en' |
     };
     const guarded = part.guards[0] as ExileId | undefined;
     const need = part.kind === 'exile' ? part.need : guarded ? EXILE_NEED[guarded] : undefined;
+    // A provider point's copy is its name, so it has no blurb of its own.
     const blurb = part.kind === 'protector' ? MEMBER_COPY[part.member!].card[lang]
       : part.kind === 'exile' ? EXILE_COPY[part.exile!].belief[lang]
+      : part.kind === 'provider' ? ''
       : CAPACITY_COPY[part.capacity!].line[lang];
-    const role = part.family ? FAMILY_COPY[part.family][lang] : part.kind === 'exile' ? EXILE_COPY[part.exile!].feeling[lang] : (lang === 'ru' ? 'Ресурс' : 'Resource');
+    // A provider point's role is the Provider label (plan §5.1, B7). A capacity keeps the resource label.
+    const role = part.family ? FAMILY_COPY[part.family][lang] : part.kind === 'exile' ? EXILE_COPY[part.exile!].feeling[lang]
+      : part.kind === 'provider' ? UI_COPY.providerLabel[lang] : (lang === 'ru' ? 'Ресурс' : 'Resource');
     return {
       id,
       name: nameOf(part, lang),

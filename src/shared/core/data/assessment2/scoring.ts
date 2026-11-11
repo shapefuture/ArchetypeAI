@@ -5,10 +5,10 @@
 import { MAP_AXIS_KEYS, clampAxis, isMapCoordinates, type MapAxisKey, type MapCoordinates } from '../map-axes';
 import { SELF_QUALITIES, type SelfQuality } from '../parts';
 import {
-  BLENDING_OPTIONS, BLENDING_VALUE, CAPACITIES, COSTUMES, EXILES, FAMILIES, GROUND_ITEMS, MEMBER_DEFS, MEMBERS, NEEDS,
-  PROVIDER_ACCESS, PROVIDER_FORMS, TIMINGS, TARGETS, EXILE_NEED, capacityDefault, exileDefault, mapFamilyFor, protectorDefault,
+  BLENDING_OPTIONS, BLENDING_VALUE, CAPACITIES, COSTUMES, EXILES, FAMILIES, GROUND_ITEMS, MEMBER_DEFS, MEMBERS, NEEDS, NEED_PROVIDER,
+  PROVIDER_ACCESS, PROVIDER_FORMS, PROVIDER_ROLES, TIMINGS, TARGETS, EXILE_NEED, capacityDefault, exileDefault, mapFamilyFor, protectorDefault,
   type CapacityId, type CostumeId, type ExileId, type FamilyId, type GroundId, type MemberId, type NeedId, type ProviderAccess, type ProviderForm,
-  type Target, type Timing, type BlendingOption,
+  type ProviderRole, type Target, type Timing, type BlendingOption,
 } from './taxonomy';
 
 export const SCENES = ['criticised', 'leftOut', 'lineCrossed', 'fellThrough', 'planChanged', 'freeEvening'] as const;
@@ -175,7 +175,8 @@ export type NeedSource = (typeof NEED_SOURCES)[number];
 
 export interface MapPart {
   key: string;
-  kind: 'protector' | 'exile' | 'capacity';
+  /** A provider point (plan §5.1, B7) sits beside its exile and has no member, capacity or timing. */
+  kind: 'protector' | 'exile' | 'capacity' | 'provider';
   member?: MemberId;
   exile?: ExileId;
   capacity?: CapacityId;
@@ -195,6 +196,8 @@ export interface MapPart {
   /** Exile parts only. Absent on results saved before this field existed. */
   needSource?: NeedSource;
   provider?: { access: ProviderAccess; form: ProviderForm | null };
+  /** Provider points only: the provider role (the key of PROVIDER_COPY) for the exile's need, from NEED_PROVIDER. */
+  role?: ProviderRole;
   placement: 'placed' | 'default';
   coordinates: MapCoordinates;
   unmeasuredAxes: MapAxisKey[];
@@ -224,7 +227,7 @@ export interface Assessment2Result {
   centre?: Centre;
 }
 
-const keyFor = (kind: 'member' | 'exile' | 'capacity', id: string) => `${kind}:${id}`;
+const keyFor = (kind: 'member' | 'exile' | 'capacity' | 'provider', id: string) => `${kind}:${id}`;
 
 /**
  * Coordinates for one part. An axis the person did not set is unknown: its slot holds the reference value so the
@@ -293,6 +296,23 @@ export function deriveConflicts(parts: MapPart[]): Conflict[] {
   return conflicts;
 }
 
+/**
+ * The provider point beside its exile (plan §5.1, B7). It sits at the exile's energy and direction plus 0.25, each clamped
+ * to [−1, 1], and keeps the exile's depth, placement and unanswered axes. Blending is never asked of a provider, so its
+ * axis stays unanswered even when the exile's blending is known. The role is the provider for the exile's need: the need the
+ * person chose, or the table default (the same need the provider screen shows).
+ */
+function providerPointFor(exile: ExileId, need: NeedId, at: Pick<MapPart, 'placement' | 'coordinates' | 'unmeasuredAxes' | 'depthState'>): MapPart {
+  const [energy, direction, depth] = at.coordinates;
+  const unmeasuredAxes: MapAxisKey[] = at.unmeasuredAxes.includes('BLENDING') ? [...at.unmeasuredAxes] : [...at.unmeasuredAxes, 'BLENDING'];
+  return {
+    key: keyFor('provider', exile), kind: 'provider', exile, role: NEED_PROVIDER[need], classKnown: true,
+    rank: null, level: null, confidence: null, guards: [], costume: null,
+    placement: at.placement, coordinates: [clampAxis(energy + 0.25), clampAxis(direction + 0.25), depth, 0], unmeasuredAxes,
+    depthState: at.depthState, blending: null, mapFamily: 'resource',
+  };
+}
+
 /** Build the full result from the answers so far. Every field that was not answered stays null or empty. */
 export function buildAssessment2Result(input: Assessment2Input): Assessment2Result {
   const familyScores = scoreFamilies(input.scenes);
@@ -323,6 +343,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     } as MapPart);
   }
 
+  const providerPoints: MapPart[] = [];
   if (!input.lighter) {
     const named = new Set<ExileId>();
     // Only members the person picked name an exile. A fear left on a member who was later changed is ignored.
@@ -345,6 +366,10 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
         placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes, depthState: coords.depthState,
         blending, mapFamily: 'exile',
       } as MapPart);
+      // Access 'none' gives no point; the gap line (B1) explains it. A point is only placed beside an exile on the map.
+      if (provider && (provider.access === 'easy' || provider.access === 'effort')) {
+        providerPoints.push(providerPointFor(exile, chosenNeed ?? EXILE_NEED[exile], coords));
+      }
     }
   }
 
@@ -358,6 +383,9 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
       blending: null, mapFamily: 'resource',
     } as MapPart);
   }
+
+  // Provider points follow every other part, so the parts before them keep their order (plan §5.1, B7).
+  parts.push(...providerPoints);
 
   // Exile levels for the support prompt: three or more named exiles at level 5.
   const fiveLevels = parts.filter((p) => p.kind === 'exile' && p.level === 5).length;
@@ -452,7 +480,7 @@ export function isAssessment2Result(value: unknown): value is Assessment2Result 
     && Array.isArray(conflict.keys) && conflict.keys.every((key: unknown) => typeof key === 'string'))) return false;
   return value.parts.every((part: unknown) => isRecord(part)
     && typeof part.key === 'string'
-    && (part.kind === 'protector' || part.kind === 'exile' || part.kind === 'capacity')
+    && (part.kind === 'protector' || part.kind === 'exile' || part.kind === 'capacity' || part.kind === 'provider')
     && isMapCoordinates(part.coordinates)
     && Array.isArray(part.unmeasuredAxes) && part.unmeasuredAxes.every((k: unknown) => (MAP_AXIS_KEYS as readonly unknown[]).includes(k))
     && (part.depthState === 'set' || part.depthState === 'unsure' || part.depthState === 'unanswered')
@@ -463,6 +491,7 @@ export function isAssessment2Result(value: unknown): value is Assessment2Result 
     && (part.placement === 'placed' || part.placement === 'default')
     && (part.kind !== 'protector' || (oneOf(MEMBERS, part.member) && oneOf(FAMILIES, part.family) && (part.timing === null || oneOf(TIMINGS, part.timing)) && oneOf(TARGETS, part.target)))
     && (part.kind !== 'exile' || oneOf(EXILES, part.exile) && oneOf(NEEDS, part.need))
+    && (part.kind !== 'provider' || (oneOf(EXILES, part.exile) && oneOf(PROVIDER_ROLES, part.role)))
     && (part.need === undefined || oneOf(NEEDS, part.need))
     && Array.isArray(part.guards) && part.guards.every((guard: unknown) => oneOf(EXILES, guard))
     && (part.needSource === undefined || (part.kind === 'exile' && oneOf(NEED_SOURCES, part.needSource)))

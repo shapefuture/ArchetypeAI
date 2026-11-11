@@ -386,7 +386,8 @@ function GroundScreen2({ T, tx, frame, input, toggleGround, onNext }) {
 }
 
 export function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
-  const parts = useMemo(() => buildAssessment2Result(input).parts, [input]);
+  // A provider point follows from its exile, so the person does not place it (plan §5.1, B7).
+  const parts = useMemo(() => buildAssessment2Result(input).parts.filter((part) => part.kind !== 'provider'), [input]);
   const [keyChosen, setKeyChosen] = useState(parts[0]?.key ?? null);
   const part = parts.find((entry) => entry.key === keyChosen) ?? parts[0] ?? null;
   if (!part) {
@@ -462,8 +463,9 @@ function ResultBody({ T, tx, locale, result }) {
           </li>
         ))}
       </ul>
+      {/* A provider point is not listed on its own: its access and form show on the exile line. */}
       <ul className="p2-list">
-        {result.parts.map((part) => {
+        {result.parts.filter((part) => part.kind !== 'provider').map((part) => {
           const name = part.kind === 'protector' ? tx(MEMBER_COPY[part.member].name) : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].name) : tx(CAPACITY_COPY[part.capacity].name);
           return (
             <li key={part.key} className="card">

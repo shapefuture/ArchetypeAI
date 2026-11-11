@@ -258,7 +258,7 @@ Built on 2026-11-10 by owner decision, without waiting for the pilot.
 - **Overlaps:** parts within 2 units of each other are spread on a small ring, in id order, so none hides another. Stored coordinates never change (G33).
 - **Camera:** the default view is slightly oblique, from (13, 9, 42), so the direction axis does not point at the viewer. "Show full map" returns to that view (G34).
 - **Legend:** two sentences in the lens card explain the ring and the fade, in English and Russian (G36).
-- **Limits:** provider points (B7) are not drawn yet, so providers do not appear in 3D. The placement defaults still wait for the pilot, as `plan.md` §9 phase 6 says ("decide on defaults").
+- **Limits:** provider points (B7) are drawn in 3D as resource points, one beside each exile with access easy or effort. The placement defaults still wait for the pilot, as `plan.md` §9 phase 6 says ("decide on defaults").
 - **Checks:** `services/universe-3plus1.spec.ts` (the rules), `services/universe-lens.spec.ts` (the lens) and `services/universe-scene.spec.ts` (a mixed scene builds, relays out and renders a frame). The full unit suite passed: 234 test files and 1624 tests, with the existing skips. Type checking passed. The five browser specs that touch the universe passed (20 tests). A screenshot of a synthetic 2.0 map and one of the default example cast were checked by eye. Both were throwaway and are not committed.
 - **Size:** L (guess: about 3 days).
 

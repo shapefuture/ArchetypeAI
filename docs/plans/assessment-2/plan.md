@@ -385,4 +385,4 @@ Open decisions, with their status:
 - `npm run build`: passes at 4c2e627.
 - Browser, full suite run locally: 86 passed, 1 failed. The failure is `tests/browser/round18-checkin.spec.mjs:55`, which times out at `toast.boundingBox()` after the toast was seen. It is outside 2.0. CI on 4c2e627 passed all four browser shards. The same test failed once in CI on a04b517.
 - `tests/browser/parity.spec.mjs` drives the whole 2.0 flow to a saved map, with no 147 profile written and no page errors. It passes in the full local run.
-- Not done: the tap-budget test (B11). The measured numbers are in the build plan's B11, and the test waits for the owner's choice.
+- Tap budget (B11): the owner raised the targets to 57 and 73 on 2026-11-11, and `src/parts-cartographer/core/parts-two-tap-budget.spec.ts` checks them.

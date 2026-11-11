@@ -69,7 +69,9 @@ test('Assessment 2.0 is the default route, Quick Scan is gone, and a full pass s
     parts: JSON.parse(localStorage.getItem('ifs.parts') ?? '[]'),
     profile: localStorage.getItem('ifs.profile'),
   }));
-  expect(saved.result?.instrument).toBe('parts-2');
+  // The stored result is the envelope { savedAt, result } (B9), so the result sits one level down.
+  expect(typeof saved.result?.savedAt).toBe('string');
+  expect(saved.result?.result?.instrument).toBe('parts-2');
   expect(saved.parts.some((part) => part.archetype?.sourceAssessment === 'parts-2')).toBe(true);
   expect(saved.profile).toBeNull();
   const partsTwo = saved.parts.filter((part) => part.archetype?.sourceAssessment === 'parts-2');

@@ -45,6 +45,12 @@ describe('placement screen wiring', () => {
     expect(host.textContent).toContain('Depth not answered yet');
   });
 
+  it('tells assistive technology that depth is not answered, and does not read the placeholder value', () => {
+    render(vi.fn());
+    const slider = host.querySelector('input[type="range"]') as HTMLInputElement;
+    expect(slider.getAttribute('aria-valuetext')).toBe('Depth not answered yet');
+  });
+
   it('"Not sure" writes depth as unsure and nothing else', () => {
     const setPlaced = vi.fn();
     render(setPlaced);

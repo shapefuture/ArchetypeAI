@@ -10,7 +10,7 @@ import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../c
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
 import { EXERCISES, EXERCISE_TYPES } from '../../shared/core/data/exercises';
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus, therapistWallLabel } from '../core/booking.ts';
-import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates, setAxisChoice } from '../services/universe-lens';
+import { affinityOfPart, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates, setAxisChoice } from '../services/universe-lens';
 import { ModalLayer } from '../ui/modal-layer.jsx';
 import { ReplayStudio } from './replay.jsx';
 import { InnerNegotiation } from './negotiation.jsx';
@@ -111,7 +111,7 @@ export function Innerverse() {
     .filter((part) => (!focusOnly || part.id === selectedId) && (!reportOnly || part.archetype?.sourceAssessment !== 'studio' && !!part.archetype)
       && (cluster === 'all' || part.archetype?.cluster === cluster)), [parts, famOn, dims.energy, focusOnly, selectedId, reportOnly, cluster]);
   const ranked = useMemo(() => [...visible].sort((a, b) => {
-    const score = (part) => { const coordinates = sanitizeArchetypeCoordinates(part.archetype?.coordinates); return coordinates ? coordinateAffinity(coordinates, dimensions, part.family === 'resource') : 0; };
+    const score = (part) => affinityOfPart(part, dimensions);
     return score(b) - score(a) || normalizedEnergy(b) - normalizedEnergy(a);
   }), [visible, dimensions]);
   const searchMatches = useMemo(() => searchUniverseParts(parts, q, lang).slice(0, 8), [parts, q, lang]);
@@ -135,8 +135,8 @@ export function Innerverse() {
   useEffect(() => {
     if (!uniReady || !uniRef?.current) return;
     uniRef.current.setDimensions(dimensions);
-    uniRef.current.setView?.({ axes, isolation, selectedId });
-  }, [uniReady, uniRef, dimensions, axes, isolation, selectedId]);
+    uniRef.current.setView?.({ axes, isolation, selectedId, unknownText: lang === 'ru' ? 'неизвестно' : 'unknown' });
+  }, [uniReady, uniRef, dimensions, axes, isolation, selectedId, lang]);
   // The guides carry the end words of the plotted axes, in the reader's language. Sent again only when the language changes.
   useEffect(() => {
     if (!uniReady || !uniRef?.current) return;

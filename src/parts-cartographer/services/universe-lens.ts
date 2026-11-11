@@ -81,4 +81,16 @@ export function coordinateAffinity(
     known[index] ? sum + Math.abs(expression) * Math.exp(-Math.pow(expression - point[index], 2) * 2) : sum, 0) / magnitude;
 }
 
+/**
+ * The affinity of one part to the lens. The part's unmeasured axes are left out, so a placeholder never raises or lowers
+ * it (G38). The ranking and the scene follow this rule.
+ */
+export function affinityOfPart(
+  part: { family?: string; archetype?: { coordinates?: unknown; unmeasuredAxes?: readonly string[] } },
+  dimensions: UniverseDimensions,
+): number {
+  const coordinates = sanitizeArchetypeCoordinates(part.archetype?.coordinates);
+  return coordinates ? coordinateAffinity(coordinates, dimensions, part.family === 'resource', part.archetype?.unmeasuredAxes ?? []) : 0;
+}
+
 export type { MapAxisKey };

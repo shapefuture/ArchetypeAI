@@ -77,7 +77,7 @@ export function PlacementPad({ label, x, y, xLabels, yLabels, onChange }) {
   );
 }
 
-export function DepthSlider({ label, value, lowLabel, highLabel, onChange }) {
+export function DepthSlider({ label, value, lowLabel, highLabel, valueText, onChange }) {
   return (
     <label className="p2-depth">
       <span className="p2-depth-name">{label}</span>
@@ -89,6 +89,7 @@ export function DepthSlider({ label, value, lowLabel, highLabel, onChange }) {
         step="0.05"
         value={value}
         aria-label={label}
+        aria-valuetext={valueText}
         onChange={(event) => onChange(round(Number(event.target.value)))}
       />
       <span className="p2-depth-end">{highLabel}</span>

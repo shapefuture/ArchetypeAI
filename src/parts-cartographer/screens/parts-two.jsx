@@ -419,7 +419,7 @@ export function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
         onChange={(values) => write({ ...(values.x !== undefined ? { energy: values.x } : {}), ...(values.y !== undefined ? { direction: values.y } : {}) })}
       />
       <p className="p2-note">{T('axisEnergy')}: {unknown.has('ENERGY') ? T('notSetByYou') : T('setByYou')} · {T('axisDirection')}: {unknown.has('DIRECTION') ? T('notSetByYou') : T('setByYou')}</p>
-      <DepthSlider label={`${name}: ${T('axisDepth')}`} value={depth} lowLabel={T('deepLabel')} highLabel={T('surfaceLabel')} onChange={(value) => write({ depth: value })} />
+      <DepthSlider label={`${name}: ${T('axisDepth')}`} value={depth} valueText={depthText} lowLabel={T('deepLabel')} highLabel={T('surfaceLabel')} onChange={(value) => write({ depth: value })} />
       <p className="p2-note">{T('axisDepth')}: {depthText}</p>
       <button type="button" className="btn ghost block" aria-pressed={part.depthState === 'unsure'} onClick={() => write({ depth: null })}>{T('depthNotSure')}</button>
     </Frame>

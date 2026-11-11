@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  affinityOfPart,
   archetypeCoordinatePosition,
   coordinateAffinity,
   DEFAULT_AXES,
@@ -12,6 +13,22 @@ import {
 const dimensions = (overrides: Partial<typeof ZERO_DIMENSIONS> = {}) => ({ ...ZERO_DIMENSIONS, ...overrides });
 
 // Tuple order is energy, direction, depth, blending (plan §3.5). The default plot is energy (x), depth (y), direction (z).
+describe('a part affinity to the lens (G38)', () => {
+  it('leaves an unmeasured axis out, so a placeholder neither raises nor lowers the affinity', () => {
+    const blendingLens = dimensions({ BLENDING: 1 });
+    const measured = { family: 'manager', archetype: { coordinates: [0.2, 0.1, 0.3, 0], unmeasuredAxes: [] } };
+    const unmeasured = { family: 'manager', archetype: { coordinates: [0.2, 0.1, 0.3, 0], unmeasuredAxes: ['BLENDING'] } };
+    expect(affinityOfPart(measured, blendingLens)).toBeGreaterThan(0);
+    expect(affinityOfPart(unmeasured, blendingLens)).toBe(0);
+  });
+
+  it('matches the coordinate affinity when every axis is measured', () => {
+    const lens = dimensions({ ENERGY: 0.5 });
+    const part = { family: 'manager', archetype: { coordinates: [0.4, 0, 0, 0], unmeasuredAxes: [] } };
+    expect(affinityOfPart(part, lens)).toBeCloseTo(coordinateAffinity([0.4, 0, 0, 0], lens, false, []));
+  });
+});
+
 describe('universe dimensional lens (map axes)', () => {
   it('rejects malformed coordinate records and clamps valid imported values', () => {
     expect(sanitizeArchetypeCoordinates([0, 0, Number.NaN, 0])).toBeNull();

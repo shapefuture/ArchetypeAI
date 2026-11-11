@@ -70,6 +70,14 @@ export function presentationFor(input: {
   };
 }
 
+/**
+ * In the isolation view for one axis, a part with no value on that axis gets an "unknown" tag (B12, G31). Its position on
+ * that axis is a placeholder, so the tag says it is not a value (G38). No isolation means no tag.
+ */
+export function isolationUnknown(unmeasuredAxes: readonly string[] | undefined, isolation: string | null): boolean {
+  return isolation !== null && (unmeasuredAxes ?? []).includes(isolation);
+}
+
 export interface LayoutPoint {
   id: string;
   position: readonly [number, number, number];

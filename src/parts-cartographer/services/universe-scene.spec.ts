@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Part } from '../pal/traits';
+import * as THREE from 'three';
 
-const renderer = vi.hoisted(() => ({ loops: [] as unknown[] }));
+const renderer = vi.hoisted(() => ({ loops: [] as unknown[], scenes: [] as any[] }));
 
 // Explicit stubs for the three.js exports the scene touches. The renderer records animation-loop calls.
 vi.mock('three', () => {
@@ -17,15 +18,17 @@ vi.mock('three', () => {
     rotation = { x: 0, y: 0, z: 0 };
     scale = new Vector();
     userData: Record<string, unknown> = {};
-    children: unknown[] = [];
-    add() { return this; }
-    remove() { return this; }
+    children: any[] = [];
+    add(child: any) { this.children.push(child); return this; }
+    remove(child: any) { const index = this.children.indexOf(child); if (index >= 0) this.children.splice(index, 1); return this; }
     traverse() {}
   }
   class Material { dispose() {} }
   class Geometry { setAttribute() {} dispose() {} }
   class Light extends Object3D {}
-  class Scene extends Object3D {}
+  class Scene extends Object3D {
+    constructor() { super(); renderer.scenes.push(this); }
+  }
   class Group extends Object3D {}
   class Mesh extends Object3D {
     geometry: unknown;
@@ -127,6 +130,7 @@ import { initUniverse } from './universe-scene';
 afterEach(() => {
   Reflect.deleteProperty(document, 'hidden');
   renderer.loops.length = 0;
+  renderer.scenes.length = 0;
   ambience.set('hidden', false);
   ambience.set('typing', false);
   ambience.set('error', false);
@@ -209,6 +213,41 @@ describe('universe render loop and ambience', () => {
     ambience.set('typing', false);
     expect(renderer.loops.length).toBe(calls);
     host.remove();
+  });
+});
+
+/** The group a part is drawn in, found by its id in the scene the test built. */
+function groupOf(root: any, id: string): any {
+  if (root.userData?.partId === id) return root;
+  for (const child of root.children ?? []) {
+    const found = groupOf(child, id);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+describe('the unknown tag in the isolation view (G31, G38)', () => {
+  it('tags a part with no value on the isolated axis, and only while that axis is isolated', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const api = initUniverse(host, false, 'gentle');
+    try {
+      api.setParts([
+        part('measured', [0.2, 0.1, 0.3, 0.5], 'self-placed-2', []),
+        part('no-blending', [0.2, 0.1, 0.3, 0], 'fixed-reference-147', ['BLENDING']),
+      ]);
+      const scene = renderer.scenes[renderer.scenes.length - 1];
+      const tagsOf = (id: string) => (groupOf(scene, id)?.children ?? []).filter((child: unknown) => child instanceof THREE.Sprite);
+      expect(tagsOf('no-blending')).toHaveLength(0);
+      api.setView({ isolation: 'BLENDING', unknownText: 'unknown' });
+      expect(tagsOf('no-blending')).toHaveLength(1);
+      expect(tagsOf('measured')).toHaveLength(0);
+      api.setView({ isolation: 'DIRECTION' });
+      expect(tagsOf('no-blending')).toHaveLength(0);
+    } finally {
+      api.dispose();
+      host.remove();
+    }
   });
 });
 

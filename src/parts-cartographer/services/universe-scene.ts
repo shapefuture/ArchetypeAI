@@ -15,7 +15,7 @@ import {
   type ArchetypeCoordinates,
   type UniverseDimensions,
 } from './universe-lens';
-import { GHOST_FACTOR, overlapOffsets, presentationFor } from './universe-3plus1';
+import { GHOST_FACTOR, isolationUnknown, overlapOffsets, presentationFor } from './universe-3plus1';
 
 /** The words at each end of a plotted axis, and its colour (a CSS hex string), in the reader's language. */
 export type GuideSpec = Partial<Record<DimensionKey, { low: string; high: string; color: string }>>;
@@ -25,7 +25,7 @@ export interface UniverseAPI {
   sleep(): void;
   setParts(parts: Part[]): void;
   setDimensions(dimensions: UniverseDimensions): void;
-  setView(options: { axes?: UniverseAxes; isolation?: DimensionKey | null; selectedId?: string | null }): void;
+  setView(options: { axes?: UniverseAxes; isolation?: DimensionKey | null; selectedId?: string | null; unknownText?: string }): void;
   setGuides(guides: GuideSpec): void;
   focus(id: string | null): void;
   xrSupported(): Promise<boolean>;
@@ -46,6 +46,9 @@ type MapNode = {
   ghost: boolean;
   /** The +1 channel: a ring for blending, absent when blending is not known. */
   halo: THREE.Mesh | null;
+  /** The "unknown" tag in the isolation view, present when this part has no value on the isolated axis (G31, G38). */
+  unknownTag?: THREE.Sprite;
+  unknownTagText?: string;
 };
 let api: UniverseAPI | null = null;
 let dimensionalExpressions: UniverseDimensions = { ...ZERO_DIMENSIONS };
@@ -97,6 +100,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
   const motionDamping = bindReducedMotionDamping(controls, motion, motionMode);
   let axes: UniverseAxes = [...DEFAULT_AXES];
   let isolation: DimensionKey | null = null;
+  let unknownText = 'unknown';
   let selectedId: string | null = null;
   let layoutOffsets = new Map<string, [number, number, number]>();
   let guides: GuideSpec = {};
@@ -143,7 +147,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     }
   }
 
-  function labelSprite(text: string, colour: number, at: [number, number, number]): THREE.Sprite {
+  function labelSprite(text: string, colour: number, at: [number, number, number], size: [number, number] = [6.4, 1.2]): THREE.Sprite {
     const canvas = document.createElement('canvas');
     canvas.width = 640;
     canvas.height = 112;
@@ -158,7 +162,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     const material = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthTest: false, opacity: 0.92 });
     const sprite = new THREE.Sprite(material);
     sprite.position.set(...at);
-    sprite.scale.set(6.4, 1.2, 1);
+    sprite.scale.set(size[0], size[1], 1);
     return sprite;
   }
 
@@ -186,6 +190,26 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       guideGroup.add(labelSprite(copy.high, labelColour, labelAt(GUIDE_LABEL_AT)));
       guideGroup.add(labelSprite(copy.low, labelColour, labelAt(-GUIDE_LABEL_AT)));
     });
+  }
+
+  /**
+   * In the isolation view, a part with no value on the isolated axis gets an "unknown" tag. Its position on that axis is a
+   * placeholder, so the tag says it is not a value (B12, G31, G38). A part with a value on that axis gets no tag.
+   */
+  function refreshUnknownTags() {
+    for (const node of nodes) {
+      const wanted = isolationUnknown(node.part.archetype?.unmeasuredAxes, isolation);
+      if (node.unknownTag && (!wanted || node.unknownTagText !== unknownText)) {
+        node.group.remove(node.unknownTag);
+        disposeGroup(node.unknownTag);
+        node.unknownTag = undefined;
+      }
+      if (wanted && !node.unknownTag) {
+        node.unknownTag = labelSprite(unknownText, labelColour, [0, 2.4, 0], [3.6, 0.72]);
+        node.unknownTagText = unknownText;
+        node.group.add(node.unknownTag);
+      }
+    }
   }
 
   /** Where each part sits, with overlapping parts spread for display. Stored coordinates are never changed. */
@@ -263,6 +287,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
 
     });
     relayout();
+    refreshUnknownTags();
   }
 
   // lights
@@ -346,10 +371,12 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       if (options.axes) axes = normalizeAxes(options.axes);
       if ('isolation' in options) isolation = options.isolation ?? null;
       if ('selectedId' in options) selectedId = options.selectedId ?? null;
+      if ('unknownText' in options) unknownText = options.unknownText ?? 'unknown';
       if (options.axes || 'isolation' in options) {
         relayout();
         rebuildGuides();
       }
+      refreshUnknownTags();
     },
     setGuides(next) {
       guides = next;

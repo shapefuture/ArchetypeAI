@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import type { ArchetypeCoordinates } from './universe-lens';
 import {
-  GHOST_FACTOR, HALO_NEGATIVE, HALO_NEUTRAL, HALO_POSITIVE, haloFor, overlapOffsets, presentationFor,
+  GHOST_FACTOR, HALO_NEGATIVE, HALO_NEUTRAL, HALO_POSITIVE, haloFor, isolationUnknown, overlapOffsets, presentationFor,
 } from './universe-3plus1';
 
 const at = (...values: number[]) => values as ArchetypeCoordinates;
 const distance = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+
+describe('the isolation tag (G31, G38)', () => {
+  it('tags a part whose isolated axis is listed as unmeasured, and tags nothing without an isolation', () => {
+    expect(isolationUnknown(['BLENDING'], 'BLENDING')).toBe(true);
+    expect(isolationUnknown(['BLENDING'], 'ENERGY')).toBe(false);
+    expect(isolationUnknown(['BLENDING'], null)).toBe(false);
+    expect(isolationUnknown(undefined, 'DEPTH')).toBe(false);
+  });
+});
 
 describe('the +1 halo', () => {
   it('is faint and neutral at zero, and strong at either extreme', () => {

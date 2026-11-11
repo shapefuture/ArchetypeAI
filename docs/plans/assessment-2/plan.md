@@ -346,7 +346,7 @@ Owner decisions applied: Assessment 2.0 is the default route; the four map axes 
 - **Coordinates** are a four-slot tuple in map-axis order, with the list of unmeasured axes (B5). Section 6 shows the built shape.
 - **Capacity name:** the English name of the healthy twin of numb or soothe is Player (G18). The Russian name is unchanged.
 - **Provider blending:** a provider point never has a blending value, so its blending stays unmeasured even when its exile's blending is known (build-and-fix G37).
-- **Unknown axes:** a stored unknown axis keeps a placeholder number in its coordinates slot, and `unmeasuredAxes` names it. Readers check that list, and no screen shows the placeholder as a value (build-and-fix G38).
+- **Unknown axes:** a stored unknown axis keeps a placeholder number in its coordinates slot, and `unmeasuredAxes` names it. Readers check that list. The 3D map draws such parts at their placeholder positions, ghosted or labelled. In the isolation view, a part with no value on the isolated axis carries an "unknown" tag. The lens never counts an unmeasured axis, and the depth slider reads "not answered" to assistive technology (build-and-fix G38).
 
 ### Guesses this build depends on (to be settled by the pilot)
 
@@ -385,7 +385,7 @@ Open decisions, with their status:
 
 ### Gates (checked 2026-11-11)
 
-- Follow-up fixes (2026-11-11): `npx tsc --noEmit` passes; `npm test` gives 253 test files and 1,881 tests passing; `npm run build` passes; `tests/browser/parity.spec.mjs` gives 9 of 9, with a skipped-timing case and a lighter-path case. The full browser suite gave 88 of 89. The one failure, `report-retake.spec.mjs` "starts over once the person agrees", waits 5 seconds for the Report panel. It passed 8 of 8 when repeated alone, which is the load-timeout handling in build-and-fix §2 and R7.
+- Follow-up fixes (2026-11-11): `npx tsc --noEmit` passes; `npm test` gives 253 test files and 1,886 tests passing; `npm run build` passes; `tests/browser/parity.spec.mjs` gives 9 of 9, with a skipped-timing case and a lighter-path case. The full browser suite gave 89 of 89 on one worker (11.3 minutes). On two workers, a different one or two of the 5-second waits failed in each run (the report, backup, history and practice views). Each of those tests passed when run alone and on repeat, which is the load-timeout handling in build-and-fix §2 and R7. Three waits now allow 20 seconds: `parity.spec.mjs`, `report-retake.spec.mjs` and `corrupt-data.spec.mjs`.
 - `npx tsc --noEmit`: passes at 4c2e627.
 - `npm test` (`npx vitest run`): 252 test files and 1,879 tests pass at 2af4f5e, including new specs for the taxonomy, scoring, screen order, adapter, migration, the E16 module side, the pilot functions and the tap budget.
 - `npm run build`: passes at 4c2e627.

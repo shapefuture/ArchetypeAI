@@ -8,6 +8,7 @@ import type { CapacityId, CostumeId, ExileId, FamilyId, GroundId, MemberId, Need
 import { BLENDING_OPTIONS, CAPACITIES, COSTUMES, EXILES, FAMILIES, GROUND_ITEMS, MEMBERS, NEEDS, PROVIDER_FORMS, PROVIDER_ROLES } from './taxonomy';
 import { SCENES, SCENE_FAMILIES, type SceneId } from './scoring';
 import type { BlendingOption } from './taxonomy';
+import { SELF_QUALITIES, type SelfQuality } from '../parts';
 
 export type Bi = { en: string; ru: string };
 
@@ -345,6 +346,18 @@ export const FAMILY_COPY: Record<FamilyId, Bi> = {
   reframe: { en: 'Reframe', ru: 'Переосмысление' },
 };
 
+/** The eight Self qualities (plan §3.3). The Russian names are the project's qualityLabelsRu in src/shared/i18n/strings.ts. */
+export const CENTRE_QUALITY_COPY: Record<SelfQuality, Bi> = {
+  calm: { en: 'Calm', ru: 'Спокойствие' },
+  clarity: { en: 'Clarity', ru: 'Ясность' },
+  compassion: { en: 'Compassion', ru: 'Сострадание' },
+  curiosity: { en: 'Curiosity', ru: 'Любопытство' },
+  confidence: { en: 'Confidence', ru: 'Уверенность' },
+  courage: { en: 'Courage', ru: 'Смелость' },
+  creativity: { en: 'Creativity', ru: 'Творчество' },
+  connectedness: { en: 'Connectedness', ru: 'Связанность' },
+};
+
 /** Screen copy. Every key is used by the screens; the test suite checks that each key has both languages. */
 export const UI_COPY = {
   title: { en: 'Parts map 2.0', ru: 'Карта частей 2.0' },
@@ -378,6 +391,17 @@ export const UI_COPY = {
   practiceSuggested: { en: 'Suggested practice', ru: 'Предлагаемая практика' },
   capacityEasyQ: { en: 'Which of these do you reach for easily?', ru: 'К чему из этого вы обращаетесь легко?' },
   capacityHardQ: { en: 'Which of these is hardest to reach?', ru: 'К чему из этого труднее всего дотянуться?' },
+  centreTitle: { en: 'Self', ru: 'Self' },
+  centreNote: { en: 'The Self is the calm, clear place from which you notice your parts. These questions ask how easily you can reach it now. Skip any question.', ru: 'Self — это спокойное, ясное место, из которого вы замечаете свои части. Эти вопросы о том, насколько вы сейчас можете к нему обратиться. Любой вопрос можно пропустить.' },
+  centreAwarenessQ: { en: 'I can notice this part from a little distance.', ru: 'Я могу замечать эту часть с небольшого расстояния.' },
+  centreWillQ: { en: 'My will to act feels available.', ru: 'Моя воля к действию ощущается доступной.' },
+  centreScaleLabels: { en: ['Not at all', 'A little', 'Somewhat', 'Mostly', 'Completely'], ru: ['Совсем нет', 'Немного', 'Отчасти', 'В основном', 'Полностью'] },
+  centreSkipOne: { en: 'Skip this question', ru: 'Пропустить вопрос' },
+  centreQualitiesQ: { en: 'Which of these are easiest to reach now? Choose up to three.', ru: 'К каким из этих качеств вам сейчас легче всего обратиться? Выберите не более трёх.' },
+  centreAwarenessLabel: { en: 'Awareness', ru: 'Осознавание' },
+  centreWillLabel: { en: 'Will', ru: 'Воля' },
+  centreQualitiesLabel: { en: 'Qualities', ru: 'Качества' },
+  centreNotAnswered: { en: 'not answered', ru: 'не указано' },
   groundQ: { en: 'What helps you feel steady? Choose any that apply.', ru: 'Что помогает вам чувствовать опору? Отметьте всё подходящее.' },
   placeHelp: { en: 'Drag each part to where it sits for you, or use the arrow keys. Each part starts at its reference position.', ru: 'Перетащите каждую часть туда, где она находится для вас, или используйте стрелки. Каждая часть начинается с опорной позиции.' },
   placeReference: { en: 'Reference position', ru: 'Опорная позиция' },
@@ -451,4 +475,5 @@ export const copyCoverage = {
   costumes: COSTUMES.every((c) => COSTUME_COPY[c]),
   blending: BLENDING_OPTIONS.every((b) => BLENDING_COPY[b]),
   families: FAMILIES.every((f) => FAMILY_COPY[f]),
+  selfQualities: SELF_QUALITIES.every((quality) => CENTRE_QUALITY_COPY[quality]),
 } as const;

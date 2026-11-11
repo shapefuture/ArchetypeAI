@@ -6,9 +6,10 @@ import { readLastResult, saveLastResult } from '../core/parts-two-store.ts';
 import { buildParts2UniverseParts, isParts2Part } from '../core/parts2-universe-adapter.ts';
 import { buildScreens, clampIndex, completedStagesFor, stageOf } from '../core/parts-two-flow.ts';
 import { CATALOG_REVIEW, reviewedPractices } from '../core/practice-catalog.ts';
-import { SCENE_FAMILIES, buildAssessment2Result, rankFamilies, sanitizePlaced, scoreFamilies } from '../../shared/core/data/assessment2/scoring.ts';
+import { SCENE_FAMILIES, buildAssessment2Result, rankFamilies, sanitizeCentre, sanitizePlaced, scoreFamilies } from '../../shared/core/data/assessment2/scoring.ts';
+import { SELF_QUALITIES } from '../../shared/core/data/parts.ts';
 import {
-  BLENDING_COPY, CAPACITY_COPY, CONFIRM_COPY, CONFIRM_SCALE, COSTUME_COPY, EXILE_COPY, FAMILY_COPY,
+  BLENDING_COPY, CAPACITY_COPY, CENTRE_QUALITY_COPY, CONFIRM_COPY, CONFIRM_SCALE, COSTUME_COPY, EXILE_COPY, FAMILY_COPY,
   FEAR_COPY, GAP_COPY, GROUND_COPY, MEMBER_COPY, NEED_COPY, NEED_PRACTICE, PROVIDER_COPY, PROVIDER_FORM_COPY, REACTION_COPY, SCENE_COPY, TIMING_COPY,
   UI_COPY, ACCESS_COPY,
 } from '../../shared/core/data/assessment2/content.ts';
@@ -22,6 +23,7 @@ import './parts-two.css';
 const blankInput = () => ({
   completedStages: [], steadiness: null, lighter: false, scenes: [], picks: {}, timing: {}, costume: {}, confirm: {}, fears: {},
   exileLevel: {}, exileNeed: {}, blending: {}, providers: {}, capacityEasiest: null, capacityHardest: null, ground: [], placed: {},
+  centre: { awareness: null, will: null, qualities: [] },
 });
 
 const DRAFT_KEY = ROUTE_KEYS.parts2.draft;
@@ -318,6 +320,58 @@ function CapacityScreen({ T, tx, frame, input, setCapacity, onNext }) {
   );
 }
 
+/** Stage 5, the Centre (plan §3.3). Every question can be skipped, so Next is never disabled. A scale holds 1 to 5, 'skip', or null. */
+export function CentreScreen({ T, tx, frame, input, setCentre, onSkip }) {
+  const saved = sanitizeCentre(input.centre);
+  const [awareness, setAwareness] = useState(saved.awareness);
+  const [will, setWill] = useState(saved.will);
+  const [qualities, setQualities] = useState(saved.qualities);
+  const renderScale = (value, setValue, question) => (
+    <fieldset className="p2-fieldset">
+      <legend>{question}</legend>
+      <div className="p2-scale">
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <button key={rating} type="button" aria-pressed={value === rating} className={`btn small${value === rating ? ' on' : ''}`}
+            onClick={() => setValue(rating)}>{rating}. {tx(UI_COPY.centreScaleLabels)[rating - 1]}</button>
+        ))}
+        <button type="button" aria-pressed={value === 'skip'} className={`btn small${value === 'skip' ? ' on' : ''}`}
+          onClick={() => setValue('skip')}>{T('centreSkipOne')}</button>
+      </div>
+    </fieldset>
+  );
+  // Kept in SELF_QUALITIES order, so the order of the taps does not change what is stored. A fourth quality is refused.
+  const toggleQuality = (quality) => setQualities((prev) => {
+    if (prev.includes(quality)) return prev.filter((q) => q !== quality);
+    if (prev.length >= 3) return prev;
+    return SELF_QUALITIES.filter((q) => q === quality || prev.includes(q));
+  });
+  const storeAndContinue = () => setCentre({
+    awareness: typeof awareness === 'number' ? awareness : null,
+    will: typeof will === 'number' ? will : null,
+    qualities,
+  });
+  return (
+    <Frame {...frame} title={T('centreTitle')} onNext={storeAndContinue}>
+      <p className="p2-note">{T('centreNote')}</p>
+      {renderScale(awareness, setAwareness, T('centreAwarenessQ'))}
+      {renderScale(will, setWill, T('centreWillQ'))}
+      <fieldset className="p2-fieldset">
+        <legend>{T('centreQualitiesQ')}</legend>
+        <div className="p2-chips">
+          {SELF_QUALITIES.map((quality) => {
+            const chosen = qualities.includes(quality);
+            return (
+              <button key={quality} type="button" aria-pressed={chosen} disabled={!chosen && qualities.length >= 3}
+                className={`btn small p2-chip${chosen ? ' on' : ''}`} onClick={() => toggleQuality(quality)}>{tx(CENTRE_QUALITY_COPY[quality])}</button>
+            );
+          })}
+        </div>
+      </fieldset>
+      <button type="button" className="btn ghost block" onClick={onSkip}>{T('skip')}</button>
+    </Frame>
+  );
+}
+
 function GroundScreen2({ T, tx, frame, input, toggleGround, onNext }) {
   return (
     <Frame {...frame} title={T('groundQ')} onNext={onNext}>
@@ -390,6 +444,8 @@ const formatSavedDate = (savedAt, locale) => new Date(savedAt).toLocaleDateStrin
 /** The body of a result. The live result and the stored last result both use it, so the two cannot drift apart. */
 function ResultBody({ T, tx, locale, result }) {
   const confidence = { high: T('confHigh'), medium: T('confMedium'), low: T('confLow') };
+  // A result saved before the Centre existed has none, which reads as all unanswered.
+  const centre = sanitizeCentre(result.centre);
   return (
     <>
       <p className="p2-note">{T('resultNote')}</p>
@@ -436,6 +492,14 @@ function ResultBody({ T, tx, locale, result }) {
           </ul>
         </>
       ) : null}
+      <h3>{T('centreTitle')}</h3>
+      <ul className="p2-list">
+        <li className="card">
+          <p>{T('centreAwarenessLabel')}: {centre.awareness === null ? T('centreNotAnswered') : `${centre.awareness} / 5`}</p>
+          <p>{T('centreWillLabel')}: {centre.will === null ? T('centreNotAnswered') : `${centre.will} / 5`}</p>
+          <p>{T('centreQualitiesLabel')}: {centre.qualities.length ? centre.qualities.map((quality) => tx(CENTRE_QUALITY_COPY[quality])).join(', ') : T('centreNotAnswered')}</p>
+        </li>
+      </ul>
       <p className="sub">{T('notDiagnosis')}</p>
     </>
   );
@@ -616,6 +680,12 @@ export function PartsTwo() {
         <CapacityScreen T={T} tx={tx} input={input} frame={frame}
           setCapacity={(field, value) => setInput((prev) => ({ ...prev, [field]: value }))}
           onNext={forward} />
+      );
+    case 'centre':
+      return (
+        <CentreScreen T={T} tx={tx} input={input} frame={frame}
+          setCentre={(value) => { setInput((prev) => ({ ...prev, centre: value })); forward(); }}
+          onSkip={() => { setInput((prev) => ({ ...prev, centre: { awareness: null, will: null, qualities: [] } })); forward(); }} />
       );
     case 'ground2':
       return (

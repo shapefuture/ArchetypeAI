@@ -30,7 +30,7 @@ describe('Assessment 2.0 screen order (plan §4)', () => {
     const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, timing: { rebel: 'reactive' as const } };
     const list = kinds(buildScreens(input));
     expect(list.slice(7, 9)).toEqual(['pick', 'pick']);
-    expect(list.slice(-4)).toEqual(['capacity', 'ground2', 'place', 'result']);
+    expect(list.slice(-5)).toEqual(['capacity', 'centre', 'ground2', 'place', 'result']);
     expect(list).toContain('timing');
   });
 

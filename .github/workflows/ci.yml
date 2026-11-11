@@ -131,7 +131,10 @@ jobs:
         run: npm ci
 
       - name: Install browser
-        run: npx playwright install --with-deps chromium
+        # Installs only the browser. The runner image already has the shared
+        # libraries Chromium needs; --with-deps fetched fonts from the Ubuntu
+        # mirrors, which the runner could not reach (DNS failures, exit 100).
+        run: npx playwright install chromium
 
       - name: Build React/Vite app
         run: npm run build

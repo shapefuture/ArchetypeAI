@@ -179,7 +179,7 @@ interface Assessment2Result {
   completedStages: number[];            // 0..6
   familyScores: Record<FamilyId, number | null>;
   parts: Part2[];                        // up to five protectors, up to three exiles
-  providers: { need: NeedId; access: 'easy' | 'effort' | 'none' | null; form?: string }[];
+  // no top-level providers: each exile part carries its own (see Part2)
   capacities: { easiest: CapacityId | null; hardest: CapacityId | null };
   ground: string[];
   conflicts: Conflict2[];                // derived, recomputed on read
@@ -196,14 +196,19 @@ interface Part2 {
   level: number | null;                  // 1..5, null when not measured
   confidence: 'high' | 'medium' | 'low';
   guards?: string[];                     // exile ids the person named
-  coords: Record<'energy' | 'direction' | 'depth' | 'blending',
-    { value: number | null; status: 'measured' | 'reference' | 'unknown' }>;
+  coordinates: [number, number, number, number]; // MAP_AXIS_KEYS order: energy, direction, depth, blending; each in [-1, 1]
+  unmeasuredAxes: MapAxisKey[];                  // readers treat these axes as unknown
+  placement: 'placed' | 'default';
+  depthState: 'set' | 'unsure' | 'unanswered';
+  provider?: { access: 'easy' | 'effort' | 'none'; form: ProviderForm | null }; // exile parts only
 }
 ```
 
+**Built shape.** This matches `src/shared/core/data/map-axes.ts` and the 64 and 147 map parts. `coordinates` is the four-slot tuple in `MAP_AXIS_KEYS` order (energy, direction, depth, blending). An axis in `unmeasuredAxes` keeps a placeholder in its slot, and readers treat it as unknown. The 64 parts measure energy and direction, and leave depth and blending unmeasured. The 147 parts take energy, direction and depth from the reference table, and leave blending unmeasured. In a 2.0 result, `placement` is `placed` when energy, direction or depth was set, and `default` otherwise. `depthState` is `set` when depth was set, `unsure` when the person chose "not sure", and `unanswered` otherwise. Each exile part carries its own `provider` (`access` and `form`), and there is no top-level list.
+
 Rules carried over from the current code:
 
-- Unknown is never stored or shown as zero.
+- Unknown is never shown as zero. An unmeasured axis may keep a placeholder in its coordinates slot, and `unmeasuredAxes` marks it.
 - The same answers always produce the same result.
 - `parts.ts` says ids are never renamed. This plan adds ids and attributes and renames nothing.
 

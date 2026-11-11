@@ -23,7 +23,7 @@ const COPY = {
     statusLegend: {
       measured: 'Placed from your own 64-item answers.',
       derived: 'Placed by you, or created in the Archetype Studio from a description. Not measured.',
-      reference: 'A shared template for the 147-item map. It is not a measurement of you.',
+      reference: 'A reference position, not a measurement of you: a shared template for the 147-item map, or a family default for a 2.0 part.',
       unknown: 'No value is recorded for this axis. It is not zero.',
     },
     legendHeading: 'What the statuses mean',
@@ -46,7 +46,7 @@ const COPY = {
     statusLegend: {
       measured: 'Определено по вашим ответам на 64 вопроса.',
       derived: 'Размещено вами или создано в Студии архетипов по описанию. Не измерено.',
-      reference: 'Общий шаблон карты на 147 вопросов. Это не измерение вас.',
+      reference: 'Опорное положение, а не измерение вас: общий шаблон карты на 147 вопросов или стандартное положение семьи для части 2.0.',
       unknown: 'Для этой оси значение не записано. Это не ноль.',
     },
     legendHeading: 'Что означают статусы',

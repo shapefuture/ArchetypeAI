@@ -264,8 +264,6 @@ export const STRINGS = {
   charter: s('Charter delivery', 'Доставка устава'),
   pushOpt: s('Enable gentle nudges', 'Включить мягкие напоминания'),
   pushDone: s('Nudges on ✓', 'Напоминания включены ✓'),
-  quickscanIn: s('Paste a share code', 'Вставьте код для обмена'),
-  quickscanGo: s('Compare deterministically', 'Сравнить детерминированно'),
   loginT: s('Save your map safely', 'Сохраните карту надёжно'),
   loginGoogle: s('Continue with Google', 'Через Google'),
   loginEmail: s('Continue with email', 'Через email'),

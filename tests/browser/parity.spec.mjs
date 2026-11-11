@@ -30,20 +30,21 @@ test('a restored Russian profile and light theme survive an offline PWA reload',
   await expect(page.getByRole('button', { name: /ИИ.*пантеон|пантеон.*ИИ/i })).toBeVisible();
 });
 
-test('Assessment 2.0 is the default route, Quick Scan is gone, and a full pass saves a map without writing the 147 profile', async ({ page }) => {
-  const errors = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/');
-  await expect(page.getByRole('button', { name: /Quick scan/ })).toHaveCount(0);
-  const first = page.locator('button.opt').first();
-  await expect(first).toContainText(/Parts map 2\.0/);
-  await first.click();
-  await expect(page.getByRole('heading', { name: /How steady do you feel right now/ })).toBeVisible({ timeout: 20_000 });
+// The timing question is the radio group with this label (content.ts timingQ, English).
+const TIMING_QUESTION = 'When does it usually show up?';
 
-  // Drive the screens by their visible controls until the result appears. Bounded, so a stuck screen fails the test.
+/**
+ * Answers every Assessment 2.0 screen until the result shows. Bounded, so a stuck screen fails the test.
+ * skipTiming skips each timing question. lighter ticks the lighter path on the first screen, before any answer.
+ */
+async function answerAssessment2UntilResult(page, { skipTiming = false, lighter = false } = {}) {
+  if (lighter) await page.locator('.p2-check input[type="checkbox"]').check();
   let result = false;
   for (let step = 0; step < 150 && !result; step++) {
     if (await page.getByRole('heading', { name: 'Your parts map' }).isVisible()) { result = true; break; }
-    if (await page.locator('.p2-scale').count() > 0) {
+    if (skipTiming && await page.getByRole('radiogroup', { name: TIMING_QUESTION }).count() > 0) {
+      await page.getByRole('button', { name: 'Skip', exact: true }).click();
+    } else if (await page.locator('.p2-scale').count() > 0) {
       const rows = page.locator('.p2-scale');
       for (let row = 0; row < await rows.count(); row++) await rows.nth(row).locator('button').first().click();
       await page.getByRole('button', { name: 'Next', exact: true }).click();
@@ -63,6 +64,18 @@ test('Assessment 2.0 is the default route, Quick Scan is gone, and a full pass s
     }
   }
   expect(result).toBe(true);
+}
+
+test('Assessment 2.0 is the default route, Quick Scan is gone, and a full pass saves a map without writing the 147 profile', async ({ page }) => {
+  const errors = []; page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: /Quick scan/ })).toHaveCount(0);
+  const first = page.locator('button.opt').first();
+  await expect(first).toContainText(/Parts map 2\.0/);
+  await first.click();
+  await expect(page.getByRole('heading', { name: /How steady do you feel right now/ })).toBeVisible({ timeout: 20_000 });
+
+  await answerAssessment2UntilResult(page);
   await page.getByRole('button', { name: 'Save and open my map' }).click();
   const saved = await page.evaluate(() => ({
     result: JSON.parse(localStorage.getItem('ifs.parts2.result') ?? 'null'),
@@ -78,6 +91,54 @@ test('Assessment 2.0 is the default route, Quick Scan is gone, and a full pass s
   expect(partsTwo.length).toBeGreaterThan(0);
   // This run skips placement, so no depth was answered: depth must be stored as unknown, not as a default.
   expect(partsTwo.every((part) => part.archetype.unmeasuredAxes.includes('DEPTH'))).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('a skipped timing reaches the result as Timing not answered, and is stored as unknown', async ({ page }) => {
+  const errors = []; page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/');
+  const first = page.locator('button.opt').first();
+  await expect(first).toContainText(/Parts map 2\.0/);
+  await first.click();
+  await expect(page.getByRole('heading', { name: /How steady do you feel right now/ })).toBeVisible({ timeout: 20_000 });
+  await answerAssessment2UntilResult(page, { skipTiming: true });
+  // Every protector's timing was skipped, so the result says so, and no protector is given a timing (plan D1).
+  await expect(page.getByText('Timing not answered').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Save and open my map' }).click();
+  const saved = await page.evaluate(() => ({
+    result: JSON.parse(localStorage.getItem('ifs.parts2.result') ?? 'null'),
+    parts: JSON.parse(localStorage.getItem('ifs.parts') ?? '[]'),
+  }));
+  const protectors = saved.result.result.parts.filter((part) => part.kind === 'protector');
+  expect(protectors.length).toBeGreaterThan(0);
+  expect(protectors.every((part) => part.timing === null && part.classKnown === false)).toBe(true);
+  // On the map a skipped protector has no class: partType is absent and classKnown is false.
+  const mapProtectors = saved.parts.filter((part) => part.archetype?.cluster === 'parts_two_protector');
+  expect(mapProtectors).toHaveLength(protectors.length);
+  expect(mapProtectors.every((part) => part.archetype.partType === undefined && part.archetype.classKnown === false)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('the lighter path asks no exile question, and its saved result has no exile part and no guard', async ({ page }) => {
+  const errors = []; page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/');
+  const first = page.locator('button.opt').first();
+  await expect(first).toContainText(/Parts map 2\.0/);
+  await first.click();
+  await expect(page.getByRole('heading', { name: /How steady do you feel right now/ })).toBeVisible({ timeout: 20_000 });
+  await answerAssessment2UntilResult(page, { lighter: true });
+  await page.getByRole('button', { name: 'Save and open my map' }).click();
+  const saved = await page.evaluate(() => ({
+    result: JSON.parse(localStorage.getItem('ifs.parts2.result') ?? 'null'),
+    parts: JSON.parse(localStorage.getItem('ifs.parts') ?? '[]'),
+  }));
+  const parts = saved.result.result.parts;
+  expect(saved.result.result.lighter).toBe(true);
+  expect(parts.some((part) => part.kind === 'protector')).toBe(true);
+  // The lighter path has no exile questions and no wants or provider screens, so no exile or provider point is stored (plan D3, B3).
+  expect(parts.filter((part) => part.kind === 'exile' || part.kind === 'provider')).toEqual([]);
+  expect(parts.every((part) => part.guards.length === 0)).toBe(true);
+  expect(saved.parts.filter((part) => part.archetype?.cluster === 'parts_two_exile')).toEqual([]);
   expect(errors).toEqual([]);
 });
 

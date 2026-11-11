@@ -342,13 +342,8 @@ export function Innerverse() {
               <div className="kicker">{lang === 'ru' ? 'Четырёхмерная линза' : 'Four-dimensional lens'}</div>
               <p className="faint mt6" style={{ fontSize: 10, lineHeight: 1.5 }}>
                 {lang === 'ru'
-                  ? 'Подсветка показывает близость частей к выбранным координатам. Ответы и показатели не меняются.'
-                  : 'Highlight parts by their affinity to these coordinates. Answers and scores stay unchanged.'}
-              </p>
-              <p className="faint mt6" style={{ fontSize: 10, lineHeight: 1.5 }}>
-                {lang === 'ru'
-                  ? 'Три оси задают положение части. Кольцо показывает слитность: холодное — «Могу быть рядом», тёплое — «Это управляет мной», слабое — близко к нейтральному; без кольца — не задано, а выцветшая часть имеет ось, которую вы ещё не задали.'
-                  : 'The three axes set a part’s position. The ring shows blending: cool means I can be with it, warm means it runs me, faint means near neutral, and no ring means not set; a faded part has an axis you have not set yet.'}
+                  ? 'Кольцо показывает слитность: холодное — «Могу быть рядом», тёплое — «Это управляет мной», слабое — близко к нейтральному, без кольца — не задано. Выцветшая часть имеет ось, которую вы ещё не задали.'
+                  : 'The ring shows blending: cool means I can be with it, warm means it runs me, faint means near neutral, and no ring means not set. A faded part has an axis you have not set yet.'}
               </p>
               {DIMENSION_AXES.map((axis) => (
                 <div key={axis.key} className="mt12">

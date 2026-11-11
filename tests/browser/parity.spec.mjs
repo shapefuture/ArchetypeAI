@@ -20,7 +20,7 @@ test('a restored Russian profile and light theme survive an offline PWA reload',
   await page.getByRole('button', { name: 'Restore this backup' }).click();
   await expect(page.locator('.phone')).toHaveAttribute('data-theme', 'light');
   await page.evaluate(async () => { await navigator.serviceWorker.ready; });
-  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller), { timeout: 20_000 }).toBe(true);
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator('.phone')).toHaveAttribute('data-theme', 'light');

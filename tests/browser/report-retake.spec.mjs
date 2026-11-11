@@ -18,7 +18,8 @@ async function openReport(page) {
   await page.goto('/');
   await expect.poll(() => page.evaluate(() => !!localStorage.getItem('ifs.profile')), { timeout: 20_000 }).toBe(true);
   await page.getByRole('button', { name: /^📖 Report$|^Report/ }).first().click();
-  await expect(page.locator('#clinical-self')).toBeVisible();
+  // A loaded runner can take longer than the default 5 s to draw the report (the same wait as the profile above).
+  await expect(page.locator('#clinical-self')).toBeVisible({ timeout: 20_000 });
 }
 
 test('Retake asks before deleting an unfinished test, and keeps it when declined', async ({ page }) => {

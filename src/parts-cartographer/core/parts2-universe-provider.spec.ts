@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { EXILE_COPY, PROVIDER_COPY, UI_COPY } from '../../shared/core/data/assessment2/content';
+import { EXILE_COPY, PROVIDER_COPY, PROVIDER_NAME_COPY, UI_COPY } from '../../shared/core/data/assessment2/content';
 import { SCENES, SCENE_FAMILIES, buildAssessment2Result, type Assessment2Input, type Assessment2Result, type SceneAnswer } from '../../shared/core/data/assessment2/scoring';
-import type { FamilyId } from '../../shared/core/data/assessment2/taxonomy';
+import { PROVIDER_ROLES, type FamilyId } from '../../shared/core/data/assessment2/taxonomy';
 import type { Part } from '../pal/traits';
 import { validMapParts } from './backup';
 import { buildParts2UniverseParts, isParts2Part } from './parts2-universe-adapter';
@@ -62,10 +62,15 @@ describe('a provider point in the universe (plan §5.1, B7)', () => {
     const result = buildAssessment2Result(withEasyProvider());
     const [en] = providerPartsOf(universeOf(result, 'en'));
     const [ru] = providerPartsOf(universeOf(result, 'ru'));
-    expect(en.name).toBe(PROVIDER_COPY.guardian.en);
-    expect(ru.name).toBe(PROVIDER_COPY.guardian.ru);
+    expect(en.name).toBe(PROVIDER_NAME_COPY.guardian.en);
+    expect(ru.name).toBe(PROVIDER_NAME_COPY.guardian.ru);
     expect(en.role).toBe(UI_COPY.providerLabel.en);
     expect(ru.role).toBe(UI_COPY.providerLabel.ru);
+  });
+
+  it.each(PROVIDER_ROLES)('the short name for the %s role opens its sentence, in both languages', (role) => {
+    expect(PROVIDER_COPY[role].en.startsWith(`${PROVIDER_NAME_COPY[role].en}: `)).toBe(true);
+    expect(PROVIDER_COPY[role].ru.startsWith(`${PROVIDER_NAME_COPY[role].ru}: `)).toBe(true);
   });
 
   it('keeps a fixed 2.0 id, so a rerun replaces it', () => {

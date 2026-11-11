@@ -1,7 +1,7 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ACCESS_COPY, EXILE_COPY, MEMBER_COPY, PROVIDER_COPY, UI_COPY } from '../../shared/core/data/assessment2/content';
+import { ACCESS_COPY, EXILE_COPY, MEMBER_COPY, PROVIDER_NAME_COPY, UI_COPY } from '../../shared/core/data/assessment2/content';
 import { SCENES, SCENE_FAMILIES, type Assessment2Input, type SceneAnswer } from '../../shared/core/data/assessment2/scoring';
 import { ROUTE_KEYS } from '../core/assessment-routes';
 import { buildScreens } from '../core/parts-two-flow';
@@ -67,7 +67,7 @@ describe('a provider point on the result, the place screen and the save', () => 
     openResult(withProvider('easy'));
     const cardNames = Array.from(host.querySelectorAll('li.card > strong')).map((element) => element.textContent);
     expect(cardNames).toContain(EXILE_COPY.frightened.name.en);
-    expect(cardNames).not.toContain(PROVIDER_COPY.guardian.en);
+    expect(cardNames).not.toContain(PROVIDER_NAME_COPY.guardian.en);
     expect(host.textContent).toContain(`${UI_COPY.providerLabel.en}: ${ACCESS_COPY.easy.en}`);
   });
 

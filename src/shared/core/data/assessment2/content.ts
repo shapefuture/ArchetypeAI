@@ -268,6 +268,16 @@ export const PROVIDER_COPY: Record<ProviderRole, Bi> = {
   playmate: { en: 'Playmate: welcomes your energy and your play.', ru: 'Товарищ по играм: принимает вашу энергию и игру.' },
 };
 
+/** Short role names for provider points on the 3D map (B7). Each is the text before the colon in its PROVIDER_COPY sentence, which a spec checks. */
+export const PROVIDER_NAME_COPY: Record<ProviderRole, Bi> = {
+  guardian: { en: 'Guardian', ru: 'Страж' },
+  companion: { en: 'Companion', ru: 'Спутник' },
+  mirror: { en: 'Mirror', ru: 'Зеркало' },
+  blesser: { en: 'Blesser', ru: 'Благословитель' },
+  mentor: { en: 'Mentor', ru: 'Наставник' },
+  playmate: { en: 'Playmate', ru: 'Товарищ по играм' },
+};
+
 export const PROVIDER_FORM_COPY: Record<ProviderForm, Bi> = {
   ownAdult: { en: 'Your own adult self', ru: 'Ваше взрослое «Я»' },
   realPerson: { en: 'A real person you remember or know', ru: 'Реальный человек, которого вы помните или знаете' },
@@ -469,7 +479,7 @@ export const copyCoverage = {
   members: MEMBERS.every((m) => MEMBER_COPY[m] && CONFIRM_COPY[m]?.length === 3),
   exiles: EXILES.every((e) => FEAR_COPY[e] && EXILE_COPY[e]),
   needs: NEEDS.every((n) => NEED_COPY[n]),
-  providers: PROVIDER_ROLES.every((r) => PROVIDER_COPY[r]) && PROVIDER_FORMS.every((f) => PROVIDER_FORM_COPY[f]),
+  providers: PROVIDER_ROLES.every((r) => PROVIDER_COPY[r] && PROVIDER_NAME_COPY[r]) && PROVIDER_FORMS.every((f) => PROVIDER_FORM_COPY[f]),
   capacities: CAPACITIES.every((c) => CAPACITY_COPY[c]),
   ground: GROUND_ITEMS.every((g) => GROUND_COPY[g]),
   costumes: COSTUMES.every((c) => COSTUME_COPY[c]),

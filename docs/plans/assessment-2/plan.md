@@ -347,7 +347,7 @@ Owner decisions applied: Assessment 2.0 is the default route; the four map axes 
 - **Capacity name:** the English name of the healthy twin of numb or soothe is Player (G18). The Russian name is unchanged.
 - **Provider blending:** a provider point never has a blending value, so its blending stays unmeasured even when its exile's blending is known (build-and-fix G37).
 - **Unknown axes:** a stored unknown axis keeps a placeholder number in its coordinates slot, and `unmeasuredAxes` names it. Readers check that list. The 3D map draws such parts at their placeholder positions. A 2.0 part with an unset spatial axis is ghosted, a 64 or 147 unknown axis is labelled in the detail view, and the isolation view tags a part with no value on the isolated axis. The lens never counts an unmeasured axis, and the depth slider reads "not answered" to assistive technology (build-and-fix G38).
-- **Unknown energy:** a 2.0 part with no answered level shows an em dash for its energy, not the layout default of 45, and the energy filter keeps it visible (build-and-fix G39). A studio part with no AI placement, or an all-zero placement, is unknown on every axis (G38).
+- **Unknown energy:** a 2.0 part with no answered level reads as unknown for its energy, not the layout default of 45. The energy filter keeps it visible, and the Chemistry tension and the story card treat it as unknown (build-and-fix G39). A studio part with no AI placement, or an all-zero placement, is unknown on every axis (G38). Parts made by hand keep a fixed default energy (build-and-fix G40).
 
 ### Guesses this build depends on (to be settled by the pilot)
 
@@ -386,7 +386,7 @@ Open decisions, with their status:
 
 ### Gates (checked 2026-11-11)
 
-- Follow-up fixes (2026-11-11): `npx tsc --noEmit` passes; `npm test` gives 254 test files (22 skipped) and 1,897 tests passing (140 skipped); `npm run build` passes; `tests/browser/parity.spec.mjs` gives 9 of 9, with a skipped-timing case and a lighter-path case. The full browser suite gave 89 of 89 on one worker (11.4 minutes), after the energy and studio fixes. On two workers, a different one or two of the 5-second waits failed in each run (the report, backup, history and practice views). Each of those tests passed when run alone and on repeat, which is the load-timeout handling in build-and-fix §2 and R7. Three waits now allow 20 seconds: `parity.spec.mjs`, `report-retake.spec.mjs` and `corrupt-data.spec.mjs`.
+- Follow-up fixes (2026-11-11): `npx tsc --noEmit` passes; `npm test` gives 254 test files (22 skipped) and 1,901 tests passing (140 skipped); `npm run build` passes; `tests/browser/parity.spec.mjs` gives 9 of 9, with a skipped-timing case and a lighter-path case. The full browser suite gave 89 of 89 on one worker (10.8 minutes), after the energy, studio, Chemistry and older-record fixes. On two workers, a different one or two of the 5-second waits failed in each run (the report, backup, history and practice views). Each of those tests passed when run alone and on repeat, which is the load-timeout handling in build-and-fix §2 and R7. Three waits now allow 20 seconds: `parity.spec.mjs`, `report-retake.spec.mjs` and `corrupt-data.spec.mjs`.
 - `npx tsc --noEmit`: passes at 4c2e627.
 - `npm test` (`npx vitest run`): 252 test files and 1,879 tests pass at 2af4f5e, including new specs for the taxonomy, scoring, screen order, adapter, migration, the E16 module side, the pilot functions and the tap budget.
 - `npm run build`: passes at 4c2e627.

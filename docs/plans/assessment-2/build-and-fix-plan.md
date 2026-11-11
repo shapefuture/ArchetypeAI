@@ -20,7 +20,7 @@
 - The 3+1 3D view (`plan.md` §9 phase 6). It waits for the pilot.
 
 **Done means**
-1. No screen, result or stored record shows an unknown as a value. Timing, confidence, map class and axes are all checked. An unknown axis is marked in `unmeasuredAxes`, and its slot holds a placeholder that no reader treats as a value (G38).
+1. No screen, result or stored record shows an unknown as a value. Timing, confidence, map class and axes are all checked. An unknown axis is marked in `unmeasuredAxes`, and its slot holds a placeholder that no reader treats as a value (G38). The energy of a 2.0 part with no answered level is an em dash, not the layout default (G39).
 2. A 2.0 result is never labelled, stored or shared as a measurement, in any module.
 3. Every item in `plan.md` §3–§8 is built, or deferred with a decision recorded in §7.
 4. `plan.md` §14 matches the code.
@@ -315,7 +315,8 @@ Defaults stand unless the owner changes them. The owner answers Phase 0 before P
 | G35 | Axis guides | Lines through the origin along the three chosen axes, with the end words beside each line. Hidden in isolation mode. | Readers need the axis names where the parts are | Owner review |
 | G36 | Legend | Two sentences in the lens card, in English and Russian, explain the ring and the fade | Readers need the key where the lens is | Copy review |
 | G37 | Blending on a provider point | Always unmeasured. The point copies the exile's unmeasured axes, and does not copy the exile's blending. | A provider was never asked about blending, so copying the exile's would invent an answer. Educated guess: keep the code and record the departure in `plan.md` section 14. | Owner: confirm or change |
-| G38 | Unknown axes in stored coordinates | Keep a placeholder number in the unmeasured slot. `unmeasuredAxes` is the answer. The 3D map places such parts at their placeholder positions, ghosted or labelled (B12, G22). In the isolation view, a part with no value on that axis carries an "unknown" tag. The lens never counts an unmeasured axis. The depth slider exposes "not answered" to assistive technology. No other reader shows a placeholder as a value. | Making unknown `null` changes `MapCoordinates` and every reader, and needs a migration of stored parts. The readers already check the list. Educated guess: keep the placeholder and reword §1 and §2. | Owner: confirm or change |
+| G38 | Unknown axes in stored coordinates | Keep a placeholder number in the unmeasured slot. `unmeasuredAxes` is the answer. The 3D map draws such parts at their placeholder positions. A 2.0 part with an unset spatial axis is ghosted (G31). A 64 or 147 unknown axis is labelled in the detail view. In the isolation view, a part with no value on that axis carries an "unknown" tag. The lens never counts an unmeasured axis. The depth slider exposes "not answered" to assistive technology. A studio part with no AI placement, or an all-zero placement, is unknown on every axis. | Making unknown `null` changes `MapCoordinates` and every reader, and needs a migration of stored parts. The readers already check the list. Educated guess: keep the placeholder and reword §1 and §2. | Owner: confirm or change |
+| G39 | Energy of a 2.0 part with no answered level | Shown as an em dash, never as the layout default of 45. The energy filter keeps such parts visible. The 3D size scale keeps the default. | A capacity, a provider point, or a protector or exile with no level has no energy finding. The default showed as a percentage on the strip, the chips and the bars. Educated guess. | Owner: confirm or change |
 
 **Owner tasks (no code can do these):**
 1. Name a reviewer for the Russian copy. This blocks the final Russian text.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SEED_PARTS } from '../pal/traits';
-import { canonicalEnergyPart, energyKnown, energyTension, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
+import { canonicalEnergyPart, energyKnown, energyRank, energyTension, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
 
 describe('the energy a person reads (G39)', () => {
   const unknown = { family: 'manager' as const, energy: 45, archetype: { levelKnown: false } } as any;
@@ -18,6 +18,12 @@ describe('the energy a person reads (G39)', () => {
     expect(energyText(unknown, 'ru')).toBe('неизвестно');
     expect(energyText(known)).toBe('60%');
     expect(energyText(legacy)).toBe('30%');
+  });
+
+  it('ranks an unknown energy below every known energy, for ties (G39)', () => {
+    expect(energyRank(unknown)).toBe(-1);
+    expect(energyRank(legacy)).toBe(30);
+    expect(energyRank(known)).toBe(60);
   });
 
   it('keeps a part of unknown energy in the energy filter, and filters known energy as before', () => {

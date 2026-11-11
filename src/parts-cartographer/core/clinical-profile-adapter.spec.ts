@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { toAssessmentInput } from '../../shared/core/data/assessment-adapter';
 import { scoreProfile } from '../../shared/core/data/scoring-v2';
-import { adaptClinicalProfile } from './clinical-profile-adapter';
+import { adaptClinicalProfile, studioArchetypeFor } from './clinical-profile-adapter';
+
+describe('a studio part with no placement yet is unknown on every axis (G38)', () => {
+  it('gives the family archetype all four axes as unknown, never a zero read as a value', () => {
+    const archetype = studioArchetypeFor('manager');
+    expect(archetype.unmeasuredAxes).toEqual(['ENERGY', 'DIRECTION', 'DEPTH', 'BLENDING']);
+    expect(archetype.coordinates).toEqual([0, 0, 0, 0]);
+  });
+});
 
 describe('clinical-profile-adapter', () => {
   it('projects the canonical 147-item score into the React map without retaining answers', () => {

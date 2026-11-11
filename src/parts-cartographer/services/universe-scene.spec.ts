@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Part } from '../pal/traits';
 import * as THREE from 'three';
+import { feltGroup } from './felt-engine';
 
 const renderer = vi.hoisted(() => ({ loops: [] as unknown[], scenes: [] as any[] }));
 
@@ -252,6 +253,28 @@ describe('the unknown tag in the isolation view (G31, G38)', () => {
 });
 
 describe('the felt counter (N2)', () => {
+  it('does not count a part whose felt character has not loaded, even when it carries a tag', async () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const api = initUniverse(host, false, 'gentle');
+    // The first part's character loads. The second part's character never does, and it carries an unknown tag.
+    vi.mocked(feltGroup)
+      .mockImplementationOnce(async () => ({ scale: { multiplyScalar() {} }, rotation: { set() {} }, traverse() {} }) as any)
+      .mockImplementationOnce(() => new Promise(() => {}));
+    try {
+      api.setParts([
+        part('measured', [0.2, 0.1, 0.3, 0.5], 'self-placed-2', []),
+        part('no-blending', [0.2, 0.1, 0.3, 0], 'fixed-reference-147', ['BLENDING']),
+      ]);
+      api.setView({ isolation: 'BLENDING', unknownText: 'unknown' });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(host.querySelector('canvas')?.dataset.feltCharacters).toBe('1');
+    } finally {
+      api.dispose();
+      host.remove();
+    }
+  });
+
   it('counts the parts whose felt character is sewn in, and not the tags on them', async () => {
     const host = document.createElement('div');
     document.body.appendChild(host);

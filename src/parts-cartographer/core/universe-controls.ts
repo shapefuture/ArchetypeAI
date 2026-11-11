@@ -47,6 +47,11 @@ export function energyTension(
   return Math.round(((normalizedEnergy(a) + normalizedEnergy(b)) / 2) * (a.family === b.family ? 0.7 : 1.15));
 }
 
+/** The tie-break for a list: a known energy, or -1 when the energy is unknown, so an unknown never ranks above a known one (G39). */
+export function energyRank(part: Pick<Part, 'energy' | 'archetype'>): number {
+  return energyKnown(part) ? normalizedEnergy(part) : -1;
+}
+
 export function filterUniverseParts<T extends Part>(
   parts: T[],
   families: Partial<Record<Family, boolean>>,

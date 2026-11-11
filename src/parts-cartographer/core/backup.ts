@@ -79,7 +79,9 @@ export function validMapParts(value: unknown): value is Part[] {
         && (part.archetype.cluster === undefined || typeof part.archetype.cluster === 'string')
         // The scene scales each node by these two numbers: a word here would draw the node at NaN.
         && (part.archetype.size === undefined || Number.isFinite(part.archetype.size))
-        && (part.archetype.prominence === undefined || Number.isFinite(part.archetype.prominence)));
+        && (part.archetype.prominence === undefined || Number.isFinite(part.archetype.prominence))
+        // The energy flag (G39) is a boolean when it is stored. A word here would read as known.
+        && (part.archetype.levelKnown === undefined || typeof part.archetype.levelKnown === 'boolean'));
   });
 }
 

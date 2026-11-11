@@ -6,7 +6,7 @@ import { familyColor, Crest, Seg, Bars } from '../ui/ui.jsx';
 import { t as tr, UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
 import { EXERCISE_COPY } from '../../shared/i18n/strings';
 import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapter.ts';
-import { energyKnown, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
+import { energyKnown, energyRank, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
 import { EXERCISES, EXERCISE_TYPES } from '../../shared/core/data/exercises';
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus, therapistWallLabel } from '../core/booking.ts';
@@ -39,6 +39,8 @@ const CLUSTER_LABELS = {
   disorganized_attachment_shadows: ['Conflicted attachment', 'Противоречивая привязанность'],
 };
 const clusterName = (id, lang) => CLUSTER_LABELS[id]?.[lang === 'ru' ? 1 : 0] ?? id.replaceAll('_', ' ');
+/** A summary figure that is missing shows as unknown, never as zero (build-and-fix G38). */
+const summaryNumber = (value) => (value !== null && value !== undefined && Number.isFinite(Number(value)) ? String(Math.round(Number(value))) : '—');
 
 const DIMENSION_AXES = [
   { key: 'ENERGY', label: 'energy', low: 'energyHypo', high: 'energyHyper', icon: '⚡', color: '#6ED6FF' },
@@ -113,7 +115,7 @@ export function Innerverse() {
       && (cluster === 'all' || part.archetype?.cluster === cluster)), [parts, famOn, dims.energy, focusOnly, selectedId, reportOnly, cluster]);
   const ranked = useMemo(() => [...visible].sort((a, b) => {
     const score = (part) => affinityOfPart(part, dimensions);
-    return score(b) - score(a) || normalizedEnergy(b) - normalizedEnergy(a);
+    return score(b) - score(a) || energyRank(b) - energyRank(a);
   }), [visible, dimensions]);
   const searchMatches = useMemo(() => searchUniverseParts(parts, q, lang).slice(0, 8), [parts, q, lang]);
   // The story is about the most energized parts, so only a part with a known energy can be chosen (G39).
@@ -446,7 +448,8 @@ function ArchetypeStudio({ initialIdea = '', onClose, onCreate }) {
     } catch {
       if (studioRequest.current?.signal.aborted) return;
       const fam = 'manager';
-      setDraft({ id: pid(), name: idea.slice(0, 18) || 'New part', family: fam, traits: randomTraits(fam), role: idea.slice(0, 60), blurb: '', energy: 50, burden: '—', need: '—', voice: '—', star: false, since: 'today' });
+      // No AI placement: the part's axes are unknown, not zero (build-and-fix G38).
+      setDraft({ id: pid(), name: idea.slice(0, 18) || 'New part', family: fam, traits: randomTraits(fam), role: idea.slice(0, 60), archetype: { schema: 'archetype-map.v1', sourceAssessment: 'studio', axisVersion: 2, ...studioMapPlacement(undefined), cluster: 'managers', prominence: 50, size: 0.8 }, blurb: '', energy: 50, burden: '—', need: '—', voice: '—', star: false, since: 'today' });
     }
     setBusy(false);
   };
@@ -667,8 +670,8 @@ export function SpecialistView() {
           <div className="card flat mt10" style={{ padding: 11 }}>
             <div className="kicker" style={{ color: 'var(--accent-text)' }}>{client.summary.headline}</div>
             <div className="row wrap mt8" style={{ gap: 6 }}>
-              <span className="chip">{t('burden')}: {Math.round(Number(client.summary.burden) || 0)}</span>
-              <span className="chip">{t('energy')}: {Math.round(Number(client.summary.selfEnergy) || 0)}</span>
+              <span className="chip">{t('burden')}: {summaryNumber(client.summary.burden)}</span>
+              <span className="chip">{t('energy')}: {summaryNumber(client.summary.selfEnergy)}</span>
               <span className="chip">{t('activeComplexes')}: {client.summary.activeComplexes?.length ?? 0}</span>
             </div>
             <div className="faint mt8" style={{ fontSize: 11.5 }}>

@@ -245,6 +245,7 @@ Do these after Phase 2. B9 comes first, because it reads the stored result that 
 - Estimate taps per screen kind (G28). First weights: ground 1, scene 2, pick 1, timing 2, confirm 3, fear 1, exile level 1, wants 1, blend 1, provider 2, capacity 2, ground2 1, centre 3, place 2.
 - A typical path (three protectors, three exiles, one protector with stage 3 skipped) is about 57 taps with the Centre, and about 54 without it. The target is 55. If the test is over target, the first cut is to merge the exile blend into the wants screen, which saves about three taps. Cut screens before content.
 - **Test:** the typical path is at most 55 taps. The longest path (four protectors, four exiles, lighter off) is at most 70. Run the test after B6, because the Centre is in the count.
+- **Measured, 2026-11-11:** the typical path is 57 taps with the Centre (54 without), and the longest is 73. Both are over target, so the test is not written yet. The first cut, merging the exile blend into the wants screen, removes a screen per exile but no tap: the merged screen still needs the blend tap and Next. The owner chooses between raising the targets to 57 and 73; a real saving, which changes B3's rule that only Next stores a need; or the merge as written, which saves screens only.
 - **Size:** S.
 
 ### B12 The 3+1 3D view (`plan.md` §3.5, §9 phase 6): built now, replaces the planned B8 and O4

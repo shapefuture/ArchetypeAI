@@ -316,7 +316,15 @@ Owner decisions applied: Assessment 2.0 is the default route; the four map axes 
 | Screens (stages 0–6, result) and the placement pad | `src/parts-cartographer/screens/parts-two.jsx`, `parts-two-pad.jsx`, `parts-two.css` |
 | Result to map parts | `src/parts-cartographer/core/parts2-universe-adapter.ts` |
 | Stored-axis migration on load | `src/parts-cartographer/core/usable-parts.ts` |
-| Routes: 2.0 first and recommended; 147 labelled as the optional deep battery; Quick Scan removed | `core/assessment-routes.ts`, `core/boot.ts`, `screens/landing.jsx`, `elevation/e02-entry.ts` |
+| Routes: 2.0 first and recommended; 147 labelled as the optional deep battery; Quick Scan removed, with its copy keys (M9) | `core/assessment-routes.ts`, `core/boot.ts`, `screens/landing.jsx`, `elevation/e02-entry.ts` |
+| Timing is stored as unknown when skipped (D1); a lead under 0.15 makes the result low on every path (D2) | `src/shared/core/data/assessment2/scoring.ts` |
+| Stage 5: the exile's need and blend, after the exile is named (B3); the Centre (B6) | `core/parts-two-flow.ts`, `screens/parts-two.jsx` |
+| Provider points on the 3D map, named by their short role (B7) | `core/parts2-universe-adapter.ts` |
+| Stored result: written, read back before the draft is cleared, and shown as the last result (B9) | `core/parts-two-store.ts`, `screens/parts-two.jsx` |
+| Provisional family pad after the first pick and on the result, top three marked (B2) | `screens/parts-two.jsx` |
+| 3D view: 3+1, ring and fade, guides and camera (B12) | See build-and-fix-plan.md, B12 |
+| E16 comparison, module side only: 2.0 parts as records, provenance from placement (B10); no screen (G24) | `elevation/e16-disagreement.ts` |
+| Pilot analysis functions, tested on synthetic fixtures only (O3) | `src/shared/core/data/assessment2/pilot-metrics.ts` |
 
 ### Departures from the proposal
 
@@ -329,6 +337,11 @@ Owner decisions applied: Assessment 2.0 is the default route; the four map axes 
 - **64-derived parts** have Depth and Blending unmeasured. They sit at the middle depth on the 3D map, and the coordinates panel shows those axes as unknown.
 - **147 reference parts** have Blending unmeasured. Their Energy, Direction and Depth come from the taxonomy defaults.
 - **Interpretation of "everywhere":** the 64 instrument's own relational scoring, synastry, report and backup keep their original names, because the 64 result and its backups must still read across versions. Only the map-facing layer uses the new axes.
+- **Stage 5 order:** the exile's need and blend are asked after the exile is named (B3), and the provider point comes after them.
+- **The Centre** (B6) is stage 5, after capacity. It asks awareness and will from 1 to 5, and up to three of eight qualities, and each is skippable (G19). It is not drawn on the map (G20).
+- **Provider points** are drawn beside their exile as resource points (B7). Each is named by its short role (Guardian, Companion, Mirror, Blesser, Mentor, Playmate). It has no blurb, and the full sentence stays on the provider screen.
+- **Ground copy:** the "set it down for later" item has the B4 wording. Ids are unchanged (G16).
+- **Coordinates** are a four-slot tuple in map-axis order, with the list of unmeasured axes (B5). Section 6 shows the built shape.
 
 ### Guesses this build depends on (to be settled by the pilot)
 
@@ -357,13 +370,13 @@ Departures the review raised, now recorded as decisions:
 - Provider forms include your future self, from the resource discussion. Plan §3.3 did not list it.
 - A low ground rating shows a hint and the lighter option. It does not switch the path automatically, because the owner chose exile on by default.
 
-Open decisions for the owner:
+Open decisions, with their status:
 
-- Unknown axes on the 3D map. Parts with an unknown axis, from 2.0 or the 64, are still drawn at reference values, while the panel shows them as unknown. Choose between ghosting them and hiding them, as the 64 bullet below describes.
-- 64-derived parts have depth unmeasured. The 3D map places them on the middle plane, and the coordinates panel shows depth as unknown. The alternative is to hide them from the 3D view until depth is measured. Hiding them would change what every 64 user sees.
-- Stored 2.0 results are written and validated on backup, but nothing reads them back yet. A reader (for example, a last-map view on the route) is still to be built.
-- The provisional view after stage 1 is the family ranking only, not a map. A fuller provisional map needs picks, so it cannot appear before stage 2.
-- The Russian copy still needs a native-speaker review.
+- Unknown axes on the 3D map: decided in B12. Unknown axes are ghosted, not hidden, and never shown as zero (G22, G31, G32).
+- 64-derived parts have depth unmeasured: decided in B12. They sit on the middle plane, labelled and not faded (G31). Hiding them remains the alternative, because it would change what every 64 user sees.
+- Stored 2.0 results: built in B9. The result is written and read back before the draft is cleared, and the last result is shown. A result saved before 9b8d6a9 lacks rank and confidence, so it is rejected (a known gap).
+- The provisional view after stage 1: built in B2 as a read-only family pad after the first pick and on the result, with the top three marked. There is still no map before stage 2, because a map needs picks.
+- The Russian copy still needs a native-speaker review (owner task 1).
 
 ### Gates
 

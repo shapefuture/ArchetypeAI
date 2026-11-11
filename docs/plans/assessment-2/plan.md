@@ -378,9 +378,11 @@ Open decisions, with their status:
 - The provisional view after stage 1: built in B2 as a read-only family pad after the first pick and on the result, with the top three marked. There is still no map before stage 2, because a map needs picks.
 - The Russian copy still needs a native-speaker review (owner task 1).
 
-### Gates
+### Gates (checked 2026-11-11)
 
-- `npx tsc --noEmit`: passes.
-- `npx vitest run`: all unit tests pass, including new specs for the taxonomy, scoring, screen order, adapter and migration.
-- `npm run build`: passes.
-- Browser: `tests/browser/parity.spec.mjs` drives the whole 2.0 flow to a saved map, with no 147 profile written and no page errors.
+- `npx tsc --noEmit`: passes at 4c2e627.
+- `npm test` (`npx vitest run`): 251 test files and 1,875 tests pass at a04b517, including new specs for the taxonomy, scoring, screen order, adapter, migration, the E16 module side and the pilot functions. Only docs have changed since, so the code is the same.
+- `npm run build`: passes at 4c2e627.
+- Browser, full suite run locally: 86 passed, 1 failed. The failure is `tests/browser/round18-checkin.spec.mjs:55`, which times out at `toast.boundingBox()` after the toast was seen. It is outside 2.0. CI on 4c2e627 passed all four browser shards. The same test failed once in CI on a04b517.
+- `tests/browser/parity.spec.mjs` drives the whole 2.0 flow to a saved map, with no 147 profile written and no page errors. It passes in the full local run.
+- Not done: the tap-budget test (B11). The measured numbers are in the build plan's B11, and the test waits for the owner's choice.

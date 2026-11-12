@@ -21,7 +21,11 @@ export default {
   reporters: ['clear-text', 'progress', 'html'],
   htmlReporter: { fileName: 'reports/mutation/index.html' },
   thresholds: { high: 85, low: 70, break: null },
+  // Large folders the unit tests never read are left out of the sandbox (src also imports felt-atelier, so it stays).
+  ignorePatterns: ['/zero-r-v3', '/dist', '/docs', '/architecture', '/design', '/output', '/descent-offer', '/test-results', '/reports', '/tmp', '/.beads', '*.zip', '/*.jpg', '/*.png'],
+  disableTypeChecks: 'src/**/*.{ts,tsx}',
   concurrency: 2,
-  timeoutMS: 60_000,
+  timeoutMS: 20_000,
+  timeoutFactor: 2,
   tempDirName: 'tmp/stryker',
 };

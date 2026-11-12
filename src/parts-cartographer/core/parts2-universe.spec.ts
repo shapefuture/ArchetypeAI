@@ -21,6 +21,25 @@ const scenesFavouring = (most: FamilyId, least: FamilyId): SceneAnswer[] =>
     least: SCENE_FAMILIES[scene].includes(least) ? least : SCENE_FAMILIES[scene][1],
   }));
 
+describe('the energy of a 2.0 part is known only when its level is answered (G39)', () => {
+  const withExile = (level: number | null) => buildParts2UniverseParts(buildAssessment2Result({
+    ...blank(),
+    scenes: scenesFavouring('attack', 'withdraw'),
+    picks: { attack: 'rebel' as const },
+    fears: { rebel: 'frightened' as const },
+    exileLevel: level === null ? {} : { frightened: level },
+  }), 'en');
+  const exileOf = (parts: Part[]) => parts.find((part) => part.archetype?.cluster === 'parts_two_exile')!;
+
+  it('marks an exile with an answered level as known', () => {
+    expect(exileOf(withExile(4)).archetype?.levelKnown).toBe(true);
+  });
+
+  it('marks an exile with no answered level as unknown, so its default energy is never shown as a value', () => {
+    expect(exileOf(withExile(null)).archetype?.levelKnown).toBe(false);
+  });
+});
+
 describe('Assessment 2.0 map parts', () => {
   const input: Assessment2Input = {
     ...blank(),
@@ -75,6 +94,25 @@ describe('Assessment 2.0 map parts', () => {
   });
 });
 
+describe('a skipped protector timing is unknown on the map part (plan §3.1, D1)', () => {
+  const rebelPart = (timing: Assessment2Input['timing']) => {
+    const result = buildAssessment2Result({ ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, timing });
+    return buildParts2UniverseParts(result, 'en').find((p) => p.id === 'parts2_member_rebel')!;
+  };
+
+  it('has no partType and classKnown false when the timing is skipped', () => {
+    const part = rebelPart({ rebel: null });
+    expect(part.archetype?.partType).toBeUndefined();
+    expect(part.archetype?.classKnown).toBe(false);
+  });
+
+  it('keeps a reactive timing as a firefighter, with classKnown true', () => {
+    const part = rebelPart({ rebel: 'reactive' as const });
+    expect(part.archetype?.partType).toBe('firefighter');
+    expect(part.archetype?.classKnown).toBe(true);
+  });
+});
+
 describe('stored axes are converted once on load (plan §3.5)', () => {
   const base = (archetype: ArchetypeMapData): Part => ({ ...SEED_PARTS[0], id: 'legacy-part', archetype }) as Part;
 
@@ -94,7 +132,8 @@ describe('stored axes are converted once on load (plan §3.5)', () => {
   });
 
   it('leaves records already on the map axes untouched', () => {
-    const current = base({ schema: 'archetype-map.v1', sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.1, 0.2, 0.3, 0.4], cluster: 'x', prominence: 50, size: 0.8, axisVersion: 2, depthRecord: 2, unmeasuredAxes: [] });
+    // A record the current writer produced: it carries its energy flag (G39), so it is already current.
+    const current = base({ schema: 'archetype-map.v1', sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.1, 0.2, 0.3, 0.4], cluster: 'x', prominence: 50, size: 0.8, axisVersion: 2, depthRecord: 2, unmeasuredAxes: [], levelKnown: true });
     expect(migrateArchetypeAxes(current)).toBe(current);
   });
 

@@ -84,7 +84,8 @@ test('the Cabinet screen opened from home has no axe violations', async ({ page 
 test('the Practice layer has no axe violations', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /Practice/ }).first().click();
-  await expect(page.locator('section[aria-labelledby="e05-title"]')).toBeVisible();
+  // As for the Cabinet above: software WebGL can hold the main thread while felt shaders compile (failed 1 in 6 at 5 s).
+  await expect(page.locator('section[aria-labelledby="e05-title"]')).toBeVisible({ timeout: 15_000 });
   await noHorizontalScroll(page);
   const accessibility = await new AxeBuilder({ page }).include('.phone').disableRules(['color-contrast']).analyze();
   expect(accessibility.violations).toEqual([]);

@@ -8,6 +8,7 @@ import type { CapacityId, CostumeId, ExileId, FamilyId, GroundId, MemberId, Need
 import { BLENDING_OPTIONS, CAPACITIES, COSTUMES, EXILES, FAMILIES, GROUND_ITEMS, MEMBERS, NEEDS, PROVIDER_FORMS, PROVIDER_ROLES } from './taxonomy';
 import { SCENES, SCENE_FAMILIES, type SceneId } from './scoring';
 import type { BlendingOption } from './taxonomy';
+import { SELF_QUALITIES, type SelfQuality } from '../parts';
 
 export type Bi = { en: string; ru: string };
 
@@ -70,16 +71,16 @@ export const MEMBER_COPY: Record<MemberId, { name: Bi; card: Bi }> = {
   caretaker: { name: { en: 'The Caretaker', ru: 'Опекун' }, card: { en: 'Looks after others, so that you feel needed and therefore safe. Takes on other people\'s problems.', ru: 'Заботится о других, чтобы чувствовать себя нужным и, значит, в безопасности. Берёт на себя чужие проблемы.' } },
   chameleon: { name: { en: 'The Chameleon', ru: 'Хамелеон' }, card: { en: 'Becomes what the room seems to want, so that nobody has a reason to reject you. Adjusts opinions to fit.', ru: 'Становится таким, каким, кажется, хотят видеть в этой компании, чтобы у людей не было повода отвергнуть. Подстраивает мнения.' } },
   martyr: { name: { en: 'The Martyr', ru: 'Мученик' }, card: { en: 'Gives more than is asked, so that others owe you and you feel you belong. Keeps the bill for later.', ru: 'Отдаёт больше, чем просят, чтобы другие были в долгу и чтобы вы чувствовали свою принадлежность. Записывает счёт на потом.' } },
-  charmer: { name: { en: 'The Charmer', ru: 'Обаяшка' }, card: { en: 'Draws attention and warmth with humour and charm, so that people stay engaged. Performs to keep the connection going.', ru: 'Привлекает внимание и тепло обаянием и юмором, чтобы люди оставались рядом. Выступает, чтобы поддерживать связь.' } },
+  charmer: { name: { en: 'The Charmer', ru: 'Обаяшка' }, card: { en: 'Draws attention with warmth and charm, so that people stay engaged. Performs to keep the connection going.', ru: 'Привлекает внимание обаянием и теплом, чтобы люди оставались рядом. Выступает, чтобы поддерживать связь.' } },
   clinger: { name: { en: 'The Clinger', ru: 'Цепляющийся' }, card: { en: 'Holds on tightly when someone starts to pull away, so that the loss cannot happen. Asks for reassurance often.', ru: 'Крепко держится, когда кто-то начинает отдаляться, чтобы потеря не случилась. Часто просит подтверждения.' } },
   helpless: { name: { en: 'The Helpless One', ru: 'Беспомощный' }, card: { en: 'Keeps others responsible by showing you cannot manage, so that help and care come your way. Says "I cannot" before trying.', ru: 'Заставляет других брать ответственность, показывая, что вы не справитесь, и тогда помощь приходит. Говорит «я не смогу» раньше, чем попробует.' } },
   hermit: { name: { en: 'The Hermit', ru: 'Отшельник' }, card: { en: 'Retreats inward and keeps others at a distance, so that nothing reaches the tender place. Needs long stretches alone.', ru: 'Уходит внутрь и держит людей на расстоянии, чтобы ничто не задело уязвимое место. Нуждается в долгом одиночестве.' } },
   analyst: { name: { en: 'The Analyst', ru: 'Аналитик' }, card: { en: 'Thinks things through, so that feeling does not have to be faced. Turns emotion into a problem to solve.', ru: 'Всё обдумывает, чтобы не встречаться с чувствами. Превращает переживание в задачу для решения.' } },
   avoider: { name: { en: 'The Avoider', ru: 'Избегатель' }, card: { en: 'Steps around hard tasks and conversations, so that the discomfort never arrives. Puts things off until they fade.', ru: 'Обходит трудные дела и разговоры, чтобы неприятное не наступило. Откладывает, пока всё не сотрётся.' } },
   numb: { name: { en: 'The Numb One', ru: 'Онемение' }, card: { en: 'Switches feeling off when pain surfaces, so that the fire goes out fast. Dulls everything, including joy.', ru: 'Выключает чувства, когда поднимается боль, чтобы огонь погас быстро. Приглушает всё, включая радость.' } },
-  soother: { name: { en: 'The Soother', ru: 'Успокоитель' }, card: { en: 'Reaches for food, screens, shopping or other comfort to settle a flare-up. Quick relief that asks for more.', ru: 'Тянется к еде, экрану, покупкам или другому утешению, чтобы успокоить вспышку. Быстрое облегчение, которое просит ещё.' } },
+  soother: { name: { en: 'The Soother', ru: 'Успокоитель' }, card: { en: 'Reaches for any comfort that settles a flare-up. Quick relief that asks for more.', ru: 'Тянется к любому утешению, которое успокаивает вспышку. Быстрое облегчение, которое просит ещё.' } },
   thrill_seeker: { name: { en: 'The Thrill-seeker', ru: 'Искатель острых ощущений' }, card: { en: 'Chases intensity, risk or novelty when things feel flat or painful. Makes you feel alive for a moment.', ru: 'Ищет остроту, риск или новизну, когда всё кажется пресным или болезненным. Ненадолго делает живым.' } },
-  bypasser: { name: { en: 'The Bypasser', ru: 'Обходчик' }, card: { en: 'Moves past the hard feeling with an explanation that it is for the best, or meant to be. Skips grief to keep spirits up. Faith can be its costume.', ru: 'Проходит мимо тяжёлого чувства, объясняя, что так лучше или так должно было быть. Пропускает горе, чтобы сохранить настрой. Вера может быть его костюмом.' } },
+  bypasser: { name: { en: 'The Bypasser', ru: 'Обходчик' }, card: { en: 'Moves past the hard feeling with an explanation that it is for the best, or meant to be. Skips grief to keep spirits up.', ru: 'Проходит мимо тяжёлого чувства, объясняя, что так лучше или так должно было быть. Пропускает горе, чтобы сохранить настрой.' } },
   rationaliser: { name: { en: 'The Rationaliser', ru: 'Рационализатор' }, card: { en: 'Builds a good reason for what happened, so that it hurts less. Explains until the feeling has gone.', ru: 'Находит хорошую причину случившемуся, чтобы больно было меньше. Объясняет, пока чувство не уйдёт.' } },
   minimiser: { name: { en: 'The Minimiser', ru: 'Минимизатор' }, card: { en: 'Shrinks the event so that its weight does not land. Says it was not a big deal.', ru: 'Уменьшает случившееся, чтобы его вес не давил. Говорит, что это не так уж и важно.' } },
   funster: { name: { en: 'The Funster', ru: 'Шутник' }, card: { en: 'Turns the moment into a joke before the feeling can land. Keeps the room light, including you.', ru: 'Превращает момент в шутку, прежде чем чувство до вас дойдёт. Держит атмосферу лёгкой, в том числе и для вас.' } },
@@ -239,6 +240,25 @@ export const NEED_COPY: Record<NeedId, Bi> = {
   aliveness: { en: 'Aliveness', ru: 'Жизненность' },
 };
 
+/** Shown for an exile whose provider access is 'none'. `{need}` is replaced by the need's name in the same language. */
+export const GAP_COPY: Bi = {
+  en: 'Nothing comes to mind for {need} yet. Notice that. It is not a score.',
+  ru: 'Пока ничего не приходит в голову для потребности «{need}». Заметьте это. Это не оценка.',
+};
+
+/**
+ * Draft map from build-and-fix plan B1 (G13). Each id must be in CATALOG_EXERCISE_IDS (core/practice-catalog.ts).
+ * The catalog is still draft, so the result shows a title only after review. connection and aliveness are weak fits.
+ */
+export const NEED_PRACTICE: Record<NeedId, string> = {
+  safety: 'build-safe-place',
+  connection: 'self-compassion-break',
+  attunement: 'what-was-it-like',
+  worth: 'noticing-reframe',
+  agency: 'possible-selves',
+  aliveness: 'body-scan-3min',
+};
+
 export const PROVIDER_COPY: Record<ProviderRole, Bi> = {
   guardian: { en: 'Guardian: stands between you and the threat, and believes you.', ru: 'Страж: встаёт между вами и угрозой и верит вам.' },
   companion: { en: 'Companion: stays, and shows you that you have a place here.', ru: 'Спутник: остаётся рядом и показывает, что вам здесь место.' },
@@ -246,6 +266,16 @@ export const PROVIDER_COPY: Record<ProviderRole, Bi> = {
   blesser: { en: 'Blesser: accepts you without conditions.', ru: 'Благословитель: принимает вас без условий.' },
   mentor: { en: 'Mentor: says "you can, and you may say no".', ru: 'Наставник: говорит «вы можете и вправе сказать нет».' },
   playmate: { en: 'Playmate: welcomes your energy and your play.', ru: 'Товарищ по играм: принимает вашу энергию и игру.' },
+};
+
+/** Short role names for provider points on the 3D map (B7). Each is the text before the colon in its PROVIDER_COPY sentence, which a spec checks. */
+export const PROVIDER_NAME_COPY: Record<ProviderRole, Bi> = {
+  guardian: { en: 'Guardian', ru: 'Страж' },
+  companion: { en: 'Companion', ru: 'Спутник' },
+  mirror: { en: 'Mirror', ru: 'Зеркало' },
+  blesser: { en: 'Blesser', ru: 'Благословитель' },
+  mentor: { en: 'Mentor', ru: 'Наставник' },
+  playmate: { en: 'Playmate', ru: 'Товарищ по играм' },
 };
 
 export const PROVIDER_FORM_COPY: Record<ProviderForm, Bi> = {
@@ -267,7 +297,7 @@ export const CAPACITY_COPY: Record<CapacityId, { name: Bi; line: Bi }> = {
   caregiver: { name: { en: 'Caregiver', ru: 'Заботник' }, line: { en: 'Care that includes you.', ru: 'Забота, которая включает и вас самих.' } },
   reacher: { name: { en: 'Reacher', ru: 'Тянущийся' }, line: { en: 'Asking openly for what you need.', ru: 'Открыто просит о том, что нужно.' } },
   sage: { name: { en: 'Sage', ru: 'Мудрец' }, line: { en: 'Reflective distance that sees clearly.', ru: 'Рефлексивная дистанция, которая видит ясно.' } },
-  player: { name: { en: 'Explorer', ru: 'Исследователь' }, line: { en: 'Curiosity, play and pleasure.', ru: 'Любопытство, игра и удовольствие.' } },
+  player: { name: { en: 'Player', ru: 'Исследователь' }, line: { en: 'Curiosity, play and pleasure.', ru: 'Любопытство, игра и удовольствие.' } },
   meaningMaker: { name: { en: 'Meaning-maker', ru: 'Создатель смысла' }, line: { en: 'Real perspective, real humour and real faith.', ru: 'Настоящая перспектива, настоящий юмор и настоящая вера.' } },
 };
 
@@ -275,7 +305,7 @@ export const GROUND_COPY: Record<GroundId, Bi> = {
   calmPlace: { en: 'A calm place you can return to', ru: 'Спокойное место, куда можно вернуться' },
   bodyAnchor: { en: 'A body anchor: feet on the floor, a hand on the chest', ru: 'Опора в теле: стопы на полу, рука на груди' },
   breath: { en: 'Slow breath or a steady rhythm', ru: 'Медленное дыхание или ровный ритм' },
-  containerForLater: { en: 'A plan to come back to it later', ru: 'План вернуться к этому позже' },
+  containerForLater: { en: 'Set it down somewhere safe to come back to later', ru: 'Отложите это в безопасное место, чтобы вернуться к этому позже' },
   nature: { en: 'Time outside, with trees, sky or water', ru: 'Время на воздухе: деревья, небо или вода' },
   realPeople: { en: 'Real people who know you', ru: 'Близкие люди, которые вас знают' },
   ritualOrPrayer: { en: 'A ritual or prayer you trust', ru: 'Ритуал или молитва, которым вы доверяете' },
@@ -326,6 +356,18 @@ export const FAMILY_COPY: Record<FamilyId, Bi> = {
   reframe: { en: 'Reframe', ru: 'Переосмысление' },
 };
 
+/** The eight Self qualities (plan §3.3). The Russian names are the project's qualityLabelsRu in src/shared/i18n/strings.ts. */
+export const CENTRE_QUALITY_COPY: Record<SelfQuality, Bi> = {
+  calm: { en: 'Calm', ru: 'Спокойствие' },
+  clarity: { en: 'Clarity', ru: 'Ясность' },
+  compassion: { en: 'Compassion', ru: 'Сострадание' },
+  curiosity: { en: 'Curiosity', ru: 'Любопытство' },
+  confidence: { en: 'Confidence', ru: 'Уверенность' },
+  courage: { en: 'Courage', ru: 'Смелость' },
+  creativity: { en: 'Creativity', ru: 'Творчество' },
+  connectedness: { en: 'Connectedness', ru: 'Связанность' },
+};
+
 /** Screen copy. Every key is used by the screens; the test suite checks that each key has both languages. */
 export const UI_COPY = {
   title: { en: 'Parts map 2.0', ru: 'Карта частей 2.0' },
@@ -346,19 +388,32 @@ export const UI_COPY = {
   back: { en: 'Back', ru: 'Назад' },
   narrowHelp: { en: 'Which of these fits this part of you best?', ru: 'Какая из этих частей лучше всего описывает эту часть вас?' },
   timingQ: { en: 'When does it usually show up?', ru: 'Когда она обычно проявляется?' },
+  timingUnknown: { en: 'Timing not answered', ru: 'Время не указано' },
   confirmHelp: { en: 'In the last month, how often has this happened?', ru: 'За последний месяц, как часто это случалось?' },
   fearQ: { en: 'If this part stopped doing its job, what would it fear would happen?', ru: 'Если бы эта часть перестала выполнять свою работу, чего бы она боялась?' },
   levelQ: { en: 'When this feeling comes up, how strong is it?', ru: 'Когда это чувство появляется, насколько оно сильное?' },
   levelLabels: { en: ['Faint', 'Light', 'Clear', 'Strong', 'Overwhelming'], ru: ['Едва заметно', 'Слабо', 'Ясно', 'Сильно', 'Переполняет'] },
-  needQ: { en: 'What does this exile most need?', ru: 'Что больше всего нужно этому изгнаннику?' },
+  wantsQ: { en: 'What does this exile want most?', ru: 'Чего больше всего хочет этот изгнанник?' },
   feelQ: { en: 'How do you feel toward this part?', ru: 'Как вы относитесь к этой части?' },
   providerQ: { en: 'Is there anyone or anything, real or imagined, that gives this?', ru: 'Есть ли кто-то или что-то, реальное или воображаемое, что даёт это?' },
   providerFormQ: { en: 'Who or what could give it? Choose the form that feels right.', ru: 'Кто или что могло бы это дать? Выберите подходящую форму.' },
+  practiceAfterReview: { en: 'Practices for this need appear after review.', ru: 'Практики для этой потребности появятся после проверки.' },
+  practiceSuggested: { en: 'Suggested practice', ru: 'Предлагаемая практика' },
   capacityEasyQ: { en: 'Which of these do you reach for easily?', ru: 'К чему из этого вы обращаетесь легко?' },
   capacityHardQ: { en: 'Which of these is hardest to reach?', ru: 'К чему из этого труднее всего дотянуться?' },
+  centreTitle: { en: 'Self', ru: 'Self' },
+  centreNote: { en: 'The Self is the calm, clear place from which you notice your parts. These questions ask how easily you can reach it now. Skip any question.', ru: 'Self — это спокойное, ясное место, из которого вы замечаете свои части. Эти вопросы о том, насколько вы сейчас можете к нему обратиться. Любой вопрос можно пропустить.' },
+  centreAwarenessQ: { en: 'I can notice this part from a little distance.', ru: 'Я могу замечать эту часть с небольшого расстояния.' },
+  centreWillQ: { en: 'My will to act feels available.', ru: 'Моя воля к действию ощущается доступной.' },
+  centreScaleLabels: { en: ['Not at all', 'A little', 'Somewhat', 'Mostly', 'Completely'], ru: ['Совсем нет', 'Немного', 'Отчасти', 'В основном', 'Полностью'] },
+  centreSkipOne: { en: 'Skip this question', ru: 'Пропустить вопрос' },
+  centreQualitiesQ: { en: 'Which of these are easiest to reach now? Choose up to three.', ru: 'К каким из этих качеств вам сейчас легче всего обратиться? Выберите не более трёх.' },
+  centreAwarenessLabel: { en: 'Awareness', ru: 'Осознавание' },
+  centreWillLabel: { en: 'Will', ru: 'Воля' },
+  centreQualitiesLabel: { en: 'Qualities', ru: 'Качества' },
+  centreNotAnswered: { en: 'not answered', ru: 'не указано' },
   groundQ: { en: 'What helps you feel steady? Choose any that apply.', ru: 'Что помогает вам чувствовать опору? Отметьте всё подходящее.' },
   placeHelp: { en: 'Drag each part to where it sits for you, or use the arrow keys. Each part starts at its reference position.', ru: 'Перетащите каждую часть туда, где она находится для вас, или используйте стрелки. Каждая часть начинается с опорной позиции.' },
-  placeHint: { en: 'Energy across, depth up and down. Direction is the second pad.', ru: 'Энергия по горизонтали, глубина по вертикали. Направление на втором поле.' },
   placeReference: { en: 'Reference position', ru: 'Опорная позиция' },
   placePlaced: { en: 'Placed by you', ru: 'Размещено вами' },
   pad1: { en: 'Energy and direction', ru: 'Энергия и направление' },
@@ -402,6 +457,7 @@ export const UI_COPY = {
   placeBlendingNote: { en: 'Blending is set in the Toward step, not here.', ru: 'Слитность задаётся на шаге «Отношение», а не здесь.' },
   providerTest: { en: 'The test for any source: after you reach toward it, is this feeling met, or skipped past?', ru: 'Проверка для любого источника: после обращения к нему чувство удовлетворено или его проскочили?' },
   provisionalNote: { en: 'Provisional, from your first six choices', ru: 'Предварительно, по первым шести выборам' },
+  provisionalLabel: { en: 'Provisional: family positions, not your parts.', ru: 'Предварительно: расположение семей, а не ваши части.' },
   depthNotAnswered: { en: 'Depth not answered yet', ru: 'Глубина пока не указана' },
   depthNotSure: { en: 'Not sure', ru: 'Не знаю' },
   notSetByYou: { en: 'not set by you', ru: 'не задано вами' },
@@ -411,6 +467,10 @@ export const UI_COPY = {
   ofLabel: { en: 'of', ru: 'из' },
   familyLabel: { en: 'Family', ru: 'Семья' },
   memberPickNote: { en: 'One pick per family. Choose none if no card fits.', ru: 'Одна позиция на семью. Выберите «ничего», если ни одна карточка не подходит.' },
+  saveFailed: { en: 'Could not save on this device. Your answers are kept.', ru: 'Не удалось сохранить на этом устройстве. Ваши ответы сохранены.' },
+  lastResultTitle: { en: 'Your last result', ru: 'Ваш последний результат' },
+  lastResultSaved: { en: 'Your last result, saved {date}', ru: 'Ваш последний результат, сохранён {date}' },
+  beforeTimingFix: { en: 'Saved before the timing fix; timing may be a default.', ru: 'Сохранено до исправления времени; время могло быть значением по умолчанию.' },
 } as const;
 
 /** Compile-time guard: every scene, family, member, exile and item in the taxonomy has copy. */
@@ -419,10 +479,11 @@ export const copyCoverage = {
   members: MEMBERS.every((m) => MEMBER_COPY[m] && CONFIRM_COPY[m]?.length === 3),
   exiles: EXILES.every((e) => FEAR_COPY[e] && EXILE_COPY[e]),
   needs: NEEDS.every((n) => NEED_COPY[n]),
-  providers: PROVIDER_ROLES.every((r) => PROVIDER_COPY[r]) && PROVIDER_FORMS.every((f) => PROVIDER_FORM_COPY[f]),
+  providers: PROVIDER_ROLES.every((r) => PROVIDER_COPY[r] && PROVIDER_NAME_COPY[r]) && PROVIDER_FORMS.every((f) => PROVIDER_FORM_COPY[f]),
   capacities: CAPACITIES.every((c) => CAPACITY_COPY[c]),
   ground: GROUND_ITEMS.every((g) => GROUND_COPY[g]),
   costumes: COSTUMES.every((c) => COSTUME_COPY[c]),
   blending: BLENDING_OPTIONS.every((b) => BLENDING_COPY[b]),
   families: FAMILIES.every((f) => FAMILY_COPY[f]),
+  selfQualities: SELF_QUALITIES.every((quality) => CENTRE_QUALITY_COPY[quality]),
 } as const;

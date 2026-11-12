@@ -42,6 +42,28 @@ function runPair(first: any, second: any): number {
   return parseInt(shown!.textContent!, 10);
 }
 
+/** The same flow as runPair, reading what the result card shows: its figure, its bar, and its text. */
+function runPairCard(first: any, second: any) {
+  appMock.current = { t: (k: string) => k, lang: 'en', parts: [first, second], setSheet: () => {}, premium: true, openPaywall: () => {} };
+  act(() => { root.render(React.createElement(Chemistry, { from: first.id })); });
+  const cards = Array.from(host.querySelectorAll('button.part-card')) as HTMLButtonElement[];
+  act(() => { cards[1].click(); });
+  act(() => { (host.querySelector('button.btn.primary') as HTMLButtonElement).click(); });
+  act(() => { vi.advanceTimersByTime(800); });
+  const figure = Array.from(host.querySelectorAll('div')).find((d) => d.style.fontSize === '30px');
+  return { figure: figure?.textContent, bar: host.querySelector('.bar'), text: host.textContent ?? '' };
+}
+
+describe('Chemistry with an unknown energy (G39)', () => {
+  it('shows unknown, with no bar and the neutral advice, when either energy is unknown', () => {
+    const unknownExile = { ...part('exile', 'e', 45), archetype: { levelKnown: false } };
+    const card = runPairCard(part('manager', 'm', 60), unknownExile);
+    expect(card.figure).toBe('unknown');
+    expect(card.bar).toBeNull();
+    expect(card.text).toContain('The tension needs a known energy for both parts.');
+  });
+});
+
 describe('critic: Chemistry tension stays on 0..100 and does not wrap', () => {
   it('control: two mid-energy parts from different families give the plain formula', () => {
     expect(runPair(part('manager', 'm', 60), part('exile', 'e', 60))).toBe(Math.round(60 * 1.15) + 8);

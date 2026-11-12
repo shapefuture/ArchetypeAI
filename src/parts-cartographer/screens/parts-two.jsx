@@ -2,27 +2,31 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../app.jsx';
 import { store } from '../core/local-store.ts';
 import { ROUTE_KEYS } from '../core/assessment-routes.ts';
+import { readLastResult, saveLastResult } from '../core/parts-two-store.ts';
 import { buildParts2UniverseParts, isParts2Part } from '../core/parts2-universe-adapter.ts';
 import { buildScreens, clampIndex, completedStagesFor, stageOf } from '../core/parts-two-flow.ts';
-import { SCENE_FAMILIES, buildAssessment2Result, rankFamilies, sanitizePlaced, scoreFamilies } from '../../shared/core/data/assessment2/scoring.ts';
+import { CATALOG_REVIEW, reviewedPractices } from '../core/practice-catalog.ts';
+import { SCENE_FAMILIES, buildAssessment2Result, rankFamilies, sanitizeCentre, sanitizePlaced, scoreFamilies } from '../../shared/core/data/assessment2/scoring.ts';
+import { SELF_QUALITIES } from '../../shared/core/data/parts.ts';
 import {
-  BLENDING_COPY, CAPACITY_COPY, CONFIRM_COPY, CONFIRM_SCALE, COSTUME_COPY, EXILE_COPY, FAMILY_COPY,
-  FEAR_COPY, GROUND_COPY, MEMBER_COPY, NEED_COPY, PROVIDER_COPY, PROVIDER_FORM_COPY, REACTION_COPY, SCENE_COPY, TIMING_COPY,
+  BLENDING_COPY, CAPACITY_COPY, CENTRE_QUALITY_COPY, CONFIRM_COPY, CONFIRM_SCALE, COSTUME_COPY, EXILE_COPY, FAMILY_COPY,
+  FEAR_COPY, GAP_COPY, GROUND_COPY, MEMBER_COPY, NEED_COPY, NEED_PRACTICE, PROVIDER_COPY, PROVIDER_FORM_COPY, REACTION_COPY, SCENE_COPY, TIMING_COPY,
   UI_COPY, ACCESS_COPY,
 } from '../../shared/core/data/assessment2/content.ts';
 import {
   BLENDING_OPTIONS, CAPACITIES, COSTUMES, EXILE_NEED, GROUND_ITEMS, NEEDS, NEED_PROVIDER, PROVIDER_ACCESS, PROVIDER_FORMS, EXILES, TIMINGS, membersOf,
 } from '../../shared/core/data/assessment2/taxonomy.ts';
 import { PlacementPad, DepthSlider } from './parts-two-pad.jsx';
+import { ProvisionalPad } from './parts-two-provisional.jsx';
 import './parts-two.css';
 
 const blankInput = () => ({
   completedStages: [], steadiness: null, lighter: false, scenes: [], picks: {}, timing: {}, costume: {}, confirm: {}, fears: {},
   exileLevel: {}, exileNeed: {}, blending: {}, providers: {}, capacityEasiest: null, capacityHardest: null, ground: [], placed: {},
+  centre: { awareness: null, will: null, qualities: [] },
 });
 
 const DRAFT_KEY = ROUTE_KEYS.parts2.draft;
-const RESULT_KEY = ROUTE_KEYS.parts2.result;
 
 function loadDraft() {
   try {
@@ -111,13 +115,14 @@ function SceneScreen({ T, tx, frame, screen, input, commitScene, onSkip }) {
   );
 }
 
-function PickScreen({ T, tx, frame, screen, input, setPick }) {
+function PickScreen({ T, tx, frame, screen, input, setPick, showPad }) {
   const options = membersOf(screen.family);
   const chosen = input.picks[screen.family];
   return (
     <Frame {...frame} title={tx(FAMILY_COPY[screen.family])} kicker={T('narrowHelp')} onNext={null}>
       <p className="p2-note">{T('memberPickNote')}</p>
       <p className="p2-note">{T('provisionalNote')}: {rankFamilies(scoreFamilies(input.scenes)).map((entry) => tx(FAMILY_COPY[entry.family])).join(', ')}</p>
+      {showPad ? <ProvisionalPad T={T} tx={tx} scores={scoreFamilies(input.scenes)} /> : null}
       <ul className="p2-list">
         {options.map((member) => (
           <li key={member}>
@@ -161,9 +166,10 @@ function TimingScreen({ T, tx, frame, screen, input, setTiming, setCostume, onNe
   );
 }
 
-function ConfirmScreen({ T, tx, frame, screen, setConfirm, onSkip }) {
+export function ConfirmScreen({ T, tx, frame, screen, input, setConfirm, onSkip }) {
   const member = screen.member;
-  const [answers, setAnswers] = useState([null, null, null]);
+  const stored = input.confirm?.[member];
+  const [answers, setAnswers] = useState(() => (Array.isArray(stored) && stored.length === 3 ? [...stored] : [null, null, null]));
   const ready = answers.every((value) => value !== null);
   return (
     <Frame {...frame} title={tx(MEMBER_COPY[member].name)} kicker={T('confirmHelp')} onNext={() => setConfirm(answers)} nextDisabled={!ready}>
@@ -209,9 +215,8 @@ function FearScreen({ T, tx, frame, screen, input, setFear }) {
 function ExileScreen({ T, tx, frame, screen, input, commit, onNext }) {
   const exile = screen.exile;
   const level = input.exileLevel[exile] ?? null;
-  const need = input.exileNeed[exile] ?? EXILE_NEED[exile];
   return (
-    <Frame {...frame} title={tx(EXILE_COPY[exile].name)} kicker={`${tx(EXILE_COPY[exile].feeling)} · ${tx(EXILE_COPY[exile].belief)}`} onNext={() => onNext({ level, need })} nextDisabled={level === null}>
+    <Frame {...frame} title={tx(EXILE_COPY[exile].name)} kicker={`${tx(EXILE_COPY[exile].feeling)} · ${tx(EXILE_COPY[exile].belief)}`} onNext={() => onNext({ level })} nextDisabled={level === null}>
       <p className="p2-kicker">{T('levelQ')}</p>
       <div className="p2-choices" role="radiogroup" aria-label={T('levelQ')}>
         {[1, 2, 3, 4, 5].map((value) => (
@@ -219,14 +224,24 @@ function ExileScreen({ T, tx, frame, screen, input, commit, onNext }) {
             onClick={() => commit('exileLevel', exile, value)}>{value}. {tx(UI_COPY.levelLabels)[value - 1]}</button>
         ))}
       </div>
-      <p className="p2-kicker">{T('needQ')}</p>
-      <div className="p2-chips">
+      <button type="button" className="btn ghost block" onClick={() => onNext({ level: null })}>{T('skip')}</button>
+    </Frame>
+  );
+}
+
+/** Stage 5: what the exile wants. The table need is preselected. Only Next stores a need, so Skip writes nothing. */
+export function WantsScreen({ T, tx, frame, screen, input, setNeed, onSkip }) {
+  const exile = screen.exile;
+  const [need, setLocalNeed] = useState(input.exileNeed[exile] ?? EXILE_NEED[exile]);
+  return (
+    <Frame {...frame} title={tx(EXILE_COPY[exile].name)} kicker={T('wantsQ')} onNext={() => setNeed(need)} nextDisabled={!need}>
+      <div className="p2-chips" role="group" aria-label={T('wantsQ')}>
         {NEEDS.map((value) => (
           <button key={value} type="button" aria-pressed={need === value} className={`btn small p2-chip${need === value ? ' on' : ''}`}
-            onClick={() => commit('exileNeed', exile, value)}>{tx(NEED_COPY[value])}</button>
+            onClick={() => setLocalNeed(value)}>{tx(NEED_COPY[value])}</button>
         ))}
       </div>
-      <button type="button" className="btn ghost block" onClick={() => onNext({ level: null, need })}>{T('skip')}</button>
+      <button type="button" className="btn ghost block" onClick={onSkip}>{T('skip')}</button>
     </Frame>
   );
 }
@@ -305,6 +320,58 @@ function CapacityScreen({ T, tx, frame, input, setCapacity, onNext }) {
   );
 }
 
+/** Stage 5, the Centre (plan §3.3). Every question can be skipped, so Next is never disabled. A scale holds 1 to 5, 'skip', or null. */
+export function CentreScreen({ T, tx, frame, input, setCentre, onSkip }) {
+  const saved = sanitizeCentre(input.centre);
+  const [awareness, setAwareness] = useState(saved.awareness);
+  const [will, setWill] = useState(saved.will);
+  const [qualities, setQualities] = useState(saved.qualities);
+  const renderScale = (value, setValue, question) => (
+    <fieldset className="p2-fieldset">
+      <legend>{question}</legend>
+      <div className="p2-scale">
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <button key={rating} type="button" aria-pressed={value === rating} className={`btn small${value === rating ? ' on' : ''}`}
+            onClick={() => setValue(rating)}>{rating}. {tx(UI_COPY.centreScaleLabels)[rating - 1]}</button>
+        ))}
+        <button type="button" aria-pressed={value === 'skip'} className={`btn small${value === 'skip' ? ' on' : ''}`}
+          onClick={() => setValue('skip')}>{T('centreSkipOne')}</button>
+      </div>
+    </fieldset>
+  );
+  // Kept in SELF_QUALITIES order, so the order of the taps does not change what is stored. A fourth quality is refused.
+  const toggleQuality = (quality) => setQualities((prev) => {
+    if (prev.includes(quality)) return prev.filter((q) => q !== quality);
+    if (prev.length >= 3) return prev;
+    return SELF_QUALITIES.filter((q) => q === quality || prev.includes(q));
+  });
+  const storeAndContinue = () => setCentre({
+    awareness: typeof awareness === 'number' ? awareness : null,
+    will: typeof will === 'number' ? will : null,
+    qualities,
+  });
+  return (
+    <Frame {...frame} title={T('centreTitle')} onNext={storeAndContinue}>
+      <p className="p2-note">{T('centreNote')}</p>
+      {renderScale(awareness, setAwareness, T('centreAwarenessQ'))}
+      {renderScale(will, setWill, T('centreWillQ'))}
+      <fieldset className="p2-fieldset">
+        <legend>{T('centreQualitiesQ')}</legend>
+        <div className="p2-chips">
+          {SELF_QUALITIES.map((quality) => {
+            const chosen = qualities.includes(quality);
+            return (
+              <button key={quality} type="button" aria-pressed={chosen} disabled={!chosen && qualities.length >= 3}
+                className={`btn small p2-chip${chosen ? ' on' : ''}`} onClick={() => toggleQuality(quality)}>{tx(CENTRE_QUALITY_COPY[quality])}</button>
+            );
+          })}
+        </div>
+      </fieldset>
+      <button type="button" className="btn ghost block" onClick={onSkip}>{T('skip')}</button>
+    </Frame>
+  );
+}
+
 function GroundScreen2({ T, tx, frame, input, toggleGround, onNext }) {
   return (
     <Frame {...frame} title={T('groundQ')} onNext={onNext}>
@@ -319,7 +386,8 @@ function GroundScreen2({ T, tx, frame, input, toggleGround, onNext }) {
 }
 
 export function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
-  const parts = useMemo(() => buildAssessment2Result(input).parts, [input]);
+  // A provider point follows from its exile, so the person does not place it (plan §5.1, B7).
+  const parts = useMemo(() => buildAssessment2Result(input).parts.filter((part) => part.kind !== 'provider'), [input]);
   const [keyChosen, setKeyChosen] = useState(parts[0]?.key ?? null);
   const part = parts.find((entry) => entry.key === keyChosen) ?? parts[0] ?? null;
   if (!part) {
@@ -351,21 +419,39 @@ export function PlaceScreen({ T, tx, frame, input, setPlaced, onNext }) {
         onChange={(values) => write({ ...(values.x !== undefined ? { energy: values.x } : {}), ...(values.y !== undefined ? { direction: values.y } : {}) })}
       />
       <p className="p2-note">{T('axisEnergy')}: {unknown.has('ENERGY') ? T('notSetByYou') : T('setByYou')} · {T('axisDirection')}: {unknown.has('DIRECTION') ? T('notSetByYou') : T('setByYou')}</p>
-      <DepthSlider label={`${name}: ${T('axisDepth')}`} value={depth} lowLabel={T('deepLabel')} highLabel={T('surfaceLabel')} onChange={(value) => write({ depth: value })} />
+      <DepthSlider label={`${name}: ${T('axisDepth')}`} value={depth} valueText={depthText} lowLabel={T('deepLabel')} highLabel={T('surfaceLabel')} onChange={(value) => write({ depth: value })} />
       <p className="p2-note">{T('axisDepth')}: {depthText}</p>
       <button type="button" className="btn ghost block" aria-pressed={part.depthState === 'unsure'} onClick={() => write({ depth: null })}>{T('depthNotSure')}</button>
     </Frame>
   );
 }
 
-function ResultView({ T, tx, input, onSave, onRestart }) {
-  const result = useMemo(() => buildAssessment2Result({ ...input, completedStages: completedStagesFor(input) }), [input]);
-  const confidence = { high: T('confHigh'), medium: T('confMedium'), low: T('confLow') };
+/** The gap for an exile whose provider is 'none'. A practice title shows only once the catalog is reviewed. */
+function GapLines({ T, tx, locale, need }) {
+  const practice = CATALOG_REVIEW.status === 'reviewed'
+    ? reviewedPractices(locale).find((entry) => entry.id === NEED_PRACTICE[need])
+    : undefined;
   return (
-    <section className="p2" aria-labelledby="p2-result-title">
-      <h2 id="p2-result-title" className="p2-title">{T('resultTitle')}</h2>
+    <>
+      <p>{tx(GAP_COPY).replace('{need}', tx(NEED_COPY[need]))}</p>
+      <p>{practice ? `${T('practiceSuggested')}: ${practice.title}` : T('practiceAfterReview')}</p>
+    </>
+  );
+}
+
+/** The stored date, in the language the person reads. */
+const formatSavedDate = (savedAt, locale) => new Date(savedAt).toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+
+/** The body of a result. The live result and the stored last result both use it, so the two cannot drift apart. */
+function ResultBody({ T, tx, locale, result }) {
+  const confidence = { high: T('confHigh'), medium: T('confMedium'), low: T('confLow') };
+  // A result saved before the Centre existed has none, which reads as all unanswered.
+  const centre = sanitizeCentre(result.centre);
+  return (
+    <>
       <p className="p2-note">{T('resultNote')}</p>
       {result.supportPrompt ? <div className="card p2-support"><h3>{T('supportTitle')}</h3><p>{T('supportBody')}</p></div> : null}
+      <ProvisionalPad T={T} tx={tx} scores={result.familyScores} />
       <h3>{T('resultTop')}</h3>
       <ul className="p2-list">
         {result.topFamilies.map((entry) => (
@@ -377,21 +463,23 @@ function ResultView({ T, tx, input, onSave, onRestart }) {
           </li>
         ))}
       </ul>
+      {/* A provider point is not listed on its own: its access and form show on the exile line. */}
       <ul className="p2-list">
-        {result.parts.map((part) => {
+        {result.parts.filter((part) => part.kind !== 'provider').map((part) => {
           const name = part.kind === 'protector' ? tx(MEMBER_COPY[part.member].name) : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].name) : tx(CAPACITY_COPY[part.capacity].name);
           return (
             <li key={part.key} className="card">
               <strong>{name}</strong>
               <p className="sub">
-                {part.kind === 'protector' ? `${tx(TIMING_COPY[part.timing])} · ${tx(FAMILY_COPY[part.family])}` : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].feeling) : ''}
+                {part.kind === 'protector' ? `${part.timing ? tx(TIMING_COPY[part.timing]) : tx(UI_COPY.timingUnknown)} · ${tx(FAMILY_COPY[part.family])}` : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].feeling) : ''}
               </p>
               {part.rank !== null ? <p>{T('resultRank')}: {part.rank} · {T('resultConfidence')}: {part.confidence ? confidence[part.confidence] : '—'}</p> : null}
               <p>{T('resultLevel')}: {part.level === null ? T('levelUnknown') : `${part.level} / 5`}</p>
               <p>{T('axisDepth')}: {part.depthState === 'set' ? part.coordinates[2].toFixed(2) : part.depthState === 'unsure' ? T('depthNotSure') : T('depthNotAnswered')}</p>
-              {part.guards.length ? <p>{T('guards')}: {part.guards.map((e) => tx(EXILE_COPY[e].name)).join(', ')}</p> : null}
+              {part.guards?.length ? <p>{T('guards')}: {part.guards.map((e) => tx(EXILE_COPY[e].name)).join(', ')}</p> : null}
               {part.need ? <p>{T('needLabel')}: {tx(NEED_COPY[part.need])}</p> : null}
               {part.provider ? <p>{T('providerLabel')}: {tx(ACCESS_COPY[part.provider.access])}{part.provider.form ? ` · ${tx(PROVIDER_FORM_COPY[part.provider.form])}` : ''}</p> : null}
+              {part.kind === 'exile' && part.need && part.provider?.access === 'none' ? <GapLines T={T} tx={tx} locale={locale} need={part.need} /> : null}
               {part.costume ? <p>{tx(COSTUME_COPY[part.costume])}</p> : null}
               {part.blending ? <p>{tx(BLENDING_COPY[part.blending])}</p> : null}
             </li>
@@ -406,10 +494,45 @@ function ResultView({ T, tx, input, onSave, onRestart }) {
           </ul>
         </>
       ) : null}
+      <h3>{T('centreTitle')}</h3>
+      <ul className="p2-list">
+        <li className="card">
+          <p>{T('centreAwarenessLabel')}: {centre.awareness === null ? T('centreNotAnswered') : `${centre.awareness} / 5`}</p>
+          <p>{T('centreWillLabel')}: {centre.will === null ? T('centreNotAnswered') : `${centre.will} / 5`}</p>
+          <p>{T('centreQualitiesLabel')}: {centre.qualities.length ? centre.qualities.map((quality) => tx(CENTRE_QUALITY_COPY[quality])).join(', ') : T('centreNotAnswered')}</p>
+        </li>
+      </ul>
       <p className="sub">{T('notDiagnosis')}</p>
+    </>
+  );
+}
+
+function ResultView({ T, tx, locale, input, onSave, onRestart, saveFailed }) {
+  const result = useMemo(() => buildAssessment2Result({ ...input, completedStages: completedStagesFor(input) }), [input]);
+  return (
+    <section className="p2" aria-labelledby="p2-result-title">
+      <h2 id="p2-result-title" className="p2-title">{T('resultTitle')}</h2>
+      <ResultBody T={T} tx={tx} locale={locale} result={result} />
+      {saveFailed ? <p className="sub mt12" role="alert">{T('saveFailed')}</p> : null}
       <div className="p2-nav">
         <button type="button" className="btn ghost" onClick={onRestart}>{T('restart')}</button>
         <button type="button" className="btn primary" onClick={onSave}>{T('save')}</button>
+      </div>
+    </section>
+  );
+}
+
+/** A stored result, read only. It has no save: Start again begins the flow, and the stored result is kept. */
+function LastResultView({ T, tx, locale, last, onStartAgain }) {
+  return (
+    <section className="p2" aria-labelledby="p2-last-title">
+      <h2 id="p2-last-title" className="p2-title">
+        {last.savedAt ? T('lastResultSaved').replace('{date}', formatSavedDate(last.savedAt, locale)) : T('lastResultTitle')}
+      </h2>
+      {last.predatesTimingFix ? <p className="p2-note">{T('beforeTimingFix')}</p> : null}
+      <ResultBody T={T} tx={tx} locale={locale} result={last.result} />
+      <div className="p2-nav">
+        <button type="button" className="btn primary" onClick={onStartAgain}>{T('restart')}</button>
       </div>
     </section>
   );
@@ -422,7 +545,10 @@ export function PartsTwo() {
   const tx = (bi) => bi[locale];
   const frameBase = { T, tx, stageNames: UI_COPY.stageNames[locale] };
 
-  const [phase, setPhase] = useState(() => (loadDraft() ? 'resume' : 'running'));
+  // A stored draft takes the resume prompt first. With no draft, a stored result opens the read-only last-result view (B9).
+  const [lastResult] = useState(() => readLastResult());
+  const [phase, setPhase] = useState(() => (loadDraft() ? 'resume' : lastResult ? 'last' : 'running'));
+  const [saveFailed, setSaveFailed] = useState(false);
   const [input, setInput] = useState(() => blankInput());
   const [index, setIndex] = useState(0);
   const screens = useMemo(() => buildScreens(input), [input]);
@@ -447,19 +573,22 @@ export function PartsTwo() {
     }
     setPhase('running');
   };
+  // Start again clears the draft only. A stored result is kept.
   const restart = () => {
     try { store.save(DRAFT_KEY, null); } catch { /* ignore */ }
     setInput(blankInput());
     setIndex(0);
+    setSaveFailed(false);
     setPhase('running');
   };
 
   const save = () => {
     const result = buildAssessment2Result({ ...input, completedStages: completedStagesFor(input) });
-    try { store.save(RESULT_KEY, result); } catch { /* ignore */ }
+    // The draft is cleared and the universe opened only once the saved copy reads back (B9). A refused save changes nothing else.
+    if (!saveLastResult(result)) { setSaveFailed(true); return; }
+    try { store.save(DRAFT_KEY, null); } catch { /* ignore */ }
     const generated = buildParts2UniverseParts(result, locale);
     setParts([...(parts ?? []).filter((part) => !isParts2Part(part)), ...generated]);
-    try { store.save(DRAFT_KEY, null); } catch { /* ignore */ }
     setUniverseMode('parts');
     go('universe');
   };
@@ -477,8 +606,12 @@ export function PartsTwo() {
     );
   }
 
+  if (phase === 'last' && lastResult) {
+    return <LastResultView T={T} tx={tx} locale={locale} last={lastResult} onStartAgain={restart} />;
+  }
+
   if (screen.kind === 'result') {
-    return <ResultView T={T} tx={tx} input={input} onSave={save} onRestart={restart} />;
+    return <ResultView T={T} tx={tx} locale={locale} input={input} onSave={save} onRestart={restart} saveFailed={saveFailed} />;
   }
 
   const frame = { ...frameBase, screens, index: at, onBack: back, onNext: null, nextLabel: null, nextDisabled: false };
@@ -493,13 +626,14 @@ export function PartsTwo() {
       );
     case 'scene':
       return (
-        <SceneScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
+        <SceneScreen key={screen.scene} T={T} tx={tx} input={input} frame={frame} screen={screen}
           commitScene={(answer) => { setInput((prev) => ({ ...prev, scenes: [...prev.scenes.filter((s) => s.scene !== answer.scene), answer] })); forward(); }}
           onSkip={() => { setInput((prev) => ({ ...prev, scenes: [...prev.scenes.filter((s) => s.scene !== screen.scene), { scene: screen.scene, most: null, least: null }] })); forward(); }} />
       );
     case 'pick':
       return (
         <PickScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
+          showPad={at === screens.findIndex((s) => s.kind === 'pick')}
           setPick={(value) => { patch('picks', screen.family, value); forward(); }} />
       );
     case 'timing':
@@ -508,11 +642,11 @@ export function PartsTwo() {
           setTiming={(value) => patch('timing', screen.member, value)}
           setCostume={(value) => patch('costume', screen.member, value)}
           onNext={forward}
-          onSkip={forward} />
+          onSkip={() => { patch('timing', screen.member, null); forward(); }} />
       );
     case 'confirm':
       return (
-        <ConfirmScreen T={T} tx={tx} frame={frame} screen={screen}
+        <ConfirmScreen key={screen.member} T={T} tx={tx} frame={frame} screen={screen} input={input}
           setConfirm={(answers) => { patch('confirm', screen.member, answers); forward(); }}
           onSkip={() => { patch('confirm', screen.member, [null, null, null]); forward(); }} />
       );
@@ -524,16 +658,22 @@ export function PartsTwo() {
     case 'exile':
       return (
         <ExileScreen T={T} tx={tx} input={input} frame={frame} screen={screen} commit={patch}
-          onNext={({ level, need }) => { patch('exileLevel', screen.exile, level); patch('exileNeed', screen.exile, need); forward(); }} />
+          onNext={({ level }) => { patch('exileLevel', screen.exile, level); forward(); }} />
       );
     case 'blend':
       return (
         <BlendScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
           setBlending={(key, value) => { patch('blending', key, value); forward(); }} />
       );
+    case 'wants':
+      return (
+        <WantsScreen key={screen.exile} T={T} tx={tx} input={input} frame={frame} screen={screen}
+          setNeed={(value) => { patch('exileNeed', screen.exile, value); forward(); }}
+          onSkip={() => forward()} />
+      );
     case 'provider':
       return (
-        <ProviderScreen T={T} tx={tx} input={input} frame={frame} screen={screen}
+        <ProviderScreen key={screen.exile} T={T} tx={tx} input={input} frame={frame} screen={screen}
           onNext={({ access, form }) => { patch('providers', screen.exile, { access, form }); forward(); }}
           onSkip={() => { patch('providers', screen.exile, undefined); forward(); }} />
       );
@@ -542,6 +682,12 @@ export function PartsTwo() {
         <CapacityScreen T={T} tx={tx} input={input} frame={frame}
           setCapacity={(field, value) => setInput((prev) => ({ ...prev, [field]: value }))}
           onNext={forward} />
+      );
+    case 'centre':
+      return (
+        <CentreScreen T={T} tx={tx} input={input} frame={frame}
+          setCentre={(value) => { setInput((prev) => ({ ...prev, centre: value })); forward(); }}
+          onSkip={() => { setInput((prev) => ({ ...prev, centre: { awareness: null, will: null, qualities: [] } })); forward(); }} />
       );
     case 'ground2':
       return (

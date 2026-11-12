@@ -95,6 +95,8 @@ export interface ArchetypeMapData {
   prominence: number;
   size: number;
   partType?: 'manager' | 'firefighter' | 'exile' | 'self';
+  classKnown?: boolean; // false when a protector's timing was skipped, so its class is unknown and partType is absent
+  levelKnown?: boolean; // false when a 2.0 part has no answered level, so its energy is a layout default and is shown as unknown (G39)
   developmentalOrigin?: 'pre_verbal' | 'early_attachment' | 'oedipal' | 'latency' | 'adolescent';
   description?: string;
   wound?: string;

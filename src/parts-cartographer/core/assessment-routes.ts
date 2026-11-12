@@ -38,8 +38,10 @@ export interface AssessmentRoute {
   id: RouteId;
   /** Primary entries are offered side by side; secondary tools are labelled as limited. */
   tier: 'primary' | 'secondary';
-  /** Only the 64-item and 147-item instruments are canonical scored routes. */
+  /** A full record type the app keeps (Assessment 2.0, the 64-item and the 147-item routes). It need not be a measurement; see `measured`. */
   canonical: boolean;
+  /** A measured record: only the 64-item and 147-item instruments. Assessment 2.0 is kept but is not measured. */
+  measured: boolean;
   /** Whether this build has a destination for the route. */
   available: boolean;
   /** Scored item count for item instruments; null for non-item routes. */
@@ -56,29 +58,29 @@ export interface AssessmentRoute {
 export const ASSESSMENT_ROUTES: readonly AssessmentRoute[] = [
   {
     // The default route (Assessment 2.0, docs/plans/assessment-2/plan.md): stages 0 to 6, about nine minutes.
-    id: 'parts-two', tier: 'primary', canonical: true, available: true, itemCount: null, produces: 'canonical-parts-2',
+    id: 'parts-two', tier: 'primary', canonical: true, measured: false, available: true, itemCount: null, produces: 'canonical-parts-2',
     destination: { kind: 'state', state: 'parts-two' },
     copy: { title: 'routeTwoTitle', tag: 'routeDefaultTag', purpose: 'routeTwoPurpose', effort: 'routeTwoEffort' },
   },
   {
     // A complete route of its own (docs/80-20-plan.md §9.2, bounded situation inquiry): it opens the
     // inquiry in the check-in layer, writes no score and never funnels into the 64 or 147 items.
-    id: 'situation-inquiry', tier: 'primary', canonical: false, available: true, itemCount: null, produces: 'none',
+    id: 'situation-inquiry', tier: 'primary', canonical: false, measured: false, available: true, itemCount: null, produces: 'none',
     destination: { kind: 'overlay', overlay: 'checkin', focus: 'situation-inquiry' },
     copy: { title: 'routeInquiryTitle', tag: 'routeInquiryTag', purpose: 'routeInquiryPurpose', effort: 'routeInquiryEffort' },
   },
   {
-    id: 'reflection-64', tier: 'primary', canonical: true, available: true, itemCount: 64, produces: 'canonical-64',
+    id: 'reflection-64', tier: 'primary', canonical: true, measured: true, available: true, itemCount: 64, produces: 'canonical-64',
     destination: { kind: 'state', state: 'legacy-assessment' },
     copy: { title: 'route64Title', tag: 'routeCanonicalTag', purpose: 'route64Purpose', effort: 'route64Effort' },
   },
   {
-    id: 'battery-147', tier: 'primary', canonical: true, available: true, itemCount: 147, produces: 'canonical-147',
+    id: 'battery-147', tier: 'primary', canonical: true, measured: true, available: true, itemCount: 147, produces: 'canonical-147',
     destination: { kind: 'state', state: 'full-assessment' },
     copy: { title: 'startTest', tag: 'routeDeepTag', purpose: 'route147Purpose', effort: 'route147Effort' },
   },
   {
-    id: 'quick-map-sample', tier: 'secondary', canonical: false, available: true, itemCount: null, produces: 'sample',
+    id: 'quick-map-sample', tier: 'secondary', canonical: false, measured: false, available: true, itemCount: null, produces: 'sample',
     destination: { kind: 'state', state: 'assessment' },
     copy: { title: 'quickAssessment', tag: 'routeSampleTag', purpose: 'sampleMapPurpose', effort: 'sampleMapEffort' },
   },

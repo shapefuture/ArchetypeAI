@@ -131,10 +131,24 @@ jobs:
         run: npm ci
 
       - name: Install browser
-        run: npx playwright install --with-deps chromium
+        # Installs only the browser. The runner image already has the shared
+        # libraries Chromium needs; --with-deps fetched fonts from the Ubuntu
+        # mirrors, which the runner could not reach (DNS failures, exit 100).
+        run: npx playwright install chromium
 
       - name: Build React/Vite app
         run: npm run build
 
       - name: Mobile browser parity
         run: npm run test:browser -- --shard=${{ matrix.shard }}/4
+
+      # playwright.config keeps a trace for each failed test. Without this upload the trace is lost with the runner,
+      # and an intermittent failure cannot be diagnosed.
+      - name: Upload failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-traces-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

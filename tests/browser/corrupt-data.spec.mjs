@@ -30,7 +30,8 @@ test('a backup with a malformed value is refused, and the app keeps working', as
   await page.locator('input[type=file]').setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({
     schema: 'parts-cartographer.backup.v2', data: { 'ifs.sealed': {} },
   })) });
-  await expect(page.getByRole('alert')).toBeVisible();
+  // A loaded runner can take longer than the default 5 s to validate the file and show the refusal.
+  await expect(page.getByRole('alert')).toBeVisible({ timeout: 20_000 });
   await expect(page.getByRole('button', { name: 'Restore this backup' })).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole('button', { name: /Cabinet/ }).first()).toBeVisible({ timeout: 15_000 });

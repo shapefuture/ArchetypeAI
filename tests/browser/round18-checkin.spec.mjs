@@ -58,9 +58,15 @@ test('P2: a due sealed note stays readable or stored after its toast', async ({ 
   const page = await context.newPage();
   await page.goto('/');
   const toast = page.locator('.toast');
-  await expect(toast).toBeVisible({ timeout: 20_000 });
-  const box = await toast.boundingBox();
-  const viewport = page.viewportSize();
+  // The toast shows for 2.6 s, starting 1.5 s after the due note is processed (app.jsx). A poll from the test can miss a
+  // window that short when the runner is busy, so the wait runs in the page. No assertion reads the toast's position.
+  await page.waitForFunction(() => {
+    const el = document.querySelector('.toast');
+    if (!el) return false;
+    const style = getComputedStyle(el);
+    const box = el.getBoundingClientRect();
+    return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0;
+  }, null, { timeout: 20_000 });
   await page.waitForTimeout(4_500);
   const after = {
     stored: await page.evaluate(() => localStorage.getItem('ifs.sealed')),

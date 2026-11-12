@@ -2,6 +2,7 @@ import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { KEYS } from '../core/local-store.ts';
+import { IV_PARTS } from '../../shared/features/landing/stickers.ts';
 
 const appMock = vi.hoisted(() => ({ current: null as null | Record<string, any> }));
 vi.mock('../app.jsx', () => ({ useApp: () => appMock.current }));
@@ -18,7 +19,7 @@ const PARTS = [
     archetype: { schema: 'archetype-map.v1', sourceAssessment: 'legacy64', coordinateBasis: 'response-derived-64', coordinates: [0.4, -0.2, 0.1, 0.9] },
   },
   {
-    id: 'p-reference', name: 'The Guide', family: 'resource', nameEn: 'The Guide',
+    id: 'taskmaster', name: 'The Taskmaster', family: 'manager', nameEn: 'The Taskmaster',
     archetype: { schema: 'archetype-map.v1', sourceAssessment: 'descent147', coordinateBasis: 'fixed-reference-147', coordinates: [0.1, 0.2, 0.3, 0.4] },
   },
   { id: 'p-bare', name: 'Plain part', family: 'exile', nameEn: 'Plain part' },
@@ -70,21 +71,30 @@ afterEach(() => {
 });
 
 describe('analytic coordinates panel', () => {
-  it('shows the four coordinates of the first part with their statuses and agreeing projections', () => {
+  it('converts an earlier 64 record onto the map axes and leaves depth and blending unknown', () => {
     mount();
+    // Old tuple [agency, temperature, focus, attachment] = [0.4, -0.2, 0.1, 0.9]:
+    // energy = (-agency + temperature) / 2 = -0.30, direction = (focus + attachment) / 2 = 0.50.
     expect(rowTexts()).toEqual([
-      ['Axis 1 · Energy', '0.40', 'measured'],
-      ['Axis 2 · Direction', '-0.20', 'measured'],
-      ['Axis 3 · Depth', '0.10', 'measured'],
-      ['Axis 4 · Blending', '0.90', 'measured'],
+      ['Axis 1 · Energy', '-0.30', 'measured'],
+      ['Axis 2 · Direction', '0.50', 'measured'],
+      ['Axis 3 · Depth', 'unknown', 'unknown'],
+      ['Axis 4 · Blending', 'unknown', 'unknown'],
     ]);
     expect(host?.querySelector('[role="status"]')?.textContent).toBe(PARITY);
   });
 
   it('labels a fixed reference template as reference, never as a measurement of the person', () => {
     mount();
-    choose('p-reference');
-    expect(rowTexts().map((row) => row[2])).toEqual(['reference', 'reference', 'reference', 'reference']);
+    choose('taskmaster');
+    // The stored tuple is an old-axis value and is not shown: a 147 template reads its position from the reference table.
+    const reference = IV_PARTS.find((entry) => entry.id === 'taskmaster')!.ax;
+    expect(rowTexts()).toEqual([
+      ['Axis 1 · Energy', reference.en.toFixed(2), 'reference'],
+      ['Axis 2 · Direction', reference.di.toFixed(2), 'reference'],
+      ['Axis 3 · Depth', reference.de.toFixed(2), 'reference'],
+      ['Axis 4 · Blending', 'unknown', 'unknown'],
+    ]);
   });
 
   it('shows an unknown coordinate as unknown and never fills it with zero', () => {
@@ -102,14 +112,15 @@ describe('analytic coordinates panel', () => {
     expect(rowTexts().map((row) => row[1])).toEqual(['unknown', 'unknown', 'unknown', 'unknown']);
   });
 
-  it('keeps only the invalid entries unknown and leaves the valid ones in place', () => {
+  it('shows an old record with an unreadable entry as unknown on every axis, not part of it', () => {
     mount();
     choose('p-partial');
+    // The old tuple holds a non-number, so no axis can be converted safely and none keeps a value.
     expect(rowTexts()).toEqual([
-      ['Axis 1 · Energy', '0.50', 'derived'],
+      ['Axis 1 · Energy', 'unknown', 'unknown'],
       ['Axis 2 · Direction', 'unknown', 'unknown'],
       ['Axis 3 · Depth', 'unknown', 'unknown'],
-      ['Axis 4 · Blending', '-0.50', 'derived'],
+      ['Axis 4 · Blending', 'unknown', 'unknown'],
     ]);
   });
 
@@ -154,5 +165,22 @@ describe('unknown depth in the coordinates panel', () => {
     const rows = coordinatesForPart({ id: 'p', archetype: { sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.2, 0.5, 0.3, 0], unmeasuredAxes: ['DEPTH', 'BLENDING'] } });
     expect(rows[0]).toMatchObject({ axis: 0, value: 0.2, status: 'derived' });
     expect(rows[2]).toMatchObject({ axis: 2, value: null, status: 'unknown' });
+  });
+
+  it('reads a part saved by the earlier build with depth unknown, as the map does', () => {
+    // The earlier build stored the default depth as an answer and did not list depth as unmeasured.
+    localStorage.setItem(KEYS.parts, JSON.stringify([
+      {
+        id: 'earlier', name: 'Earlier part', family: 'manager', nameEn: 'Earlier part',
+        archetype: { schema: 'archetype-map.v1', sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.2, 0.5, 0.3, 0], cluster: 'parts_two_member', prominence: 50, size: 0.8, axisVersion: 2, unmeasuredAxes: ['BLENDING'] },
+      },
+    ]));
+    mount();
+    expect(rowTexts()).toEqual([
+      ['Axis 1 · Energy', '0.20', 'derived'],
+      ['Axis 2 · Direction', '0.50', 'derived'],
+      ['Axis 3 · Depth', 'unknown', 'unknown'],
+      ['Axis 4 · Blending', 'unknown', 'unknown'],
+    ]);
   });
 });

@@ -3,11 +3,12 @@
  * An axis the person did not answer keeps a reference number in its slot, is listed in unmeasuredAxes, and is never shown as measured. Results are rankings within one person, not norms.
  */
 import { MAP_AXIS_KEYS, clampAxis, isMapCoordinates, type MapAxisKey, type MapCoordinates } from '../map-axes';
+import { SELF_QUALITIES, type SelfQuality } from '../parts';
 import {
-  BLENDING_OPTIONS, BLENDING_VALUE, CAPACITIES, COSTUMES, EXILES, FAMILIES, GROUND_ITEMS, MEMBER_DEFS, MEMBERS, NEEDS,
-  PROVIDER_ACCESS, PROVIDER_FORMS, TIMINGS, TARGETS, EXILE_NEED, capacityDefault, exileDefault, mapFamilyFor, protectorDefault,
+  BLENDING_OPTIONS, BLENDING_VALUE, CAPACITIES, COSTUMES, EXILES, FAMILIES, GROUND_ITEMS, MEMBER_DEFS, MEMBERS, NEEDS, NEED_PROVIDER,
+  PROVIDER_ACCESS, PROVIDER_FORMS, PROVIDER_ROLES, TIMINGS, TARGETS, EXILE_NEED, capacityDefault, exileDefault, mapFamilyFor, protectorDefault,
   type CapacityId, type CostumeId, type ExileId, type FamilyId, type GroundId, type MemberId, type NeedId, type ProviderAccess, type ProviderForm,
-  type Target, type Timing, type BlendingOption,
+  type ProviderRole, type Target, type Timing, type BlendingOption,
 } from './taxonomy';
 
 export const SCENES = ['criticised', 'leftOut', 'lineCrossed', 'fellThrough', 'planChanged', 'freeEvening'] as const;
@@ -37,6 +38,13 @@ export interface SceneAnswer {
   least: FamilyId | null;
 }
 
+/** Stage 5, the Centre (plan §3.3): awareness and will are integers 1 to 5 or null, and qualities are at most three of SELF_QUALITIES. */
+export interface Centre {
+  awareness: number | null;
+  will: number | null;
+  qualities: SelfQuality[];
+}
+
 export interface Assessment2Input {
   completedStages: number[];
   steadiness: number | null;
@@ -44,7 +52,8 @@ export interface Assessment2Input {
   scenes: SceneAnswer[];
   /** Stage 2: one member per top family, or 'none'. */
   picks: Partial<Record<FamilyId, MemberId | 'none'>>;
-  timing: Partial<Record<MemberId, Timing>>;
+  /** Stage 2: null means the person skipped the timing. A missing key means not asked yet. */
+  timing: Partial<Record<MemberId, Timing | null>>;
   /** Stage 2, optional: the familiar costume a protector wears (plan §3.2). Faith and ancestry are among them. */
   costume: Partial<Record<MemberId, CostumeId | null>>;
   /** Stage 3: three 1–5 frequency answers per member. */
@@ -64,6 +73,8 @@ export interface Assessment2Input {
    * Blending is not placed.
    */
   placed: Partial<Record<string, { energy?: number; direction?: number; depth?: number | null }>>;
+  /** Stage 5, the Centre (plan §3.3). An absent centre is all unanswered. It is not a map part and changes no part or conflict. */
+  centre?: Centre;
 }
 
 export type FamilyScores = Record<FamilyId, number | null>;
@@ -117,7 +128,7 @@ export function skipsConfirm(family: FamilyId, scenes: SceneAnswer[]): boolean {
   return appearances > 0 && least === 0 && most / appearances >= SKIP_CONFIRM_SHARE;
 }
 
-/** Stage 3 level: the mean of at least two 1–5 answers. Fewer answers means unknown. */
+/** Stage 3 level: the mean of three 1–5 answers. Fewer answers means unknown. */
 export function levelOf(items: Array<number | null> | undefined): number | null {
   const values = (items ?? []).filter((v): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 5);
   // The level is the mean of all three confirm items, so a partial set is unknown (plan §5).
@@ -125,13 +136,9 @@ export function levelOf(items: Array<number | null> | undefined): number | null 
   return Math.round((values.reduce((sum, v) => sum + v, 0) / values.length) * 100) / 100;
 }
 
-export type Confidence = 'high' | 'medium' | 'low';
+export const CONFIDENCES = ['high', 'medium', 'low'] as const;
+export type Confidence = (typeof CONFIDENCES)[number];
 
-/**
- * high: the confirm level is at least 3 and the family score is at least 0.25.
- * medium: a skipped confirm (scenes alone), or a confirmed level that disagrees with a weak score.
- * low: the confirm level is below 3.
- */
 /** The lead of each family over the next-ranked family. The lowest-ranked family keeps its full score as its lead. */
 export function leadsOf(scores: FamilyScores): Partial<Record<FamilyId, number>> {
   const ordered = FAMILIES
@@ -144,28 +151,40 @@ export function leadsOf(scores: FamilyScores): Partial<Record<FamilyId, number>>
 }
 
 /**
- * high: the confirm level is at least 3, the score is at least 0.25, and the lead over the next family is at least RANK_MARGIN.
- * medium: a skipped confirm (scenes alone), or a confirmed level that disagrees with a weak score.
- * low: the confirm level is below 3, or the lead over the next family is narrower than RANK_MARGIN.
+ * Confidence for one protector. The checks run in this order, and the first one that applies decides (plan §5, G3):
+ * 1. The lead over the next family is narrower than RANK_MARGIN: low, on every path.
+ * 2. The confirm items were skipped (scenes alone): medium.
+ * 3. The confirm items were not answered: null.
+ * 4. The confirm level is below 3: low.
+ * 5. Otherwise high when the score is at least 0.25, and medium when it is below.
  */
 export function confidenceOf(score: number, level: number | null, skipped: boolean, lead = Number.POSITIVE_INFINITY): Confidence | null {
-  if (skipped) return 'medium';
-  if (level === null) return null;
-  if (level < 3 || lead < RANK_MARGIN) return 'low';
+  if (lead < RANK_MARGIN) return 'low';   // G3: a narrow margin is low on every path
+  if (skipped) return 'medium';           // scenes alone, wide margin
+  if (level === null) return null;        // confirm items not answered
+  if (level < 3) return 'low';
   return score >= 0.25 ? 'high' : 'medium';
 }
 
 /** Whether the person answered depth: set it, said not sure, or left it unanswered. */
 export type DepthState = 'set' | 'unsure' | 'unanswered';
 
+/** Where an exile's need came from: a need the person stored on the wants screen, or the table default (plan §4 stage 5). */
+export const NEED_SOURCES = ['user', 'table'] as const;
+export type NeedSource = (typeof NEED_SOURCES)[number];
+
 export interface MapPart {
   key: string;
-  kind: 'protector' | 'exile' | 'capacity';
+  /** A provider point (plan §5.1, B7) sits beside its exile and has no member, capacity or timing. */
+  kind: 'protector' | 'exile' | 'capacity' | 'provider';
   member?: MemberId;
   exile?: ExileId;
   capacity?: CapacityId;
   family?: FamilyId;
-  timing?: Timing;
+  /** The timing the person chose for a protector, or null when skipped. Absent for other kinds. */
+  timing?: Timing | null;
+  /** False exactly when timing is null. Exiles and capacities have no timing, so it is true for them. */
+  classKnown: boolean;
   target?: Target;
   rank: number | null;
   level: number | null;
@@ -174,7 +193,11 @@ export interface MapPart {
   guards: ExileId[];
   costume: CostumeId | null;
   need?: NeedId;
+  /** Exile parts only. Absent on results saved before this field existed. */
+  needSource?: NeedSource;
   provider?: { access: ProviderAccess; form: ProviderForm | null };
+  /** Provider points only: the provider role (the key of PROVIDER_COPY) for the exile's need, from NEED_PROVIDER. */
+  role?: ProviderRole;
   placement: 'placed' | 'default';
   coordinates: MapCoordinates;
   unmeasuredAxes: MapAxisKey[];
@@ -183,7 +206,8 @@ export interface MapPart {
   mapFamily: 'manager' | 'firefighter' | 'exile' | 'resource';
 }
 
-export type ConflictType = 'strategy-against-strategy' | 'protector-against-exile' | 'critic-against-criticised' | 'need-against-need';
+export const CONFLICT_TYPES = ['strategy-against-strategy', 'protector-against-exile', 'critic-against-criticised', 'need-against-need'] as const;
+export type ConflictType = (typeof CONFLICT_TYPES)[number];
 export interface Conflict { type: ConflictType; keys: string[] }
 
 export interface Assessment2Result {
@@ -199,9 +223,11 @@ export interface Assessment2Result {
   conflicts: Conflict[];
   /** True when the exile level of three or more named exiles is 5, or steadiness is 1. */
   supportPrompt: boolean;
+  /** The sanitized Centre (plan §3.3). Absent on results saved before it existed. It is not a map part. */
+  centre?: Centre;
 }
 
-const keyFor = (kind: 'member' | 'exile' | 'capacity', id: string) => `${kind}:${id}`;
+const keyFor = (kind: 'member' | 'exile' | 'capacity' | 'provider', id: string) => `${kind}:${id}`;
 
 /**
  * Coordinates for one part. An axis the person did not set is unknown: its slot holds the reference value so the
@@ -230,6 +256,9 @@ function coordsFor(key: string, fallback: MapCoordinates, placed: Assessment2Inp
   return { coordinates: base, unmeasuredAxes: unmeasured, depthState, placement: placement as 'placed' | 'default' };
 }
 
+/** Attack members whose default target is self. Conflict type 3 treats them as the critic. Derived from MEMBER_DEFS. */
+export const SELF_ATTACK_MEMBERS: readonly MemberId[] = MEMBERS.filter((id) => MEMBER_DEFS[id].family === 'attack' && MEMBER_DEFS[id].defaultTarget === 'self');
+
 /** Plan §3.4, derived from the finished parts. Types 1 and 2 are checked before 3 and 4. */
 export function deriveConflicts(parts: MapPart[]): Conflict[] {
   const conflicts: Conflict[] = [];
@@ -255,7 +284,7 @@ export function deriveConflicts(parts: MapPart[]): Conflict[] {
       }
     }
   }
-  const critic = protectors.find((p) => p.member === 'inner_critic' && p.target === 'self');
+  const critic = protectors.find((p) => p.member !== undefined && SELF_ATTACK_MEMBERS.includes(p.member) && p.target === 'self');
   const ashamed = exiles.find((e) => e.exile === 'ashamed');
   if (critic && ashamed) conflicts.push({ type: 'critic-against-criticised', keys: [critic.key, ashamed.key] });
   // Only exiles with a measured level can be ranked against each other; an unknown level is never zero.
@@ -265,6 +294,23 @@ export function deriveConflicts(parts: MapPart[]): Conflict[] {
     conflicts.push({ type: 'need-against-need', keys: top.map((p) => p.key) });
   }
   return conflicts;
+}
+
+/**
+ * The provider point beside its exile (plan §5.1, B7). It sits at the exile's energy and direction plus 0.25, each clamped
+ * to [−1, 1], and keeps the exile's depth, placement and unanswered axes. Blending is never asked of a provider, so its
+ * axis stays unanswered even when the exile's blending is known. The role is the provider for the exile's need: the need the
+ * person chose, or the table default (the same need the provider screen shows).
+ */
+function providerPointFor(exile: ExileId, need: NeedId, at: Pick<MapPart, 'placement' | 'coordinates' | 'unmeasuredAxes' | 'depthState'>): MapPart {
+  const [energy, direction, depth] = at.coordinates;
+  const unmeasuredAxes: MapAxisKey[] = at.unmeasuredAxes.includes('BLENDING') ? [...at.unmeasuredAxes] : [...at.unmeasuredAxes, 'BLENDING'];
+  return {
+    key: keyFor('provider', exile), kind: 'provider', exile, role: NEED_PROVIDER[need], classKnown: true,
+    rank: null, level: null, confidence: null, guards: [], costume: null,
+    placement: at.placement, coordinates: [clampAxis(energy + 0.25), clampAxis(direction + 0.25), depth, 0], unmeasuredAxes,
+    depthState: at.depthState, blending: null, mapFamily: 'resource',
+  };
 }
 
 /** Build the full result from the answers so far. Every field that was not answered stays null or empty. */
@@ -278,16 +324,18 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     const pick = input.picks[family];
     if (!pick || pick === 'none') continue;
     const def = MEMBER_DEFS[pick];
-    const timing = input.timing[pick] ?? def.defaultTiming;
+    // A skipped or unasked timing stays null. It is never filled from the member's default (plan §3.1, D1).
+    const timing: Timing | null = input.timing[pick] ?? null;
     const skipped = skipsConfirm(family, input.scenes);
     const level = skipped ? null : levelOf(input.confirm[pick]);
+    // The lighter path has no stage 4, so a stored fear guards nothing there. The answer stays in the input (plan §3.3, G4).
     const fear = input.fears[pick];
-    const guards = fear && fear !== 'none' ? [fear] : [];
+    const guards = !input.lighter && fear && fear !== 'none' ? [fear] : [];
     const key = keyFor('member', pick);
     const blending = input.blending[key] ?? null;
     const placedCoords = coordsFor(key, protectorDefault(pick, timing), input.placed, blending);
     parts.push({
-      key, kind: 'protector', member: pick, family, timing, target: def.defaultTarget,
+      key, kind: 'protector', member: pick, family, timing, classKnown: timing !== null, target: def.defaultTarget,
       rank, level, confidence: confidenceOf(score, level, skipped, leads[family] ?? 0), guards, costume: input.costume?.[pick] ?? null,
       placement: placedCoords.placement, coordinates: placedCoords.coordinates, unmeasuredAxes: placedCoords.unmeasuredAxes,
       depthState: placedCoords.depthState,
@@ -295,6 +343,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     } as MapPart);
   }
 
+  const providerPoints: MapPart[] = [];
   if (!input.lighter) {
     const named = new Set<ExileId>();
     // Only members the person picked name an exile. A fear left on a member who was later changed is ignored.
@@ -309,13 +358,18 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
       const blending = input.blending[key] ?? null;
       const coords = coordsFor(key, exileDefault(exile), input.placed, blending);
       const provider = input.providers[exile];
+      const chosenNeed = input.exileNeed[exile];
       parts.push({
-        key, kind: 'exile', exile, rank: null, level: input.exileLevel[exile] ?? null, confidence: null,
-        guards: [], costume: null, need: input.exileNeed[exile] ?? EXILE_NEED[exile],
+        key, kind: 'exile', exile, classKnown: true, rank: null, level: input.exileLevel[exile] ?? null, confidence: null,
+        guards: [], costume: null, need: chosenNeed ?? EXILE_NEED[exile], needSource: chosenNeed ? 'user' : 'table',
         provider: provider ? { access: provider.access, form: provider.form ?? null } : undefined,
         placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes, depthState: coords.depthState,
         blending, mapFamily: 'exile',
       } as MapPart);
+      // Access 'none' gives no point; the gap line (B1) explains it. A point is only placed beside an exile on the map.
+      if (provider && (provider.access === 'easy' || provider.access === 'effort')) {
+        providerPoints.push(providerPointFor(exile, chosenNeed ?? EXILE_NEED[exile], coords));
+      }
     }
   }
 
@@ -324,11 +378,14 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     const key = keyFor('capacity', capacity);
     const coords = coordsFor(key, capacityDefault(capacity), input.placed, null);
     parts.push({
-      key, kind: 'capacity', capacity, rank: null, level: null, confidence: null, guards: [], costume: null,
+      key, kind: 'capacity', capacity, classKnown: true, rank: null, level: null, confidence: null, guards: [], costume: null,
       placement: coords.placement, coordinates: coords.coordinates, unmeasuredAxes: coords.unmeasuredAxes, depthState: coords.depthState,
       blending: null, mapFamily: 'resource',
     } as MapPart);
   }
+
+  // Provider points follow every other part, so the parts before them keep their order (plan §5.1, B7).
+  parts.push(...providerPoints);
 
   // Exile levels for the support prompt: three or more named exiles at level 5.
   const fiveLevels = parts.filter((p) => p.kind === 'exile' && p.level === 5).length;
@@ -346,6 +403,7 @@ export function buildAssessment2Result(input: Assessment2Input): Assessment2Resu
     ground: [...new Set(input.ground)].filter((g) => GROUND_ITEMS.includes(g)),
     conflicts: deriveConflicts(parts),
     supportPrompt,
+    centre: sanitizeCentre(input.centre),
   };
 }
 
@@ -374,22 +432,71 @@ export function sanitizePlaced(value: unknown): Assessment2Input['placed'] {
   return out;
 }
 
+const isCentreRating = (value: unknown): value is number => typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 5;
+
+/**
+ * Keeps only valid Centre values (plan §3.3). Awareness and will are integers 1 to 5, and anything else becomes null.
+ * Qualities keep the SELF_QUALITIES values in the order given, drop repeats, and keep at most three. An absent or
+ * non-record centre is all unanswered.
+ */
+export function sanitizeCentre(centre: unknown): Centre {
+  const source: Record<string, any> = isRecord(centre) ? centre : {};
+  const qualities: SelfQuality[] = [];
+  for (const quality of Array.isArray(source.qualities) ? source.qualities : []) {
+    if (qualities.length === 3) break;
+    if (oneOf(SELF_QUALITIES, quality) && !qualities.includes(quality)) qualities.push(quality);
+  }
+  return {
+    awareness: isCentreRating(source.awareness) ? source.awareness : null,
+    will: isCentreRating(source.will) ? source.will : null,
+    qualities,
+  };
+}
+
+/** A stored Centre: awareness and will are null or integers 1 to 5, and qualities has at most three different SELF_QUALITIES. */
+function isCentre(value: unknown): value is Centre {
+  if (!isRecord(value)) return false;
+  const rating = (v: unknown) => v === null || isCentreRating(v);
+  return rating(value.awareness) && rating(value.will)
+    && Array.isArray(value.qualities) && value.qualities.length <= 3
+    && value.qualities.every((quality: unknown) => oneOf(SELF_QUALITIES, quality))
+    && new Set(value.qualities).size === value.qualities.length;
+}
+
 export function isAssessment2Result(value: unknown): value is Assessment2Result {
   if (!isRecord(value) || value.instrument !== 'parts-2' || value.version !== 1) return false;
   if (!Array.isArray(value.parts) || !Array.isArray(value.conflicts) || !Array.isArray(value.topFamilies) || !isRecord(value.familyScores)) return false;
   if (!FAMILIES.every((f) => value.familyScores[f] === null || (typeof value.familyScores[f] === 'number' && Math.abs(value.familyScores[f]) <= 1))) return false;
+  // The result view looks up copy by these stored values, and a value outside its map throws. Each field the view reads is checked here.
+  if (value.supportPrompt !== undefined && typeof value.supportPrompt !== 'boolean') return false;
+  // The Centre is optional, so a result saved before it existed passes. When present it must be a valid Centre (plan §3.3).
+  if (value.centre !== undefined && !isCentre(value.centre)) return false;
+  if (!value.topFamilies.every((entry: unknown) => isRecord(entry)
+    && oneOf(FAMILIES, entry.family)
+    && typeof entry.score === 'number' && Math.abs(entry.score) <= 1
+    && Number.isInteger(entry.rank))) return false;
+  if (!value.conflicts.every((conflict: unknown) => isRecord(conflict)
+    && oneOf(CONFLICT_TYPES, conflict.type)
+    && Array.isArray(conflict.keys) && conflict.keys.every((key: unknown) => typeof key === 'string'))) return false;
   return value.parts.every((part: unknown) => isRecord(part)
-    && (part.kind === 'protector' || part.kind === 'exile' || part.kind === 'capacity')
+    && typeof part.key === 'string'
+    && (part.kind === 'protector' || part.kind === 'exile' || part.kind === 'capacity' || part.kind === 'provider')
     && isMapCoordinates(part.coordinates)
     && Array.isArray(part.unmeasuredAxes) && part.unmeasuredAxes.every((k: unknown) => (MAP_AXIS_KEYS as readonly unknown[]).includes(k))
     && (part.depthState === 'set' || part.depthState === 'unsure' || part.depthState === 'unanswered')
     && ((part.depthState === 'set') === !part.unmeasuredAxes.includes('DEPTH'))
     && (part.level === null || (typeof part.level === 'number' && part.level >= 1 && part.level <= 5))
+    && (part.rank === null || Number.isInteger(part.rank))
+    && (part.confidence === null || oneOf(CONFIDENCES, part.confidence))
     && (part.placement === 'placed' || part.placement === 'default')
-    && (part.kind !== 'protector' || (oneOf(MEMBERS, part.member) && oneOf(FAMILIES, part.family) && oneOf(TIMINGS, part.timing) && oneOf(TARGETS, part.target)))
+    && (part.kind !== 'protector' || (oneOf(MEMBERS, part.member) && oneOf(FAMILIES, part.family) && (part.timing === null || oneOf(TIMINGS, part.timing)) && oneOf(TARGETS, part.target)))
     && (part.kind !== 'exile' || oneOf(EXILES, part.exile) && oneOf(NEEDS, part.need))
+    && (part.kind !== 'provider' || (oneOf(EXILES, part.exile) && oneOf(PROVIDER_ROLES, part.role)))
+    && (part.need === undefined || oneOf(NEEDS, part.need))
+    && Array.isArray(part.guards) && part.guards.every((guard: unknown) => oneOf(EXILES, guard))
+    && (part.needSource === undefined || (part.kind === 'exile' && oneOf(NEED_SOURCES, part.needSource)))
     && (part.kind !== 'capacity' || oneOf(CAPACITIES, part.capacity))
-    && (!part.provider || (oneOf(PROVIDER_ACCESS, part.provider.access) && (part.provider.form === null || oneOf(PROVIDER_FORMS, part.provider.form))))
+    && (part.provider === undefined || (isRecord(part.provider) && oneOf(PROVIDER_ACCESS, part.provider.access) && (part.provider.form === null || oneOf(PROVIDER_FORMS, part.provider.form))))
     && (part.blending === null || oneOf(BLENDING_OPTIONS, part.blending))
     && (part.costume === null || part.costume === undefined || oneOf(COSTUMES, part.costume)));
 }

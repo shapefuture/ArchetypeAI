@@ -9,12 +9,12 @@ import { sanitizeLegacyAiAnalysis } from './legacy-ai-analysis';
 import { SHAPES, EYES, MOUTHS, HEADS, FACES, type Part } from '../pal/traits';
 import { readGoalRecord } from '../elevation/e01-goal';
 import { ladderRung } from '../../shared/core/data/exercises';
-import { isAssessment2Result } from '../../shared/core/data/assessment2/scoring';
+import { parseLastResult } from './parts-two-store';
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.syn,
   'ifs.lang', 'ifs.theme', 'ifs.onboarded', 'ifs.assessment.draft', 'ifs.legacy64.result', 'ifs.parts2.result',
-  'ifs.journal', 'ifs.sealed', 'ifs.sealed.verdict', 'ifs.universe.dimensions.v1', 'ifs.universe.dimensions.v2',
+  'ifs.journal', 'ifs.links', 'ifs.sealed', 'ifs.sealed.verdict', 'ifs.universe.dimensions.v1', 'ifs.universe.dimensions.v2',
   DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, 'INNERVERSE_FUTURE_SELF_V1', 'INNERVERSE_PROFILE_V1',
   'INNERVERSE_CHECKINS_V1', 'INNERVERSE_SEALED_VERDICTS_V1', 'INNERVERSE_JITAI_V1',
   'INNERVERSE_CHARTER_V1', 'INNERVERSE_EVENTS_V1', 'INNERVERSE_GOAL_V1', 'INNERVERSE_PRACTICE_V1', 'INNERVERSE_SYNASTRY_RUNS_V1',
@@ -79,7 +79,9 @@ export function validMapParts(value: unknown): value is Part[] {
         && (part.archetype.cluster === undefined || typeof part.archetype.cluster === 'string')
         // The scene scales each node by these two numbers: a word here would draw the node at NaN.
         && (part.archetype.size === undefined || Number.isFinite(part.archetype.size))
-        && (part.archetype.prominence === undefined || Number.isFinite(part.archetype.prominence)));
+        && (part.archetype.prominence === undefined || Number.isFinite(part.archetype.prominence))
+        // The energy flag (G39) is a boolean when it is stored. A word here would read as known.
+        && (part.archetype.levelKnown === undefined || typeof part.archetype.levelKnown === 'boolean'));
   });
 }
 
@@ -104,7 +106,7 @@ function validEntry(key: string, value: unknown): boolean {
   if (key === KEYS.parts) return validMapParts(value);
   if (key === KEYS.profile || key === KEYS.history) return value === null || validProfile(value);
   if (key === 'ifs.legacy64.result') return value === null || object(value);
-  if (key === 'ifs.parts2.result') return value === null || isAssessment2Result(value);
+  if (key === 'ifs.parts2.result') return value === null || parseLastResult(value) !== null;
   if (key === 'INNERVERSE_PROFILE_V1') return isCanonicalAssessmentInput(value);
   if (key === 'INNERVERSE_GOAL_V1') return readGoalRecord(value).status !== 'rejected';
   if (key === DESCENT_DRAFT_KEY) return isDescentDraft(value);

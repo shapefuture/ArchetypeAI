@@ -5,10 +5,10 @@ import {
   exileDefault, protectorDefault, capacityDefault, mapFamilyFor, type MemberId,
 } from './taxonomy';
 import {
-  SCENES, SCENE_FAMILIES, buildAssessment2Result, confidenceOf, deriveConflicts, isAssessment2Result, levelOf, rankFamilies,
+  SCENES, SCENE_FAMILIES, SELF_ATTACK_MEMBERS, buildAssessment2Result, confidenceOf, deriveConflicts, isAssessment2Result, leadsOf, levelOf, rankFamilies,
   scoreFamilies, skipsConfirm, type Assessment2Input, type MapPart, type SceneAnswer,
 } from './scoring';
-import { CONFIRM_COPY, CAPACITY_COPY, copyCoverage, REACTION_COPY, UI_COPY } from './content';
+import { CONFIRM_COPY, CAPACITY_COPY, copyCoverage, GROUND_COPY, PROVIDER_FORM_COPY, REACTION_COPY, UI_COPY } from './content';
 import { knownAxisValues, legacy64ToMapPlacement, referenceMapPlacement, isMapCoordinates, MAP_AXIS_KEYS, MAP_DEFAULT_PLOT } from '../map-axes';
 
 const LEGACY_147_PROTECTORS = ['taskmaster', 'inner_critic', 'pleaser', 'controller', 'analyst', 'hermit', 'bypasser', 'numb', 'rebel', 'charmer'];
@@ -21,6 +21,16 @@ const blank = (): Assessment2Input => ({
 /** Answers every scene with the same most and least card, so one family wins clearly. */
 const scenesFavouring = (most: (typeof FAMILIES)[number], least: (typeof FAMILIES)[number]): SceneAnswer[] =>
   SCENES.map((scene) => ({ scene, most: SCENE_FAMILIES[scene].includes(most) ? most : SCENE_FAMILIES[scene][0], least: SCENE_FAMILIES[scene].includes(least) ? least : SCENE_FAMILIES[scene][1] }));
+
+/** Stage 1 answers that make pursue the top family, with a narrow lead over attack: pursue 0.75, attack 0.67, lead 0.083. */
+const scenesNarrowPursue: SceneAnswer[] = [
+  { scene: 'criticised', most: 'attack', least: null },
+  { scene: 'leftOut', most: 'appease', least: null },
+  { scene: 'lineCrossed', most: 'attack', least: null },
+  { scene: 'fellThrough', most: 'pursue', least: null },
+  { scene: 'planChanged', most: 'pursue', least: null },
+  { scene: 'freeEvening', most: 'pursue', least: null },
+];
 
 describe('taxonomy invariants (plan §3)', () => {
   it('has 8 families, 28 members, 8 exiles, 6 needs and 8 capacities', () => {
@@ -142,6 +152,29 @@ describe('stage 3 level and confidence (plan §5)', () => {
     // A narrow lead over the next family makes the result low, however strong the level (plan §5).
     expect(confidenceOf(0.5, 4, false, 0.05)).toBe('low');
   });
+
+  it('is low for a skipped confirm with a narrow lead, because the lead is checked first', () => {
+    expect(confidenceOf(0.75, null, true, 0.083)).toBe('low');
+  });
+
+  it('keeps a skipped confirm with a wide lead at medium', () => {
+    expect(confidenceOf(0.75, null, true, 0.33)).toBe('medium');
+  });
+
+  it('is low for a confirmed level of 5 with a narrow lead', () => {
+    expect(confidenceOf(0.5, 5, false, 0.1)).toBe('low');
+  });
+
+  it('is high for a confirmed level of 5, a wide lead and a score of 0.67', () => {
+    expect(confidenceOf(0.67, 5, false, 0.33)).toBe('high');
+  });
+
+  it('is low for a skipped pursue part with a narrow lead in the built result', () => {
+    expect(skipsConfirm('pursue', scenesNarrowPursue)).toBe(true);
+    expect(leadsOf(scoreFamilies(scenesNarrowPursue)).pursue).toBeCloseTo(0.083, 3);
+    const part = buildAssessment2Result({ ...blank(), scenes: scenesNarrowPursue, picks: { pursue: 'charmer' as const } }).parts.find((p) => p.key === 'member:charmer')!;
+    expect(part.confidence).toBe('low');
+  });
 });
 
 describe('result building (plan §4, §6)', () => {
@@ -172,6 +205,15 @@ describe('result building (plan §4, §6)', () => {
     const base = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'inner_critic' as const }, fears: { inner_critic: 'ashamed' as const } };
     expect(buildAssessment2Result(base).parts.some((p) => p.kind === 'exile' && p.exile === 'ashamed')).toBe(true);
     expect(buildAssessment2Result({ ...base, lighter: true }).parts.some((p) => p.kind === 'exile')).toBe(false);
+  });
+
+  it('gives no guards and no exile parts on the lighter path, and restores the guard when lighter is turned off', () => {
+    const input = { ...blank(), scenes: scenesNarrowPursue, picks: { pursue: 'charmer' as const }, fears: { charmer: 'frightened' as const } };
+    const light = buildAssessment2Result({ ...input, lighter: true });
+    expect(light.parts.find((p) => p.key === 'member:charmer')!.guards).toEqual([]);
+    expect(light.parts.some((p) => p.kind === 'exile')).toBe(false);
+    const full = buildAssessment2Result({ ...input, lighter: false });
+    expect(full.parts.find((p) => p.key === 'member:charmer')!.guards).toContain('frightened');
   });
 
   it('defaults an exile need to its mapped need and keeps a person choice', () => {
@@ -233,6 +275,10 @@ describe('conflicts (plan §3.4, §5.2)', () => {
     expect(deriveConflicts(parts).map((c) => c.type)).toContain('critic-against-criticised');
   });
 
+  it('derives the type-3 critic from MEMBER_DEFS: exactly inner_critic', () => {
+    expect(SELF_ATTACK_MEMBERS).toEqual(['inner_critic']);
+  });
+
   it('flags two protectors that guard the same exile and sit a full unit apart', () => {
     const parts = [
       part({ key: 'member:rebel', member: 'rebel' as MemberId, family: 'attack', target: 'others', guards: ['frightened'], coordinates: [0.8, 0.3, 0.3, 0] }),
@@ -245,6 +291,16 @@ describe('conflicts (plan §3.4, §5.2)', () => {
 describe('copy coverage (plan §7)', () => {
   it('covers every scene, family, member, exile, need, provider, capacity, ground item and costume', () => {
     for (const value of Object.values(copyCoverage)) expect(value).toBe(true);
+  });
+
+  it('keeps the exact ground, capacity and provider-form copy', () => {
+    expect(GROUND_COPY.containerForLater.en).toBe('Set it down somewhere safe to come back to later');
+    expect(CAPACITY_COPY.player.name).toEqual({ en: 'Player', ru: 'Исследователь' });
+    for (const form of ['realPerson', 'idealParent'] as const) {
+      expect(PROVIDER_FORMS).toContain(form);
+      expect(PROVIDER_FORM_COPY[form].en).not.toBe('');
+      expect(PROVIDER_FORM_COPY[form].ru).not.toBe('');
+    }
   });
 
   it('has three confirm items for every member', () => {
@@ -265,7 +321,8 @@ describe('copy coverage (plan §7)', () => {
     walk({ scenes: copyCoverage, UI_COPY });
     walk(REACTION_COPY);
     walk(CONFIRM_COPY);
-    for (const text of ru) expect(text).not.toMatch(/\bты\b/i);
+    // \b is ASCII-only in JavaScript, so a Cyrillic word needs Unicode letter lookarounds.
+    for (const text of ru) expect(text).not.toMatch(/(?<!\p{L})ты(?!\p{L})/iu);
   });
 });
 
@@ -361,5 +418,67 @@ describe('depth answer rules: drafts, validator and conflicts', () => {
       { ...base, key: 'member:numb', member: 'numb', family: 'numbSoothe', coordinates: [-0.8, -0.5, 0.3, 0], unmeasuredAxes: ['ENERGY', 'DIRECTION', 'DEPTH', 'BLENDING'] },
     ] as unknown as MapPart[];
     expect(deriveConflicts(parts).map((c) => c.type)).not.toContain('strategy-against-strategy');
+  });
+});
+
+describe('skipped timing is unknown, not a default (plan §3.1, D1)', () => {
+  const skippedInputs: Array<Assessment2Input['timing']> = [{}, { rebel: null }];
+  const rebelWithTiming = (timing: Assessment2Input['timing']) =>
+    buildAssessment2Result({ ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, timing }).parts.find((p) => p.key === 'member:rebel')!;
+
+  it('keeps a skipped timing unknown, whether the key is absent or null', () => {
+    for (const timing of skippedInputs) {
+      const part = rebelWithTiming(timing);
+      expect(part.timing).toBeNull();
+      expect(part.classKnown).toBe(false);
+      expect(part.mapFamily).toBe('manager');
+      expect(part.coordinates[2]).toBe(0.45);
+      expect(part.unmeasuredAxes).toContain('DEPTH');
+      expect([part.coordinates[0], part.coordinates[1]]).toEqual([FAMILY_DEFAULT.attack.energy, FAMILY_DEFAULT.attack.direction]);
+    }
+  });
+
+  it('keeps an answered timing: reactive stays reactive and classKnown is true', () => {
+    const part = rebelWithTiming({ rebel: 'reactive' as const });
+    expect(part.timing).toBe('reactive');
+    expect(part.classKnown).toBe(true);
+    expect(part.mapFamily).toBe('firefighter');
+  });
+
+  it('accepts a null protector timing in the validator, and rejects any other timing value', () => {
+    const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const } };
+    const result = JSON.parse(JSON.stringify(buildAssessment2Result(input)));
+    expect(isAssessment2Result(result)).toBe(true);
+    const tampered = { ...result, parts: result.parts.map((p: any) => (p.key === 'member:rebel' ? { ...p, timing: 'sometimes' } : p)) } as any;
+    expect(isAssessment2Result(tampered)).toBe(false);
+  });
+});
+
+describe('exile need source (plan §4 stage 5, G15)', () => {
+  const base = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'inner_critic' as const }, fears: { inner_critic: 'ashamed' as const } };
+  const ashamed = (input: Assessment2Input) => buildAssessment2Result(input).parts.find((p) => p.exile === 'ashamed')!;
+
+  it("marks a need the person stored as 'user'", () => {
+    const part = ashamed({ ...base, exileNeed: { ashamed: 'safety' as const } });
+    expect(part.need).toBe('safety');
+    expect(part.needSource).toBe('user');
+  });
+
+  it("marks the table need as 'table' when nothing is stored", () => {
+    const part = ashamed(base);
+    expect(part.need).toBe(EXILE_NEED.ashamed);
+    expect(part.needSource).toBe('table');
+  });
+
+  it('validates an exile part with or without needSource, and rejects any other value', () => {
+    const result = JSON.parse(JSON.stringify(buildAssessment2Result({ ...base, exileNeed: { ashamed: 'safety' as const } })));
+    const withSource = (value: unknown) => ({ ...result, parts: result.parts.map((p: any) => (p.kind === 'exile' ? { ...p, needSource: value } : p)) });
+    const withoutSource = JSON.parse(JSON.stringify(result));
+    for (const part of withoutSource.parts) delete part.needSource;
+    expect(isAssessment2Result(withoutSource)).toBe(true);
+    expect(isAssessment2Result(withSource('user'))).toBe(true);
+    expect(isAssessment2Result(withSource('table'))).toBe(true);
+    expect(isAssessment2Result(withSource('guess'))).toBe(false);
+    expect(isAssessment2Result(withSource(null))).toBe(false);
   });
 });

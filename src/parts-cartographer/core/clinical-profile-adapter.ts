@@ -21,7 +21,7 @@ import { hashStr } from './ports';
 import { FAMILY_LABELS, SEED_PARTS, type ArchetypeMapData, type Family, type Part } from '../pal/traits';
 import { SCORING_NAME_POOLS, type Lang } from '../i18n/strings';
 import { IV_PARTS } from '../../shared/features/landing/stickers';
-import { referenceMapPlacement } from '../../shared/core/data/map-axes';
+import { MAP_AXIS_KEYS, referenceMapPlacement } from '../../shared/core/data/map-axes';
 
 const PART_NAME_EN: Record<string, string> = {
   taskmaster: 'Taskmaster',
@@ -153,7 +153,8 @@ export function archetypeOf<T extends { cluster: string; size: number }>(family:
 
 /** The archetype a part gets when the person places it in a family: studio-made, centred, with that family's cluster and size. */
 export function studioArchetypeFor(family: Family): ArchetypeMapData {
-  const base: ArchetypeMapData = { schema: 'archetype-map.v1', sourceAssessment: 'studio', axisVersion: 2, coordinates: [0, 0, 0, 0], prominence: 55, cluster: '', size: 0 };
+  // A new studio part has no placement yet, so every axis is unknown, never a zero read as a value (build-and-fix G38).
+  const base: ArchetypeMapData = { schema: 'archetype-map.v1', sourceAssessment: 'studio', axisVersion: 2, coordinates: [0, 0, 0, 0], unmeasuredAxes: [...MAP_AXIS_KEYS], prominence: 55, cluster: '', size: 0 };
   return archetypeOf(family, base);
 }
 

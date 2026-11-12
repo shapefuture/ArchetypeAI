@@ -16,8 +16,10 @@ export type Parts2Screen =
   | { kind: 'fear'; member: MemberId }
   | { kind: 'exile'; exile: ExileId }
   | { kind: 'blend'; key: string }
+  | { kind: 'wants'; exile: ExileId }
   | { kind: 'provider'; exile: ExileId }
   | { kind: 'capacity' }
+  | { kind: 'centre' }
   | { kind: 'ground2' }
   | { kind: 'place' }
   | { kind: 'result' };
@@ -30,7 +32,7 @@ export function stageOf(screen: Parts2Screen): number {
     case 'pick': case 'timing': return 2;
     case 'confirm': return 3;
     case 'fear': case 'exile': return 4;
-    case 'blend': case 'provider': case 'capacity': case 'ground2': return 5;
+    case 'blend': case 'wants': case 'provider': case 'capacity': case 'centre': case 'ground2': return 5;
     case 'place': return 6;
     case 'result': return 7;
   }
@@ -74,10 +76,11 @@ export function buildScreens(input: Assessment2Input): Parts2Screen[] {
   for (const member of members) screens.push({ kind: 'blend', key: `member:${member}` });
   if (!input.lighter) {
     for (const exile of exiles) screens.push({ kind: 'blend', key: `exile:${exile}` });
+    for (const exile of exiles) screens.push({ kind: 'wants', exile });
     for (const exile of exiles) screens.push({ kind: 'provider', exile });
   }
 
-  screens.push({ kind: 'capacity' }, { kind: 'ground2' }, { kind: 'place' }, { kind: 'result' });
+  screens.push({ kind: 'capacity' }, { kind: 'centre' }, { kind: 'ground2' }, { kind: 'place' }, { kind: 'result' });
   return screens;
 }
 

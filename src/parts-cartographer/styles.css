@@ -530,6 +530,30 @@ input[type='range']::-moz-range-thumb { width: 22px; height: 22px; border-radius
 .universe-host.on { opacity: 1; visibility: visible; pointer-events: auto; }
 [data-theme='light'] .universe-host { background: radial-gradient(120% 90% at 50% 0%, #cfd9ff 0%, #e8e4f4 55%, #f3eee4 100%); }
 .universe-host canvas { display: block; width: 100%; height: 100%; }
+/* A soft vignette frames the map and draws the eye to the middle, where the axes cross. */
+.universe-host::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 85% 70% at 50% 48%, transparent 55%, rgba(4, 3, 10, .5) 100%);
+}
+[data-theme='light'] .universe-host::after { background: radial-gradient(ellipse 85% 70% at 50% 48%, transparent 60%, rgba(90, 78, 140, .12) 100%); }
+/* Connections toggle and legend over the 3D map (core/part-links.ts). */
+.uni-links-toggle { background: var(--surface); color: var(--text); }
+.uni-links-toggle.on { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.uni-links-legend {
+  position: relative; z-index: 40; pointer-events: auto; margin: 8px 16px 0; padding: 7px 12px; border-radius: 14px;
+  display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center;
+  background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(8px);
+  font-size: 11.5px; font-weight: 800; color: var(--text);
+}
+.uni-links-key { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.uni-links-key i { width: 16px; height: 4px; border-radius: 2px; display: inline-block; }
+/* Part sheet: connections to other parts. */
+.part-links-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.part-links-list li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 2px; border-bottom: 1.5px solid var(--line); }
+.part-link-swatch { width: 6px; align-self: stretch; border-radius: 3px; flex: 0 0 6px; }
+.part-link-form select, .part-link-form textarea { width: 100%; background: none; border: none; outline: none; color: var(--text); font: inherit; resize: vertical; }
+/* Rails that scroll sideways fade at the right edge, so a cut-off chip reads as "more this way". */
+.uni-rail { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
 .universe-chrome {
   position: absolute; inset: 0; z-index: 24; pointer-events: none; /* legacy — Innerverse owns chrome */
   display: flex; flex-direction: column;
@@ -745,6 +769,7 @@ input[type='range']::-moz-range-thumb { width: 22px; height: 22px; border-radius
   border-radius: 999px; padding: 6px 8px 6px 18px; gap: 8px; flex: 1; min-width: 0;
 }
 [data-theme='light'] .uni-search { background: rgba(255,253,247,.95); }
+.uni-search input::placeholder { text-overflow: ellipsis; }
 .uni-search input {
   flex: 1; background: none; border: none; outline: none; color: var(--text);
   font-family: var(--font-body); font-weight: 800; font-size: 14.5px; min-width: 0;

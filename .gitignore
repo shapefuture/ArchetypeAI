@@ -58,3 +58,8 @@ __pycache__/
 /DNMS Book2020.txt
 /advanced*.txt
 *.pdf
+
+# Mutation testing (stryker.config.mjs)
+/reports/mutation/
+/tmp/stryker/
+.stryker-tmp/

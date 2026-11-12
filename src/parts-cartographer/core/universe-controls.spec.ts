@@ -1,6 +1,45 @@
 import { describe, expect, it } from 'vitest';
 import { SEED_PARTS } from '../pal/traits';
-import { canonicalEnergyPart, filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
+import { canonicalEnergyPart, energyKnown, energyRank, energyTension, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from './universe-controls';
+
+describe('the energy a person reads (G39)', () => {
+  const unknown = { family: 'manager' as const, energy: 45, archetype: { levelKnown: false } } as any;
+  const known = { family: 'manager' as const, energy: 60, archetype: { levelKnown: true } } as any;
+  const legacy = { family: 'manager' as const, energy: 30 } as any;
+
+  it('reads an unanswered level as unknown, and any other energy as known', () => {
+    expect(energyKnown(unknown)).toBe(false);
+    expect(energyKnown(known)).toBe(true);
+    expect(energyKnown(legacy)).toBe(true);
+  });
+
+  it('shows the word for unknown in the reader language for unknown energy, never the layout default', () => {
+    expect(energyText(unknown)).toBe('unknown');
+    expect(energyText(unknown, 'ru')).toBe('неизвестно');
+    expect(energyText(known)).toBe('60%');
+    expect(energyText(legacy)).toBe('30%');
+  });
+
+  it('ranks an unknown energy below every known energy, for ties (G39)', () => {
+    expect(energyRank(unknown)).toBe(-1);
+    expect(energyRank(legacy)).toBe(30);
+    expect(energyRank(known)).toBe(60);
+  });
+
+  it('keeps a part of unknown energy in the energy filter, and filters known energy as before', () => {
+    const visible = filterUniverseParts([unknown, known, legacy], { manager: true }, 30);
+    expect(visible).toContain(unknown);
+    expect(visible).toContain(legacy);
+    expect(visible).not.toContain(known);
+  });
+
+  it('reads the Chemistry tension of two known energies as before, and as unknown when either energy is unknown', () => {
+    expect(energyTension(known, known)).toBe(Math.round(60 * 0.7));
+    expect(energyTension({ ...known, family: 'exile' }, { ...known, family: 'manager' })).toBe(Math.round(60 * 1.15));
+    expect(energyTension(unknown, known)).toBeNull();
+    expect(energyTension(known, unknown)).toBeNull();
+  });
+});
 
 describe('React universe controls', () => {
   it('reads parts on the 0..100 scale and clamps the ends', () => {

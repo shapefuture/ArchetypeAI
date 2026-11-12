@@ -3,6 +3,7 @@ import { localizeParts } from '../pal/seed-copy.ts';
 import { useApp } from '../app.jsx';
 import { store, KEYS } from '../core/local-store.ts';
 import { coordinatesFromTuple, project, projectionsAgree } from '../core/analytic-coordinates.ts';
+import { migrateArchetypeAxes } from '../core/usable-parts.ts';
 import { UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
 import { MAP_AXIS_KEYS } from '../../shared/core/data/map-axes.ts';
 import './replay.css';
@@ -21,8 +22,8 @@ const COPY = {
     status: { measured: 'measured', derived: 'derived', reference: 'reference', unknown: 'unknown' },
     statusLegend: {
       measured: 'Placed from your own 64-item answers.',
-      derived: 'Created in the Archetype Studio from a description. Not measured.',
-      reference: 'A shared template for the 147-item map. It is not a measurement of you.',
+      derived: 'Placed by you, or created in the Archetype Studio from a description. Not measured.',
+      reference: 'A reference position, not a measurement of you: a shared template for the 147-item map, or a family default for a 2.0 part.',
       unknown: 'No value is recorded for this axis. It is not zero.',
     },
     legendHeading: 'What the statuses mean',
@@ -44,8 +45,8 @@ const COPY = {
     status: { measured: 'измерено', derived: 'вычислено', reference: 'эталон', unknown: 'неизвестно' },
     statusLegend: {
       measured: 'Определено по вашим ответам на 64 вопроса.',
-      derived: 'Создано в Студии архетипов по описанию. Не измерено.',
-      reference: 'Общий шаблон карты на 147 вопросов. Это не измерение вас.',
+      derived: 'Размещено вами или создано в Студии архетипов по описанию. Не измерено.',
+      reference: 'Опорное положение, а не измерение вас: общий шаблон карты на 147 вопросов или стандартное положение семьи для части 2.0.',
       unknown: 'Для этой оси значение не записано. Это не ноль.',
     },
     legendHeading: 'Что означают статусы',
@@ -86,9 +87,13 @@ export function coordinatesForPart(part) {
   return coordinatesFromTuple(known, status);
 }
 
+/* Stored parts get the same axis migration as the map (migrateArchetypeAxes), so a record from an earlier build reads the
+   same here: depth stays unknown until the person sets it, and old-axis values are converted rather than shown as they were. */
 function readCoordinateParts(contextParts) {
   const stored = store.load(KEYS.parts, null);
-  const list = Array.isArray(stored) ? stored : (Array.isArray(contextParts) ? contextParts : []);
+  const list = Array.isArray(stored)
+    ? stored.filter(isObject).map(migrateArchetypeAxes)
+    : (Array.isArray(contextParts) ? contextParts : []);
   return list.filter((part) => isObject(part) && typeof part.id === 'string' && part.id.length > 0);
 }
 

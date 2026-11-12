@@ -65,7 +65,7 @@ export function prepareAgenda(appointmentId: string, rawItems: ReadonlyArray<str
 }
 
 /** Categories never part of a session share unless a later reviewed contract adds them. */
-export const NOT_INCLUDED = ['canonical-measurement', 'coach-context', 'general-journal'] as const;
+export const NOT_INCLUDED = ['canonical-measurement', 'coach-context', 'general-journal', 'parts-two-result'] as const;
 
 export interface ShareItem { readonly id: 'agenda' | 'discussion-note'; readonly provenance: 'user-authored'; readonly values: ReadonlyArray<string>; }
 export interface SharePreview {

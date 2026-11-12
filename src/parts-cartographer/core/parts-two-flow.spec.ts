@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SCENES, SCENE_FAMILIES, type Assessment2Input, type SceneAnswer } from '../../shared/core/data/assessment2/scoring';
-import { FAMILIES, type FamilyId } from '../../shared/core/data/assessment2/taxonomy';
+import { FAMILIES, type ExileId, type FamilyId } from '../../shared/core/data/assessment2/taxonomy';
 import { buildScreens, completedStagesFor, namedExiles, namedMembers, stageOf, type Parts2Screen } from './parts-two-flow';
 
 const blank = (): Assessment2Input => ({
@@ -30,7 +30,7 @@ describe('Assessment 2.0 screen order (plan §4)', () => {
     const input = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'rebel' as const }, timing: { rebel: 'reactive' as const } };
     const list = kinds(buildScreens(input));
     expect(list.slice(7, 9)).toEqual(['pick', 'pick']);
-    expect(list.slice(-4)).toEqual(['capacity', 'ground2', 'place', 'result']);
+    expect(list.slice(-5)).toEqual(['capacity', 'centre', 'ground2', 'place', 'result']);
     expect(list).toContain('timing');
   });
 
@@ -76,6 +76,7 @@ describe('Assessment 2.0 screen order (plan §4)', () => {
     expect(stageOf({ kind: 'timing', member: 'rebel' })).toBe(2);
     expect(stageOf({ kind: 'confirm', member: 'rebel' })).toBe(3);
     expect(stageOf({ kind: 'fear', member: 'rebel' })).toBe(4);
+    expect(stageOf({ kind: 'wants', exile: 'frightened' })).toBe(5);
     expect(stageOf({ kind: 'provider', exile: 'frightened' })).toBe(5);
     expect(stageOf({ kind: 'place' })).toBe(6);
     expect(stageOf({ kind: 'result' })).toBe(7);
@@ -85,5 +86,32 @@ describe('Assessment 2.0 screen order (plan §4)', () => {
 describe('exile names follow the picks', () => {
   it('names no exile from a fear left on a member who is no longer picked', () => {
     expect(namedExiles({ ...blank(), picks: { attack: 'inner_critic' as const }, fears: { rebel: 'frightened' as const } })).toEqual([]);
+  });
+});
+
+describe('the wants screen sits between the exile blend and the provider (plan §4 stage 5)', () => {
+  const picked = { ...blank(), scenes: scenesFavouring('attack', 'withdraw'), picks: { attack: 'inner_critic' as const }, fears: { inner_critic: 'ashamed' as const } };
+
+  it('orders exile level (stage 4), then exile blend, wants and provider (stage 5)', () => {
+    const screens = buildScreens(picked);
+    const at = (match: (screen: Parts2Screen) => boolean) => screens.findIndex(match);
+    const exileAt = at((s) => s.kind === 'exile' && s.exile === 'ashamed');
+    const blendAt = at((s) => s.kind === 'blend' && s.key === 'exile:ashamed');
+    const wantsAt = at((s) => s.kind === 'wants' && s.exile === 'ashamed');
+    const providerAt = at((s) => s.kind === 'provider' && s.exile === 'ashamed');
+    expect([exileAt, blendAt, wantsAt, providerAt].every((index) => index > -1)).toBe(true);
+    expect(exileAt).toBeLessThan(blendAt);
+    expect(blendAt).toBeLessThan(wantsAt);
+    expect(wantsAt).toBeLessThan(providerAt);
+    expect([stageOf(screens[exileAt]), stageOf(screens[wantsAt]), stageOf(screens[providerAt])]).toEqual([4, 5, 5]);
+  });
+
+  it('has one wants screen per named exile, in the exile order', () => {
+    const two = { ...picked, picks: { attack: 'inner_critic' as const, withdraw: 'hermit' as const }, fears: { inner_critic: 'ashamed' as const, hermit: 'powerless' as const } };
+    expect(buildScreens(two).filter((s) => s.kind === 'wants').map((s) => (s as { exile: ExileId }).exile)).toEqual(['ashamed', 'powerless']);
+  });
+
+  it('has no wants screen on the lighter path', () => {
+    expect(kinds(buildScreens({ ...picked, lighter: true }))).not.toContain('wants');
   });
 });

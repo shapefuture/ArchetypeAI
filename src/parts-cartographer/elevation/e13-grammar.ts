@@ -13,7 +13,7 @@ import { completeRatings, resumePoint, saveFailure, type DescentDraft, type Save
 import { decideAccess, type Relationship } from '../core/therapist-access';
 import type { Source as MemorySource } from '../core/personal-memory';
 
-export type CorePath = 'assessment' | 'map' | 'coach' | 'booking';
+export type CorePath = 'assessment' | 'map' | 'coach' | 'booking' | 'parts-two';
 export type Primitive = 'save' | 'undo' | 'pause' | 'inspect' | 'return';
 export type Provenance = 'observation' | 'hypothesis' | 'user-authorship' | 'canonical-measurement';
 export type Support = { supported: true; owner: string } | { supported: false; reason: string };
@@ -50,7 +50,8 @@ export const REGISTRY: Readonly<Record<CorePath, PathContract>> = {
       inspect: yes('coordinates as canonical measurement; names and traits as user authorship'),
       return: yes('same part reopened through route and sheet history'),
     },
-    provenance: { coordinates: 'canonical-measurement', name: 'user-authorship', traits: 'user-authorship', interpretation: 'hypothesis' },
+    // Coordinates are not listed: their kind depends on the part's coordinate basis (see provenanceOfCoordinates).
+    provenance: { name: 'user-authorship', traits: 'user-authorship', interpretation: 'hypothesis' },
   },
   coach: {
     needsAssessment: false,
@@ -74,6 +75,17 @@ export const REGISTRY: Readonly<Record<CorePath, PathContract>> = {
     },
     provenance: { status: 'observation', time: 'observation', consent: 'user-authorship' },
   },
+  'parts-two': {
+    needsAssessment: false,
+    primitives: {
+      save: yes('saveLastResult (parts-two-store.ts): ifs.parts2.result written and read back before the draft is cleared'),
+      undo: no('no undo control; Back keeps the answers already given, and Restart clears the whole draft'),
+      pause: yes('ifs.parts2.draft written on each change (parts-two.jsx useEffect); Resume restores the stored index'),
+      inspect: yes('ResultView (parts-two.jsx) shows the result before Save; saved parts go to the universe (parts2-universe-adapter.ts)'),
+      return: yes('a stored ifs.parts2.draft reopens on the Resume screen (parts-two.jsx loadDraft, resume)'),
+    },
+    provenance: { answers: 'observation', cursor: 'observation', savedAt: 'observation' },
+  },
 };
 
 export function predict(path: CorePath, primitive: Primitive): Support {
@@ -87,6 +99,24 @@ export function assessmentFree(path: CorePath): boolean {
 
 export function provenanceOf(path: CorePath, field: string): Provenance | null {
   return REGISTRY[path].provenance[field] ?? null;
+}
+
+/**
+ * A map part's coordinate kind depends on its coordinate basis (plan G6), not on the map as a whole. Only the 64-item
+ * response-derived basis is a canonical measurement. A self-placed 2.0 position is the person's own placement. A family
+ * default or the 147 reference is only a reference, so it is a hypothesis. Any other or missing basis is a hypothesis too.
+ */
+export function provenanceOfCoordinates(basis: string | undefined): Provenance {
+  switch (basis) {
+    case 'response-derived-64':
+      return 'canonical-measurement';
+    case 'self-placed-2':
+      return 'user-authorship';
+    case 'family-default-2':
+    case 'fixed-reference-147':
+    default:
+      return 'hypothesis';
+  }
 }
 
 const MEMORY_PROVENANCE: Record<MemorySource, Provenance> = {

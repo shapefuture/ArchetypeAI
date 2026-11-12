@@ -61,6 +61,17 @@ export function referenceMapPlacement(energy: number, direction: number, depth: 
   return { coordinates: [clampAxis(energy), clampAxis(direction), clampAxis(depth), 0], unmeasuredAxes: ['BLENDING'] };
 }
 
+/**
+ * A studio part's placement. The AI gives four numbers, or nothing. Nothing is a placeholder, so every axis is unknown
+ * for it and its zeros are never read as values (build-and-fix G38).
+ */
+export function studioMapPlacement(value: unknown): MapPlacement {
+  const given = Array.isArray(value) && value.length === 4 && value.every((entry) => typeof entry === 'number' && Number.isFinite(entry));
+  // An all-zero placement is the placeholder the studio writes for a missing one. coordinates.jsx and the migration read it the same way.
+  if (!given || (value as number[]).every((entry) => entry === 0)) return { coordinates: [0, 0, 0, 0], unmeasuredAxes: [...MAP_AXIS_KEYS] };
+  return { coordinates: (value as number[]).map(clampAxis) as MapCoordinates, unmeasuredAxes: [] };
+}
+
 /** Read the known axis values of a placement. An unmeasured axis is returned as null. */
 export function knownAxisValues(placement: { coordinates: MapCoordinates; unmeasuredAxes?: readonly MapAxisKey[] }): Record<MapAxisKey, number | null> {
   const unmeasured = new Set(placement.unmeasuredAxes ?? []);

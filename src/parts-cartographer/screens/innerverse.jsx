@@ -6,11 +6,15 @@ import { familyColor, Crest, Seg, Bars } from '../ui/ui.jsx';
 import { t as tr, UNIVERSE_DIMENSIONS_COPY } from '../i18n/strings.ts';
 import { EXERCISE_COPY } from '../../shared/i18n/strings';
 import { createStudioArchetype, ResilientAiAdapter, AI } from '../core/ai.adapter.ts';
-import { filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
+import { energyKnown, energyRank, energyText, filterUniverseParts, normalizedEnergy, searchUniverseParts } from '../core/universe-controls.ts';
 import { claimTherapistLink, linkedClients, setClientArchived, assignExercise } from '../core/therapist-link.ts';
 import { EXERCISES, EXERCISE_TYPES } from '../../shared/core/data/exercises';
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus, therapistWallLabel } from '../core/booking.ts';
-import { coordinateAffinity, DEFAULT_AXES, DIMENSION_KEYS, sanitizeArchetypeCoordinates, setAxisChoice } from '../services/universe-lens';
+import { affinityOfPart, DEFAULT_AXES, DIMENSION_KEYS, setAxisChoice } from '../services/universe-lens';
+import { studioMapPlacement } from '../../shared/core/data/map-axes';
+import { LINK_KINDS } from '../core/part-links.ts';
+import { partName, useMapLinks } from '../core/use-part-links.ts';
+import { LINK_COLORS } from '../services/universe-scene';
 import { ModalLayer } from '../ui/modal-layer.jsx';
 import { ReplayStudio } from './replay.jsx';
 import { InnerNegotiation } from './negotiation.jsx';
@@ -38,6 +42,8 @@ const CLUSTER_LABELS = {
   disorganized_attachment_shadows: ['Conflicted attachment', 'Противоречивая привязанность'],
 };
 const clusterName = (id, lang) => CLUSTER_LABELS[id]?.[lang === 'ru' ? 1 : 0] ?? id.replaceAll('_', ' ');
+/** A summary figure that is missing shows as unknown, never as zero (build-and-fix G38). */
+const summaryNumber = (value) => (value !== null && value !== undefined && Number.isFinite(Number(value)) ? String(Math.round(Number(value))) : '—');
 
 const DIMENSION_AXES = [
   { key: 'ENERGY', label: 'energy', low: 'energyHypo', high: 'energyHyper', icon: '⚡', color: '#6ED6FF' },
@@ -111,11 +117,12 @@ export function Innerverse() {
     .filter((part) => (!focusOnly || part.id === selectedId) && (!reportOnly || part.archetype?.sourceAssessment !== 'studio' && !!part.archetype)
       && (cluster === 'all' || part.archetype?.cluster === cluster)), [parts, famOn, dims.energy, focusOnly, selectedId, reportOnly, cluster]);
   const ranked = useMemo(() => [...visible].sort((a, b) => {
-    const score = (part) => { const coordinates = sanitizeArchetypeCoordinates(part.archetype?.coordinates); return coordinates ? coordinateAffinity(coordinates, dimensions, part.family === 'resource') : 0; };
-    return score(b) - score(a) || normalizedEnergy(b) - normalizedEnergy(a);
+    const score = (part) => affinityOfPart(part, dimensions);
+    return score(b) - score(a) || energyRank(b) - energyRank(a);
   }), [visible, dimensions]);
   const searchMatches = useMemo(() => searchUniverseParts(parts, q, lang).slice(0, 8), [parts, q, lang]);
-  const storyParts = useMemo(() => [...visible]
+  // The story is about the most energized parts, so only a part with a known energy can be chosen (G39).
+  const storyParts = useMemo(() => [...visible].filter(energyKnown)
     .sort((a, b) => normalizedEnergy(b) - normalizedEnergy(a)).slice(0, 3), [visible]);
   const storyEssay = lang === 'ru'
     ? profile?.constellationEssayRu || profile?.constellationEssay || ''
@@ -132,11 +139,35 @@ export function Innerverse() {
     if (!uniReady || !uniRef?.current) return;
     uniRef.current.setParts(visible);
   }, [uniReady, uniRef, visible]);
+  // Relationships: threads between related parts and labels over complexes, behind a toggle kept on this device.
+  const mapLinks = useMapLinks(parts);
+  const [linksOn, setLinksOn] = useState(() => { try { return localStorage.getItem('ifs.universe.links') === 'on'; } catch { return false; } });
+  const toggleLinks = () => setLinksOn((on) => {
+    try { localStorage.setItem('ifs.universe.links', on ? 'off' : 'on'); } catch { /* the choice is a convenience */ }
+    return !on;
+  });
+  useEffect(() => {
+    if (!uniReady || !uniRef?.current) return;
+    const byId = new Map(parts.map((part) => [part.id, part]));
+    uniRef.current.setLinks?.({
+      links: mapLinks.links,
+      complexes: mapLinks.complexes.map((complex) => ({ id: complex.id, members: complex.members, label: `${t('complexLabel')}: ${partName(byId.get(complex.core), lang)}` })),
+    });
+  }, [uniReady, uniRef, mapLinks, parts, lang, t]);
+  useEffect(() => {
+    if (uniReady) uniRef?.current?.setLinksVisible?.(linksOn);
+  }, [uniReady, uniRef, linksOn]);
   useEffect(() => {
     if (!uniReady || !uniRef?.current) return;
     uniRef.current.setDimensions(dimensions);
-    uniRef.current.setView?.({ axes, isolation, selectedId });
-  }, [uniReady, uniRef, dimensions, axes, isolation, selectedId]);
+    uniRef.current.setView?.({ axes, isolation, selectedId, unknownText: lang === 'ru' ? 'неизвестно' : 'unknown' });
+  }, [uniReady, uniRef, dimensions, axes, isolation, selectedId, lang]);
+  // The guides carry the end words of the plotted axes, in the reader's language. Sent again only when the language changes.
+  useEffect(() => {
+    if (!uniReady || !uniRef?.current) return;
+    const copy = UNIVERSE_DIMENSIONS_COPY[lang];
+    uniRef.current.setGuides?.(Object.fromEntries(DIMENSION_AXES.map((axis) => [axis.key, { low: copy[axis.low], high: copy[axis.high], color: axis.color }])));
+  }, [uniReady, uniRef, lang]);
   useEffect(() => {
     let active = true;
     if (uniReady) uniRef?.current?.xrSupported?.().then((supported) => { if (active) setXrSupported(supported); });
@@ -212,10 +243,22 @@ export function Innerverse() {
           { v: 'clusters', l: t('uniClusters') },
           { v: 'stories', l: t('uniStories') },
         ]} />
+        <button type="button" className={`chip uni-links-toggle${linksOn ? ' on' : ''}`} aria-pressed={linksOn} onClick={toggleLinks}
+          style={{ flex: '0 0 auto' }}>🔗 {t('links')}</button>
       </div>
+      {linksOn && (
+        <div className="uni-links-legend" role="note" aria-label={t('links')}>
+          {mapLinks.links.length === 0
+            ? <span>{t('linksNone')}</span>
+            : LINK_KINDS.filter((kind) => mapLinks.links.some((link) => link.kind === kind)).map((kind) => (
+              <span key={kind} className="uni-links-key"><i style={{ background: `#${LINK_COLORS[kind].toString(16).padStart(6, '0')}` }} />{t(`linkLegend_${kind}`)}</span>
+            ))}
+          {mapLinks.complexes.length > 0 && <span className="uni-links-key" title={t('complexHint')}>◌ {t('complexLabel')} · {mapLinks.complexes.length}</span>}
+        </div>
+      )}
 
       {universeMode === 'parts' && (
-        <div className="row" style={{ position: 'absolute', left: 0, right: 0, bottom: 86, padding: '0 16px', gap: 8, overflowX: 'auto', pointerEvents: 'auto', zIndex: 30 }}>
+        <div className="row uni-rail" style={{ position: 'absolute', left: 0, right: 0, bottom: 86, padding: '0 16px', gap: 8, overflowX: 'auto', pointerEvents: 'auto', zIndex: 30 }}>
           {ranked.map((part) => (
             <button key={part.id} className="chip" style={{ flex: '0 0 auto', background: 'var(--surface)', borderColor: familyColor(part.family), color: 'var(--text)', backdropFilter: 'blur(6px)' }}
               onClick={() => openPart(part)} onDoubleClick={() => toggleCompare(part.id)}>
@@ -247,7 +290,7 @@ export function Innerverse() {
               style={{ width: '100%', padding: 10, border: '1px solid var(--line)', borderRadius: 12, color: 'var(--text)', textAlign: 'left' }}>
               <span style={{ color: familyColor(part.family) }}>{FAMILY_LABELS[part.family].icon}</span>
               <span className="grow" style={{ marginLeft: 8, fontWeight: 900 }}>{lang === 'ru' ? part.nameRu ?? part.name : part.nameEn ?? part.name}</span>
-              <span className="chip" style={{ fontSize: 10 }}>{Math.round(normalizedEnergy(part))}%</span>
+              <span className="chip" style={{ fontSize: 10 }}>{energyText(part, lang)}</span>
             </button>
           ))}
           <p className="faint mt8" style={{ fontSize: 10 }}>{lang === 'ru' ? 'История — приглашение к саморефлексии, а не диагноз.' : 'A story is an invitation to reflect, not a diagnosis.'}</p>
@@ -266,7 +309,7 @@ export function Innerverse() {
       )}
 
       {/* bottom action tray */}
-      <div className="row universe-actions" style={{ position: 'absolute', left: 16, right: 16, bottom: 22, gap: 9, pointerEvents: 'auto', zIndex: 40, overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: 7 }}>
+      <div className="row universe-actions uni-rail" style={{ position: 'absolute', left: 16, right: 16, bottom: 22, gap: 9, pointerEvents: 'auto', zIndex: 40, overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: 7 }}>
         <button className="tray-btn" onClick={() => openStudio()}>🎨 {t('archetype')}</button>
         <button className="tray-btn" onClick={() => setOverlay('synastry')}>💞 {t('synastry')}</button>
         <button className="tray-btn" onClick={() => { downloadBackup(); toast('⬇ ' + t('saveBackup')); }}>💾 {t('saveBackup')}</button>
@@ -292,7 +335,7 @@ export function Innerverse() {
                 <div key={id} className="grow center">
                   <div style={{ width: 56, margin: '0 auto' }}><Character traits={p.traits} lite showShadow={false} /></div>
                   <div style={{ fontWeight: 900, fontSize: 13 }}>{p.name}</div>
-                  <div className="faint" style={{ fontSize: 11, fontWeight: 800 }}>⚡{p.energy}% · {FAMILY_LABELS[p.family][lang]}</div>
+                  <div className="faint" style={{ fontSize: 11, fontWeight: 800 }}>⚡{energyText(p, lang)} · {FAMILY_LABELS[p.family][lang]}</div>
                 </div>
               );
             })}
@@ -332,8 +375,8 @@ export function Innerverse() {
               <div className="kicker">{lang === 'ru' ? 'Четырёхмерная линза' : 'Four-dimensional lens'}</div>
               <p className="faint mt6" style={{ fontSize: 10, lineHeight: 1.5 }}>
                 {lang === 'ru'
-                  ? 'Подсветка показывает близость частей к выбранным координатам. Ответы и показатели не меняются.'
-                  : 'Highlight parts by their affinity to these coordinates. Answers and scores stay unchanged.'}
+                  ? 'Кольцо показывает слитность: холодное — «Могу быть рядом», тёплое — «Это управляет мной», слабое — близко к нейтральному, без кольца — не задано. Выцветшая часть имеет ось, которую вы ещё не задали.'
+                  : 'The ring shows blending: cool means I can be with it, warm means it runs me, faint means near neutral, and no ring means not set. A faded part has an axis you have not set yet.'}
               </p>
               {DIMENSION_AXES.map((axis) => (
                 <div key={axis.key} className="mt12">
@@ -427,13 +470,14 @@ function ArchetypeStudio({ initialIdea = '', onClose, onCreate }) {
       setDraft({
         id: pid(), name: nm,
         family: fam, traits, role: desc,
-        archetype: { schema: 'archetype-map.v1', sourceAssessment: 'studio', axisVersion: 2, coordinates: sanitizeArchetypeCoordinates(model?.coordinates) ?? [0, 0, 0, 0], cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[fam], prominence: 55, size: 0.8, description: String(model?.description ?? desc).slice(0, 2000), invitation: String(model?.invitation ?? '').slice(0, 2000), shadow: String(model?.shadow ?? '').slice(0, 2000) },
+        archetype: { schema: 'archetype-map.v1', sourceAssessment: 'studio', axisVersion: 2, ...studioMapPlacement(model?.coordinates), cluster: { manager: 'managers', firefighter: 'firefighters', exile: 'exiles', resource: 'resources' }[fam], prominence: 55, size: 0.8, description: String(model?.description ?? desc).slice(0, 2000), invitation: String(model?.invitation ?? '').slice(0, 2000), shadow: String(model?.shadow ?? '').slice(0, 2000) },
         blurb: '', energy: 55, burden: '—', need: '—', voice: '—', star: false, since: 'today',
       });
     } catch {
       if (studioRequest.current?.signal.aborted) return;
       const fam = 'manager';
-      setDraft({ id: pid(), name: idea.slice(0, 18) || 'New part', family: fam, traits: randomTraits(fam), role: idea.slice(0, 60), blurb: '', energy: 50, burden: '—', need: '—', voice: '—', star: false, since: 'today' });
+      // No AI placement: the part's axes are unknown, not zero (build-and-fix G38).
+      setDraft({ id: pid(), name: idea.slice(0, 18) || 'New part', family: fam, traits: randomTraits(fam), role: idea.slice(0, 60), archetype: { schema: 'archetype-map.v1', sourceAssessment: 'studio', axisVersion: 2, ...studioMapPlacement(undefined), cluster: 'managers', prominence: 50, size: 0.8 }, blurb: '', energy: 50, burden: '—', need: '—', voice: '—', star: false, since: 'today' });
     }
     setBusy(false);
   };
@@ -654,8 +698,8 @@ export function SpecialistView() {
           <div className="card flat mt10" style={{ padding: 11 }}>
             <div className="kicker" style={{ color: 'var(--accent-text)' }}>{client.summary.headline}</div>
             <div className="row wrap mt8" style={{ gap: 6 }}>
-              <span className="chip">{t('burden')}: {Math.round(Number(client.summary.burden) || 0)}</span>
-              <span className="chip">{t('energy')}: {Math.round(Number(client.summary.selfEnergy) || 0)}</span>
+              <span className="chip">{t('burden')}: {summaryNumber(client.summary.burden)}</span>
+              <span className="chip">{t('energy')}: {summaryNumber(client.summary.selfEnergy)}</span>
               <span className="chip">{t('activeComplexes')}: {client.summary.activeComplexes?.length ?? 0}</span>
             </div>
             <div className="faint mt8" style={{ fontSize: 11.5 }}>

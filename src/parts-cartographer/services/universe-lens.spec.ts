@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  affinityOfPart,
   archetypeCoordinatePosition,
-  archetypeLensOffset,
   coordinateAffinity,
   DEFAULT_AXES,
-  dimensionalLensOffset,
   normalizeAxes,
   sanitizeArchetypeCoordinates,
   setAxisChoice,
@@ -12,6 +11,22 @@ import {
 } from './universe-lens';
 
 const dimensions = (overrides: Partial<typeof ZERO_DIMENSIONS> = {}) => ({ ...ZERO_DIMENSIONS, ...overrides });
+
+describe('a part affinity to the lens (G38)', () => {
+  it('leaves an unmeasured axis out, so a placeholder neither raises nor lowers the affinity', () => {
+    const blendingLens = dimensions({ BLENDING: 1 });
+    const measured = { family: 'manager', archetype: { coordinates: [0.2, 0.1, 0.3, 0], unmeasuredAxes: [] } };
+    const unmeasured = { family: 'manager', archetype: { coordinates: [0.2, 0.1, 0.3, 0], unmeasuredAxes: ['BLENDING'] } };
+    expect(affinityOfPart(measured, blendingLens)).toBeGreaterThan(0);
+    expect(affinityOfPart(unmeasured, blendingLens)).toBe(0);
+  });
+
+  it('matches the coordinate affinity when every axis is measured', () => {
+    const lens = dimensions({ ENERGY: 0.5 });
+    const part = { family: 'manager', archetype: { coordinates: [0.4, 0, 0, 0], unmeasuredAxes: [] } };
+    expect(affinityOfPart(part, lens)).toBeCloseTo(coordinateAffinity([0.4, 0, 0, 0], lens, false, []));
+  });
+});
 
 // Tuple order is energy, direction, depth, blending (plan §3.5). The default plot is energy (x), depth (y), direction (z).
 describe('universe dimensional lens (map axes)', () => {
@@ -42,33 +57,6 @@ describe('universe dimensional lens (map axes)', () => {
     expect(coordinateAffinity([-1, 0, 0, 0], dimensions({ ENERGY: 1 }))).toBeCloseTo(Math.exp(-8));
   });
 
-  it('applies visual lens controls to individual coordinates', () => {
-    const lens = dimensions({ ENERGY: 1, DIRECTION: 0.5, DEPTH: -0.5, BLENDING: 1 });
-    // x = (1·1 + (−0.5)(−0.5))·3.2 = 4, y = (0.5·0.5 + 1·1)·3.2 = 4, z = (1·1 − 1·1)·3.2 = 0
-    expect(archetypeLensOffset([1, 0.5, -0.5, 1], lens)).toEqual([4, 4, 0]);
-    expect(archetypeLensOffset([0, 0, 0, 0], lens)).toEqual([0, 0, 0]);
-  });
-
-  it('leaves every family at its original position when all expressions are neutral', () => {
-    for (const family of ['manager', 'firefighter', 'exile', 'resource'] as const) {
-      expect(dimensionalLensOffset(family, ZERO_DIMENSIONS)).toEqual([0, 0, 0]);
-    }
-  });
-
-  it('moves families according to each visual axis, using the family reference values', () => {
-    const expectOffset = (actual: number[], expected: number[]) => {
-      actual.forEach((value, index) => expect(value).toBeCloseTo(expected[index], 10));
-    };
-    // manager energy 0.4: x = 0.4·3.2 = 1.28, z = −0.4·3.2 = −1.28
-    expectOffset(dimensionalLensOffset('manager', dimensions({ ENERGY: 1 })), [1.28, 0, -1.28]);
-    // exile direction −0.2: y = −0.2·3.2 = −0.64
-    expectOffset(dimensionalLensOffset('exile', dimensions({ DIRECTION: 1 })), [0, -0.64, 0]);
-    // resource depth 0.4: x = 0.4·3.2 = 1.28
-    expectOffset(dimensionalLensOffset('resource', dimensions({ DEPTH: 1 })), [1.28, 0, 0]);
-    // firefighter direction 0.2: y = 0.2·3.2 = 0.64
-    expectOffset(dimensionalLensOffset('firefighter', dimensions({ DIRECTION: 1 })), [0, 0.64, 0]);
-  });
-
   it('keeps the three plotted axes distinct when a chosen axis is already in use', () => {
     expect(setAxisChoice(['ENERGY', 'DIRECTION', 'DEPTH'], 1, 'ENERGY')).toEqual(['DIRECTION', 'ENERGY', 'DEPTH']);
     expect(setAxisChoice(['ENERGY', 'DIRECTION', 'DEPTH'], 0, 'ENERGY')).toEqual(['ENERGY', 'DIRECTION', 'DEPTH']);
@@ -83,16 +71,6 @@ describe('universe dimensional lens (map axes)', () => {
     expect(normalizeAxes(undefined)).toEqual(DEFAULT_AXES);
     // The old axis names are no longer valid, so a stored choice falls back to the default.
     expect(normalizeAxes(['AGENCY', 'TEMPERATURE', 'FOCUS'])).toEqual(DEFAULT_AXES);
-  });
-
-  it('combines expressions linearly and differentiates family clusters', () => {
-    const lens = dimensions({ ENERGY: 0.5, DIRECTION: -0.25, DEPTH: 0.75, BLENDING: 1 });
-    const manager = dimensionalLensOffset('manager', lens);
-    const resource = dimensionalLensOffset('resource', lens);
-    expect(manager).toHaveLength(3);
-    expect(manager.every(Number.isFinite)).toBe(true);
-    expect(resource).toHaveLength(3);
-    expect(resource).not.toEqual(manager);
   });
 });
 

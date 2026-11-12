@@ -92,6 +92,14 @@ describe('E03.04 capacity-sensitive presentation', () => {
     }
   });
 
+  it('labels a measurement canonical only for the measured routes, never for Assessment 2.0', () => {
+    expect(presentationPlan('reflection-64', 'high').provenance.measurement).toBe('canonical');
+    expect(presentationPlan('battery-147', 'high').provenance.measurement).toBe('canonical');
+    expect(presentationPlan('situation-inquiry', 'high').provenance.measurement).toBe('none');
+    // RouteMode leaves out parts-two, so the cast is the only way to check the 2.0 route here.
+    expect(presentationPlan('parts-two' as unknown as RouteMode, 'high').provenance.measurement).toBe('none');
+  });
+
   it('gives the same inquiry outcome in every capacity mode for the same answers', () => {
     const outcomes = CAPACITY_LEVELS.map((capacity) => answered(session(capacity), [['q1', 'The deadline moved']]));
     expect(outcomes.map((s) => formulation(s.inquiry))).toEqual([OBSERVATION, OBSERVATION, OBSERVATION]);

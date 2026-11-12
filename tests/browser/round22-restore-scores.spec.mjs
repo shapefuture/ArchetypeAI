@@ -34,9 +34,10 @@ test('restoring an archived report puts that report\'s part scores on the map', 
   }, archivedAt);
 
   await page.getByRole('button', { name: /^📖 Report$|^Report/ }).first().click();
-  await expect(page.locator('#clinical-history')).toBeVisible();
+  await expect(page.locator('#clinical-history')).toBeVisible({ timeout: 20_000 });
   await page.getByRole('button', { name: /^Restore backup:/ }).first().click();
-  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ifs.profile')).createdAt)).toBe(archivedAt);
+  // The restore can take longer than 5 s on a busy runner, so this wait allows 20 s, like the probe's other waits.
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ifs.profile')).createdAt), { timeout: 20_000 }).toBe(archivedAt);
 
   // The restored profile says the Pleaser scored T 20. The map part must show the same energy, not today's.
   await expect.poll(currentEnergy, { timeout: 10_000 }).toBe(0);

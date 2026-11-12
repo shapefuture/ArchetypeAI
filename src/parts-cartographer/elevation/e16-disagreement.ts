@@ -6,15 +6,21 @@
 // Rules: 64 and 147 stay separate records with their own version and coordinate status; a missing or unknown axis
 // stays null, never zero; the fourth dimension is always shown as +1; a note keeps its author, provenance and the
 // results it refers to; agreement means equality at two-decimal display precision.
+// 2.0 parts are records too, one per part (B10): their provenance follows their placement, and an unmeasured axis stays unknown.
 // NOT done: the table and scene UI (step 05), wiring to the scene service or Firestore (step 06), note storage,
 // rules and consent screens, the 64/147 scoring itself (not read or changed), evidence and acceptance (steps 10-12).
 // No clinical, efficacy or validation claim is made.
 
 import { AXES, project, projectionsAgree, type Axis, type Coordinate, type CoordinateStatus } from '../core/analytic-coordinates';
 import { decideAccess, type AccessDecision, type Relationship } from '../core/therapist-access';
+import type { Assessment2Result } from '../../shared/core/data/assessment2/scoring';
+import { MAP_AXIS_KEYS } from '../../shared/core/data/map-axes';
 
-export type Instrument = '64' | '147';
+export type Instrument = '64' | '147' | 'parts-2';
 export type Completeness = 'complete' | 'sparse' | 'empty';
+
+/** Assessment 2.0 asks for no context, so its records say 'unspecified', which is never the same context as another record. */
+export const PARTS2_CONTEXT = 'unspecified';
 
 /** One source record. `coordinates` may be sparse; the record is never merged with the other instrument. */
 export interface ResultRecord {
@@ -24,7 +30,12 @@ export interface ResultRecord {
   readonly context: string;
   readonly takenAt: string;
   readonly coordinates: ReadonlyArray<Coordinate>;
+  /** Assessment 2.0 only: whether the person placed the part. A missing value counts as a default. */
+  readonly placement?: 'placed' | 'default';
 }
+
+/** Where a record's values come from: a canonical measurement, the person's own placement, or a hypothesis. */
+export type Provenance = 'canonical-measurement' | 'user-authorship' | 'hypothesis';
 
 export interface RecordRef {
   readonly recordId: string;
@@ -32,7 +43,7 @@ export interface RecordRef {
   readonly instrumentVersion: string;
   readonly context: string;
   readonly takenAt: string;
-  readonly provenance: 'canonical-measurement';
+  readonly provenance: Provenance;
   readonly completeness: Completeness;
 }
 
@@ -56,9 +67,15 @@ export function completenessOf(coords: ReadonlyArray<Coordinate>): Completeness 
   return known === AXES.length ? 'complete' : known === 0 ? 'empty' : 'sparse';
 }
 
+/** Provenance follows the instrument (B10). 64 and 147 are canonical measurements. A placed 2.0 part is the person's own authorship. Any other 2.0 record is a hypothesis, so authorship is never claimed without a placement. */
+export function provenanceOf(r: ResultRecord): Provenance {
+  if (r.instrument !== 'parts-2') return 'canonical-measurement';
+  return r.placement === 'placed' ? 'user-authorship' : 'hypothesis';
+}
+
 const refOf = (r: ResultRecord): RecordRef => ({
   recordId: r.recordId, instrument: r.instrument, instrumentVersion: r.instrumentVersion, context: r.context,
-  takenAt: r.takenAt, provenance: 'canonical-measurement', completeness: completenessOf(r.coordinates),
+  takenAt: r.takenAt, provenance: provenanceOf(r), completeness: completenessOf(r.coordinates),
 });
 
 /** Compares two source records axis by axis. An unknown on either side stays unknown. */
@@ -79,12 +96,37 @@ export function compareResults(left: ResultRecord, right: ResultRecord): Compare
       left: refOf(left),
       right: refOf(right),
       comparability: left.instrument === right.instrument ? 'same-instrument' : 'cross-instrument',
-      sameContext: left.context === right.context,
+      sameContext: left.context === right.context && left.context !== PARTS2_CONTEXT,
       sameTime: Date.parse(left.takenAt) === Date.parse(right.takenAt),
       axes,
       unknownAxes: axes.filter((x) => x.relation === 'unknown').map((x) => x.axis),
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Assessment 2.0 parts as records (B10)
+// ---------------------------------------------------------------------------
+
+/**
+ * One record per 2.0 part. Axis n is slot n of the map tuple (MAP_AXIS_KEYS): ENERGY, DIRECTION, DEPTH, BLENDING.
+ * An axis the part does not list as unmeasured is known, with status 'derived', because a 2.0 value is the person's
+ * placement or a family default, never an instrument measurement. An unmeasured axis stays null.
+ */
+export function resultRecordsFromParts2(result: Assessment2Result, takenAt: string): ReadonlyArray<ResultRecord> {
+  return result.parts.map((part): ResultRecord => ({
+    recordId: `parts-2:${part.key}`,
+    instrument: 'parts-2',
+    instrumentVersion: String(result.version),
+    context: PARTS2_CONTEXT,
+    takenAt,
+    placement: part.placement,
+    coordinates: AXES.map((axis): Coordinate => (
+      part.unmeasuredAxes.includes(MAP_AXIS_KEYS[axis])
+        ? { axis, value: null, status: 'unknown' }
+        : { axis, value: part.coordinates[axis], status: 'derived' }
+    )),
+  }));
 }
 
 // ---------------------------------------------------------------------------

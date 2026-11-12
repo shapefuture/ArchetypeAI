@@ -53,6 +53,8 @@ Existing ids are kept. New members are marked.
 
 That is 8 families and 28 members: the 10 existing protectors and 18 new ones.
 
+**Capacity name (G18):** the healthy twin of numb or soothe is called "Player" in English. The Russian name stays «Исследователь».
+
 Attributes on each instance of a part:
 
 - **Timing:** preventive or reactive. This replaces the fixed manager and firefighter classes.
@@ -68,6 +70,10 @@ Attributes on each instance of a part:
 | Providers | The six roles in §3.1, each in a form the person chooses: own adult self, a real or ideal person, an ancestor, an animal helper, a place, a spiritual figure, a fictional character |
 | Ground | Calm place, body anchor, breath or rhythm, nature, real people |
 
+**Ground item (G16):** `containerForLater` reads "Set it down somewhere safe to come back to later". The wording follows the IFS container practice. The id stays, because stored drafts and results may exist.
+
+**Provider forms (G17):** the "real or ideal person" above is two forms, `realPerson` and `idealParent`, each with its own id. Both stay. Renaming either id would need a migration.
+
 ### 3.4 Conflicts
 
 Four types, derived from the result and not from a fixed list:
@@ -75,7 +81,7 @@ Four types, derived from the result and not from a fixed list:
 1. Strategy against strategy: two protectors guard the same exile in opposite ways.
 2. Protector against exile: a part blocks a feeling.
 3. Critic against the one criticised.
-4. Need against need: connection against agency, safety against aliveness, belonging against authenticity.
+4. Need against need: connection against agency, safety against aliveness.
 
 ### 3.5 Axes
 
@@ -87,6 +93,8 @@ Four types, derived from the result and not from a fixed list:
 | Blending (+1) | I can be with it | it runs me | the Toward answer in stage 5 |
 
 Energy, Direction and Depth are the three plotted axes. Blending is the "+1" value.
+
+**The 64 projection** (`legacy64ToMapPlacement`, `src/shared/core/data/map-axes.ts:54`) sets energy to (temperature − agency) ÷ 2 and direction to (focus + attachment) ÷ 2. Depth and blending are unmeasured. Read against the 64 pole labels in `screens/legacy-report.jsx`, energy is positive for Active and Expressive, and negative for Receptive and Composed. Direction is positive for Other-focused and Anxious, and negative for Self-focused and Avoidant. The formula is a guess. `src/shared/core/data/map-axes-projection.spec.ts` checks its signs against those labels.
 
 ## 4. Flow
 
@@ -173,7 +181,7 @@ interface Assessment2Result {
   completedStages: number[];            // 0..6
   familyScores: Record<FamilyId, number | null>;
   parts: Part2[];                        // up to five protectors, up to three exiles
-  providers: { need: NeedId; access: 'easy' | 'effort' | 'none' | null; form?: string }[];
+  // no top-level providers: each exile part carries its own (see Part2)
   capacities: { easiest: CapacityId | null; hardest: CapacityId | null };
   ground: string[];
   conflicts: Conflict2[];                // derived, recomputed on read
@@ -190,14 +198,19 @@ interface Part2 {
   level: number | null;                  // 1..5, null when not measured
   confidence: 'high' | 'medium' | 'low';
   guards?: string[];                     // exile ids the person named
-  coords: Record<'energy' | 'direction' | 'depth' | 'blending',
-    { value: number | null; status: 'measured' | 'reference' | 'unknown' }>;
+  coordinates: [number, number, number, number]; // MAP_AXIS_KEYS order: energy, direction, depth, blending; each in [-1, 1]
+  unmeasuredAxes: MapAxisKey[];                  // readers treat these axes as unknown
+  placement: 'placed' | 'default';
+  depthState: 'set' | 'unsure' | 'unanswered';
+  provider?: { access: 'easy' | 'effort' | 'none'; form: ProviderForm | null }; // exile parts only
 }
 ```
 
+**Built shape.** This matches `src/shared/core/data/map-axes.ts` and the 64 and 147 map parts. `coordinates` is the four-slot tuple in `MAP_AXIS_KEYS` order (energy, direction, depth, blending). An axis in `unmeasuredAxes` keeps a placeholder in its slot, and readers treat it as unknown. The 64 parts measure energy and direction, and leave depth and blending unmeasured. The 147 parts take energy, direction and depth from the reference table, and leave blending unmeasured. In a 2.0 result, `placement` is `placed` when energy, direction or depth was set, and `default` otherwise. `depthState` is `set` when depth was set, `unsure` when the person chose "not sure", and `unanswered` otherwise. Each exile part carries its own `provider` (`access` and `form`), and there is no top-level list.
+
 Rules carried over from the current code:
 
-- Unknown is never stored or shown as zero.
+- Unknown is never shown as zero. An unmeasured axis may keep a placeholder in its coordinates slot, and `unmeasuredAxes` marks it.
 - The same answers always produce the same result.
 - `parts.ts` says ids are never renamed. This plan adds ids and attributes and renames nothing.
 
@@ -220,7 +233,7 @@ All copy is needed in English and Russian. Russian follows `src/shared/i18n/stri
 Wording rules:
 
 - Describe what the reaction does, not its costume. A card must not say or imply that faith, humour or reasoning is a defence in itself.
-- One behaviour per item. A stated time window on every frequency item.
+- One behaviour per item. The time window is stated once, above the items on the same screen (G10), not repeated on each item.
 - No reverse-keyed items.
 
 ## 8. Safety
@@ -241,7 +254,7 @@ Wording rules:
 | 3 | Stages 3–5 screens; conflict derivation; result screen | 1.5 weeks |
 | 4 | Stage 6 placement; coordinates panel on the new axes; 3+1 as a table | 1 week |
 | 5 | Pilot (§10) | 3 weeks elapsed |
-| 6 | Decide on defaults; 3D scene for the 3+1 view | after the pilot |
+| 6 | Decide on defaults; 3D scene for the 3+1 view | The 3D scene is built now, by owner decision (2026-11-10; see build-and-fix-plan.md B12). The defaults still wait for the pilot. |
 
 Suggested locations, to be confirmed against the code at build time: data and scoring under `src/shared/core/data/`, screens under `src/parts-cartographer/screens/`.
 
@@ -305,7 +318,15 @@ Owner decisions applied: Assessment 2.0 is the default route; the four map axes 
 | Screens (stages 0–6, result) and the placement pad | `src/parts-cartographer/screens/parts-two.jsx`, `parts-two-pad.jsx`, `parts-two.css` |
 | Result to map parts | `src/parts-cartographer/core/parts2-universe-adapter.ts` |
 | Stored-axis migration on load | `src/parts-cartographer/core/usable-parts.ts` |
-| Routes: 2.0 first and recommended; 147 labelled as the optional deep battery; Quick Scan removed | `core/assessment-routes.ts`, `core/boot.ts`, `screens/landing.jsx`, `elevation/e02-entry.ts` |
+| Routes: 2.0 first and recommended; 147 labelled as the optional deep battery; Quick Scan removed, with its copy keys (M9) | `core/assessment-routes.ts`, `core/boot.ts`, `screens/landing.jsx`, `elevation/e02-entry.ts` |
+| Timing is stored as unknown when skipped (D1); a lead under 0.15 makes the result low on every path (D2) | `src/shared/core/data/assessment2/scoring.ts` |
+| Stage 5: the exile's need and blend, after the exile is named (B3); the Centre (B6) | `core/parts-two-flow.ts`, `screens/parts-two.jsx` |
+| Provider points on the 3D map, named by their short role (B7) | `core/parts2-universe-adapter.ts` |
+| Stored result: written, read back before the draft is cleared, and shown as the last result (B9) | `core/parts-two-store.ts`, `screens/parts-two.jsx` |
+| Provisional family pad after the first pick and on the result, top three marked (B2) | `screens/parts-two.jsx` |
+| 3D view: 3+1, ring and fade, guides and camera (B12) | See build-and-fix-plan.md, B12 |
+| E16 comparison, module side only: 2.0 parts as records, provenance from placement (B10); no screen (G24) | `elevation/e16-disagreement.ts` |
+| Pilot analysis functions, tested on synthetic fixtures only (O3) | `src/shared/core/data/assessment2/pilot-metrics.ts` |
 
 ### Departures from the proposal
 
@@ -318,6 +339,15 @@ Owner decisions applied: Assessment 2.0 is the default route; the four map axes 
 - **64-derived parts** have Depth and Blending unmeasured. They sit at the middle depth on the 3D map, and the coordinates panel shows those axes as unknown.
 - **147 reference parts** have Blending unmeasured. Their Energy, Direction and Depth come from the taxonomy defaults.
 - **Interpretation of "everywhere":** the 64 instrument's own relational scoring, synastry, report and backup keep their original names, because the 64 result and its backups must still read across versions. Only the map-facing layer uses the new axes.
+- **Stage 5 order:** the exile's need and blend are asked after the exile is named (B3), and the provider point comes after them.
+- **The Centre** (B6) is stage 5, after capacity. It asks awareness and will from 1 to 5, and up to three of eight qualities, and each is skippable (G19). It is not drawn on the map (G20).
+- **Provider points** are drawn beside their exile as resource points (B7). Each is named by its short role (Guardian, Companion, Mirror, Blesser, Mentor, Playmate). It has no blurb, and the full sentence stays on the provider screen.
+- **Ground copy:** the "set it down for later" item has the B4 wording. Ids are unchanged (G16).
+- **Coordinates** are a four-slot tuple in map-axis order, with the list of unmeasured axes (B5). Section 6 shows the built shape.
+- **Capacity name:** the English name of the healthy twin of numb or soothe is Player (G18). The Russian name is unchanged.
+- **Provider blending:** a provider point never has a blending value, so its blending stays unmeasured even when its exile's blending is known (build-and-fix G37).
+- **Unknown axes:** a stored unknown axis keeps a placeholder number in its coordinates slot, and `unmeasuredAxes` names it. Readers check that list. The 3D map draws such parts at their placeholder positions. A 2.0 part with an unset spatial axis is ghosted, a 64 or 147 unknown axis is labelled in the detail view, and the isolation view tags a part with no value on the isolated axis. The lens never counts an unmeasured axis, and the depth slider reads "not answered" to assistive technology (build-and-fix G38).
+- **Unknown energy:** a 2.0 part with no answered level reads as unknown for its energy, not the layout default of 45. The energy filter keeps it visible, and the Chemistry tension and the story card treat it as unknown (build-and-fix G39). A studio part with no AI placement, or an all-zero placement, is unknown on every axis (G38). Parts made by hand keep a fixed default energy (build-and-fix G40).
 
 ### Guesses this build depends on (to be settled by the pilot)
 
@@ -339,24 +369,27 @@ An independent review of the first build found the issues below. Fixed in this c
 - The two Quick Scan buttons still read Quick scan. Fixed: they now show the 2.0 title. Self-placed coordinates were labelled measured. Fixed: they are labelled derived.
 - The provider screen did not carry the plan §8 test. Fixed: the test is shown there. Pick screens now show the provisional family ranking from the first six choices.
 
-Depth answers, found when the question was asked: placement stored the default depth as the person's answer, and skipping placement left depth looking known. Fixed: each axis is recorded only when the person sets it. Depth has three states: set, not sure, and not answered. Unset axes are unknown in the coordinates panel, and the lens and conflict checks leave them out. The 3D map still draws them at reference positions, which is the open decision below. Parts and drafts saved by the earlier build are read with depth unknown, and their placements are not resumed. Cloud copies and history restores keep the unknown flags. Re-run 2.0 to correct earlier placements.
+Depth answers, found when the question was asked: placement stored the default depth as the person's answer, and skipping placement left depth looking known. Fixed: each axis is recorded only when the person sets it, and a drag answers only the axis it moved along (a press answers both). Depth has three states: set, not sure, and not answered. Unset axes are unknown in the coordinates panel, which applies the map's axis migration to stored parts, so an earlier record reads the same in both places. The lens (the visual view over the 3D map, `universe-lens.ts`) and the conflict checks leave unset axes out. The 3D map still draws them at reference positions. B12 decided that unset axes are ghosted and labelled, not hidden (G22, G31, G32). Parts and drafts saved by the earlier build are read with depth unknown, and their placements are not resumed. Cloud copies and history restores keep the unknown flags. Re-run 2.0 to correct earlier placements.
 
 Departures the review raised, now recorded as decisions:
 
 - Provider forms include your future self, from the resource discussion. Plan §3.3 did not list it.
 - A low ground rating shows a hint and the lighter option. It does not switch the path automatically, because the owner chose exile on by default.
 
-Open decisions for the owner:
+Open decisions, with their status:
 
-- Unknown axes on the 3D map. Parts with an unknown axis, from 2.0 or the 64, are still drawn at reference values, while the panel shows them as unknown. Choose between ghosting them and hiding them, as the 64 bullet below describes.
-- 64-derived parts have depth unmeasured. The 3D map places them on the middle plane, and the coordinates panel shows depth as unknown. The alternative is to hide them from the 3D view until depth is measured. Hiding them would change what every 64 user sees.
-- Stored 2.0 results are written and validated on backup, but nothing reads them back yet. A reader (for example, a last-map view on the route) is still to be built.
-- The provisional view after stage 1 is the family ranking only, not a map. A fuller provisional map needs picks, so it cannot appear before stage 2.
-- The Russian copy still needs a native-speaker review.
+- Unknown axes on the 3D map: decided in B12. Unknown axes are ghosted, not hidden, and never shown as zero (G22, G31, G32).
+- 64-derived parts have depth unmeasured: decided in B12. They sit on the middle plane, labelled and not faded (G31). Hiding them remains the alternative, because it would change what every 64 user sees.
+- Stored 2.0 results: built in B9. The result is written and read back before the draft is cleared, and the last result is shown. A result saved before 9b8d6a9 lacks rank and confidence, so it is rejected (a known gap).
+- The provisional view after stage 1: built in B2 as a read-only family pad after the first pick and on the result, with the top three marked. There is still no map before stage 2, because a map needs picks.
+- The Russian copy still needs a native-speaker review (owner task 1).
 
-### Gates
+### Gates (checked 2026-11-11)
 
-- `npx tsc --noEmit`: passes.
-- `npx vitest run`: all unit tests pass, including new specs for the taxonomy, scoring, screen order, adapter and migration.
-- `npm run build`: passes.
-- Browser: `tests/browser/parity.spec.mjs` drives the whole 2.0 flow to a saved map, with no 147 profile written and no page errors.
+- Follow-up fixes (2026-11-11): `npx tsc --noEmit` passes; `npm test` gives 255 test files (22 skipped) and 1,907 tests passing (140 skipped); `npm run build` passes; `tests/browser/parity.spec.mjs` gives 9 of 9, with a skipped-timing case and a lighter-path case. The full browser suite gave 89 of 89 on one worker (10.6 minutes), after the review follow-ups. On two workers, a different one or two of the 5-second waits failed in each run (the report, backup, history and practice views). Each of those tests passed when run alone and on repeat, which is the load-timeout handling in build-and-fix §2 and R7. Three waits now allow 20 seconds: `parity.spec.mjs`, `report-retake.spec.mjs` and `corrupt-data.spec.mjs`.
+- `npx tsc --noEmit`: passes at 4c2e627.
+- `npm test` (`npx vitest run`): 252 test files and 1,879 tests pass at 2af4f5e, including new specs for the taxonomy, scoring, screen order, adapter, migration, the E16 module side, the pilot functions and the tap budget.
+- `npm run build`: passes at 4c2e627.
+- Browser, full suite run locally at 661319f: 87 passed, 0 failed. The round18 P2 test used to fail when a poll from the test missed the toast under load, or when it read the toast's box after the toast had left. It now waits for the toast in the page, and no assertion changed. CI on 4c2e627 passed all four browser shards, and the same test failed once in CI on a04b517.
+- `tests/browser/parity.spec.mjs` drives the whole 2.0 flow to a saved map, with no 147 profile written and no page errors. It passes in the full local run.
+- Tap budget (B11): the owner raised the targets to 57 and 73 on 2026-11-11, and `src/parts-cartographer/core/parts-two-tap-budget.spec.ts` checks them.

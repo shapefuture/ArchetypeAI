@@ -116,6 +116,17 @@ describe('display spread of overlapping parts', () => {
     expect(distance(moved[0], moved[1])).toBeCloseTo(2, 10);
   });
 
+  it('sets a pile of parts out in a row across the screen, spacing apart, at the pile\'s own height and depth', () => {
+    const points = ['c', 'a', 'b'].map((id) => ({ id, position: [1, 2, 3] as [number, number, number] }));
+    const offsets = overlapOffsets(points, 2, 3);
+    const placed = (id: string) => [1, 2, 3].map((value, axis) => value + (offsets.get(id)?.[axis] ?? 0));
+    expect(['a', 'b', 'c'].map((id) => placed(id)[0])).toEqual([-2, 1, 4]);
+    for (const id of ['a', 'b', 'c']) {
+      expect(placed(id)[1]).toBe(2);
+      expect(placed(id)[2]).toBe(3);
+    }
+  });
+
   it('gives the same offsets whatever the order of the input', () => {
     const forward = [
       { id: 'a', position: [0, 0, 0] as [number, number, number] },

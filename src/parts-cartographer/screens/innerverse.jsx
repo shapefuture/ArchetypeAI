@@ -225,7 +225,7 @@ export function Innerverse() {
       </div>
 
       {universeMode === 'parts' && (
-        <div className="row" style={{ position: 'absolute', left: 0, right: 0, bottom: 86, padding: '0 16px', gap: 8, overflowX: 'auto', pointerEvents: 'auto', zIndex: 30 }}>
+        <div className="row uni-rail" style={{ position: 'absolute', left: 0, right: 0, bottom: 86, padding: '0 16px', gap: 8, overflowX: 'auto', pointerEvents: 'auto', zIndex: 30 }}>
           {ranked.map((part) => (
             <button key={part.id} className="chip" style={{ flex: '0 0 auto', background: 'var(--surface)', borderColor: familyColor(part.family), color: 'var(--text)', backdropFilter: 'blur(6px)' }}
               onClick={() => openPart(part)} onDoubleClick={() => toggleCompare(part.id)}>
@@ -276,7 +276,7 @@ export function Innerverse() {
       )}
 
       {/* bottom action tray */}
-      <div className="row universe-actions" style={{ position: 'absolute', left: 16, right: 16, bottom: 22, gap: 9, pointerEvents: 'auto', zIndex: 40, overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: 7 }}>
+      <div className="row universe-actions uni-rail" style={{ position: 'absolute', left: 16, right: 16, bottom: 22, gap: 9, pointerEvents: 'auto', zIndex: 40, overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: 7 }}>
         <button className="tray-btn" onClick={() => openStudio()}>🎨 {t('archetype')}</button>
         <button className="tray-btn" onClick={() => setOverlay('synastry')}>💞 {t('synastry')}</button>
         <button className="tray-btn" onClick={() => { downloadBackup(); toast('⬇ ' + t('saveBackup')); }}>💾 {t('saveBackup')}</button>

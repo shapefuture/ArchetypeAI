@@ -91,6 +91,14 @@ const FOCUS_DISTANCE = 21;
 /** The distance the end words were sized for, and the most they grow beyond it. */
 const GUIDE_LABEL_BASE_DISTANCE = 45;
 const GUIDE_LABEL_GROW_MAX = 1.6;
+/**
+ * Display spreading of nearby parts. A felt character is about three units across, so parts closer than this
+ * overlap on screen; the default reach of 2 left piles of four or five characters hiding each other.
+ */
+const LAYOUT_REACH = 3.2;
+const LAYOUT_SPACING = 3;
+/** Depth fog, tuned to the framing distance: the near side of the map stays clear, the far side recedes. */
+const FOG_DENSITY = 0.0045;
 /** Slightly oblique, so the direction axis does not point straight at the viewer and its words stay clear of the centre. */
 const HOME_DIRECTION: [number, number, number] = (() => {
   const length = Math.hypot(13, 9, 42);
@@ -130,6 +138,8 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
   host.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
+  // The fog colour is the middle of the page gradient behind the transparent canvas, so far parts sink into it.
+  scene.fog = new THREE.FogExp2(isDark ? 0x0d0b1a : 0xe6e1f2, FOG_DENSITY);
   const camera = new THREE.PerspectiveCamera(CAMERA_FOV, host.clientWidth / Math.max(host.clientHeight, 1), 0.1, 500);
   camera.position.set(...homePosition(camera.aspect));
   renderer.xr.enabled = true;
@@ -164,11 +174,12 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
   }
   starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
   const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({
-    color: isDark ? 0xf4efe6 : 0x5a5470,
-    size: 0.42,
+    // On the light sky, dark specks read as dust; a soft lilac reads as distant light.
+    color: isDark ? 0xf4efe6 : 0x9a8fd6,
+    size: isDark ? 0.42 : 0.55,
     sizeAttenuation: true,
     transparent: true,
-    opacity: isDark ? 0.85 : 0.55,
+    opacity: isDark ? 0.85 : 0.4,
   }));
   scene.add(stars);
 
@@ -204,7 +215,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       context.textBaseline = 'middle';
       context.fillText(text, canvas.width / 2, canvas.height / 2);
     }
-    const material = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthTest: false, opacity: 0.92 });
+    const material = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthTest: false, opacity: 0.92, fog: false });
     const sprite = new THREE.Sprite(material);
     sprite.position.set(...at);
     sprite.scale.set(size[0], size[1], 1);
@@ -266,7 +277,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       id: node.part.id,
       position: node.coordinates ? archetypeCoordinatePosition(node.coordinates, axes, isolation) : node.basePosition,
     }));
-    layoutOffsets = overlapOffsets(placed);
+    layoutOffsets = overlapOffsets(placed, LAYOUT_REACH, LAYOUT_SPACING);
     const radius = contentRadius(placed.map((entry) => entry.position as [number, number, number]));
     const changed = radius !== frameRadius;
     frameRadius = radius;

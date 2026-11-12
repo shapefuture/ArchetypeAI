@@ -84,9 +84,11 @@ export interface LayoutPoint {
 }
 
 /**
- * Display only: parts whose positions lie within `reach` of each other are spread on a small ring around their
- * centre, in id order, so no part hides another. Stored coordinates never change. A part with no neighbour gets no
- * offset, and the result does not depend on input order.
+ * Display only: parts whose positions lie within `reach` of each other are set out in a short row across the screen,
+ * centred on the cluster, in id order, `spacing` apart, so no part hides another. The row runs along the first plotted
+ * axis at the cluster's own height and depth: height is never changed (it is the surface–deep reading), and a ring in
+ * the horizontal plane left parts one behind another from the viewer's angle. Stored coordinates never change. A part
+ * with no neighbour gets no offset, and the result does not depend on input order.
  */
 export function overlapOffsets(points: readonly LayoutPoint[], reach = 2, spacing = 2): Map<string, [number, number, number]> {
   const offsets = new Map<string, [number, number, number]>();
@@ -99,13 +101,9 @@ export function overlapOffsets(points: readonly LayoutPoint[], reach = 2, spacin
     if (cluster.length < 2) continue;
     const centreX = cluster.reduce((sum, point) => sum + point.position[0], 0) / cluster.length;
     const centreZ = cluster.reduce((sum, point) => sum + point.position[2], 0) / cluster.length;
-    // Neighbours on the ring sit `spacing` apart, whatever the size of the cluster.
-    const radius = spacing / (2 * Math.sin(Math.PI / cluster.length));
     cluster.forEach((point, index) => {
-      const angle = (index / cluster.length) * Math.PI * 2;
-      const targetX = centreX + radius * Math.cos(angle);
-      const targetZ = centreZ + radius * Math.sin(angle);
-      offsets.set(point.id, [targetX - point.position[0], 0, targetZ - point.position[2]]);
+      const targetX = centreX + (index - (cluster.length - 1) / 2) * spacing;
+      offsets.set(point.id, [targetX - point.position[0], 0, centreZ - point.position[2]]);
     });
   }
   return offsets;

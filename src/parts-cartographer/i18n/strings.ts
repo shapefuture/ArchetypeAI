@@ -372,7 +372,7 @@ export const STRINGS = {
   uniAll: s('All parts', 'Все части'),
   uniClusters: s('Clusters', 'Кластеры'),
   uniStories: s('Stories', 'Истории'),
-  summon: s('Summon a part by name…', 'Призвать часть по имени…'),
+  summon: s('Find a part…', 'Найти часть…'),
   closeness: s('Exile closeness', 'Близость изгоев'),
   voiceVol: s('Voice volume', 'Громкость голоса'),
   added: s('Part added to the cabinet', 'Часть добавлена в кабинет'),

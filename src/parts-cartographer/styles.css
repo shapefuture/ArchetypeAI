@@ -530,6 +530,14 @@ input[type='range']::-moz-range-thumb { width: 22px; height: 22px; border-radius
 .universe-host.on { opacity: 1; visibility: visible; pointer-events: auto; }
 [data-theme='light'] .universe-host { background: radial-gradient(120% 90% at 50% 0%, #cfd9ff 0%, #e8e4f4 55%, #f3eee4 100%); }
 .universe-host canvas { display: block; width: 100%; height: 100%; }
+/* A soft vignette frames the map and draws the eye to the middle, where the axes cross. */
+.universe-host::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 85% 70% at 50% 48%, transparent 55%, rgba(4, 3, 10, .5) 100%);
+}
+[data-theme='light'] .universe-host::after { background: radial-gradient(ellipse 85% 70% at 50% 48%, transparent 60%, rgba(90, 78, 140, .12) 100%); }
+/* Rails that scroll sideways fade at the right edge, so a cut-off chip reads as "more this way". */
+.uni-rail { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
 .universe-chrome {
   position: absolute; inset: 0; z-index: 24; pointer-events: none; /* legacy — Innerverse owns chrome */
   display: flex; flex-direction: column;
@@ -745,6 +753,7 @@ input[type='range']::-moz-range-thumb { width: 22px; height: 22px; border-radius
   border-radius: 999px; padding: 6px 8px 6px 18px; gap: 8px; flex: 1; min-width: 0;
 }
 [data-theme='light'] .uni-search { background: rgba(255,253,247,.95); }
+.uni-search input::placeholder { text-overflow: ellipsis; }
 .uni-search input {
   flex: 1; background: none; border: none; outline: none; color: var(--text);
   font-family: var(--font-body); font-weight: 800; font-size: 14.5px; min-width: 0;

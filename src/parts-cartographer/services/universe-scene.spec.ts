@@ -102,6 +102,7 @@ vi.mock('three', () => {
     DirectionalLight: Light,
     PointLight: Light,
     NeutralToneMapping: 0,
+    FogExp2: class { constructor(public color: number, public density: number) {} },
   };
 });
 

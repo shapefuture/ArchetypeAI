@@ -135,6 +135,8 @@ export default function App() {
   const [profile, setProfileRaw] = useState(() => usableProfile(store.load(KEYS.profile, null)));
   const [crossTabSync, setCrossTabSync] = useState(0);
   const persistTranslation = useRef(true);
+  const translatedLang = useRef(null);
+  const langSavePending = useRef(false);
   const [overlay, setOverlay] = useState(null); // string | {kind, ...payload}
   const [sheet, setSheet] = useState(null);      // {type, ...}
   const [toastMsg, setToastMsg] = useState(null);
@@ -178,9 +180,15 @@ export default function App() {
   useEffect(() => {
     // After adopting data from another tab, translate it for this tab in memory only:
     // writing it back would make two tabs in different languages overwrite each other.
-    const persist = persistTranslation.current;
+    // A language change is this tab's own action (storage events never change `lang`), so it must reach storage
+    // even when an adoption from another tab arrives in the same render, or cancels this run before it saves.
+    // The switch stays pending until a run actually writes it (ArchetypeAI-0oajw).
+    if (translatedLang.current !== null && translatedLang.current !== lang) langSavePending.current = true;
+    translatedLang.current = lang;
+    const persist = persistTranslation.current || langSavePending.current;
     persistTranslation.current = true;
-    if (profile?.testModel !== 'angular-v2' || !profile.clinical) return;
+    // With no translated report there is nothing to save, so the switch is not left pending for a later adoption.
+    if (profile?.testModel !== 'angular-v2' || !profile.clinical) { langSavePending.current = false; return; }
     let active = true;
     import('./core/clinical-profile-adapter.ts').then(({ adaptClinicalProfile }) => {
       if (!active) return;
@@ -200,7 +208,7 @@ export default function App() {
           return { ...part, name: autoName ? canonical.name : part.name, nameEn: canonical.nameEn, nameRu: canonical.nameRu,
             archetype: { ...canonical.archetype, ...part.archetype } };
         });
-        if (persist) store.save(KEYS.parts, next);
+        if (persist) { store.save(KEYS.parts, next); langSavePending.current = false; }
         return next;
       });
     });

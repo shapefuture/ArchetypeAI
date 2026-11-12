@@ -313,8 +313,10 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
   const onPointerStart = (event: PointerEvent) => { pointerStart = { x: event.clientX, y: event.clientY }; };
 
   const onPointer = (event: PointerEvent) => {
-    if (!pointerStart || Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 8) return;
+    // Every release ends the press, so a drag cannot leave a start behind for a later release to complete as a tap.
+    const start = pointerStart;
     pointerStart = null;
+    if (!start || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 8) return;
     const rect = renderer.domElement.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     ndc.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;

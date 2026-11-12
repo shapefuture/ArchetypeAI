@@ -3,7 +3,7 @@ import type { Part } from '../pal/traits';
 import * as THREE from 'three';
 import { feltGroup } from './felt-engine';
 
-const renderer = vi.hoisted(() => ({ loops: [] as unknown[], scenes: [] as any[] }));
+const renderer = vi.hoisted(() => ({ loops: [] as unknown[], scenes: [] as any[], hits: [] as any[], sizes: [] as Array<[number, number]> }));
 
 // Explicit stubs for the three.js exports the scene touches. The renderer records animation-loop calls.
 vi.mock('three', () => {
@@ -63,7 +63,7 @@ vi.mock('three', () => {
   }
   class Raycaster {
     setFromCamera() {}
-    intersectObjects() { return []; }
+    intersectObjects() { return renderer.hits; }
   }
   class Vector2 extends Vector {}
   class Vector3 extends Vector {}
@@ -73,7 +73,7 @@ vi.mock('three', () => {
     toneMapping = 0;
     toneMappingExposure = 1;
     setPixelRatio() {}
-    setSize() {}
+    setSize(width: number, height: number) { renderer.sizes.push([width, height]); }
     render() {}
     dispose() {}
     setAnimationLoop(loop: unknown) { renderer.loops.push(loop); }
@@ -132,6 +132,8 @@ afterEach(() => {
   Reflect.deleteProperty(document, 'hidden');
   renderer.loops.length = 0;
   renderer.scenes.length = 0;
+  renderer.hits.length = 0;
+  renderer.sizes.length = 0;
   ambience.set('hidden', false);
   ambience.set('typing', false);
   ambience.set('error', false);
@@ -339,5 +341,107 @@ describe('the 3+1 scene', () => {
     expect(typeof lastLoop()).toBe('function');
     api.dispose();
     host.remove();
+  });
+});
+
+describe('universe interaction', () => {
+  /** A host with a real size, and a canvas whose box is 200 × 100 at the origin. */
+  const mount = (width = 200, height = 100) => {
+    const host = document.createElement('div');
+    Object.defineProperty(host, 'clientWidth', { configurable: true, get: () => width });
+    Object.defineProperty(host, 'clientHeight', { configurable: true, get: () => height });
+    document.body.appendChild(host);
+    const api = initUniverse(host, true, 'gentle');
+    const canvas = host.querySelector('canvas')!;
+    canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width, height, right: width, bottom: height, x: 0, y: 0, toJSON() {} }) as DOMRect;
+    return { host, api, canvas };
+  };
+  const pointer = (canvas: HTMLCanvasElement, type: string, x: number, y: number) =>
+    canvas.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y, bubbles: true }));
+
+  it('picks the part under a tap, and not after a drag or without a press', () => {
+    const { host, api, canvas } = mount();
+    const picked = vi.fn();
+    api.onPick(picked);
+    renderer.hits.push({ object: { userData: { partId: 'critic' } } });
+
+    pointer(canvas, 'pointerdown', 50, 50);
+    pointer(canvas, 'pointerup', 55, 54); // within 8 px: a tap
+    expect(picked).toHaveBeenCalledWith('critic');
+
+    picked.mockClear();
+    pointer(canvas, 'pointerdown', 50, 50);
+    pointer(canvas, 'pointerup', 70, 50); // 20 px: a drag that turns the view
+    expect(picked).not.toHaveBeenCalled();
+
+    pointer(canvas, 'pointerup', 50, 50); // a release with no press on the canvas
+    expect(picked).not.toHaveBeenCalled();
+    api.dispose();
+    host.remove();
+  });
+
+  it('picks nothing when the tap hits no part, or the canvas has no size', () => {
+    const { host, api, canvas } = mount();
+    const picked = vi.fn();
+    api.onPick(picked);
+    pointer(canvas, 'pointerdown', 10, 10);
+    pointer(canvas, 'pointerup', 10, 10);
+    expect(picked).not.toHaveBeenCalled();
+
+    renderer.hits.push({ object: { userData: { partId: 'critic' } } });
+    canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 0, height: 0 }) as DOMRect;
+    pointer(canvas, 'pointerdown', 10, 10);
+    pointer(canvas, 'pointerup', 10, 10);
+    expect(picked).not.toHaveBeenCalled();
+    api.dispose();
+    host.remove();
+  });
+
+  it('follows the host size on resize, and ignores a host with no size', () => {
+    let width = 200;
+    const host = document.createElement('div');
+    Object.defineProperty(host, 'clientWidth', { configurable: true, get: () => width });
+    Object.defineProperty(host, 'clientHeight', { configurable: true, get: () => 100 });
+    document.body.appendChild(host);
+    const api = initUniverse(host, true, 'gentle');
+    renderer.sizes.length = 0;
+    width = 320;
+    window.dispatchEvent(new Event('resize'));
+    expect(renderer.sizes).toEqual([[320, 100]]);
+    width = 0;
+    api.resize();
+    expect(renderer.sizes).toEqual([[320, 100]]);
+    api.dispose();
+    host.remove();
+  });
+
+  it('returns the running universe on a second init, resized, instead of a second renderer', () => {
+    const { host, api } = mount();
+    const scenes = renderer.scenes.length;
+    renderer.sizes.length = 0;
+    expect(initUniverse(host, true, 'gentle')).toBe(api);
+    expect(renderer.scenes.length).toBe(scenes);
+    expect(renderer.sizes).toEqual([[200, 100]]);
+    api.dispose();
+    host.remove();
+  });
+
+  it('reports VR as unsupported without WebXR or when the check fails, and refuses to enter it without WebXR', async () => {
+    const { host, api } = mount();
+    const nav = navigator as any;
+    const before = nav.xr;
+    try {
+      nav.xr = undefined;
+      expect(await api.xrSupported()).toBe(false);
+      await expect(api.enterXR()).rejects.toThrow('WebXR is unavailable');
+      nav.xr = { isSessionSupported: async () => { throw new Error('denied'); } };
+      expect(await api.xrSupported()).toBe(false);
+      nav.xr = { isSessionSupported: async (mode: string) => mode === 'immersive-vr' };
+      expect(await api.xrSupported()).toBe(true);
+    } finally {
+      nav.xr = before;
+      api.dispose();
+      host.remove();
+    }
   });
 });

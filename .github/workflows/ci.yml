@@ -141,3 +141,14 @@ jobs:
 
       - name: Mobile browser parity
         run: npm run test:browser -- --shard=${{ matrix.shard }}/4
+
+      # playwright.config keeps a trace for each failed test. Without this upload the trace is lost with the runner,
+      # and an intermittent failure cannot be diagnosed.
+      - name: Upload failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-traces-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

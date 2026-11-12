@@ -126,7 +126,7 @@ vi.mock('./felt-engine', () => ({
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', { configurable: true, value: () => null });
 
 import { ambience } from './ambience-gate';
-import { initUniverse } from './universe-scene';
+import { CAMERA_FOV, FRAME_RADIUS, FRAME_RADIUS_MAX, contentRadius, frameDistance, homePosition, initUniverse } from './universe-scene';
 
 afterEach(() => {
   Reflect.deleteProperty(document, 'hidden');
@@ -443,5 +443,35 @@ describe('universe interaction', () => {
       api.dispose();
       host.remove();
     }
+  });
+});
+
+describe('camera framing', () => {
+  const half = (CAMERA_FOV * Math.PI) / 360;
+  it('fits the frame to the narrower side: the width on a phone in portrait, the height on a wide screen', () => {
+    const phone = 390 / 844;
+    const horizontal = Math.atan(Math.tan(half) * phone);
+    expect(FRAME_RADIUS / frameDistance(phone)).toBeCloseTo(Math.sin(horizontal), 10);
+    expect(FRAME_RADIUS / frameDistance(16 / 9)).toBeCloseTo(Math.sin(half), 10);
+    expect(frameDistance(phone)).toBeGreaterThan(frameDistance(16 / 9));
+  });
+
+  it('frames a canvas with no size as a square, never at an infinite or zero distance', () => {
+    expect(frameDistance(0)).toBe(frameDistance(1));
+    expect(frameDistance(Number.NaN)).toBe(frameDistance(1));
+  });
+
+  it('places the camera at the framing distance, on the oblique home direction', () => {
+    const [x, y, z] = homePosition(1, 15);
+    expect(Math.hypot(x, y, z)).toBeCloseTo(frameDistance(1, 15), 10);
+    expect(z).toBeGreaterThan(x);
+    expect(x).toBeGreaterThan(y);
+  });
+
+  it('grows the frame for outlying parts, up to a cap, and never below the axes', () => {
+    expect(contentRadius([])).toBe(FRAME_RADIUS);
+    expect(contentRadius([[3, 0, 0]])).toBe(FRAME_RADIUS);
+    expect(contentRadius([[14, 0, 0]])).toBe(15.5);
+    expect(contentRadius([[40, 0, 0]])).toBe(FRAME_RADIUS_MAX);
   });
 });

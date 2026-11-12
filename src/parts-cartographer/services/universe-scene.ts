@@ -79,6 +79,46 @@ function stableJitter(id: string, axis: number, amplitude = 2.2): number {
   return unit * amplitude;
 }
 
+/**
+ * Camera framing. A narrow lens keeps parts near the camera from ballooning; the distance is chosen so the axes and
+ * their end words fit the narrower side of the canvas, which on a phone in portrait is the width.
+ */
+export const CAMERA_FOV = 38;
+/** The radius that must stay in view: the guide reach (10.6) plus room for the end words. */
+export const FRAME_RADIUS = 12.5;
+/** How far a focused part sits from the camera, at the same apparent size as before the lens change. */
+const FOCUS_DISTANCE = 21;
+/** The distance the end words were sized for, and the most they grow beyond it. */
+const GUIDE_LABEL_BASE_DISTANCE = 45;
+const GUIDE_LABEL_GROW_MAX = 1.6;
+/** Slightly oblique, so the direction axis does not point straight at the viewer and its words stay clear of the centre. */
+const HOME_DIRECTION: [number, number, number] = (() => {
+  const length = Math.hypot(13, 9, 42);
+  return [13 / length, 9 / length, 42 / length];
+})();
+
+/** The most the frame grows to take in outlying parts, so one stray part cannot shrink the whole map. */
+export const FRAME_RADIUS_MAX = 18;
+
+/** The radius to keep in view for these part positions: at least FRAME_RADIUS, at most FRAME_RADIUS_MAX. */
+export function contentRadius(positions: Array<[number, number, number]>): number {
+  const farthest = positions.reduce((max, [x, y, z]) => Math.max(max, Math.hypot(x, y, z) + 1.5), 0);
+  return Math.min(FRAME_RADIUS_MAX, Math.max(FRAME_RADIUS, farthest));
+}
+
+/** The camera distance at which a sphere of this radius fills the narrower field of view, for this aspect. */
+export function frameDistance(aspect: number, radius = FRAME_RADIUS): number {
+  const vertical = (CAMERA_FOV * Math.PI) / 360;
+  const safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 1;
+  const horizontal = Math.atan(Math.tan(vertical) * safeAspect);
+  return radius / Math.sin(Math.min(vertical, horizontal));
+}
+
+export function homePosition(aspect: number, radius = FRAME_RADIUS): [number, number, number] {
+  const distance = frameDistance(aspect, radius);
+  return [HOME_DIRECTION[0] * distance, HOME_DIRECTION[1] * distance, HOME_DIRECTION[2] * distance];
+}
+
 export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMode: MotionMode = 'lively'): UniverseAPI {
   if (api) { api.resize(); return api; }
 
@@ -90,13 +130,16 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
   host.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(55, host.clientWidth / Math.max(host.clientHeight, 1), 0.1, 400);
-  // Slightly oblique, so the direction axis does not point straight at the viewer and its words stay clear of the centre.
-  camera.position.set(13, 9, 42);
+  const camera = new THREE.PerspectiveCamera(CAMERA_FOV, host.clientWidth / Math.max(host.clientHeight, 1), 0.1, 500);
+  camera.position.set(...homePosition(camera.aspect));
   renderer.xr.enabled = true;
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.minDistance = 8;
-  controls.maxDistance = 110;
+  controls.maxDistance = 180;
+  // Until the person turns or zooms the view, a resize re-frames it for the new shape (rotation, a canvas sized late).
+  let framed = true;
+  let frameRadius = FRAME_RADIUS;
+  (controls as any).addEventListener?.('start', () => { framed = false; });
   const motion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
   let motionMode = initialMotionMode;
   const motionDamping = bindReducedMotionDamping(controls, motion, motionMode);
@@ -189,8 +232,11 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
         const point = along(value);
         return index === 1 ? [point[0] + 1.6, point[1], point[2]] : [point[0], point[1] + 0.9, point[2]];
       };
-      guideGroup.add(labelSprite(copy.high, labelColour, labelAt(GUIDE_LABEL_AT)));
-      guideGroup.add(labelSprite(copy.low, labelColour, labelAt(-GUIDE_LABEL_AT)));
+      // The end words grow with the framing distance, so they stay readable when the frame pulls back on a phone.
+      const grow = Math.max(1, Math.min(GUIDE_LABEL_GROW_MAX, frameDistance(camera.aspect, frameRadius) / GUIDE_LABEL_BASE_DISTANCE));
+      const size: [number, number] = [6.4 * grow, 1.2 * grow];
+      guideGroup.add(labelSprite(copy.high, labelColour, labelAt(GUIDE_LABEL_AT), size));
+      guideGroup.add(labelSprite(copy.low, labelColour, labelAt(-GUIDE_LABEL_AT), size));
     });
   }
 
@@ -216,10 +262,16 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
 
   /** Where each part sits, with overlapping parts spread for display. Stored coordinates are never changed. */
   function relayout() {
-    layoutOffsets = overlapOffsets(nodes.map((node) => ({
+    const placed = nodes.map((node) => ({
       id: node.part.id,
       position: node.coordinates ? archetypeCoordinatePosition(node.coordinates, axes, isolation) : node.basePosition,
-    })));
+    }));
+    layoutOffsets = overlapOffsets(placed);
+    const radius = contentRadius(placed.map((entry) => entry.position as [number, number, number]));
+    const changed = radius !== frameRadius;
+    frameRadius = radius;
+    if (framed) camera.position.set(...homePosition(camera.aspect, frameRadius));
+    if (changed) rebuildGuides();
   }
 
   function build(parts: Part[]) {
@@ -231,7 +283,8 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     parts.forEach((part, index) => {
       const group = new THREE.Group();
       const ring = index / Math.max(parts.length, 1);
-      const radius = 14 + (index % 4) * 5.2;
+      // Parts with no map coordinates orbit just outside the axes, inside the frame, instead of off the screen.
+      const radius = 12 + (index % 4) * 1.4;
       const angle = ring * Math.PI * 2 * 2.4;
       const coordinates = sanitizeArchetypeCoordinates(part.archetype?.coordinates);
       const projected = coordinates ? archetypeCoordinatePosition(coordinates) : null;
@@ -239,7 +292,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
         ? projected
         : [
           Math.cos(angle) * radius + stableJitter(part.id, 0),
-          Math.sin(angle * 0.7) * 9 + stableJitter(part.id, 1),
+          Math.sin(angle * 0.7) * 6 + stableJitter(part.id, 1),
           Math.sin(angle) * radius * 0.75 + stableJitter(part.id, 2),
         ];
       group.position.set(...basePosition);
@@ -334,6 +387,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     if (!width || !height) return;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
+    if (framed) camera.position.set(...homePosition(camera.aspect, frameRadius));
     renderer.setSize(width, height);
   };
   window.addEventListener('resize', onResize);
@@ -392,7 +446,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       const node = nodes.find((entry) => entry.part.id === id);
       const target = node ? node.group.position : new THREE.Vector3(0, 0, 0);
       controls.target.copy(target);
-      camera.position.copy(target).add(node ? new THREE.Vector3(0, 0, 14) : new THREE.Vector3(13, 9, 42));
+      camera.position.copy(target).add(node ? new THREE.Vector3(0, 0, FOCUS_DISTANCE) : new THREE.Vector3(...homePosition(camera.aspect, frameRadius)));
       controls.update();
     },
     async xrSupported() {

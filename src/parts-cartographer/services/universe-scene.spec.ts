@@ -103,6 +103,9 @@ vi.mock('three', () => {
     PointLight: Light,
     NeutralToneMapping: 0,
     FogExp2: class { constructor(public color: number, public density: number) {} },
+    TubeGeometry: class extends Geometry { constructor(public path?: unknown, public segments?: number, public radius?: number) { super(); } },
+    SphereGeometry: class extends Geometry {},
+    QuadraticBezierCurve3: class { constructor(public v0?: unknown, public v1?: unknown, public v2?: unknown) {} },
   };
 });
 
@@ -127,7 +130,7 @@ vi.mock('./felt-engine', () => ({
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', { configurable: true, value: () => null });
 
 import { ambience } from './ambience-gate';
-import { CAMERA_FOV, FRAME_RADIUS, FRAME_RADIUS_MAX, contentRadius, frameDistance, homePosition, initUniverse } from './universe-scene';
+import { CAMERA_FOV, FRAME_RADIUS, FRAME_RADIUS_MAX, LINK_COLORS, beadT, bezierPoint, contentRadius, frameDistance, homePosition, initUniverse, linkControlPoint } from './universe-scene';
 
 afterEach(() => {
   Reflect.deleteProperty(document, 'hidden');
@@ -474,5 +477,102 @@ describe('camera framing', () => {
     expect(contentRadius([[3, 0, 0]])).toBe(FRAME_RADIUS);
     expect(contentRadius([[14, 0, 0]])).toBe(15.5);
     expect(contentRadius([[40, 0, 0]])).toBe(FRAME_RADIUS_MAX);
+  });
+});
+
+describe('relationship threads', () => {
+  const all = (object: any): any[] => [object, ...(object.children ?? []).flatMap(all)];
+  const sceneObjects = () => all(renderer.scenes[renderer.scenes.length - 1]);
+  const tubes = () => sceneObjects().filter((o) => o.userData?.link);
+  const labels = () => sceneObjects().filter((o) => o.userData?.complex);
+  const beads = () => sceneObjects().filter((o) => o.geometry?.constructor?.name === 'SphereGeometry');
+  const setup = () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const api = initUniverse(host, true, 'gentle');
+    api.setParts([
+      part('critic', [0.5, 0.2, 0.1, 0], 'self-placed-2', []),
+      part('shame', [-0.5, -0.4, -0.6, 0], 'self-placed-2', []),
+      part('binge', [0.1, 0.8, 0.3, 0], 'self-placed-2', []),
+    ]);
+    api.setLinks({
+      links: [
+        { id: 'l1', from: 'critic', to: 'shame', kind: 'protects' },
+        { id: 'l2', from: 'critic', to: 'binge', kind: 'polarized' },
+        { id: 'l3', from: 'shame', to: 'binge', kind: 'allied' },
+        { id: 'l4', from: 'critic', to: 'nobody', kind: 'triggers' },
+      ],
+      complexes: [{ id: 'complex_shame', members: ['critic', 'shame'], label: 'Shame' }],
+    });
+    return { host, api };
+  };
+
+  it('draws nothing until links are shown, then a thread per link between parts on the map and a label per complex', () => {
+    const { host, api } = setup();
+    expect(tubes()).toHaveLength(0);
+    api.setLinksVisible(true);
+    expect(tubes().map((tube) => tube.userData.link)).toEqual(['l1', 'l2', 'l3']);
+    expect(tubes().map((tube) => tube.material.color)).toEqual([LINK_COLORS.protects, LINK_COLORS.polarized, LINK_COLORS.allied]);
+    expect(labels()).toHaveLength(1);
+    // Two flowing beads on the protecting and the polarised thread; an alliance is a steady thread with none.
+    expect(beads()).toHaveLength(4);
+    api.setLinksVisible(false);
+    expect(tubes()).toHaveLength(0);
+    expect(beads()).toHaveLength(0);
+    api.dispose();
+    host.remove();
+  });
+
+  it('hides threads in the isolation view, where the map is one axis against another', () => {
+    const { host, api } = setup();
+    api.setLinksVisible(true);
+    api.setView({ isolation: 'DIRECTION' });
+    expect(tubes()).toHaveLength(0);
+    api.setView({ isolation: null });
+    expect(tubes()).toHaveLength(3);
+    api.dispose();
+    host.remove();
+  });
+
+  it('keeps the selected part\'s threads bright and dims the rest', () => {
+    const { host, api } = setup();
+    api.setLinksVisible(true);
+    api.setView({ selectedId: 'shame' });
+    const opacity = Object.fromEntries(tubes().map((tube) => [tube.userData.link, tube.material.opacity]));
+    expect(opacity.l1).toBeGreaterThan(opacity.l2);
+    expect(opacity.l3).toBeGreaterThan(opacity.l2);
+    api.dispose();
+    host.remove();
+  });
+});
+
+describe('thread geometry', () => {
+  it('arches a thread above its midpoint, higher for a longer thread', () => {
+    const short = linkControlPoint([0, 0, 0], [2, 0, 0], 'allied');
+    const long = linkControlPoint([0, 0, 0], [10, 0, 0], 'allied');
+    expect(short[1]).toBeGreaterThan(0);
+    expect(long[1]).toBeGreaterThan(short[1]);
+    expect(short[0]).toBeCloseTo(1, 10); // the middle kind is not pushed sideways
+  });
+
+  it('separates two different relationships between the same pair', () => {
+    const protects = linkControlPoint([0, 0, 0], [6, 0, 0], 'protects');
+    const triggers = linkControlPoint([0, 0, 0], [6, 0, 0], 'triggers');
+    expect(Math.abs(protects[2] - triggers[2])).toBeGreaterThan(1);
+  });
+
+  it('runs the curve from the first part to the second', () => {
+    expect(bezierPoint([0, 0, 0], [1, 4, 0], [2, 0, 0], 0)).toEqual([0, 0, 0]);
+    expect(bezierPoint([0, 0, 0], [1, 4, 0], [2, 0, 0], 1)).toEqual([2, 0, 0]);
+    expect(bezierPoint([0, 0, 0], [1, 4, 0], [2, 0, 0], 0.5)).toEqual([1, 2, 0]);
+  });
+
+  it('moves forward beads along the whole thread, meeting beads from each end to the middle, and leaves still threads still', () => {
+    expect(beadT('forward', 0, 0)).toBe(0);
+    expect(beadT('forward', 0.5, 0)).toBe(0.5);
+    expect(beadT('meet', 0, 2.5)).toBeLessThanOrEqual(0.5);
+    expect(beadT('meet', 0, 2.5, true)).toBeGreaterThanOrEqual(0.5);
+    expect(beadT('meet', 0, 2.5) + beadT('meet', 0, 2.5, true)).toBeCloseTo(1, 10);
+    expect(beadT('still', 0.3, 9)).toBe(0.5);
   });
 });

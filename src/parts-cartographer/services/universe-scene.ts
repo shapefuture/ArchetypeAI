@@ -33,7 +33,57 @@ export interface UniverseAPI {
   onPick(cb: (id: string) => void): void;
   resize(): void;
   setMotionMode(mode: MotionMode): void;
+  /** Threads between related parts, and a label over each complex. Shown only while links are visible. */
+  setLinks(input: { links: SceneLink[]; complexes: SceneComplex[] }): void;
+  setLinksVisible(visible: boolean): void;
   dispose(): void;
+}
+
+export type SceneLinkKind = 'protects' | 'polarized' | 'allied' | 'triggers' | 'carries';
+export interface SceneLink { id: string; from: string; to: string; kind: SceneLinkKind }
+export interface SceneComplex { id: string; members: string[]; label: string }
+
+/**
+ * Thread colours, one per relationship, readable on both skies: gold for protection, coral for polarisation, mint for
+ * alliance, orange for a trigger, lilac for a carried burden.
+ */
+export const LINK_COLORS: Record<SceneLinkKind, number> = {
+  protects: 0xffc24b, polarized: 0xff6b6b, allied: 0x3cd6b0, triggers: 0xff9f43, carries: 0xb58cff,
+};
+/** How each kind moves: directed kinds flow from the first part to the second; a polarisation meets in the middle. */
+const LINK_FLOW: Record<SceneLinkKind, 'forward' | 'meet' | 'still'> = {
+  protects: 'forward', polarized: 'meet', allied: 'still', triggers: 'forward', carries: 'forward',
+};
+const LINK_KIND_ORDER: SceneLinkKind[] = ['protects', 'polarized', 'allied', 'triggers', 'carries'];
+
+type Vec3 = [number, number, number];
+
+/**
+ * The control point of a thread's curve: above the midpoint, lifted in proportion to the length, and pushed a little
+ * sideways by kind, so two different relationships between the same pair stay two visible threads.
+ */
+export function linkControlPoint(from: Vec3, to: Vec3, kind: SceneLinkKind): Vec3 {
+  const mid: Vec3 = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2, (from[2] + to[2]) / 2];
+  const length = Math.hypot(to[0] - from[0], to[1] - from[1], to[2] - from[2]);
+  const lift = 0.8 + length * 0.22;
+  // A sideways direction across the thread, in the horizontal plane.
+  const across = Math.hypot(to[0] - from[0], to[2] - from[2]) || 1;
+  const side = (LINK_KIND_ORDER.indexOf(kind) - 2) * 0.55;
+  return [mid[0] - ((to[2] - from[2]) / across) * side, mid[1] + lift, mid[2] + ((to[0] - from[0]) / across) * side];
+}
+
+/** A point on the quadratic curve from `a` through control `c` to `b`, at t in [0, 1]. */
+export function bezierPoint(a: Vec3, c: Vec3, b: Vec3, t: number): Vec3 {
+  const u = 1 - t;
+  return [0, 1, 2].map((i) => u * u * a[i] + 2 * u * t * c[i] + t * t * b[i]) as Vec3;
+}
+
+/** Where a bead sits along its thread at scene time `time`: forward beads travel the whole thread, meeting beads half. */
+export function beadT(flow: 'forward' | 'meet' | 'still', phase: number, time: number, fromEnd = false): number {
+  if (flow === 'still') return 0.5;
+  const s = (((phase + time * 0.18) % 1) + 1) % 1;
+  if (flow === 'forward') return s;
+  return fromEnd ? 1 - s * 0.5 : s * 0.5;
 }
 
 type MapNode = {
@@ -185,6 +235,13 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
 
   const partGroup = new THREE.Group();
   scene.add(partGroup);
+  const linkGroup = new THREE.Group();
+  scene.add(linkGroup);
+  let links: SceneLink[] = [];
+  let complexes: SceneComplex[] = [];
+  let linksVisible = false;
+  type Bead = { mesh: THREE.Mesh; phase: number; fromEnd: boolean };
+  let threads: Array<{ link: SceneLink; from: Vec3; control: Vec3; to: Vec3; beads: Bead[] }> = [];
   const nodes: MapNode[] = [];
   const meshes: THREE.Mesh[] = [];
   let buildVersion = 0;
@@ -205,7 +262,9 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
 
   function labelSprite(text: string, colour: number, at: [number, number, number], size: [number, number] = [6.4, 1.2]): THREE.Sprite {
     const canvas = document.createElement('canvas');
-    canvas.width = 640;
+    // Wide enough for the text at 46 px (about 27 px a character), so a long label is never cut off.
+    const widen = Math.max(1, (text.length * 27) / 640);
+    canvas.width = Math.ceil(640 * widen);
     canvas.height = 112;
     const context = canvas.getContext('2d');
     if (context) {
@@ -218,7 +277,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     const material = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthTest: false, opacity: 0.92, fog: false });
     const sprite = new THREE.Sprite(material);
     sprite.position.set(...at);
-    sprite.scale.set(size[0], size[1], 1);
+    sprite.scale.set(size[0] * widen, size[1], 1);
     return sprite;
   }
 
@@ -272,6 +331,71 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
   }
 
   /** Where each part sits, with overlapping parts spread for display. Stored coordinates are never changed. */
+  /** Where a part is drawn: its plotted position plus its display spread. */
+  function nodePosition(node: MapNode): Vec3 {
+    const position = node.coordinates ? archetypeCoordinatePosition(node.coordinates, axes, isolation) : node.basePosition;
+    const offset = layoutOffsets.get(node.part.id) ?? [0, 0, 0];
+    return [position[0] + offset[0], position[1] + offset[1], position[2] + offset[2]];
+  }
+
+  function clearLinks() {
+    for (const child of [...linkGroup.children]) { linkGroup.remove(child); disposeGroup(child); }
+    threads = [];
+  }
+
+  /**
+   * Threads between related parts and a label over each complex. With a part selected, its own threads stay bright
+   * and the others recede, so the selected part's relationships read first.
+   */
+  function rebuildLinks() {
+    clearLinks();
+    if (!linksVisible || isolation) return;
+    const byId = new Map(nodes.map((node) => [node.part.id, node]));
+    for (const link of links) {
+      const a = byId.get(link.from);
+      const b = byId.get(link.to);
+      if (!a || !b) continue;
+      const from = nodePosition(a);
+      const to = nodePosition(b);
+      const control = linkControlPoint(from, to, link.kind);
+      const colour = LINK_COLORS[link.kind];
+      const touchesSelected = !selectedId || link.from === selectedId || link.to === selectedId;
+      const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(...from), new THREE.Vector3(...control), new THREE.Vector3(...to));
+      const tube = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 32, link.kind === 'allied' ? 0.11 : 0.075, 6, false),
+        new THREE.MeshBasicMaterial({ color: colour, transparent: true, opacity: touchesSelected ? 0.62 : 0.14, depthWrite: false }),
+      );
+      tube.userData.link = link.id;
+      linkGroup.add(tube);
+      const flow = LINK_FLOW[link.kind];
+      const beads: Bead[] = [];
+      const beadCount = flow === 'still' ? 0 : 2;
+      for (let index = 0; index < beadCount; index++) {
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(0.26, 12, 10),
+          new THREE.MeshBasicMaterial({ color: colour, transparent: true, opacity: touchesSelected ? 0.95 : 0.2, depthWrite: false }),
+        );
+        const bead = { mesh, phase: flow === 'meet' ? 0 : index / beadCount, fromEnd: flow === 'meet' && index === 1 };
+        mesh.position.set(...bezierPoint(from, control, to, beadT(flow, bead.phase, t, bead.fromEnd)));
+        linkGroup.add(mesh);
+        beads.push(bead);
+      }
+      threads.push({ link, from, control, to, beads });
+    }
+    for (const complex of complexes) {
+      const members = complex.members.map((id) => byId.get(id)).filter((node): node is MapNode => !!node);
+      if (members.length < 2) continue;
+      const points = members.map(nodePosition);
+      const centre: Vec3 = [0, 1, 2].map((i) => points.reduce((sum, point) => sum + point[i], 0) / points.length) as Vec3;
+      const top = Math.max(...points.map((point) => point[1]));
+      const grow = Math.max(1, Math.min(GUIDE_LABEL_GROW_MAX, frameDistance(camera.aspect, frameRadius) / GUIDE_LABEL_BASE_DISTANCE));
+      // Above its members and above the end words of the vertical axis, so the two never overlap.
+      const label = labelSprite(`◌ ${complex.label}`, isDark ? 0xc9b3ff : 0x5b3fb8, [centre[0], Math.max(top + 3.4, GUIDE_LABEL_AT + 2.6), centre[2]], [7.2 * grow, 1.35 * grow]);
+      label.userData.complex = complex.id;
+      linkGroup.add(label);
+    }
+  }
+
   function relayout() {
     const placed = nodes.map((node) => ({
       id: node.part.id,
@@ -283,6 +407,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     frameRadius = radius;
     if (framed) camera.position.set(...homePosition(camera.aspect, frameRadius));
     if (changed) rebuildGuides();
+    rebuildLinks();
   }
 
   function build(parts: Part[]) {
@@ -409,9 +534,7 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     controls.update();
     stars.rotation.y = t * 0.05;
     nodes.forEach((node) => {
-      const position = node.coordinates ? archetypeCoordinatePosition(node.coordinates, axes, isolation) : node.basePosition;
-      const offset = layoutOffsets.get(node.part.id) ?? [0, 0, 0];
-      node.group.position.set(position[0] + offset[0], position[1] + offset[1], position[2] + offset[2]);
+      node.group.position.set(...nodePosition(node));
       const affinity = node.coordinates ? coordinateAffinity(node.coordinates, dimensionalExpressions, node.part.family === 'resource', node.part.archetype?.unmeasuredAxes ?? []) : 0.5;
       const selected = node.part.id === selectedId;
       const scale = (node.part.archetype?.size ?? 0.8) / 0.8 * (0.6 + (node.part.archetype?.prominence ?? 40) / 100) * (selected ? 1.15 : 1);
@@ -426,6 +549,10 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
         }
       });
     });
+    for (const thread of threads) {
+      const flow = LINK_FLOW[thread.link.kind];
+      for (const bead of thread.beads) bead.mesh.position.set(...bezierPoint(thread.from, thread.control, thread.to, beadT(flow, bead.phase, t, bead.fromEnd)));
+    }
     renderer.render(scene, camera);
   };
   // The render loop runs only while the screen is awake and ambience is not suspended (hidden page, text entry, error).
@@ -445,6 +572,8 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
       if (options.axes || 'isolation' in options) {
         relayout();
         rebuildGuides();
+      } else if ('selectedId' in options) {
+        rebuildLinks();
       }
       refreshUnknownTags();
     },
@@ -479,7 +608,17 @@ export function initUniverse(host: HTMLElement, isDark: boolean, initialMotionMo
     onPick(callback) { pickCb = callback; },
     resize: onResize,
     setMotionMode(mode) { motionMode = mode; motionDamping.setMode(mode); },
+    setLinks(input) {
+      links = Array.isArray(input?.links) ? input.links : [];
+      complexes = Array.isArray(input?.complexes) ? input.complexes : [];
+      rebuildLinks();
+    },
+    setLinksVisible(visible) {
+      linksVisible = !!visible;
+      rebuildLinks();
+    },
     dispose() {
+      clearLinks();
       running = false;
       unsubscribeAmbience();
       renderer.setAnimationLoop(null);

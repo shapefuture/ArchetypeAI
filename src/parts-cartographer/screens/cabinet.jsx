@@ -28,6 +28,7 @@ import { MemoryPanel } from './memory-panel.jsx';
 import { SharedSupportPanel } from './shared-support.jsx';
 import { ReminderSettings } from './reminder-settings.jsx';
 import { PartVersionHistory } from './part-history.jsx';
+import { PartConnections } from './part-connections.jsx';
 
 /* ═══════════ Cabinet ═══════════ */
 export function Cabinet() {
@@ -368,6 +369,8 @@ export function PartSheet({ id }) {
       </div>
 
       <div className="kicker mt16">{t('burden')} · {PART_COPY[p.family][lang]}</div>
+
+      <PartConnections part={p} />
 
       <div className="row mt16" style={{ gap: 10 }}>
         <button className="btn grow" onClick={() => setSheet({ type: 'editor', part: p })}>✎ {t('editPart')}</button>

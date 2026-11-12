@@ -12,6 +12,9 @@ import { EXERCISES, EXERCISE_TYPES } from '../../shared/core/data/exercises';
 import { ensureTherapistBusySlots, getTherapistProfile, therapistAppointments, setAppointmentStatus, therapistWallLabel } from '../core/booking.ts';
 import { affinityOfPart, DEFAULT_AXES, DIMENSION_KEYS, setAxisChoice } from '../services/universe-lens';
 import { studioMapPlacement } from '../../shared/core/data/map-axes';
+import { LINK_KINDS } from '../core/part-links.ts';
+import { partName, useMapLinks } from '../core/use-part-links.ts';
+import { LINK_COLORS } from '../services/universe-scene';
 import { ModalLayer } from '../ui/modal-layer.jsx';
 import { ReplayStudio } from './replay.jsx';
 import { InnerNegotiation } from './negotiation.jsx';
@@ -136,6 +139,24 @@ export function Innerverse() {
     if (!uniReady || !uniRef?.current) return;
     uniRef.current.setParts(visible);
   }, [uniReady, uniRef, visible]);
+  // Relationships: threads between related parts and labels over complexes, behind a toggle kept on this device.
+  const mapLinks = useMapLinks(parts);
+  const [linksOn, setLinksOn] = useState(() => { try { return localStorage.getItem('ifs.universe.links') === 'on'; } catch { return false; } });
+  const toggleLinks = () => setLinksOn((on) => {
+    try { localStorage.setItem('ifs.universe.links', on ? 'off' : 'on'); } catch { /* the choice is a convenience */ }
+    return !on;
+  });
+  useEffect(() => {
+    if (!uniReady || !uniRef?.current) return;
+    const byId = new Map(parts.map((part) => [part.id, part]));
+    uniRef.current.setLinks?.({
+      links: mapLinks.links,
+      complexes: mapLinks.complexes.map((complex) => ({ id: complex.id, members: complex.members, label: `${t('complexLabel')}: ${partName(byId.get(complex.core), lang)}` })),
+    });
+  }, [uniReady, uniRef, mapLinks, parts, lang, t]);
+  useEffect(() => {
+    if (uniReady) uniRef?.current?.setLinksVisible?.(linksOn);
+  }, [uniReady, uniRef, linksOn]);
   useEffect(() => {
     if (!uniReady || !uniRef?.current) return;
     uniRef.current.setDimensions(dimensions);
@@ -222,7 +243,19 @@ export function Innerverse() {
           { v: 'clusters', l: t('uniClusters') },
           { v: 'stories', l: t('uniStories') },
         ]} />
+        <button type="button" className={`chip uni-links-toggle${linksOn ? ' on' : ''}`} aria-pressed={linksOn} onClick={toggleLinks}
+          style={{ flex: '0 0 auto' }}>🔗 {t('links')}</button>
       </div>
+      {linksOn && (
+        <div className="uni-links-legend" role="note" aria-label={t('links')}>
+          {mapLinks.links.length === 0
+            ? <span>{t('linksNone')}</span>
+            : LINK_KINDS.filter((kind) => mapLinks.links.some((link) => link.kind === kind)).map((kind) => (
+              <span key={kind} className="uni-links-key"><i style={{ background: `#${LINK_COLORS[kind].toString(16).padStart(6, '0')}` }} />{t(`linkLegend_${kind}`)}</span>
+            ))}
+          {mapLinks.complexes.length > 0 && <span className="uni-links-key" title={t('complexHint')}>◌ {t('complexLabel')} · {mapLinks.complexes.length}</span>}
+        </div>
+      )}
 
       {universeMode === 'parts' && (
         <div className="row uni-rail" style={{ position: 'absolute', left: 0, right: 0, bottom: 86, padding: '0 16px', gap: 8, overflowX: 'auto', pointerEvents: 'auto', zIndex: 30 }}>

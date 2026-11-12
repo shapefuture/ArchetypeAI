@@ -14,7 +14,7 @@ import { parseLastResult } from './parts-two-store';
 const MAX_BYTES = 20 * 1024 * 1024;
 const BASE_KEYS = [KEYS.parts, KEYS.profile, KEYS.history, KEYS.charter, KEYS.syn,
   'ifs.lang', 'ifs.theme', 'ifs.onboarded', 'ifs.assessment.draft', 'ifs.legacy64.result', 'ifs.parts2.result',
-  'ifs.journal', 'ifs.sealed', 'ifs.sealed.verdict', 'ifs.universe.dimensions.v1', 'ifs.universe.dimensions.v2',
+  'ifs.journal', 'ifs.links', 'ifs.sealed', 'ifs.sealed.verdict', 'ifs.universe.dimensions.v1', 'ifs.universe.dimensions.v2',
   DESCENT_DRAFT_KEY, LEGACY_DESCENT_DRAFT_KEY, 'INNERVERSE_FUTURE_SELF_V1', 'INNERVERSE_PROFILE_V1',
   'INNERVERSE_CHECKINS_V1', 'INNERVERSE_SEALED_VERDICTS_V1', 'INNERVERSE_JITAI_V1',
   'INNERVERSE_CHARTER_V1', 'INNERVERSE_EVENTS_V1', 'INNERVERSE_GOAL_V1', 'INNERVERSE_PRACTICE_V1', 'INNERVERSE_SYNASTRY_RUNS_V1',

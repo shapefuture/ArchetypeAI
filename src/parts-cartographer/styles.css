@@ -536,6 +536,22 @@ input[type='range']::-moz-range-thumb { width: 22px; height: 22px; border-radius
   background: radial-gradient(ellipse 85% 70% at 50% 48%, transparent 55%, rgba(4, 3, 10, .5) 100%);
 }
 [data-theme='light'] .universe-host::after { background: radial-gradient(ellipse 85% 70% at 50% 48%, transparent 60%, rgba(90, 78, 140, .12) 100%); }
+/* Connections toggle and legend over the 3D map (core/part-links.ts). */
+.uni-links-toggle { background: var(--surface); color: var(--text); }
+.uni-links-toggle.on { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.uni-links-legend {
+  position: relative; z-index: 40; pointer-events: auto; margin: 8px 16px 0; padding: 7px 12px; border-radius: 14px;
+  display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center;
+  background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(8px);
+  font-size: 11.5px; font-weight: 800; color: var(--text);
+}
+.uni-links-key { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.uni-links-key i { width: 16px; height: 4px; border-radius: 2px; display: inline-block; }
+/* Part sheet: connections to other parts. */
+.part-links-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.part-links-list li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 2px; border-bottom: 1.5px solid var(--line); }
+.part-link-swatch { width: 6px; align-self: stretch; border-radius: 3px; flex: 0 0 6px; }
+.part-link-form select, .part-link-form textarea { width: 100%; background: none; border: none; outline: none; color: var(--text); font: inherit; resize: vertical; }
 /* Rails that scroll sideways fade at the right edge, so a cut-off chip reads as "more this way". */
 .uni-rail { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
 .universe-chrome {

@@ -184,3 +184,16 @@ describe('unknown depth in the coordinates panel', () => {
     ]);
   });
 });
+
+describe('earlier Assessment 2.0 records in the panel', () => {
+  it('shows depth as unknown for a 2.0 record saved before depth had its own marker', () => {
+    localStorage.setItem(KEYS.parts, JSON.stringify([{
+      id: 'p-old-2', name: 'Old part', family: 'manager', nameEn: 'Old part',
+      archetype: { schema: 'archetype-map.v1', sourceAssessment: 'parts-2', coordinateBasis: 'self-placed-2', coordinates: [0.2, 0.5, 0.3, 0] },
+    }]));
+    mount();
+    const depth = rowTexts().find((row) => row[0].startsWith('Axis 3'));
+    expect(depth?.slice(1)).toEqual(['unknown', 'unknown']);
+    expect(host?.textContent).not.toContain('0.30');
+  });
+});

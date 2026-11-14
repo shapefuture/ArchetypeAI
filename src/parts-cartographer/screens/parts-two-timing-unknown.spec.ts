@@ -1,7 +1,7 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { FAMILY_COPY, TIMING_COPY, UI_COPY } from '../../shared/core/data/assessment2/content';
+import { FAMILY_COPY, RESPONSE_MODE_COPY, TIMING_COPY, UI_COPY } from '../../shared/core/data/assessment2/content';
 import { SCENES, SCENE_FAMILIES, buildAssessment2Result, type Assessment2Input, type SceneAnswer } from '../../shared/core/data/assessment2/scoring';
 import { saveLastResult } from '../core/parts-two-store';
 
@@ -57,14 +57,14 @@ describe('a protector timing on the result view (ux246, D1)', () => {
 
   it('shows a skipped timing as "Timing not answered", and never as a timing', () => {
     showResult({ inner_critic: null });
-    expect(partLines()).toContain(`${UI_COPY.timingUnknown.en} · ${FAMILY_COPY.attack.en}`);
+    expect(partLines()).toContain(`${UI_COPY.timingUnknown.en} · ${FAMILY_COPY.attack.en} · ${UI_COPY.modeLabel.en}: ${RESPONSE_MODE_COPY.take.en}`);
     expect(host.textContent).not.toContain(TIMING_COPY.reactive.en);
     expect(host.textContent).not.toContain(TIMING_COPY.preventive.en);
   });
 
   it('shows an answered timing as that timing, and never as "Timing not answered"', () => {
     showResult({ inner_critic: 'reactive' });
-    expect(partLines()).toContain(`${TIMING_COPY.reactive.en} · ${FAMILY_COPY.attack.en}`);
+    expect(partLines()).toContain(`${TIMING_COPY.reactive.en} · ${FAMILY_COPY.attack.en} · ${UI_COPY.modeLabel.en}: ${RESPONSE_MODE_COPY.take.en}`);
     expect(host.textContent).not.toContain(UI_COPY.timingUnknown.en);
   });
 });

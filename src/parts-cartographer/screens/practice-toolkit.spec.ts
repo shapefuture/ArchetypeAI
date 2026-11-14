@@ -290,6 +290,19 @@ describe('practice toolkit screen', () => {
     expect(stored().outcomes).toMatchObject([{ outcome: 'did-not-try', note: 'Busy day', scoreDelta: 0, causalClaim: false }]);
   });
 
+  it('offers looking-back questions about consequences once an outcome is chosen, and stores only the note', () => {
+    const { toolkit } = withCard();
+    saveToolkit(toolkit);
+    render();
+    clickButton('Record an outcome');
+    expect(host?.textContent).not.toContain('Who gained from it, and who paid a cost?');
+    clickButton('I tried it');
+    expect(host?.textContent).toContain('Who gained from it, and who paid a cost?');
+    expect(host?.textContent).toContain('Is there anything to repair or do differently next time?');
+    clickButton('Save outcome');
+    expect(Object.keys(stored().outcomes[0]).sort()).toEqual(['cardId', 'causalClaim', 'note', 'outcome', 'recorded', 'scoreDelta']);
+  });
+
   it('stores nothing when the person chooses do-not-record', () => {
     const { toolkit } = withCard();
     saveToolkit(toolkit);

@@ -26,6 +26,7 @@ import { ScoredProfileSynastryDetails } from './screens/scored-profile-synastry-
 import { EmailVerifyNotice } from './ui/email-verify-notice.jsx';
 import { authErrorKey } from './core/auth-errors.ts';
 import { sendPasswordReset } from './core/auth.service.ts';
+import { PROMPT_HIDDEN_KEY, localDay, promptById, promptForDay } from './core/daily-prompts.ts';
 
 const ovHead = (title, onClose, extra) => (
   <div className="ov-head">
@@ -1593,6 +1594,14 @@ export function Journal() {
   const [where, setWhere] = useState('');
   const [part, setPart] = useState('');
   const [note, setNote] = useState('');
+  // Today's optional question: the same all day, another on request, hidden until tomorrow on "Not today".
+  const today = localDay();
+  const [skip, setSkip] = useState(0);
+  const [hiddenDay, setHiddenDay] = useState(() => { try { return localStorage.getItem(PROMPT_HIDDEN_KEY); } catch { return null; } });
+  const [answering, setAnswering] = useState(null);
+  const daily = promptForDay(today, skip);
+  const hideToday = () => { try { localStorage.setItem(PROMPT_HIDDEN_KEY, today); } catch { /* the question just hides for this visit */ } setHiddenDay(today); };
+  const answerDaily = () => { setAnswering(daily); setKind(daily.kind); };
 
   // Returns whether the write fit in storage; the screen changes only if it did.
   const persist = (next) => {
@@ -1602,10 +1611,10 @@ export function Journal() {
   };
   const save = () => {
     if (!what.trim()) { toast('⚠ ' + t('jWhat')); return; }
-    const e = { id: Date.now(), at: Date.now(), kind, what: what.trim(), where: where.trim(), part: part.trim(), note: note.trim() };
+    const e = { id: Date.now(), at: Date.now(), kind, what: what.trim(), where: where.trim(), part: part.trim(), note: note.trim(), ...(answering ? { promptId: answering.id } : {}) };
     // A save that did not fit keeps the draft so nothing typed is lost.
     if (!persist([e, ...readJournal()])) return;
-    setWhat(''); setWhere(''); setPart(''); setNote('');
+    setWhat(''); setWhere(''); setPart(''); setNote(''); setAnswering(null);
     try { import('./pal/sfx.ts').then((m) => m.sfx.pop()).catch(() => {}); } catch { /* */ }
     toast('✓ ' + t('savedLocally'));
   };
@@ -1630,6 +1639,19 @@ export function Journal() {
           <div className="faint mt10" style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '.05em' }}>{t('jSources')}</div>
         </div>
 
+        {hiddenDay !== today ? (
+          <section className="card mt12 j-daily" aria-labelledby={`${fieldId}-daily`}>
+            <div id={`${fieldId}-daily`} className="kicker" style={{ color: 'var(--accent-text)' }}>{t('jDailyT')}</div>
+            <p style={{ fontWeight: 800, fontSize: 15, lineHeight: 1.45, margin: '8px 0 0' }}>{daily[lang === 'ru' ? 'ru' : 'en']}</p>
+            <p className="faint mt8" style={{ fontSize: 12 }}>{t('jDailyCare')}</p>
+            <div className="row mt10" style={{ gap: 6, flexWrap: 'wrap' }}>
+              <button type="button" className="btn primary small" onClick={answerDaily}>{t('jDailyAnswer')}</button>
+              <button type="button" className="btn ghost small" onClick={() => setSkip((n) => n + 1)}>{t('jDailyAnother')}</button>
+              <button type="button" className="btn ghost small" onClick={hideToday}>{t('jDailyHide')}</button>
+            </div>
+          </section>
+        ) : null}
+
         {/* new trailhead */}
         <div className="kicker mt16">{t('jTypes')}</div>
         <div className="row mt8" style={{ gap: 6, flexWrap: 'wrap' }}>
@@ -1639,6 +1661,13 @@ export function Journal() {
           ))}
         </div>
 
+        {answering ? (
+          <div className="card flat mt12" role="status">
+            <div className="kicker">{t('jDailyAnswering')}</div>
+            <p style={{ fontWeight: 800, margin: '6px 0 0' }}>{answering[lang === 'ru' ? 'ru' : 'en']}</p>
+            <button type="button" className="btn ghost small mt8" onClick={() => setAnswering(null)}>{t('jDailyClear')}</button>
+          </div>
+        ) : null}
         <div className="field mt12"><label htmlFor={`${fieldId}-jWhat`}>{t('jWhat')}</label>
           <textarea id={`${fieldId}-jWhat`} rows={2} value={what} onChange={(e) => setWhat(e.target.value)}
             placeholder={tr('sw14', lang)} />
@@ -1666,6 +1695,7 @@ export function Journal() {
                 <div className="kicker" style={{ color: 'var(--accent-text)', fontSize: 10 }}>
                   {KIND_ICON[e.kind] ?? '✎'} {t(e.kind)} · {new Date(e.at).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', { day: '2-digit', month: 'short' })}
                 </div>
+                {promptById(e.promptId) ? <div className="faint" style={{ fontSize: 12.5, fontWeight: 700, marginTop: 4 }}>❔ {promptById(e.promptId)[lang === 'ru' ? 'ru' : 'en']}</div> : null}
                 <div style={{ fontWeight: 800, fontSize: 14, marginTop: 5, lineHeight: 1.4 }}>{e.what}</div>
                 {e.where && <div className="faint" style={{ fontSize: 12.5, fontWeight: 700, marginTop: 3 }}>🫀 {e.where}</div>}
                 {e.part && <div className="faint" style={{ fontSize: 12.5, fontWeight: 700, marginTop: 2 }}>✨ {e.part}</div>}

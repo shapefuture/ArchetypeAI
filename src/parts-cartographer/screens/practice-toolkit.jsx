@@ -49,6 +49,13 @@ const COPY = {
     expEmpty: 'No cards yet. Write one when a situation is coming up.',
     expChoose: 'How did it go?',
     expNote: 'A note (optional)',
+    expLookBack: 'Looking back, if it helps. Nothing here is stored unless you write it in the note.',
+    expLookBackQuestions: [
+      'What actually happened, soon after and later on?',
+      'Who gained from it, and who paid a cost?',
+      'Was anyone\'s dignity or choice set aside?',
+      'Is there anything to repair or do differently next time?',
+    ],
     expSaveOutcome: 'Save outcome',
     expSkip: 'Continue without recording',
     expNothingStored: 'Nothing is stored for this choice, not even a note.',
@@ -165,6 +172,13 @@ const COPY = {
     expEmpty: 'Карточек пока нет. Напишите одну, когда ситуация приближается.',
     expChoose: 'Как прошло?',
     expNote: 'Заметка (необязательно)',
+    expLookBack: 'Оглянитесь назад, если это полезно. Здесь ничего не сохраняется, пока вы не запишете это в заметку.',
+    expLookBackQuestions: [
+      'Что произошло на самом деле, сразу и позже?',
+      'Кто от этого выиграл, а кто заплатил цену?',
+      'Не пострадали ли чьё-то достоинство или свобода выбора?',
+      'Есть ли что-то, что стоит исправить или сделать иначе в следующий раз?',
+    ],
     expSaveOutcome: 'Сохранить результат',
     expSkip: 'Продолжить без записи',
     expNothingStored: 'Для этого выбора ничего не сохраняется, даже заметка.',
@@ -671,6 +685,12 @@ function ExperimentsPanel({ toolkit, commit, copy }) {
                   <p className="tk-notice mt8">{copy.expNothingStored}</p>
                 ) : (
                   <div className="field mt8">
+                    {picked.outcome ? (
+                      <div className="tk-lookback" aria-label={copy.expLookBack}>
+                        <p className="sub">{copy.expLookBack}</p>
+                        <ul>{copy.expLookBackQuestions.map((question) => <li key={question}>{question}</li>)}</ul>
+                      </div>
+                    ) : null}
                     <label htmlFor={`${uid}-note`}>{copy.expNote}</label>
                     <textarea
                       id={`${uid}-note`}

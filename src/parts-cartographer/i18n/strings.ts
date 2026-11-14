@@ -622,6 +622,13 @@ export const STRINGS = {
   jNote: s('Note (optional)', 'Заметка (необязательно)'),
   jSave: s('Save trailhead', 'Сохранить узелок'),
   jEmpty: s('No trailheads yet — notice one today.', 'Пока нет узелков — заметьте один сегодня.'),
+  jDailyT: s('Today\'s question · optional', 'Вопрос дня · по желанию'),
+  jDailyAnswer: s('Answer in the journal', 'Ответить в журнале'),
+  jDailyAnother: s('Another question', 'Другой вопрос'),
+  jDailyHide: s('Not today', 'Не сегодня'),
+  jDailyCare: s('Skip any question. If it feels heavy, stop and come back to your breath.', 'Любой вопрос можно пропустить. Если становится тяжело, остановитесь и вернитесь к дыханию.'),
+  jDailyAnswering: s('Answering', 'Ответ на вопрос'),
+  jDailyClear: s('Write without the question', 'Писать без вопроса'),
   jSources: s('Sources · ifs.space · ifsguide.com', 'Источники · ifs.space · ifsguide.com'),
   // ── share ──
   shareBtn: s('Share', 'Поделиться'),

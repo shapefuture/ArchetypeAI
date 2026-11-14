@@ -11,11 +11,12 @@ import { SELF_QUALITIES } from '../../shared/core/data/parts.ts';
 import {
   BLENDING_COPY, CAPACITY_COPY, CENTRE_QUALITY_COPY, CONFIRM_COPY, CONFIRM_SCALE, COSTUME_COPY, EXILE_COPY, FAMILY_COPY,
   FEAR_COPY, GAP_COPY, GROUND_COPY, MEMBER_COPY, NEED_COPY, NEED_PRACTICE, PROVIDER_COPY, PROVIDER_FORM_COPY, REACTION_COPY, SCENE_COPY, TIMING_COPY,
-  UI_COPY, ACCESS_COPY,
+  UI_COPY, ACCESS_COPY, RESPONSE_MODE_COPY,
 } from '../../shared/core/data/assessment2/content.ts';
 import {
   BLENDING_OPTIONS, CAPACITIES, COSTUMES, EXILE_NEED, GROUND_ITEMS, NEEDS, NEED_PROVIDER, PROVIDER_ACCESS, PROVIDER_FORMS, EXILES, TIMINGS, membersOf,
 } from '../../shared/core/data/assessment2/taxonomy.ts';
+import { integrationProfile, modeOfFamily } from '../../shared/core/data/assessment2/response-modes.ts';
 import { PlacementPad, DepthSlider } from './parts-two-pad.jsx';
 import { ProvisionalPad } from './parts-two-provisional.jsx';
 import './parts-two.css';
@@ -443,6 +444,37 @@ function GapLines({ T, tx, locale, need }) {
 const formatSavedDate = (savedAt, locale) => new Date(savedAt).toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 
 /** The body of a result. The live result and the stored last result both use it, so the two cannot drift apart. */
+/** Five capacities shown side by side. No total, rank or comparison (response-modes.ts). */
+export function IntegrationProfile({ T, tx, result }) {
+  const profile = integrationProfile(result);
+  const { regulation, flexibility } = profile;
+  const modes = (list) => list.map((mode) => tx(RESPONSE_MODE_COPY[mode])).join(', ');
+  return (
+    <section className="p2-integration" aria-labelledby="p2-integration-title">
+      <h3 id="p2-integration-title">{T('integrationTitle')}</h3>
+      <p className="sub">{T('integrationNote')}</p>
+      <ul className="p2-list">
+        <li className="card"><strong>{T('integrationAwareness')}</strong><p>{profile.awareness === null ? T('centreNotAnswered') : `${profile.awareness} / 5`}</p></li>
+        <li className="card">
+          <strong>{T('integrationRegulation')}</strong>
+          <p>{T('regulationWithIt')}: {regulation.withIt} · {T('regulationMixed')}: {regulation.mixed} · {T('regulationRunsMe')}: {regulation.runsMe} · {T('regulationUnanswered')}: {regulation.unanswered}</p>
+        </li>
+        <li className="card">
+          <strong>{T('integrationFlexibility')}</strong>
+          {flexibility.used.length ? (
+            <>
+              <p>{T('flexibilityUsed')}: {modes(flexibility.used)}</p>
+              {flexibility.unused.length ? <p>{T('flexibilityUnused')}: {modes(flexibility.unused)}</p> : null}
+            </>
+          ) : <p>{T('flexibilityNone')}</p>}
+        </li>
+        <li className="card"><strong>{T('integrationReality')}</strong><p>{T('notMeasuredHere')} {T('realityQuestion')}</p></li>
+        <li className="card"><strong>{T('integrationAccountability')}</strong><p>{T('notMeasuredHere')} {T('accountabilityQuestion')}</p></li>
+      </ul>
+    </section>
+  );
+}
+
 function ResultBody({ T, tx, locale, result }) {
   const confidence = { high: T('confHigh'), medium: T('confMedium'), low: T('confLow') };
   // A result saved before the Centre existed has none, which reads as all unanswered.
@@ -471,7 +503,7 @@ function ResultBody({ T, tx, locale, result }) {
             <li key={part.key} className="card">
               <strong>{name}</strong>
               <p className="sub">
-                {part.kind === 'protector' ? `${part.timing ? tx(TIMING_COPY[part.timing]) : tx(UI_COPY.timingUnknown)} · ${tx(FAMILY_COPY[part.family])}` : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].feeling) : ''}
+                {part.kind === 'protector' ? `${part.timing ? tx(TIMING_COPY[part.timing]) : tx(UI_COPY.timingUnknown)} · ${tx(FAMILY_COPY[part.family])} · ${T('modeLabel')}: ${tx(RESPONSE_MODE_COPY[modeOfFamily(part.family)])}` : part.kind === 'exile' ? tx(EXILE_COPY[part.exile].feeling) : ''}
               </p>
               {part.rank !== null ? <p>{T('resultRank')}: {part.rank} · {T('resultConfidence')}: {part.confidence ? confidence[part.confidence] : '—'}</p> : null}
               <p>{T('resultLevel')}: {part.level === null ? T('levelUnknown') : `${part.level} / 5`}</p>
@@ -494,6 +526,7 @@ function ResultBody({ T, tx, locale, result }) {
           </ul>
         </>
       ) : null}
+      <IntegrationProfile T={T} tx={tx} result={result} />
       <h3>{T('centreTitle')}</h3>
       <ul className="p2-list">
         <li className="card">

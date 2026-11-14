@@ -442,6 +442,24 @@ export const UI_COPY = {
   providerLabel: { en: 'Provider', ru: 'Опора' },
   costumeQ: { en: 'Does this pattern wear a familiar costume? Choose any that apply.', ru: 'Носит ли этот паттерн знакомый костюм? Отметьте подходящее.' },
   conflictsTitle: { en: 'Tensions between parts', ru: 'Напряжения между частями' },
+  modeLabel: { en: 'Response mode', ru: 'Способ отклика' },
+  integrationTitle: { en: 'Integration profile', ru: 'Профиль интеграции' },
+  integrationNote: { en: 'Five separate capacities. They are not added up, ranked or compared with anyone.', ru: 'Пять отдельных способностей. Они не суммируются, не ранжируются и ни с кем не сравниваются.' },
+  integrationAwareness: { en: 'Awareness', ru: 'Осознанность' },
+  integrationRegulation: { en: 'Regulation', ru: 'Регуляция' },
+  integrationFlexibility: { en: 'Flexibility', ru: 'Гибкость' },
+  integrationReality: { en: 'Reality contact', ru: 'Контакт с реальностью' },
+  integrationAccountability: { en: 'Accountability', ru: 'Ответственность' },
+  regulationWithIt: { en: 'parts you can be with', ru: 'части, с которыми вы можете быть рядом' },
+  regulationMixed: { en: 'in between', ru: 'посередине' },
+  regulationRunsMe: { en: 'parts that run you', ru: 'части, которые управляют вами' },
+  regulationUnanswered: { en: 'not answered', ru: 'без ответа' },
+  flexibilityUsed: { en: 'Your protectors use', ru: 'Ваши защитники используют' },
+  flexibilityUnused: { en: 'None of them use', ru: 'Ни один не использует' },
+  flexibilityNone: { en: 'No protectors named yet', ru: 'Защитники пока не названы' },
+  notMeasuredHere: { en: 'Not measured here. A question to reflect on:', ru: 'Здесь не измеряется. Вопрос для размышления:' },
+  realityQuestion: { en: 'When a part is strong, can you tell what you wish were true from what the evidence shows?', ru: 'Когда часть сильна, можете ли вы отличить то, чего вам хочется, от того, что показывают факты?' },
+  accountabilityQuestion: { en: 'When a part causes harm, can you notice it, change course and repair what you can?', ru: 'Когда часть причиняет вред, можете ли вы заметить это, изменить курс и исправить то, что возможно?' },
   conflictNames: {
     'strategy-against-strategy': { en: 'Two strategies guard the same feeling in opposite ways', ru: 'Две стратегии защищают одно чувство противоположными способами' },
     'protector-against-exile': { en: 'A part is blocking a feeling that is strong for you', ru: 'Одна часть блокирует сильное для вас чувство' },
@@ -487,3 +505,11 @@ export const copyCoverage = {
   families: FAMILIES.every((f) => FAMILY_COPY[f]),
   selfQualities: SELF_QUALITIES.every((quality) => CENTRE_QUALITY_COPY[quality]),
 } as const;
+
+/** Response modes (./response-modes.ts). Each family is the protective form of one mode. */
+export const RESPONSE_MODE_COPY: Record<'receive' | 'accept' | 'take' | 'give', { en: string; ru: string }> = {
+  receive: { en: 'Receive', ru: 'Воспринимать' },
+  accept: { en: 'Accept', ru: 'Отпускать' },
+  take: { en: 'Take', ru: 'Заявлять' },
+  give: { en: 'Give', ru: 'Отдавать' },
+};

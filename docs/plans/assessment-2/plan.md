@@ -96,6 +96,21 @@ Energy, Direction and Depth are the three plotted axes. Blending is the "+1" val
 
 **The 64 projection** (`legacy64ToMapPlacement`, `src/shared/core/data/map-axes.ts:54`) sets energy to (temperature − agency) ÷ 2 and direction to (focus + attachment) ÷ 2. Depth and blending are unmeasured. Read against the 64 pole labels in `screens/legacy-report.jsx`, energy is positive for Active and Expressive, and negative for Receptive and Composed. Direction is positive for Other-focused and Anxious, and negative for Self-focused and Avoidant. The formula is a guess. `src/shared/core/data/map-axes-projection.spec.ts` checks its signs against those labels.
 
+### 3.6 Response modes and the integration profile
+
+Each protector family is read as the protective form of one of four response modes (`src/shared/core/data/assessment2/response-modes.ts`). Like the rest of the taxonomy, the mapping is an educated guess:
+
+| Mode | Families |
+|---|---|
+| Receive | Numb and soothe |
+| Accept | Withdraw, Reframe |
+| Take | Over-control, Attack, Pursue |
+| Give | Over-perform, Appease |
+
+The result shows each protector's mode and an integration profile with five separate capacities: awareness (the Centre answer), regulation (counts of parts the person can be with, parts in between, parts that run them, and unanswered), flexibility (the modes the protectors use and the ones they do not), reality contact and accountability. The last two are not measured. A reflection question stands in for each. The capacities are never added up, ranked or compared.
+
+Recording an experiment outcome in the practice toolkit offers four looking-back questions about consequences: what happened, who gained and who paid, whether dignity or choice was set aside, and what to repair. They are prompts for the optional note. Nothing new is stored.
+
 ## 4. Flow
 
 | Stage | The person does | Taps | Minutes | Output |
